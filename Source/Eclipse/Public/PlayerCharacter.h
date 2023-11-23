@@ -51,15 +51,46 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAction;
 
+	/** Zoom Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* ZoomAction;
+
+	/** Crouch Action Input */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* CrouchAction;
+
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
+	/** Called for zooming input */
+	void Zoom();
+	/** Called for zooming input */
+	void ZoomRelease();
+
+	/** Called for zooming input */
+	void Crouching();
+
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
+	class UStaticMeshComponent* sniperComp;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
+	class UStaticMeshComponent* rifleComp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
+	class UStaticMeshComponent* grenade;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
+	class UStaticMeshComponent* rocketLauncher;
+
+	UPROPERTY()
+	float zoomTriggeredTime;
 
 };

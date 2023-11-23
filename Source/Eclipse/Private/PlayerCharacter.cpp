@@ -50,6 +50,13 @@ APlayerCharacter::APlayerCharacter()
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 
+	sniperComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("sniperComp"));
+	sniperComp->SetupAttachment(GetMesh(), FName("hand_r"));
+
+	rifleComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("rifleComp"));
+	rifleComp->SetupAttachment(GetMesh(), FName("hand_r"));
+
+
 }
 
 // Called when the game starts or when spawned
@@ -86,14 +93,22 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {
 		
 		//Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Jump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &APlayerCharacter::StopJumping);
 
 		//Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Move);
 
 		//Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Look);
+
+		//Zooming
+		EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Zoom);
+		EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Completed, this, &APlayerCharacter::ZoomRelease);
+
+		//Crouching
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Crouching);
+
 	}
 }
 
@@ -132,6 +147,28 @@ void APlayerCharacter::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
+}
+
+void APlayerCharacter::Zoom()
+{
+	zoomTriggeredTime=0.f;
+	zoomTriggeredTime+=GetWorld()->GetDeltaSeconds();
+	if(zoomTriggeredTime>=1.0f)
+	{
+		CameraBoom->TargetArmLength=50.0f;
+	}
+}
+
+void APlayerCharacter::ZoomRelease()
+{
+	if(zoomTriggeredTime>=1.0f)
+	{
+		CameraBoom->TargetArmLength=200.0f;
+	}
+}
+
+void APlayerCharacter::Crouching()
+{
 }
 
 

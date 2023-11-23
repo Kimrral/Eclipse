@@ -98,6 +98,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
 	class UStaticMeshComponent* rocketLauncher;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
+	class UCameraComponent* rifleZoomCam;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
 	TSubclassOf<class ARifleActor> rifleFactory;
 
@@ -121,6 +124,9 @@ public:
 
 	UPROPERTY()
 	class UPlayerAnim* animInstance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
+	class UAnimMontage* zoomingMontage;
 	
 
 

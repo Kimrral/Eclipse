@@ -60,6 +60,9 @@ APlayerCharacter::APlayerCharacter()
 	rifleComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("rifleComp"));
 	rifleComp->SetupAttachment(GetMesh(), FName("hand_r"));
 
+	rifleZoomCam=CreateDefaultSubobject<UCameraComponent>(TEXT("rifleZoomCam"));
+	rifleZoomCam->SetupAttachment(rifleComp);
+
 
 }
 
@@ -190,20 +193,23 @@ void APlayerCharacter::Look(const FInputActionValue& Value)
 
 void APlayerCharacter::Zoom()
 {
-	if(animInstance)
+	//rifleZoomCam->SetActive(true);
+	//FollowCamera->SetActive(false);
+	bool animPlay = animInstance->IsAnyMontagePlaying();
+	if(animPlay)
 	{
-		animInstance->isZoomingA=true;
+		StopAnimMontage();
 	}
+	PlayAnimMontage(zoomingMontage);
 	isZooming=true;
 	CameraBoom->TargetArmLength=130.0f;
 }
 
 void APlayerCharacter::ZoomRelease()
 {
-	if(animInstance)
-	{
-		animInstance->isZoomingA=false;
-	}
+	//rifleZoomCam->SetActive(false);
+	//FollowCamera->SetActive(true);
+	StopAnimMontage();
 	isZooming=false;
 	CameraBoom->TargetArmLength=200.0f;
 }

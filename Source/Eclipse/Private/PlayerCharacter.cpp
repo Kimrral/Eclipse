@@ -5,6 +5,10 @@
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "PlayerAnim.h"
+#include "RifleActor.h"
+#include "SniperActor.h"
+#include "WeaponActor.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -72,13 +76,45 @@ void APlayerCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
-	
+
+	bUsingRifle=true;
+	bUsingSniper=false;
+	weaponArray.Add(bUsingRifle); //0
+	weaponArray.Add(bUsingSniper); //1
+
+	animInstance=Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 }
 
 // Called every frame
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	FHitResult actorHitResult;
+	FVector StartLoc = FollowCamera->GetComponentLocation();
+	FVector EndLoc = StartLoc+FollowCamera->GetForwardVector()*400.0f;
+	bool bHit = GetWorld()->LineTraceSingleByChannel(actorHitResult, StartLoc, EndLoc, ECC_Visibility);
+	if(bHit)
+	{
+		rifleActor = Cast<ARifleActor>(actorHitResult.GetActor());
+		sniperActor=Cast<ASniperActor>(actorHitResult.GetActor());
+		if(rifleActor)
+		{
+			isCursorOnRifle=true;
+			UE_LOG(LogTemp, Warning, TEXT("Rifle Actor"))
+		}
+		if(sniperActor)
+		{
+			isCursorOnSniper=true;
+			UE_LOG(LogTemp, Warning, TEXT("Sniper Actor"))
+		}
+		else
+		{
+			isCursorOnRifle=false;
+			isCursorOnSniper=false;
+		}
+	}
+
 
 }
 
@@ -108,6 +144,9 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 		//Crouching
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Crouching);
+
+		//Change Weapon
+		EnhancedInputComponent->BindAction(ChangeWeaponAction, ETriggerEvent::Triggered, this, &APlayerCharacter::ChangeWeapon);
 
 	}
 }
@@ -151,24 +190,73 @@ void APlayerCharacter::Look(const FInputActionValue& Value)
 
 void APlayerCharacter::Zoom()
 {
-	zoomTriggeredTime=0.f;
-	zoomTriggeredTime+=GetWorld()->GetDeltaSeconds();
-	if(zoomTriggeredTime>=1.0f)
+	if(animInstance)
 	{
-		CameraBoom->TargetArmLength=50.0f;
+		animInstance->isZoomingA=true;
 	}
+	isZooming=true;
+	CameraBoom->TargetArmLength=130.0f;
 }
 
 void APlayerCharacter::ZoomRelease()
 {
-	if(zoomTriggeredTime>=1.0f)
+	if(animInstance)
 	{
-		CameraBoom->TargetArmLength=200.0f;
+		animInstance->isZoomingA=false;
 	}
+	isZooming=false;
+	CameraBoom->TargetArmLength=200.0f;
 }
 
 void APlayerCharacter::Crouching()
 {
+}
+
+void APlayerCharacter::ChangeWeapon()
+{
+	FHitResult actorHitResult;
+	FVector StartLoc = FollowCamera->GetComponentLocation();
+	FVector EndLoc = StartLoc+FollowCamera->GetForwardVector()*400.0f;
+	bool bHit = GetWorld()->LineTraceSingleByChannel(actorHitResult, StartLoc, EndLoc, ECC_Visibility);
+	if(bHit)
+	{
+		rifleActor = Cast<ARifleActor>(actorHitResult.GetActor());
+		sniperActor=Cast<ASniperActor>(actorHitResult.GetActor());
+		if(rifleActor)
+		{
+			// is not using rifle
+			if(weaponArray[0]==false)
+			{
+				rifleActor->Destroy();
+				FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
+				FRotator spawnRotation = FRotator::ZeroRotator;
+				FActorSpawnParameters param;
+				param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;		
+				sniperActor = GetWorld()->SpawnActor<ASniperActor>(sniperFactory, spawnPosition, spawnRotation);
+				rifleComp->SetVisibility(true);
+				sniperComp->SetVisibility(false);
+				weaponArray[0]=true;
+				weaponArray[1]=false;
+			}
+		}
+		else if(sniperActor)
+		{
+			// is not using sniper
+			if(weaponArray[1]==false)
+			{	
+				sniperActor->Destroy();
+				FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
+				FRotator spawnRotation = FRotator::ZeroRotator;
+				FActorSpawnParameters param;
+				param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;		
+				rifleActor = GetWorld()->SpawnActor<ARifleActor>(rifleFactory, spawnPosition, spawnRotation);
+				rifleComp->SetVisibility(false);
+				sniperComp->SetVisibility(true);
+				weaponArray[0]=false;
+				weaponArray[1]=true;			
+			}
+		}
+	}
 }
 
 

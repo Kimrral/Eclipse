@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
+#include "RifleActor.h"
 #include "PlayerCharacter.generated.h"
 
 UCLASS()
@@ -59,6 +60,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* CrouchAction;
 
+	/** Change Weapon Input */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* ChangeWeaponAction;
+
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
 
@@ -72,6 +77,9 @@ public:
 
 	/** Called for zooming input */
 	void Crouching();
+
+	/** Called for change weapon input */
+	void ChangeWeapon();
 
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
@@ -90,7 +98,41 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
 	class UStaticMeshComponent* rocketLauncher;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
+	TSubclassOf<class ARifleActor> rifleFactory;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
+	TSubclassOf<class ASniperActor> sniperFactory;
+
+	UPROPERTY()
+	class ARifleActor* rifleActor;
+
+	UPROPERTY()
+	class ASniperActor* sniperActor;
+
+	UPROPERTY()
+	TArray<bool> weaponArray;
+
+	UPROPERTY()
+	bool bUsingRifle;
+	
+	UPROPERTY()
+	bool bUsingSniper;
+
+	UPROPERTY()
+	class UPlayerAnim* animInstance;
+	
+
+
 	UPROPERTY()
 	float zoomTriggeredTime;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool isZooming = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool isCursorOnRifle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool isCursorOnSniper;
 };

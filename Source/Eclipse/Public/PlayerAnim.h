@@ -13,5 +13,16 @@ UCLASS()
 class ECLIPSE_API UPlayerAnim : public UAnimInstance
 {
 	GENERATED_BODY()
+
+public:
+	virtual void NativeBeginPlay() override;
 	
+	UPROPERTY()
+	class APlayerCharacter* me;
+
+	UFUNCTION()
+	void AnimNotify_ReloadStart();
+
+	UFUNCTION()
+	void AnimNotify_ReloadEnd();
 };

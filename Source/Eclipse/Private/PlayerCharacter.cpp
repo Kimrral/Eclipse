@@ -8,9 +8,10 @@
 #include "PlayerAnim.h"
 #include "RifleActor.h"
 #include "SniperActor.h"
-#include "WeaponActor.h"
 #include "Camera/CameraComponent.h"
+#include "NiagaraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "NiagaraFunctionLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -159,6 +160,9 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		//Fire
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Fire);
 
+		//Reload
+		EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Reload);
+
 	}
 }
 
@@ -201,8 +205,6 @@ void APlayerCharacter::Look(const FInputActionValue& Value)
 
 void APlayerCharacter::Zoom()
 {
-	//rifleZoomCam->SetActive(true);
-	//FollowCamera->SetActive(false);
 	bool animPlay = animInstance->IsAnyMontagePlaying();
 	if(animPlay)
 	{
@@ -215,8 +217,6 @@ void APlayerCharacter::Zoom()
 
 void APlayerCharacter::ZoomRelease()
 {
-	//rifleZoomCam->SetActive(false);
-	//FollowCamera->SetActive(true);
 	StopAnimMontage();
 	isZooming=false;
 	CameraBoom->TargetArmLength=200.0f;
@@ -274,6 +274,14 @@ void APlayerCharacter::ChangeWeapon()
 	}
 }
 
+void APlayerCharacter::Reload()
+{
+	bool animPlay = animInstance->IsAnyMontagePlaying();
+	if(animPlay==false&&curRifleAmmo<30)
+	{
+		PlayAnimMontage(zoomingMontage, 1, FName("Reload"));
+	}
+}
 
 
 void APlayerCharacter::Fire()
@@ -304,10 +312,12 @@ void APlayerCharacter::Fire()
 			TArray<AActor*> ActorsToIgnore;
 			ActorsToIgnore.Add(this); // LineTrace에서 제외할 대상
 			FHitResult rifleHitResult;
+			auto particleTrans = rifleComp->GetSocketTransform(FName("RifleFirePosition"));
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), fireParticle, particleTrans);
 			bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),startLoc, EndLoc, ObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, rifleHitResult, true);
 			if(bHit)
 			{
-				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.4, -1.5);
+				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.5, -0.8);
 				auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.5, 0.5);
 				AddControllerPitchInput(randF);
 				AddControllerYawInput(randF2);
@@ -317,9 +327,16 @@ void APlayerCharacter::Fire()
 				auto decalLoc = rifleHitResult.Location;
 				auto decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
 				GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot);
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot+FRotator(-90, 0, 0), FVector(0.5f));
+				auto fireSocketLoc = rifleComp->GetSocketTransform(FName("RifleFirePosition")).GetLocation();
+				// 탄 궤적 나이아가라 시스템 스폰
+				UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, rifleHitResult.Location, FRotator::ZeroRotator,FVector(1), true, true, ENCPoolMethod::AutoRelease);
+				if(niagara)
+				{
+					// 나이아가라 파라미터 벡터 위치 변수 할당
+					niagara->SetVectorParameter(FName("EndPoint"), fireSocketLoc);
+				}
 				CanShoot=false;
-				FTimerHandle shootEnableHandle;
 				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
 				{
 					CanShoot=true;
@@ -327,12 +344,19 @@ void APlayerCharacter::Fire()
 			}
 			else
 			{
-				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.4, -1.5);
+				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.5, -0.8);
 				auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.5, 0.5);
 				AddControllerPitchInput(randF);
 				AddControllerYawInput(randF2);
-				CanShoot=false;
-				FTimerHandle shootEnableHandle;
+				FVector niagaraSpawnLoc = FollowCamera->K2_GetComponentLocation();
+				FVector ForwardLoc = niagaraSpawnLoc + FollowCamera->GetForwardVector()*10000.0f;
+				auto FireLoc = rifleComp->GetSocketTransform(FName("RifleFirePosition")).GetLocation();
+				UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, ForwardLoc, FRotator::ZeroRotator, FVector(1), true, true, ENCPoolMethod::AutoRelease);
+				if(niagara)
+				{
+					niagara->SetVectorParameter(FName("EndPoint"), FireLoc);
+				}
+				CanShoot=false;				
 				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
 				{
 					CanShoot=true;

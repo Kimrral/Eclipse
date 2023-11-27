@@ -68,6 +68,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* ChangeWeaponAction;
 
+	/** Reload Input */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* ReloadAction;
+
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
 
@@ -86,7 +90,9 @@ public:
 	void Crouching();
 
 	/** Called for change weapon input */
-	void ChangeWeapon();	
+	void ChangeWeapon();
+
+	void Reload();
 	
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
@@ -171,6 +177,9 @@ public:
 	//Sounds
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* BulletEmptySound;
+	
+	UPROPERTY()
+	FTimerHandle shootEnableHandle;
 
 	//Particles
 	UPROPERTY(EditAnywhere, Category="Factory")
@@ -183,4 +192,6 @@ public:
 	class UParticleSystem* bulletMarksParticle;
 	UPROPERTY(EditAnywhere, Category="Particle")
 	class UParticleSystem* fireParticle;
+	UPROPERTY(EditAnywhere, Category="Niagara")
+	class UNiagaraSystem* BulletTrailSystem;
 };

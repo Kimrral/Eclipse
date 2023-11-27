@@ -13,8 +13,5 @@ UCLASS()
 class ECLIPSE_API UPlayerAnim : public UAnimInstance
 {
 	GENERATED_BODY()
-
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool isZoomingA;
+	
 };

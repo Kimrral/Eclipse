@@ -313,6 +313,7 @@ void APlayerCharacter::Fire()
 			ActorsToIgnore.Add(this); // LineTrace에서 제외할 대상
 			FHitResult rifleHitResult;
 			auto particleTrans = rifleComp->GetSocketTransform(FName("RifleFirePosition"));
+			particleTrans.SetScale3D(FVector(0.7));
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), fireParticle, particleTrans);
 			bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),startLoc, EndLoc, ObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, rifleHitResult, true);
 			if(bHit)

@@ -13,6 +13,9 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -86,6 +89,8 @@ void APlayerCharacter::BeginPlay()
 	weaponArray.Add(bUsingSniper); //1
 
 	animInstance=Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+
+	curRifleAmmo=30;
 }
 
 // Called every frame
@@ -151,6 +156,9 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		//Change Weapon
 		EnhancedInputComponent->BindAction(ChangeWeaponAction, ETriggerEvent::Triggered, this, &APlayerCharacter::ChangeWeapon);
 
+		//Fire
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Fire);
+
 	}
 }
 
@@ -214,6 +222,7 @@ void APlayerCharacter::ZoomRelease()
 	CameraBoom->TargetArmLength=200.0f;
 }
 
+
 void APlayerCharacter::Crouching()
 {
 }
@@ -265,4 +274,81 @@ void APlayerCharacter::ChangeWeapon()
 	}
 }
 
+
+
+void APlayerCharacter::Fire()
+{
+	if(!CanShoot)
+	{
+		return;
+	}
+	// 라이플을 들고 있으면서 사격 가능한 상태라면
+	if(weaponArray[0]==true)
+	{
+		if(curRifleAmmo>0)
+		{
+			// Clamp를 통한 탄약 수 차감
+			curRifleAmmo = FMath::Clamp(curRifleAmmo-1, 0, 30);
+			UE_LOG(LogTemp, Warning, TEXT("Cur Rifle Bullet : %d"), curRifleAmmo)
+			FVector startLoc = FollowCamera->GetComponentLocation();
+			FVector EndLoc = startLoc + FollowCamera->GetForwardVector()*10000.0f;
+			TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes; // LineTrace로 히트 가능한 오브젝트 유형들.
+			TEnumAsByte<EObjectTypeQuery> WorldStatic = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic);
+			TEnumAsByte<EObjectTypeQuery> WorldDynamic = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic);
+			TEnumAsByte<EObjectTypeQuery> Pawn = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn);
+			TEnumAsByte<EObjectTypeQuery> PhysicsBody = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody);
+			ObjectTypes.Add(WorldStatic);
+			ObjectTypes.Add(WorldDynamic);
+			ObjectTypes.Add(Pawn);
+			ObjectTypes.Add(PhysicsBody);
+			TArray<AActor*> ActorsToIgnore;
+			ActorsToIgnore.Add(this); // LineTrace에서 제외할 대상
+			FHitResult rifleHitResult;
+			bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),startLoc, EndLoc, ObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, rifleHitResult, true);
+			if(bHit)
+			{
+				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.4, -1.5);
+				auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.5, 0.5);
+				AddControllerPitchInput(randF);
+				AddControllerYawInput(randF2);
+				FActorSpawnParameters param;
+				param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+				auto decalRot = UKismetMathLibrary::Conv_VectorToRotator(rifleHitResult.ImpactNormal);
+				auto decalLoc = rifleHitResult.Location;
+				auto decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
+				GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot);
+				CanShoot=false;
+				FTimerHandle shootEnableHandle;
+				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
+				{
+					CanShoot=true;
+				}), 1/BulletsPerSec, false);
+			}
+			else
+			{
+				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.4, -1.5);
+				auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.5, 0.5);
+				AddControllerPitchInput(randF);
+				AddControllerYawInput(randF2);
+				CanShoot=false;
+				FTimerHandle shootEnableHandle;
+				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
+				{
+					CanShoot=true;
+				}), 1/BulletsPerSec, false);
+			}
+		}
+		else
+		{
+			// 탄약 고갈 사운드 재생
+			UGameplayStatics::PlaySound2D(GetWorld(), BulletEmptySound);
+		}
+	}
+	//  스나이퍼를 들고 있는 상태라면
+	else if(weaponArray[1]==true)
+	{
+		
+	}
+}
 

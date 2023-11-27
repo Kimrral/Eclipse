@@ -52,6 +52,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAction;
 
+	/** Fire Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* FireAction;
+
 	/** Zoom Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* ZoomAction;
@@ -75,12 +79,15 @@ public:
 	/** Called for zooming input */
 	void ZoomRelease();
 
+	/** Called for fire input */
+	void Fire();
+	
 	/** Called for zooming input */
 	void Crouching();
 
 	/** Called for change weapon input */
-	void ChangeWeapon();
-
+	void ChangeWeapon();	
+	
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
@@ -127,8 +134,18 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
 	class UAnimMontage* zoomingMontage;
-	
 
+	UPROPERTY()
+	int curRifleAmmo;
+
+	UPROPERTY()
+	int curSniperAmmo;
+
+	UPROPERTY()
+	int maxRifleAmmo;
+
+	UPROPERTY()
+	int maxSniperAmmo;
 
 	UPROPERTY()
 	float zoomTriggeredTime;
@@ -141,4 +158,29 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool isCursorOnSniper;
+
+	UPROPERTY()
+	bool isRifleShootable;
+
+	UPROPERTY()
+	bool CanShoot = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float BulletsPerSec = 11.0f;
+
+	//Sounds
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* BulletEmptySound;
+
+	//Particles
+	UPROPERTY(EditAnywhere, Category="Factory")
+	TSubclassOf<class AActor> ShotDecalFactory;
+	UPROPERTY(EditAnywhere, Category="Factory")
+	TSubclassOf<class AActor> BulletShellFactory;
+	UPROPERTY(EditAnywhere, Category="Particle")
+	class UParticleSystem* bloodParticle;
+	UPROPERTY(EditAnywhere, Category="Particle")
+	class UParticleSystem* bulletMarksParticle;
+	UPROPERTY(EditAnywhere, Category="Particle")
+	class UParticleSystem* fireParticle;
 };

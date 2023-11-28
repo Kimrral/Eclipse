@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "RifleActor.h"
+#include "Components/TimelineComponent.h"
 #include "PlayerCharacter.generated.h"
 
 UCLASS()
@@ -85,6 +86,7 @@ public:
 
 	/** Called for fire input */
 	void Fire();
+	void FireRelease();
 	
 	/** Called for zooming input */
 	void Crouching();
@@ -111,14 +113,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
 	class UStaticMeshComponent* rocketLauncher;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
-	class UCameraComponent* rifleZoomCam;
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
+	//class UCameraComponent* rifleZoomCam;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
 	TSubclassOf<class ARifleActor> rifleFactory;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
 	TSubclassOf<class ASniperActor> sniperFactory;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* RifleBulletShellDropSound;
 
 	UPROPERTY()
 	class ARifleActor* rifleActor;
@@ -146,6 +151,9 @@ public:
 
 	UPROPERTY()
 	int curSniperAmmo;
+
+	UPROPERTY()
+	bool EmptySoundBoolean = false;
 
 	UPROPERTY()
 	int maxRifleAmmo;
@@ -194,4 +202,13 @@ public:
 	class UParticleSystem* fireParticle;
 	UPROPERTY(EditAnywhere, Category="Niagara")
 	class UNiagaraSystem* BulletTrailSystem;
+
+	UPROPERTY(EditAnywhere)  // Timeline 생성
+	FTimeline Timeline;					
+
+	UPROPERTY(EditAnywhere)  // Timeline 커브
+	UCurveFloat* CurveFloat;  
+
+	UFUNCTION()  // Bind function
+	void SetZoomValue(float Value);
 };

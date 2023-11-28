@@ -64,8 +64,8 @@ APlayerCharacter::APlayerCharacter()
 	rifleComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("rifleComp"));
 	rifleComp->SetupAttachment(GetMesh(), FName("hand_r"));
 
-	rifleZoomCam=CreateDefaultSubobject<UCameraComponent>(TEXT("rifleZoomCam"));
-	rifleZoomCam->SetupAttachment(rifleComp);
+	//rifleZoomCam=CreateDefaultSubobject<UCameraComponent>(TEXT("rifleZoomCam"));
+	//rifleZoomCam->SetupAttachment(rifleComp);
 
 
 }
@@ -92,6 +92,14 @@ void APlayerCharacter::BeginPlay()
 	animInstance=Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 
 	curRifleAmmo=30;
+
+	// Timeline Binding
+	if (CurveFloat)
+	{
+		FOnTimelineFloat TimelineProgress;
+		TimelineProgress.BindDynamic(this, &APlayerCharacter::SetZoomValue);
+		Timeline.AddInterpFloat(CurveFloat, TimelineProgress);
+	}
 }
 
 // Called every frame
@@ -101,7 +109,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 
 	FHitResult actorHitResult;
 	FVector StartLoc = FollowCamera->GetComponentLocation();
-	FVector EndLoc = StartLoc+FollowCamera->GetForwardVector()*400.0f;
+	FVector EndLoc = StartLoc+FollowCamera->GetForwardVector()*500.0f;
 	bool bHit = GetWorld()->LineTraceSingleByChannel(actorHitResult, StartLoc, EndLoc, ECC_Visibility);
 	if(bHit)
 	{
@@ -110,12 +118,12 @@ void APlayerCharacter::Tick(float DeltaTime)
 		if(rifleActor)
 		{
 			isCursorOnRifle=true;
-			UE_LOG(LogTemp, Warning, TEXT("Rifle Actor"))
+			rifleActor->weaponMesh->SetRenderCustomDepth(true);
 		}
 		if(sniperActor)
 		{
 			isCursorOnSniper=true;
-			UE_LOG(LogTemp, Warning, TEXT("Sniper Actor"))
+			sniperActor->weaponMesh->SetRenderCustomDepth(true);
 		}
 		else
 		{
@@ -125,6 +133,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 	}
 
 
+	Timeline.TickTimeline(DeltaTime);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -148,7 +157,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Look);
 
 		//Zooming
-		EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Zoom);
+		EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Started, this, &APlayerCharacter::Zoom);
 		EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Completed, this, &APlayerCharacter::ZoomRelease);
 
 		//Crouching
@@ -159,6 +168,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 		//Fire
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Fire);
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &APlayerCharacter::FireRelease);
 
 		//Reload
 		EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Reload);
@@ -210,16 +220,17 @@ void APlayerCharacter::Zoom()
 	{
 		StopAnimMontage();
 	}
-	PlayAnimMontage(zoomingMontage);
+	PlayAnimMontage(zoomingMontage, 1, FName("Zooming"));
 	isZooming=true;
-	CameraBoom->TargetArmLength=130.0f;
+	Timeline.PlayFromStart();
+	
 }
 
 void APlayerCharacter::ZoomRelease()
 {
 	StopAnimMontage();
 	isZooming=false;
-	CameraBoom->TargetArmLength=200.0f;
+	Timeline.ReverseFromEnd();
 }
 
 
@@ -283,6 +294,12 @@ void APlayerCharacter::Reload()
 	}
 }
 
+void APlayerCharacter::SetZoomValue(float Value)
+{
+	auto lerp=UKismetMathLibrary::Lerp(200,130,Value);
+	CameraBoom->TargetArmLength=lerp;
+}
+
 
 void APlayerCharacter::Fire()
 {
@@ -315,6 +332,13 @@ void APlayerCharacter::Fire()
 			auto particleTrans = rifleComp->GetSocketTransform(FName("RifleFirePosition"));
 			particleTrans.SetScale3D(FVector(0.7));
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), fireParticle, particleTrans);
+			FActorSpawnParameters param;
+			param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+			auto spawnTrans = rifleComp->GetSocketTransform(FName("BulletShell"));
+			auto bulletShell = GetWorld()->SpawnActor<AActor>(BulletShellFactory, spawnTrans);
+			bulletShell->SetLifeSpan(5.0f);
+			auto bulSoundLoc = GetActorLocation()*FVector(0, 0, -80);
+			UGameplayStatics::SpawnSoundAtLocation(GetWorld(), RifleBulletShellDropSound, bulSoundLoc, FRotator::ZeroRotator, 0.4, 1, 0);
 			bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),startLoc, EndLoc, ObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, rifleHitResult, true);
 			if(bHit)
 			{
@@ -322,8 +346,8 @@ void APlayerCharacter::Fire()
 				auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.5, 0.5);
 				AddControllerPitchInput(randF);
 				AddControllerYawInput(randF2);
-				FActorSpawnParameters param;
-				param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+				FActorSpawnParameters params;
+				params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 				auto decalRot = UKismetMathLibrary::Conv_VectorToRotator(rifleHitResult.ImpactNormal);
 				auto decalLoc = rifleHitResult.Location;
 				auto decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
@@ -366,8 +390,12 @@ void APlayerCharacter::Fire()
 		}
 		else
 		{
-			// 탄약 고갈 사운드 재생
-			UGameplayStatics::PlaySound2D(GetWorld(), BulletEmptySound);
+			if(EmptySoundBoolean==false)
+			{
+				EmptySoundBoolean=true;
+				// 탄약 고갈 사운드 재생
+				UGameplayStatics::PlaySound2D(GetWorld(), BulletEmptySound);
+			}
 		}
 	}
 	//  스나이퍼를 들고 있는 상태라면
@@ -375,5 +403,10 @@ void APlayerCharacter::Fire()
 	{
 		
 	}
+}
+
+void APlayerCharacter::FireRelease()
+{
+	EmptySoundBoolean=false;
 }
 

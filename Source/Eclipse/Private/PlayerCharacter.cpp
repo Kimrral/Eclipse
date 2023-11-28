@@ -12,6 +12,9 @@
 #include "NiagaraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "NiagaraFunctionLibrary.h"
+#include "PistolActor.h"
+#include "Blueprint/UserWidget.h"
+#include "Components/BoxComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -64,9 +67,11 @@ APlayerCharacter::APlayerCharacter()
 	rifleComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("rifleComp"));
 	rifleComp->SetupAttachment(GetMesh(), FName("hand_r"));
 
+	pistolComp=CreateDefaultSubobject<UStaticMeshComponent>(TEXT("pistolComp"));
+	pistolComp->SetupAttachment(GetMesh(), FName("hand_l"));
+
 	//rifleZoomCam=CreateDefaultSubobject<UCameraComponent>(TEXT("rifleZoomCam"));
 	//rifleZoomCam->SetupAttachment(rifleComp);
-
 
 }
 
@@ -86,12 +91,16 @@ void APlayerCharacter::BeginPlay()
 
 	bUsingRifle=true;
 	bUsingSniper=false;
+	bUsingPistol=false;
 	weaponArray.Add(bUsingRifle); //0
 	weaponArray.Add(bUsingSniper); //1
+	weaponArray.Add(bUsingPistol); //2
 
 	animInstance=Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 
 	curRifleAmmo=30;
+	curPistolAmmo=8;
+	curSniperAmmo=5;
 
 	// Timeline Binding
 	if (CurveFloat)
@@ -100,6 +109,13 @@ void APlayerCharacter::BeginPlay()
 		TimelineProgress.BindDynamic(this, &APlayerCharacter::SetZoomValue);
 		Timeline.AddInterpFloat(CurveFloat, TimelineProgress);
 	}
+
+	rifleComp->SetVisibility(true);
+	sniperComp->SetVisibility(false);
+	pistolComp->SetVisibility(false);
+
+	crosshairUI = CreateWidget<UUserWidget>(GetWorld(), crosshairFactory);
+	crosshairUI->AddToViewport();
 }
 
 // Called every frame
@@ -115,20 +131,28 @@ void APlayerCharacter::Tick(float DeltaTime)
 	{
 		rifleActor = Cast<ARifleActor>(actorHitResult.GetActor());
 		sniperActor=Cast<ASniperActor>(actorHitResult.GetActor());
+		pistolActor=Cast<APistolActor>(actorHitResult.GetActor());
 		if(rifleActor)
 		{
 			isCursorOnRifle=true;
 			rifleActor->weaponMesh->SetRenderCustomDepth(true);
 		}
-		if(sniperActor)
+		else if(sniperActor)
 		{
 			isCursorOnSniper=true;
 			sniperActor->weaponMesh->SetRenderCustomDepth(true);
+		}
+		else if(pistolActor)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("pistol"))
+			pistolActor->weaponMesh->SetRenderCustomDepth(true);
 		}
 		else
 		{
 			isCursorOnRifle=false;
 			isCursorOnSniper=false;
+			//rifleActor->weaponMesh->SetRenderCustomDepth(false);
+			//sniperActor->weaponMesh->SetRenderCustomDepth(false);
 		}
 	}
 
@@ -216,13 +240,13 @@ void APlayerCharacter::Look(const FInputActionValue& Value)
 void APlayerCharacter::Zoom()
 {
 	bool animPlay = animInstance->IsAnyMontagePlaying();
-	if(animPlay)
+	if(!animPlay)
 	{
-		StopAnimMontage();
+		PlayAnimMontage(zoomingMontage, 1, FName("Zooming"));
+		isZooming=true;
+		Timeline.PlayFromStart();
 	}
-	PlayAnimMontage(zoomingMontage, 1, FName("Zooming"));
-	isZooming=true;
-	Timeline.PlayFromStart();
+
 	
 }
 
@@ -248,38 +272,97 @@ void APlayerCharacter::ChangeWeapon()
 	{
 		rifleActor = Cast<ARifleActor>(actorHitResult.GetActor());
 		sniperActor=Cast<ASniperActor>(actorHitResult.GetActor());
+		pistolActor=Cast<APistolActor>(actorHitResult.GetActor());
+		// 라이플로 교체
 		if(rifleActor)
 		{
-			// is not using rifle
+			// 라이플을 사용하지 않을 때만 교체
 			if(weaponArray[0]==false)
 			{
 				rifleActor->Destroy();
 				FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
 				FRotator spawnRotation = FRotator::ZeroRotator;
 				FActorSpawnParameters param;
-				param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;		
-				sniperActor = GetWorld()->SpawnActor<ASniperActor>(sniperFactory, spawnPosition, spawnRotation);
+				param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+				// 스나이퍼를 사용중일 때
+				if(weaponArray[1]==true)
+				{
+					sniperActor = GetWorld()->SpawnActor<ASniperActor>(sniperFactory, spawnPosition, spawnRotation);
+				}
+				// 권총을 사용중일 때
+				else if(weaponArray[2]==true)
+				{
+					pistolActor = GetWorld()->SpawnActor<APistolActor>(pistolFactory, spawnPosition, spawnRotation);
+				}
+
+				// Visibility 설정
 				rifleComp->SetVisibility(true);
 				sniperComp->SetVisibility(false);
+				pistolComp->SetVisibility(false);
+
+				// 무기 배열 설정
 				weaponArray[0]=true;
 				weaponArray[1]=false;
+				weaponArray[2]=false;
 			}
 		}
+		// 스나이퍼로 교체
 		else if(sniperActor)
 		{
-			// is not using sniper
+			// 스나이퍼를 사용하지 않을 때만 교체
 			if(weaponArray[1]==false)
 			{	
 				sniperActor->Destroy();
 				FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
 				FRotator spawnRotation = FRotator::ZeroRotator;
 				FActorSpawnParameters param;
-				param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;		
-				rifleActor = GetWorld()->SpawnActor<ARifleActor>(rifleFactory, spawnPosition, spawnRotation);
+				param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+				
+				if(weaponArray[0]==true)
+				{
+					rifleActor = GetWorld()->SpawnActor<ARifleActor>(rifleFactory, spawnPosition, spawnRotation);
+				}
+				else if(weaponArray[2]==true)
+				{
+					pistolActor = GetWorld()->SpawnActor<APistolActor>(pistolFactory, spawnPosition, spawnRotation);
+				}
+				
 				rifleComp->SetVisibility(false);
 				sniperComp->SetVisibility(true);
+				pistolComp->SetVisibility(false);
+
 				weaponArray[0]=false;
-				weaponArray[1]=true;			
+				weaponArray[1]=true;
+				weaponArray[2]=false;
+			}
+			// 권총으로 교체
+			else if(pistolActor)
+			{
+				// 권총을 사용하지 않을 때만 교체
+				if(weaponArray[2]==false)
+				{
+					pistolActor->Destroy();
+					FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
+					FRotator spawnRotation = FRotator::ZeroRotator;
+					FActorSpawnParameters param;
+					param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;		
+					if(weaponArray[0]==true)
+					{
+						rifleActor = GetWorld()->SpawnActor<ARifleActor>(rifleFactory, spawnPosition, spawnRotation);
+					}
+					else if(weaponArray[1]==true)
+					{
+						sniperActor = GetWorld()->SpawnActor<ASniperActor>(sniperFactory, spawnPosition, spawnRotation);
+					}
+					
+					rifleComp->SetVisibility(false);
+					sniperComp->SetVisibility(false);
+					pistolComp->SetVisibility(true);
+					
+					weaponArray[0]=false;
+					weaponArray[1]=false;
+					weaponArray[2]=true;
+				}
 			}
 		}
 	}
@@ -296,7 +379,7 @@ void APlayerCharacter::Reload()
 
 void APlayerCharacter::SetZoomValue(float Value)
 {
-	auto lerp=UKismetMathLibrary::Lerp(200,130,Value);
+	auto lerp=UKismetMathLibrary::Lerp(200,120,Value);
 	CameraBoom->TargetArmLength=lerp;
 }
 

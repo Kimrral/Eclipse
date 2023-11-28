@@ -108,19 +108,22 @@ public:
 	class UStaticMeshComponent* rifleComp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
+	class UStaticMeshComponent* pistolComp;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
 	class UStaticMeshComponent* grenade;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
 	class UStaticMeshComponent* rocketLauncher;
-
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
-	//class UCameraComponent* rifleZoomCam;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
 	TSubclassOf<class ARifleActor> rifleFactory;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
 	TSubclassOf<class ASniperActor> sniperFactory;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
+	TSubclassOf<class APistolActor> pistolFactory;
 
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* RifleBulletShellDropSound;
@@ -132,13 +135,26 @@ public:
 	class ASniperActor* sniperActor;
 
 	UPROPERTY()
+	class APistolActor* pistolActor;
+
+	UPROPERTY(EditAnywhere)		
+	TSubclassOf<class UUserWidget> crosshairFactory;
+
+	UPROPERTY(EditAnywhere)
 	TArray<bool> weaponArray;
+
+	UPROPERTY(BlueprintReadOnly)
+	class UUserWidget* crosshairUI;
+
 
 	UPROPERTY()
 	bool bUsingRifle;
 	
 	UPROPERTY()
 	bool bUsingSniper;
+
+	UPROPERTY()
+	bool bUsingPistol;
 
 	UPROPERTY()
 	class UPlayerAnim* animInstance;
@@ -153,6 +169,9 @@ public:
 	int curSniperAmmo;
 
 	UPROPERTY()
+	int curPistolAmmo;
+
+	UPROPERTY()
 	bool EmptySoundBoolean = false;
 
 	UPROPERTY()
@@ -160,6 +179,9 @@ public:
 
 	UPROPERTY()
 	int maxSniperAmmo;
+
+	UPROPERTY()
+	int maxPistolAmmo;
 
 	UPROPERTY()
 	float zoomTriggeredTime;

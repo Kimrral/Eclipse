@@ -73,6 +73,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* ReloadAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* LookAroundAction;
+
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
 
@@ -95,6 +98,9 @@ public:
 	void ChangeWeapon();
 
 	void Reload();
+
+	void OnActionLookAroundPressed();
+	void OnActionLookAroundReleased();
 	
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
@@ -140,11 +146,17 @@ public:
 	UPROPERTY(EditAnywhere)		
 	TSubclassOf<class UUserWidget> crosshairFactory;
 
+	UPROPERTY(EditAnywhere)		
+	TSubclassOf<class UUserWidget> infoWidgetFactory;
+
 	UPROPERTY(EditAnywhere)
 	TArray<bool> weaponArray;
 
 	UPROPERTY(BlueprintReadOnly)
 	class UUserWidget* crosshairUI;
+
+	UPROPERTY(BlueprintReadOnly)
+	class UUserWidget* infoWidgetUI;
 
 
 	UPROPERTY()
@@ -195,6 +207,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool isCursorOnSniper;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool isCursorOnPistol;
+
 	UPROPERTY()
 	bool isRifleShootable;
 
@@ -206,6 +221,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float BulletsPerSecPistol = 3.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float BulletsPerSecSniper = 1.8f;
 
 	//Sounds
 	UPROPERTY(EditAnywhere, Category="Sounds")

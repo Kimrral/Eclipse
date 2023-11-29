@@ -25,4 +25,7 @@ public:
 
 	UFUNCTION()
 	void AnimNotify_ReloadEnd();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bPistol = false;
 };

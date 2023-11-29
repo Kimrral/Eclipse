@@ -292,6 +292,11 @@ void APlayerCharacter::ChangeWeapon()
 				// 권총을 사용중일 때
 				else if(weaponArray[2]==true)
 				{
+					auto animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+					if(animInst)
+					{
+						animInst->bPistol=false;
+					}
 					pistolActor = GetWorld()->SpawnActor<APistolActor>(pistolFactory, spawnPosition, spawnRotation);
 				}
 
@@ -324,6 +329,11 @@ void APlayerCharacter::ChangeWeapon()
 				}
 				else if(weaponArray[2]==true)
 				{
+					auto animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+					if(animInst)
+					{
+						animInst->bPistol=false;
+					}
 					pistolActor = GetWorld()->SpawnActor<APistolActor>(pistolFactory, spawnPosition, spawnRotation);
 				}
 				
@@ -335,34 +345,39 @@ void APlayerCharacter::ChangeWeapon()
 				weaponArray[1]=true;
 				weaponArray[2]=false;
 			}
-			// 권총으로 교체
-			else if(pistolActor)
+		}
+		// 권총으로 교체
+		else if(pistolActor)
+		{
+			// 권총을 사용하지 않을 때만 교체
+			if(weaponArray[2]==false)
 			{
-				// 권총을 사용하지 않을 때만 교체
-				if(weaponArray[2]==false)
+				auto animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+				if(animInst)
 				{
-					pistolActor->Destroy();
-					FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
-					FRotator spawnRotation = FRotator::ZeroRotator;
-					FActorSpawnParameters param;
-					param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;		
-					if(weaponArray[0]==true)
-					{
-						rifleActor = GetWorld()->SpawnActor<ARifleActor>(rifleFactory, spawnPosition, spawnRotation);
-					}
-					else if(weaponArray[1]==true)
-					{
-						sniperActor = GetWorld()->SpawnActor<ASniperActor>(sniperFactory, spawnPosition, spawnRotation);
-					}
-					
-					rifleComp->SetVisibility(false);
-					sniperComp->SetVisibility(false);
-					pistolComp->SetVisibility(true);
-					
-					weaponArray[0]=false;
-					weaponArray[1]=false;
-					weaponArray[2]=true;
+					animInst->bPistol=true;
 				}
+				pistolActor->Destroy();
+				FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
+				FRotator spawnRotation = FRotator::ZeroRotator;
+				FActorSpawnParameters param;
+				param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;		
+				if(weaponArray[0]==true)
+				{
+					rifleActor = GetWorld()->SpawnActor<ARifleActor>(rifleFactory, spawnPosition, spawnRotation);
+				}
+				else if(weaponArray[1]==true)
+				{
+					sniperActor = GetWorld()->SpawnActor<ASniperActor>(sniperFactory, spawnPosition, spawnRotation);
+				}
+					
+				rifleComp->SetVisibility(false);
+				sniperComp->SetVisibility(false);
+				pistolComp->SetVisibility(true);
+					
+				weaponArray[0]=false;
+				weaponArray[1]=false;
+				weaponArray[2]=true;
 			}
 		}
 	}

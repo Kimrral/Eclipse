@@ -12,6 +12,11 @@ AWeaponActor::AWeaponActor()
 	weaponMesh=CreateDefaultSubobject<UStaticMeshComponent>(TEXT("weaponMesh"));
 	SetRootComponent(weaponMesh);
 
+	weaponMesh->SetGenerateOverlapEvents(true);
+
+	weaponMesh->OnComponentBeginOverlap.AddDynamic(this, &AWeaponActor::OnOverlap);
+	weaponMesh->OnComponentEndOverlap.AddDynamic(this, &AWeaponActor::EndOverlap);
+
 }
 
 // Called when the game starts or when spawned
@@ -20,7 +25,6 @@ void AWeaponActor::BeginPlay()
 	Super::BeginPlay();
 	
 	weaponMesh->SetRenderCustomDepth(false);
-
 	
 }
 
@@ -29,5 +33,13 @@ void AWeaponActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void AWeaponActor::OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+}
+
+void AWeaponActor::EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
 }
 

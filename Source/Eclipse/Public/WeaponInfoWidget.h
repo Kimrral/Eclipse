@@ -16,6 +16,7 @@ class ECLIPSE_API UWeaponInfoWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	
+public:	
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime);
 
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))

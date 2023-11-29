@@ -13,6 +13,7 @@
 #include "Components/CapsuleComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "PistolActor.h"
+#include "WeaponInfoWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -114,8 +115,7 @@ void APlayerCharacter::BeginPlay()
 	crosshairUI = CreateWidget<UUserWidget>(GetWorld(), crosshairFactory);
 	crosshairUI->AddToViewport();
 
-	infoWidgetUI = CreateWidget<UUserWidget>(GetWorld(), infoWidgetFactory);
-	infoWidgetUI->AddToViewport();
+	infoWidgetUI = CreateWidget<UWeaponInfoWidget>(GetWorld(), infoWidgetFactory);
 	
 }
 
@@ -127,34 +127,63 @@ void APlayerCharacter::Tick(float DeltaTime)
 	FHitResult actorHitResult;
 	FVector StartLoc = FollowCamera->GetComponentLocation();
 	FVector EndLoc = StartLoc+FollowCamera->GetForwardVector()*500.0f;
-	bool bHit = GetWorld()->LineTraceSingleByChannel(actorHitResult, StartLoc, EndLoc, ECC_Visibility);
-	if(bHit)
+	GetWorld()->LineTraceSingleByChannel(actorHitResult, StartLoc, EndLoc, ECC_Visibility);
+	if(actorHitResult.bBlockingHit)
 	{
 		rifleActor = Cast<ARifleActor>(actorHitResult.GetActor());
 		sniperActor=Cast<ASniperActor>(actorHitResult.GetActor());
 		pistolActor=Cast<APistolActor>(actorHitResult.GetActor());
 		if(rifleActor)
 		{
-			isCursorOnRifle=true;
-			rifleActor->weaponMesh->SetRenderCustomDepth(true);
+			if(TickOverlapBoolean==false)
+			{
+				TickOverlapBoolean=true;
+				isCursorOnRifle=true;
+				rifleActor->weaponMesh->SetRenderCustomDepth(true);
+				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(0);
+				infoWidgetUI->AddToViewport();
+
+			}
 		}
 		else if(sniperActor)
 		{
-			isCursorOnSniper=true;
-			sniperActor->weaponMesh->SetRenderCustomDepth(true);
+			if(TickOverlapBoolean==false)
+			{
+				TickOverlapBoolean=true;
+				isCursorOnSniper=true;
+				sniperActor->weaponMesh->SetRenderCustomDepth(true);
+				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(1);
+				infoWidgetUI->AddToViewport();
+
+			}
 		}
 		else if(pistolActor)
 		{
-			isCursorOnPistol=true;
-			pistolActor->weaponMesh->SetRenderCustomDepth(true);
+			if(TickOverlapBoolean==false)
+			{
+				TickOverlapBoolean=true;
+				isCursorOnPistol=true;
+				pistolActor->weaponMesh->SetRenderCustomDepth(true);
+				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(2);
+				infoWidgetUI->AddToViewport();
+
+			}
 		}
 		else
 		{
-			isCursorOnRifle=false;
-			isCursorOnSniper=false;
-			isCursorOnPistol=false;
-
+			if(TickOverlapBoolean==true)
+			{
+				TickOverlapBoolean=false;
+				infoWidgetUI->RemoveFromParent();
+				UE_LOG(LogTemp, Warning, TEXT("End Overlap"))
+			}
 		}
+	}
+	else
+	{
+		isCursorOnRifle=false;
+		isCursorOnSniper=false;
+		isCursorOnPistol=false;
 	}
 
 
@@ -310,7 +339,7 @@ void APlayerCharacter::ChangeWeapon()
 {
 	FHitResult actorHitResult;
 	FVector StartLoc = FollowCamera->GetComponentLocation();
-	FVector EndLoc = StartLoc+FollowCamera->GetForwardVector()*400.0f;
+	FVector EndLoc = StartLoc+FollowCamera->GetForwardVector()*500.0f;
 	bool bHit = GetWorld()->LineTraceSingleByChannel(actorHitResult, StartLoc, EndLoc, ECC_Visibility);
 	if(bHit)
 	{

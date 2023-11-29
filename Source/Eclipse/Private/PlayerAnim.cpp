@@ -21,7 +21,17 @@ void UPlayerAnim::AnimNotify_ReloadStart()
 
 void UPlayerAnim::AnimNotify_ReloadEnd()
 {
-	me->curRifleAmmo=30;
+	if(me->weaponArray[0]==true)
+	{
+		me->curRifleAmmo=30;
+	}
+	else if(me->weaponArray[1]==true)
+	{
+		me->curSniperAmmo=5;
+	}
+	else if(me->weaponArray[2]==true)
+	{
+		me->curPistolAmmo=8;
+	}
 	me->CanShoot=true;
-
 }

@@ -147,7 +147,7 @@ public:
 	TSubclassOf<class UUserWidget> crosshairFactory;
 
 	UPROPERTY(EditAnywhere)		
-	TSubclassOf<class UUserWidget> infoWidgetFactory;
+	TSubclassOf<class UWeaponInfoWidget> infoWidgetFactory;
 
 	UPROPERTY(EditAnywhere)
 	TArray<bool> weaponArray;
@@ -156,7 +156,7 @@ public:
 	class UUserWidget* crosshairUI;
 
 	UPROPERTY(BlueprintReadOnly)
-	class UUserWidget* infoWidgetUI;
+	class UWeaponInfoWidget* infoWidgetUI;
 
 
 	UPROPERTY()
@@ -210,6 +210,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool isCursorOnPistol;
 
+	UPROPERTY()
+	bool TickOverlapBoolean=false;
+	
 	UPROPERTY()
 	bool isRifleShootable;
 

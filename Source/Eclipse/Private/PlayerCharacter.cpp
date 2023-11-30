@@ -15,7 +15,6 @@
 #include "PistolActor.h"
 #include "WeaponInfoWidget.h"
 #include "Blueprint/UserWidget.h"
-#include "Components/SphereComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -117,6 +116,9 @@ void APlayerCharacter::BeginPlay()
 	crosshairUI->AddToViewport();
 
 	infoWidgetUI = CreateWidget<UWeaponInfoWidget>(GetWorld(), infoWidgetFactory);
+
+	sniperScopeUI=CreateWidget<UUserWidget>(GetWorld(), sniperScopeFactory);
+
 	
 }
 
@@ -225,7 +227,7 @@ void APlayerCharacter::Zoom()
 	{
 		crosshairUI->RemoveFromParent();
 		auto cameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0));
-		cameraManager->StartCameraFade(1.0, 0.1, 2.0, FColor::Black, false, true);
+		cameraManager->StartCameraFade(1.0, 0.1, 3.0, FColor::Black, false, true);
 		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 		if(animInst)
 		{
@@ -236,6 +238,7 @@ void APlayerCharacter::Zoom()
 		}
 		// 카메라 줌 러프 타임라인 재생
 		Timeline.PlayFromStart();
+		sniperScopeUI->AddToViewport();
 	}
 	else
 	{
@@ -264,6 +267,7 @@ void APlayerCharacter::ZoomRelease()
 	if(weaponArray[1]==true)
 	{
 		StopAnimMontage();
+		sniperScopeUI->RemoveFromParent();
 		crosshairUI->AddToViewport();
 		Timeline.ReverseFromEnd();
 	}
@@ -568,10 +572,20 @@ void APlayerCharacter::Reload()
 
 void APlayerCharacter::SetZoomValue(float Value)
 {
-	// 타임라인 Float Curve 에 따른 Lerp
-	auto lerp=UKismetMathLibrary::Lerp(200,120,Value);
-	// 해당 Lerp값 Arm Length에 적용
-	CameraBoom->TargetArmLength=lerp;
+	if(weaponArray[1]==true)
+	{
+		// 타임라인 Float Curve 에 따른 Lerp
+		auto lerp=UKismetMathLibrary::Lerp(200,0,Value);
+		// 해당 Lerp값 Arm Length에 적용
+		CameraBoom->TargetArmLength=lerp;
+	}
+	else
+	{
+		// 타임라인 Float Curve 에 따른 Lerp
+		auto lerp=UKismetMathLibrary::Lerp(200,120,Value);
+		// 해당 Lerp값 Arm Length에 적용
+		CameraBoom->TargetArmLength=lerp;
+	}
 }
 
 
@@ -719,14 +733,29 @@ void APlayerCharacter::Fire()
 				auto decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
 				GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
 				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot+FRotator(-90, 0, 0), FVector(0.5f));
-				auto fireSocketLoc = sniperComp->GetSocketTransform(FName("SniperFirePosition")).GetLocation();
-				// 탄 궤적 나이아가라 시스템 스폰
-				UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, sniperHitResult.Location, FRotator::ZeroRotator,FVector(1), true, true, ENCPoolMethod::AutoRelease);
-				if(niagara)
+				if(isZooming)
 				{
-					// 나이아가라 파라미터 벡터 위치 변수 할당
-					niagara->SetVectorParameter(FName("EndPoint"), fireSocketLoc);
+					auto fireSocketLoc = FollowCamera->GetComponentLocation()+FollowCamera->GetUpVector()*-50.0f;
+					// 탄 궤적 나이아가라 시스템 스폰
+					UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, sniperHitResult.Location, FRotator::ZeroRotator,FVector(1), true, true, ENCPoolMethod::AutoRelease);
+					if(niagara)
+					{
+						// 나이아가라 파라미터 벡터 위치 변수 할당
+						niagara->SetVectorParameter(FName("EndPoint"), fireSocketLoc);
+					}
 				}
+				else
+				{
+					auto fireSocketLoc = sniperComp->GetSocketTransform(FName("SniperFirePosition")).GetLocation();
+					// 탄 궤적 나이아가라 시스템 스폰
+					UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, sniperHitResult.Location, FRotator::ZeroRotator,FVector(1), true, true, ENCPoolMethod::AutoRelease);
+					if(niagara)
+					{
+						// 나이아가라 파라미터 벡터 위치 변수 할당
+						niagara->SetVectorParameter(FName("EndPoint"), fireSocketLoc);
+					}
+				}
+
 				CanShoot=false;
 				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
 				{
@@ -742,11 +771,23 @@ void APlayerCharacter::Fire()
 				AddControllerYawInput(randF2);
 				FVector niagaraSpawnLoc = FollowCamera->K2_GetComponentLocation();
 				FVector ForwardLoc = niagaraSpawnLoc + FollowCamera->GetForwardVector()*10000.0f;
-				auto FireLoc = sniperComp->GetSocketTransform(FName("PistolFirePosition")).GetLocation();
-				UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, ForwardLoc, FRotator::ZeroRotator, FVector(1), true, true, ENCPoolMethod::AutoRelease);
-				if(niagara)
+				if(isZooming)
 				{
-					niagara->SetVectorParameter(FName("EndPoint"), FireLoc);
+					auto FireLoc = FollowCamera->GetComponentLocation()+FollowCamera->GetUpVector()*-50.0f;
+					UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, ForwardLoc, FRotator::ZeroRotator, FVector(1), true, true, ENCPoolMethod::AutoRelease);
+					if(niagara)
+					{
+						niagara->SetVectorParameter(FName("EndPoint"), FireLoc);
+					}
+				}
+				else
+				{
+					auto FireLoc = sniperComp->GetSocketTransform(FName("PistolFirePosition")).GetLocation();
+					UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, ForwardLoc, FRotator::ZeroRotator, FVector(1), true, true, ENCPoolMethod::AutoRelease);
+					if(niagara)
+					{
+						niagara->SetVectorParameter(FName("EndPoint"), FireLoc);
+					}
 				}
 				CanShoot=false;				
 				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void

@@ -15,6 +15,7 @@
 #include "PistolActor.h"
 #include "WeaponInfoWidget.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/SphereComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -70,6 +71,10 @@ APlayerCharacter::APlayerCharacter()
 	pistolComp=CreateDefaultSubobject<UStaticMeshComponent>(TEXT("pistolComp"));
 	pistolComp->SetupAttachment(GetMesh(), FName("hand_l"));
 
+	weaponDetectionCollision=CreateDefaultSubobject<USphereComponent>(TEXT("weaponDetectionCollision"));
+	weaponDetectionCollision->SetupAttachment(RootComponent);
+	weaponDetectionCollision->SetGenerateOverlapEvents(true);
+
 
 }
 
@@ -124,70 +129,9 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	FHitResult actorHitResult;
-	FVector StartLoc = FollowCamera->GetComponentLocation();
-	FVector EndLoc = StartLoc+FollowCamera->GetForwardVector()*500.0f;
-	GetWorld()->LineTraceSingleByChannel(actorHitResult, StartLoc, EndLoc, ECC_Visibility);
-	if(actorHitResult.bBlockingHit)
-	{
-		rifleActor = Cast<ARifleActor>(actorHitResult.GetActor());
-		sniperActor=Cast<ASniperActor>(actorHitResult.GetActor());
-		pistolActor=Cast<APistolActor>(actorHitResult.GetActor());
-		if(rifleActor)
-		{
-			if(TickOverlapBoolean==false)
-			{
-				TickOverlapBoolean=true;
-				isCursorOnRifle=true;
-				rifleActor->weaponMesh->SetRenderCustomDepth(true);
-				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(0);
-				infoWidgetUI->AddToViewport();
-
-			}
-		}
-		else if(sniperActor)
-		{
-			if(TickOverlapBoolean==false)
-			{
-				TickOverlapBoolean=true;
-				isCursorOnSniper=true;
-				sniperActor->weaponMesh->SetRenderCustomDepth(true);
-				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(1);
-				infoWidgetUI->AddToViewport();
-
-			}
-		}
-		else if(pistolActor)
-		{
-			if(TickOverlapBoolean==false)
-			{
-				TickOverlapBoolean=true;
-				isCursorOnPistol=true;
-				pistolActor->weaponMesh->SetRenderCustomDepth(true);
-				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(2);
-				infoWidgetUI->AddToViewport();
-
-			}
-		}
-		else
-		{
-			if(TickOverlapBoolean==true)
-			{
-				TickOverlapBoolean=false;
-				infoWidgetUI->RemoveFromParent();
-				UE_LOG(LogTemp, Warning, TEXT("End Overlap"))
-			}
-		}
-	}
-	else
-	{
-		isCursorOnRifle=false;
-		isCursorOnSniper=false;
-		isCursorOnPistol=false;
-	}
-
-
 	Timeline.TickTimeline(DeltaTime);
+	
+	WeaponDetectionLineTrace();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -329,6 +273,99 @@ void APlayerCharacter::OnActionLookAroundPressed()
 void APlayerCharacter::OnActionLookAroundReleased()
 {
 	bUseControllerRotationYaw = true;
+}
+
+
+void APlayerCharacter::WeaponDetectionLineTrace()
+{
+	FHitResult actorHitResult;
+	FVector StartLoc = FollowCamera->GetComponentLocation();
+	FVector EndLoc = StartLoc+FollowCamera->GetForwardVector()*500.0f;
+	bool bHit = GetWorld()->LineTraceSingleByChannel(actorHitResult, StartLoc, EndLoc, ECC_Visibility);
+	if(bHit)
+	{
+		rifleActor = Cast<ARifleActor>(actorHitResult.GetActor());
+		sniperActor=Cast<ASniperActor>(actorHitResult.GetActor());
+		pistolActor=Cast<APistolActor>(actorHitResult.GetActor());
+		if(rifleActor)
+		{
+			if(TickOverlapBoolean==false)
+			{
+				TickOverlapBoolean=true;
+				isCursorOnRifle=true;
+				rifleActor->weaponMesh->SetRenderCustomDepth(true);
+				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(0);
+				infoWidgetUI->AddToViewport();
+			}
+		}
+		else if(sniperActor)
+		{
+			if(TickOverlapBoolean==false)
+			{
+				TickOverlapBoolean=true;
+				isCursorOnSniper=true;
+				sniperActor->weaponMesh->SetRenderCustomDepth(true);
+				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(1);
+				infoWidgetUI->AddToViewport();
+			}
+		}
+		else if(pistolActor)
+		{
+			if(TickOverlapBoolean==false)
+			{
+				TickOverlapBoolean=true;
+				isCursorOnPistol=true;
+				pistolActor->weaponMesh->SetRenderCustomDepth(true);
+				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(2);
+				infoWidgetUI->AddToViewport();
+			}
+		}
+		else
+		{
+			if(TickOverlapBoolean==true)
+			{
+				TickOverlapBoolean=false;
+				infoWidgetUI->RemoveFromParent();
+				// 중심점
+				FVector Center = this->GetActorLocation();
+				// 충돌체크(구충돌)
+				// 충돌한 물체를 기억할 배열
+				TArray<FOverlapResult> HitObj;;
+				FCollisionQueryParams params;
+				params.AddIgnoredActor(this);
+				bool bEndOverlapHit = GetWorld()->OverlapMultiByChannel(HitObj, Center, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(500), params);
+				if(bEndOverlapHit)
+				{
+					int32 rifleArrayNum = 0;
+					int32 sniperArrayNum = 0;
+					int32 pistolArrayNum = 0;
+					for (int i = 0; i < HitObj.Num(); ++i)
+					{
+						rifleActor = Cast<ARifleActor>(HitObj[i].GetActor());
+						sniperActor=Cast<ASniperActor>(HitObj[i].GetActor());
+						pistolActor=Cast<APistolActor>(HitObj[i].GetActor());
+						if(rifleActor)
+						{
+							rifleActor->weaponMesh->SetRenderCustomDepth(false);
+						}
+						else if(sniperActor)
+						{
+							sniperActor->weaponMesh->SetRenderCustomDepth(false);
+						}
+						else if(pistolActor)
+						{
+							pistolActor->weaponMesh->SetRenderCustomDepth(false);
+						}
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+
+	}
+
 }
 
 void APlayerCharacter::Crouching()

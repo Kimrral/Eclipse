@@ -143,6 +143,18 @@ public:
 	UPROPERTY()
 	class APistolActor* pistolActor;
 
+	UPROPERTY()
+	class ARifleActor* OverlappedRifleActor;
+
+	UPROPERTY()
+	class ASniperActor* OverlappedSniperActor;
+
+	UPROPERTY()
+	class APistolActor* OverlappedPistolActor;
+
+	UPROPERTY(EditAnywhere)
+	class USphereComponent* weaponDetectionCollision;
+
 	UPROPERTY(EditAnywhere)		
 	TSubclassOf<class UUserWidget> crosshairFactory;
 
@@ -158,6 +170,8 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	class UWeaponInfoWidget* infoWidgetUI;
 
+	UFUNCTION()
+	void WeaponDetectionLineTrace();
 
 	UPROPERTY()
 	bool bUsingRifle;

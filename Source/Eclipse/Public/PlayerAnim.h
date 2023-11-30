@@ -28,4 +28,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bPistol = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bZooming = false;
+	
 };

@@ -295,6 +295,7 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 				isCursorOnRifle=true;
 				rifleActor->weaponMesh->SetRenderCustomDepth(true);
 				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(0);
+				infoWidgetUI->weaponHoldPercent=0;
 				infoWidgetUI->AddToViewport();
 			}
 		}
@@ -306,6 +307,7 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 				isCursorOnSniper=true;
 				sniperActor->weaponMesh->SetRenderCustomDepth(true);
 				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(1);
+				infoWidgetUI->weaponHoldPercent=0;
 				infoWidgetUI->AddToViewport();
 			}
 		}
@@ -317,6 +319,7 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 				isCursorOnPistol=true;
 				pistolActor->weaponMesh->SetRenderCustomDepth(true);
 				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(2);
+				infoWidgetUI->weaponHoldPercent=0;
 				infoWidgetUI->AddToViewport();
 			}
 		}
@@ -374,128 +377,139 @@ void APlayerCharacter::Crouching()
 
 void APlayerCharacter::ChangeWeapon()
 {
-	FHitResult actorHitResult;
-	FVector StartLoc = FollowCamera->GetComponentLocation();
-	FVector EndLoc = StartLoc+FollowCamera->GetForwardVector()*500.0f;
-	bool bHit = GetWorld()->LineTraceSingleByChannel(actorHitResult, StartLoc, EndLoc, ECC_Visibility);
-	if(bHit)
-	{
-		rifleActor = Cast<ARifleActor>(actorHitResult.GetActor());
-		sniperActor=Cast<ASniperActor>(actorHitResult.GetActor());
-		pistolActor=Cast<APistolActor>(actorHitResult.GetActor());
-		// 라이플로 교체
-		if(rifleActor)
+		FHitResult actorHitResult;
+		FVector StartLoc = FollowCamera->GetComponentLocation();
+		FVector EndLoc = StartLoc+FollowCamera->GetForwardVector()*500.0f;
+		bool bHit = GetWorld()->LineTraceSingleByChannel(actorHitResult, StartLoc, EndLoc, ECC_Visibility);
+		if(bHit)
 		{
-			// 라이플을 사용하지 않을 때만 교체
-			if(weaponArray[0]==false)
+			rifleActor = Cast<ARifleActor>(actorHitResult.GetActor());
+			sniperActor=Cast<ASniperActor>(actorHitResult.GetActor());
+			pistolActor=Cast<APistolActor>(actorHitResult.GetActor());
+			// 라이플로 교체
+			if(rifleActor)
 			{
-				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
-
-				rifleActor->Destroy();
-				FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
-				FRotator spawnRotation = FRotator::ZeroRotator;
-				FActorSpawnParameters param;
-				param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-				// 스나이퍼를 사용중일 때
-				if(weaponArray[1]==true)
+				// 라이플을 사용하지 않을 때만 교체
+				if(weaponArray[0]==false)
 				{
-					sniperActor = GetWorld()->SpawnActor<ASniperActor>(sniperFactory, spawnPosition, spawnRotation);
-				}
-				// 권총을 사용중일 때
-				else if(weaponArray[2]==true)
-				{
-					auto animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-					if(animInst)
+					infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.01, 0, 1);
+					if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 					{
-						animInst->bPistol=false;
+						PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+						rifleActor->Destroy();
+						FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
+						FRotator spawnRotation = FRotator::ZeroRotator;
+						FActorSpawnParameters param;
+						param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+						// 스나이퍼를 사용중일 때
+						if(weaponArray[1]==true)
+						{
+							sniperActor = GetWorld()->SpawnActor<ASniperActor>(sniperFactory, spawnPosition, spawnRotation);
+						}
+						// 권총을 사용중일 때
+						else if(weaponArray[2]==true)
+						{
+							auto animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+							if(animInst)
+							{
+								animInst->bPistol=false;
+							}
+							pistolActor = GetWorld()->SpawnActor<APistolActor>(pistolFactory, spawnPosition, spawnRotation);
+						}
+
+						// Visibility 설정
+						rifleComp->SetVisibility(true);
+						sniperComp->SetVisibility(false);
+						pistolComp->SetVisibility(false);
+
+						// 무기 배열 설정
+						weaponArray[0]=true;
+						weaponArray[1]=false;
+						weaponArray[2]=false;
 					}
-					pistolActor = GetWorld()->SpawnActor<APistolActor>(pistolFactory, spawnPosition, spawnRotation);
 				}
-
-				// Visibility 설정
-				rifleComp->SetVisibility(true);
-				sniperComp->SetVisibility(false);
-				pistolComp->SetVisibility(false);
-
-				// 무기 배열 설정
-				weaponArray[0]=true;
-				weaponArray[1]=false;
-				weaponArray[2]=false;
 			}
-		}
-		// 스나이퍼로 교체
-		else if(sniperActor)
-		{
-			// 스나이퍼를 사용하지 않을 때만 교체
-			if(weaponArray[1]==false)
+			// 스나이퍼로 교체
+			else if(sniperActor)
 			{
-				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
-
-				sniperActor->Destroy();
-				FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
-				FRotator spawnRotation = FRotator::ZeroRotator;
-				FActorSpawnParameters param;
-				param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-				
-				if(weaponArray[0]==true)
+				// 스나이퍼를 사용하지 않을 때만 교체
+				if(weaponArray[1]==false)
 				{
-					rifleActor = GetWorld()->SpawnActor<ARifleActor>(rifleFactory, spawnPosition, spawnRotation);
-				}
-				else if(weaponArray[2]==true)
-				{
-					auto animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-					if(animInst)
+					infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.01, 0, 1);
+					if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 					{
-						animInst->bPistol=false;
-					}
-					pistolActor = GetWorld()->SpawnActor<APistolActor>(pistolFactory, spawnPosition, spawnRotation);
-				}
-				
-				rifleComp->SetVisibility(false);
-				sniperComp->SetVisibility(true);
-				pistolComp->SetVisibility(false);
+						PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
 
-				weaponArray[0]=false;
-				weaponArray[1]=true;
-				weaponArray[2]=false;
+						sniperActor->Destroy();
+						FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
+						FRotator spawnRotation = FRotator::ZeroRotator;
+						FActorSpawnParameters param;
+						param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+				
+						if(weaponArray[0]==true)
+						{
+							rifleActor = GetWorld()->SpawnActor<ARifleActor>(rifleFactory, spawnPosition, spawnRotation);
+						}
+						else if(weaponArray[2]==true)
+						{
+							auto animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+							if(animInst)
+							{
+								animInst->bPistol=false;
+							}
+							pistolActor = GetWorld()->SpawnActor<APistolActor>(pistolFactory, spawnPosition, spawnRotation);
+						}
+				
+						rifleComp->SetVisibility(false);
+						sniperComp->SetVisibility(true);
+						pistolComp->SetVisibility(false);
+
+						weaponArray[0]=false;
+						weaponArray[1]=true;
+						weaponArray[2]=false;
+					}
+				}
 			}
-		}
-		// 권총으로 교체
-		else if(pistolActor)
-		{
-			// 권총을 사용하지 않을 때만 교체
-			if(weaponArray[2]==false)
+			// 권총으로 교체
+			else if(pistolActor)
 			{
-				PlayAnimMontage(zoomingMontage, 1 , FName("PistolEquip"));
-				auto animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-				if(animInst)
+				// 권총을 사용하지 않을 때만 교체
+				if(weaponArray[2]==false)
 				{
-					animInst->bPistol=true;
-				}
-				pistolActor->Destroy();
-				FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
-				FRotator spawnRotation = FRotator::ZeroRotator;
-				FActorSpawnParameters param;
-				param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;		
-				if(weaponArray[0]==true)
-				{
-					rifleActor = GetWorld()->SpawnActor<ARifleActor>(rifleFactory, spawnPosition, spawnRotation);
-				}
-				else if(weaponArray[1]==true)
-				{
-					sniperActor = GetWorld()->SpawnActor<ASniperActor>(sniperFactory, spawnPosition, spawnRotation);
-				}
+					infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.01, 0, 1);
+					if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+					{
+						PlayAnimMontage(zoomingMontage, 1 , FName("PistolEquip"));
+						auto animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+						if(animInst)
+						{
+							animInst->bPistol=true;
+						}
+						pistolActor->Destroy();
+						FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
+						FRotator spawnRotation = FRotator::ZeroRotator;
+						FActorSpawnParameters param;
+						param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;		
+						if(weaponArray[0]==true)
+						{
+							rifleActor = GetWorld()->SpawnActor<ARifleActor>(rifleFactory, spawnPosition, spawnRotation);
+						}
+						else if(weaponArray[1]==true)
+						{
+							sniperActor = GetWorld()->SpawnActor<ASniperActor>(sniperFactory, spawnPosition, spawnRotation);
+						}
 					
-				rifleComp->SetVisibility(false);
-				sniperComp->SetVisibility(false);
-				pistolComp->SetVisibility(true);
+						rifleComp->SetVisibility(false);
+						sniperComp->SetVisibility(false);
+						pistolComp->SetVisibility(true);
 					
-				weaponArray[0]=false;
-				weaponArray[1]=false;
-				weaponArray[2]=true;
+						weaponArray[0]=false;
+						weaponArray[1]=false;
+						weaponArray[2]=true;
+					}
+				}
 			}
-		}
-	}
+		}	
 }
 
 void APlayerCharacter::Reload()

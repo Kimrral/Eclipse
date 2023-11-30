@@ -21,9 +21,18 @@ public:
 
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class URadialSlider* progressSlider;
+	
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class URadialSlider* progressSlider_1;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class URadialSlider* progressSlider_2;
 
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UWidgetSwitcher* WidgetSwitcher_Weapon;
+
+	UPROPERTY()
+	double weaponHoldPercent = 0.f;
 
 	
 };

@@ -159,6 +159,9 @@ public:
 	TSubclassOf<class UUserWidget> crosshairFactory;
 
 	UPROPERTY(EditAnywhere)		
+	TSubclassOf<class UUserWidget> sniperScopeFactory;
+
+	UPROPERTY(EditAnywhere)		
 	TSubclassOf<class UWeaponInfoWidget> infoWidgetFactory;
 
 	UPROPERTY(EditAnywhere)
@@ -169,6 +172,9 @@ public:
 
 	UPROPERTY(BlueprintReadOnly)
 	class UWeaponInfoWidget* infoWidgetUI;
+	
+	UPROPERTY(BlueprintReadOnly)
+	class UUserWidget* sniperScopeUI;
 
 	UFUNCTION()
 	void WeaponDetectionLineTrace();

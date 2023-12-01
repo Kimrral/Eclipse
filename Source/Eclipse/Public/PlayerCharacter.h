@@ -209,6 +209,9 @@ public:
 	UPROPERTY(EditAnywhere)		
 	TSubclassOf<class UWeaponInfoWidget> infoWidgetFactory;
 
+	UPROPERTY(EditAnywhere)		
+	TSubclassOf<class UUserWidget> informationWidgetFactory;
+
 	UPROPERTY(EditAnywhere)
 	TArray<bool> weaponArray;
 
@@ -220,6 +223,9 @@ public:
 
 	UPROPERTY(BlueprintReadOnly)
 	class UWeaponInfoWidget* infoWidgetUI;
+
+	UPROPERTY(BlueprintReadOnly)
+	class UUserWidget* informationUI;
 	
 	UPROPERTY(BlueprintReadOnly)
 	class UUserWidget* sniperScopeUI;

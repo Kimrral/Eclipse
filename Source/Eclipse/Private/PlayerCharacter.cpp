@@ -109,10 +109,15 @@ void APlayerCharacter::BeginPlay()
 
 	animInstance=Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 
-	curRifleAmmo=30;
+	curRifleAmmo=40;
 	curSniperAmmo=5;
 	curPistolAmmo=8;
 	curM249Ammo=100;
+
+	maxRifleAmmo=80;
+	maxSniperAmmo=10;
+	maxPistolAmmo=16;
+	maxM249Ammo=200;
 
 	// Timeline Binding
 	if (CurveFloat)
@@ -134,7 +139,8 @@ void APlayerCharacter::BeginPlay()
 
 	sniperScopeUI=CreateWidget<UUserWidget>(GetWorld(), sniperScopeFactory);
 
-	
+	informationUI = CreateWidget<UUserWidget>(GetWorld(), informationWidgetFactory);
+	informationUI->AddToViewport();
 }
 
 // Called every frame
@@ -556,6 +562,7 @@ void APlayerCharacter::ChangeWeapon()
 		rifleActor = Cast<ARifleActor>(actorHitResult.GetActor());
 		sniperActor=Cast<ASniperActor>(actorHitResult.GetActor());
 		pistolActor=Cast<APistolActor>(actorHitResult.GetActor());
+		m249Actor=Cast<AM249Actor>(actorHitResult.GetActor());
 		// 라이플로 교체
 		if(rifleActor)
 		{
@@ -757,7 +764,7 @@ void APlayerCharacter::Reload()
 	bool animPlay = animInstance->IsAnyMontagePlaying();
 	if(animPlay==false)
 	{
-		if(weaponArray[0]==true&&curRifleAmmo<30)
+		if(weaponArray[0]==true&&curRifleAmmo<40)
 		{
 			PlayAnimMontage(zoomingMontage, 1, FName("Reload"));
 		}
@@ -811,7 +818,7 @@ void APlayerCharacter::Fire()
 		if(curRifleAmmo>0)
 		{
 			// Clamp를 통한 탄약 수 차감
-			curRifleAmmo = FMath::Clamp(curRifleAmmo-1, 0, 30);
+			curRifleAmmo = FMath::Clamp(curRifleAmmo-1, 0, 40);
 			UE_LOG(LogTemp, Warning, TEXT("Cur Rifle Bullet : %d"), curRifleAmmo)
 			FVector startLoc = FollowCamera->GetComponentLocation();
 			FVector EndLoc = startLoc + FollowCamera->GetForwardVector()*10000.0f;

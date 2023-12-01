@@ -236,6 +236,8 @@ void APlayerCharacter::Zoom()
 				PlayAnimMontage(zoomingMontage, 1, FName("Zooming"));
 			}
 		}
+		auto controller = GetWorld()->GetFirstPlayerController();
+		controller->PlayerCameraManager->StartCameraShake(sniperZoomingShake);
 		// 카메라 줌 러프 타임라인 재생
 		Timeline.PlayFromStart();
 		sniperScopeUI->AddToViewport();
@@ -266,6 +268,8 @@ void APlayerCharacter::ZoomRelease()
 	}
 	if(weaponArray[1]==true)
 	{
+		auto controller = GetWorld()->GetFirstPlayerController();
+		controller->PlayerCameraManager->StopAllCameraShakes();
 		StopAnimMontage();
 		sniperScopeUI->RemoveFromParent();
 		crosshairUI->AddToViewport();
@@ -627,6 +631,8 @@ void APlayerCharacter::Fire()
 			bulletShell->SetLifeSpan(5.0f);
 			auto bulSoundLoc = GetActorLocation()*FVector(0, 0, -80);
 			UGameplayStatics::SpawnSoundAtLocation(GetWorld(), RifleBulletShellDropSound, bulSoundLoc, FRotator::ZeroRotator, 0.4, 1, 0);
+			auto controller = GetWorld()->GetFirstPlayerController();
+			controller->PlayerCameraManager->StartCameraShake(rifleFireShake);
 			bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),startLoc, EndLoc, ObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, rifleHitResult, true);
 			if(bHit)
 			{
@@ -735,6 +741,8 @@ void APlayerCharacter::Fire()
 				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot+FRotator(-90, 0, 0), FVector(0.5f));
 				if(isZooming)
 				{
+					auto controller = GetWorld()->GetFirstPlayerController();
+					controller->PlayerCameraManager->StartCameraShake(sniperCameraShake);
 					auto fireSocketLoc = FollowCamera->GetComponentLocation()+FollowCamera->GetUpVector()*-50.0f;
 					// 탄 궤적 나이아가라 시스템 스폰
 					UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, sniperHitResult.Location, FRotator::ZeroRotator,FVector(1), true, true, ENCPoolMethod::AutoRelease);
@@ -814,6 +822,8 @@ void APlayerCharacter::Fire()
 			// Clamp를 통한 탄약 수 차감
 			curPistolAmmo = FMath::Clamp(curPistolAmmo-1, 0, 8);
 			UE_LOG(LogTemp, Warning, TEXT("Cur Pistol Bullet : %d"), curPistolAmmo)
+			auto controller = GetWorld()->GetFirstPlayerController();
+			controller->PlayerCameraManager->StartCameraShake(pistolFireShake);
 			if(isZooming)
 			{
 				PlayAnimMontage(zoomingMontage, 1, FName("PistolZoomFire"));

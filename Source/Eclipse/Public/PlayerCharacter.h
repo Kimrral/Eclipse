@@ -255,6 +255,18 @@ public:
 	UPROPERTY()
 	FTimerHandle shootEnableHandle;
 
+	UPROPERTY(EditDefaultsOnly, Category=CameraMotion)
+	TSubclassOf<class UCameraShakeBase> sniperCameraShake;
+
+	UPROPERTY(EditDefaultsOnly, Category=CameraMotion)
+	TSubclassOf<class UCameraShakeBase> sniperZoomingShake;
+
+	UPROPERTY(EditDefaultsOnly, Category=CameraMotion)
+	TSubclassOf<class UCameraShakeBase> rifleFireShake;
+
+	UPROPERTY(EditDefaultsOnly, Category=CameraMotion)
+	TSubclassOf<class UCameraShakeBase> pistolFireShake;
+
 	//Particles
 	UPROPERTY(EditAnywhere, Category="Factory")
 	TSubclassOf<class AActor> ShotDecalFactory;

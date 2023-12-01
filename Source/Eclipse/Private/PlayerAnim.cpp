@@ -34,6 +34,10 @@ void UPlayerAnim::AnimNotify_ReloadEnd()
 	{
 		me->curPistolAmmo=8;
 	}
+	else if(me->weaponArray[3]==true)
+	{
+		me->curM249Ammo=100;
+	}
 	me->CanShoot=true;
 }
 

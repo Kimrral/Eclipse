@@ -26,10 +26,18 @@ public:
 	UFUNCTION()
 	void AnimNotify_ReloadEnd();
 
+	UFUNCTION()
+	void AnimNotify_LeftPlant();
+
+	UFUNCTION()
+	void AnimNotify_RightPlant();
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bPistol = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bZooming = false;
-	
+
+	UPROPERTY(EditAnywhere, Category=Sound)
+	class USoundBase* walkSound;
 };

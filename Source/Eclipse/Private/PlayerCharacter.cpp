@@ -94,6 +94,12 @@ void APlayerCharacter::BeginPlay()
 	weaponArray.Add(bUsingSniper); //1
 	weaponArray.Add(bUsingPistol); //2
 
+	equippedWeaponStringArray.Add(FString("Rifle")); //0
+	equippedWeaponStringArray.Add(FString("None")); //1
+	equippedWeaponStringArray.Add(FString("None")); //2
+
+	curWeaponSlotNumber=1;
+
 	animInstance=Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 
 	curRifleAmmo=30;
@@ -177,6 +183,15 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(LookAroundAction, ETriggerEvent::Triggered, this, &APlayerCharacter::OnActionLookAroundPressed);
 		EnhancedInputComponent->BindAction(LookAroundAction, ETriggerEvent::Completed, this, &APlayerCharacter::OnActionLookAroundReleased);
 
+		//Scrolling
+		EnhancedInputComponent->BindAction(ZoomInAction, ETriggerEvent::Started, this, &APlayerCharacter::OnZoomIn);
+		EnhancedInputComponent->BindAction(ZoomOutAction, ETriggerEvent::Started, this, &APlayerCharacter::OnZoomOut);
+
+		//Weapon Swap
+		EnhancedInputComponent->BindAction(FirstWeaponSwapAction, ETriggerEvent::Started, this, &APlayerCharacter::SwapFirstWeapon);
+		EnhancedInputComponent->BindAction(SecondWeaponSwapAction, ETriggerEvent::Started, this, &APlayerCharacter::SwapSecondWeapon);
+		EnhancedInputComponent->BindAction(ThirdWeaponSwapAction, ETriggerEvent::Started, this, &APlayerCharacter::SwapThirdWeapon);
+		
 	}
 }
 
@@ -297,6 +312,7 @@ void APlayerCharacter::Run()
 	{
 		return;
 	}
+	isRunning=true;
 	GetCharacterMovement()->MaxWalkSpeed=520.f;
 }
 
@@ -306,6 +322,7 @@ void APlayerCharacter::RunRelease()
 	{
 		return;
 	}
+	isRunning=false;
 	GetCharacterMovement()->MaxWalkSpeed = 360.f;
 }
 
@@ -317,6 +334,54 @@ void APlayerCharacter::OnActionLookAroundPressed()
 void APlayerCharacter::OnActionLookAroundReleased()
 {
 	bUseControllerRotationYaw = true;
+}
+
+void APlayerCharacter::OnZoomIn()
+{
+	if (isSniperZooming)
+	{
+		// Camera의 FOV 조절		
+		FollowCamera->FieldOfView=FMath::Clamp(FollowCamera->FieldOfView -= 3, 10, 40);			
+	}
+}
+
+void APlayerCharacter::OnZoomOut()
+{
+	if (isSniperZooming)
+	{
+		// Camera의 FOV 조절		
+		FollowCamera->FieldOfView=FMath::Clamp(FollowCamera->FieldOfView += 3, 10, 40);			
+	}
+}
+
+void APlayerCharacter::SwapFirstWeapon()
+{
+	if(curWeaponSlotNumber==1)
+	{
+		return;
+	}
+	curWeaponSlotNumber=1;
+	PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+}
+
+void APlayerCharacter::SwapSecondWeapon()
+{
+	if(equippedWeaponStringArray[1]==FString("None")||curWeaponSlotNumber==2)
+	{
+		return;
+	}
+	curWeaponSlotNumber=2;
+	PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+}
+
+void APlayerCharacter::SwapThirdWeapon()
+{
+	if(equippedWeaponStringArray[2]==FString("None")||curWeaponSlotNumber==3)
+	{
+		return;
+	}
+	curWeaponSlotNumber=3;
+	PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
 }
 
 
@@ -629,6 +694,10 @@ void APlayerCharacter::Fire()
 	{
 		return;
 	}
+	if(isRunning)
+	{
+		return;
+	}
 	// 라이플을 들고 있으면서 사격 가능한 상태라면
 	if(weaponArray[0]==true)
 	{
@@ -787,6 +856,9 @@ void APlayerCharacter::Fire()
 				}
 				else
 				{
+					PlayAnimMontage(zoomingMontage, 1, FName("RifleFire"));
+					auto controller = GetWorld()->GetFirstPlayerController();
+					controller->PlayerCameraManager->StartCameraShake(sniperFireShake);
 					auto particleTrans = sniperComp->GetSocketTransform(FName("SniperFirePosition"));
 					particleTrans.SetScale3D(FVector(0.7));
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), fireParticle, particleTrans);

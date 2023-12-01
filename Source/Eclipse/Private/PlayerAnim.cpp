@@ -4,6 +4,7 @@
 #include "PlayerAnim.h"
 
 #include "PlayerCharacter.h"
+#include "Kismet/GameplayStatics.h"
 
 void UPlayerAnim::NativeBeginPlay()
 {
@@ -34,4 +35,14 @@ void UPlayerAnim::AnimNotify_ReloadEnd()
 		me->curPistolAmmo=8;
 	}
 	me->CanShoot=true;
+}
+
+void UPlayerAnim::AnimNotify_LeftPlant()
+{
+	UGameplayStatics::PlaySound2D(GetWorld(), walkSound);
+}
+
+void UPlayerAnim::AnimNotify_RightPlant()
+{
+	UGameplayStatics::PlaySound2D(GetWorld(), walkSound);
 }

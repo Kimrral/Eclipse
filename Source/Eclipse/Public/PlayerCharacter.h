@@ -148,6 +148,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
 	class UStaticMeshComponent* pistolComp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
+	class UStaticMeshComponent* m249Comp;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
 	class UStaticMeshComponent* grenade;
@@ -164,8 +167,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
 	TSubclassOf<class APistolActor> pistolFactory;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
+	TSubclassOf<class AM249Actor> M249Factory;
+	
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* RifleBulletShellDropSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* M249FireSound;	
 
 	UPROPERTY()
 	class ARifleActor* rifleActor;
@@ -175,6 +184,9 @@ public:
 
 	UPROPERTY()
 	class APistolActor* pistolActor;
+
+	UPROPERTY()
+	class AM249Actor* m249Actor;
 
 	UPROPERTY()
 	class ARifleActor* OverlappedRifleActor;
@@ -228,6 +240,9 @@ public:
 	bool bUsingPistol;
 
 	UPROPERTY()
+	bool bUsingM249;
+	
+	UPROPERTY()
 	class UPlayerAnim* animInstance;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
@@ -243,6 +258,9 @@ public:
 	int curPistolAmmo;
 
 	UPROPERTY()
+	int curM249Ammo;
+
+	UPROPERTY()
 	bool EmptySoundBoolean = false;
 
 	UPROPERTY()
@@ -253,6 +271,9 @@ public:
 
 	UPROPERTY()
 	int maxPistolAmmo;
+
+	UPROPERTY()
+	int maxM249Ammo;
 
 	UPROPERTY()
 	float zoomTriggeredTime;
@@ -275,6 +296,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool isCursorOnPistol;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool isCursorOnM249;
+
 	UPROPERTY()
 	bool TickOverlapBoolean=false;
 	
@@ -285,13 +309,16 @@ public:
 	bool CanShoot = true;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float BulletsPerSecRifle = 11.0f;
+	float BulletsPerSecRifle = 13.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float BulletsPerSecPistol = 3.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float BulletsPerSecSniper = 1.8f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float BulletsPerSecM249 = 9.0f;
 
 	//Sounds
 	UPROPERTY(EditAnywhere, Category="Sounds")

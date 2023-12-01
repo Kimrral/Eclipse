@@ -5,6 +5,7 @@
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "M249Actor.h"
 #include "PlayerAnim.h"
 #include "RifleActor.h"
 #include "SniperActor.h"
@@ -70,6 +71,10 @@ APlayerCharacter::APlayerCharacter()
 	pistolComp=CreateDefaultSubobject<UStaticMeshComponent>(TEXT("pistolComp"));
 	pistolComp->SetupAttachment(GetMesh(), FName("hand_l"));
 
+	m249Comp= CreateDefaultSubobject<UStaticMeshComponent>(TEXT("m249Comp"));
+	m249Comp->SetupAttachment(GetMesh(), FName("hand_r"));
+
+
 }
 
 // Called when the game starts or when spawned
@@ -89,10 +94,12 @@ void APlayerCharacter::BeginPlay()
 	bUsingRifle=true;
 	bUsingSniper=false;
 	bUsingPistol=false;
+	bUsingM249=false;
 	
 	weaponArray.Add(bUsingRifle); //0
 	weaponArray.Add(bUsingSniper); //1
 	weaponArray.Add(bUsingPistol); //2
+	weaponArray.Add(bUsingM249); //3
 
 	equippedWeaponStringArray.Add(FString("Rifle")); //0
 	equippedWeaponStringArray.Add(FString("None")); //1
@@ -105,6 +112,7 @@ void APlayerCharacter::BeginPlay()
 	curRifleAmmo=30;
 	curSniperAmmo=5;
 	curPistolAmmo=8;
+	curM249Ammo=100;
 
 	// Timeline Binding
 	if (CurveFloat)
@@ -117,6 +125,7 @@ void APlayerCharacter::BeginPlay()
 	rifleComp->SetVisibility(true);
 	sniperComp->SetVisibility(false);
 	pistolComp->SetVisibility(false);
+	m249Comp->SetVisibility(false);
 
 	crosshairUI = CreateWidget<UUserWidget>(GetWorld(), crosshairFactory);
 	crosshairUI->AddToViewport();
@@ -263,6 +272,10 @@ void APlayerCharacter::Zoom()
 		Timeline.PlayFromStart();
 		sniperScopeUI->AddToViewport();
 	}
+	else if(weaponArray[3]==true)
+	{
+		Timeline.PlayFromStart();	
+	}
 	else
 	{
 		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
@@ -402,6 +415,7 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 		rifleActor = Cast<ARifleActor>(actorHitResult.GetActor());
 		sniperActor=Cast<ASniperActor>(actorHitResult.GetActor());
 		pistolActor=Cast<APistolActor>(actorHitResult.GetActor());
+		m249Actor=Cast<AM249Actor>(actorHitResult.GetActor());
 		if(rifleActor)
 		{
 			// 1회 실행 불리언
@@ -453,6 +467,23 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 				infoWidgetUI->AddToViewport();
 			}
 		}
+		else if(m249Actor)
+		{
+			// 1회 실행 불리언
+			if(TickOverlapBoolean==false)
+			{
+				TickOverlapBoolean=true;
+				isCursorOnM249=true;
+				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+				m249Actor->weaponMesh->SetRenderCustomDepth(true);
+				// Widget Switcher 이용한 무기 정보 위젯 스위칭
+				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(3);
+				// Radial Slider Value 초기화
+				infoWidgetUI->weaponHoldPercent=0;
+				// Weapon Info Widget 뷰포트에 배치
+				infoWidgetUI->AddToViewport();
+			}
+		}
 		else
 		{
 			if(TickOverlapBoolean==true)
@@ -477,6 +508,7 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 						rifleActor = Cast<ARifleActor>(HitObj[i].GetActor());
 						sniperActor=Cast<ASniperActor>(HitObj[i].GetActor());
 						pistolActor=Cast<APistolActor>(HitObj[i].GetActor());
+						m249Actor=Cast<AM249Actor>(HitObj[i].GetActor());
 						if(rifleActor)
 						{
 							// Render Custom Depth 활용한 무기 액터 외곽선 해제
@@ -492,6 +524,10 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 							// Render Custom Depth 활용한 무기 액터 외곽선 해제
 							pistolActor->weaponMesh->SetRenderCustomDepth(false);
 						}
+						else if(m249Actor)
+						{
+							// Render Custom Depth 활용한 무기 액터 외곽선 해제
+							m249Actor->weaponMesh->SetRenderCustomDepth(false);						}
 					}
 				}
 			}
@@ -555,14 +591,21 @@ void APlayerCharacter::ChangeWeapon()
 						// 사용중인 무기 액터 스폰
 						pistolActor = GetWorld()->SpawnActor<APistolActor>(pistolFactory, spawnPosition, spawnRotation);
 					}
+					else if(weaponArray[3]==true)
+					{
+						// 사용중인 무기 액터 스폰
+						m249Actor = GetWorld()->SpawnActor<AM249Actor>(M249Factory, spawnPosition, spawnRotation);
+					}
 					// Visibility 설정
 					rifleComp->SetVisibility(true);
 					sniperComp->SetVisibility(false);
 					pistolComp->SetVisibility(false);
+					m249Comp->SetVisibility(false);
 					// 무기 배열 설정
 					weaponArray[0]=true;
 					weaponArray[1]=false;
 					weaponArray[2]=false;
+					weaponArray[3]=false;
 				}
 			}
 		}
@@ -596,13 +639,21 @@ void APlayerCharacter::ChangeWeapon()
 						}
 						pistolActor = GetWorld()->SpawnActor<APistolActor>(pistolFactory, spawnPosition, spawnRotation);
 					}
+					else if(weaponArray[3]==true)
+					{
+						m249Actor = GetWorld()->SpawnActor<AM249Actor>(M249Factory, spawnPosition, spawnRotation);
+					}
 			
 					rifleComp->SetVisibility(false);
 					sniperComp->SetVisibility(true);
 					pistolComp->SetVisibility(false);
+					m249Comp->SetVisibility(false);
+
 					weaponArray[0]=false;
 					weaponArray[1]=true;
 					weaponArray[2]=false;
+					weaponArray[3]=false;
+
 				}
 			}
 		}
@@ -635,14 +686,66 @@ void APlayerCharacter::ChangeWeapon()
 					{
 						sniperActor = GetWorld()->SpawnActor<ASniperActor>(sniperFactory, spawnPosition, spawnRotation);
 					}
+					else if(weaponArray[3]==true)
+					{
+						m249Actor = GetWorld()->SpawnActor<AM249Actor>(M249Factory, spawnPosition, spawnRotation);
+					}
 				
 					rifleComp->SetVisibility(false);
 					sniperComp->SetVisibility(false);
 					pistolComp->SetVisibility(true);
+					m249Comp->SetVisibility(false);
 				
 					weaponArray[0]=false;
 					weaponArray[1]=false;
 					weaponArray[2]=true;
+					weaponArray[3]=false;
+				}
+			}
+		}
+		// M249로 교체
+		else if(m249Actor)
+		{
+			// M249을 사용하지 않을 때만 교체
+			if(weaponArray[3]==false)
+			{
+				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.01, 0, 1);
+				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+				{
+					infoWidgetUI->RemoveFromParent();
+					PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+					m249Actor->Destroy();
+					FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
+					FRotator spawnRotation = FRotator::ZeroRotator;
+					FActorSpawnParameters param;
+					param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;		
+					if(weaponArray[0]==true)
+					{
+						rifleActor = GetWorld()->SpawnActor<ARifleActor>(rifleFactory, spawnPosition, spawnRotation);
+					}
+					else if(weaponArray[1]==true)
+					{
+						sniperActor = GetWorld()->SpawnActor<ASniperActor>(sniperFactory, spawnPosition, spawnRotation);
+					}
+					else if(weaponArray[2]==true)
+					{
+						auto animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+						if(animInst)
+						{
+							animInst->bPistol=false;
+						}
+						pistolActor = GetWorld()->SpawnActor<APistolActor>(pistolFactory, spawnPosition, spawnRotation);
+					}
+				
+					rifleComp->SetVisibility(false);
+					sniperComp->SetVisibility(false);
+					pistolComp->SetVisibility(false);
+					m249Comp->SetVisibility(true);
+				
+					weaponArray[0]=false;
+					weaponArray[1]=false;
+					weaponArray[2]=false;
+					weaponArray[3]=true;
 				}
 			}
 		}
@@ -663,6 +766,10 @@ void APlayerCharacter::Reload()
 			PlayAnimMontage(zoomingMontage, 1, FName("Reload"));
 		}
 		else if(weaponArray[2]==true&&curPistolAmmo<8)
+		{
+			PlayAnimMontage(zoomingMontage, 1, FName("Reload"));
+		}
+		else if(weaponArray[3]==true&&curM249Ammo<100)
 		{
 			PlayAnimMontage(zoomingMontage, 1, FName("Reload"));
 		}
@@ -1011,6 +1118,121 @@ void APlayerCharacter::Fire()
 				{
 					CanShoot=true;
 				}), 1/BulletsPerSecPistol, false);
+			}
+		}
+		else
+		{
+			if(EmptySoundBoolean==false)
+			{
+				EmptySoundBoolean=true;
+				// 탄약 고갈 사운드 재생
+				UGameplayStatics::PlaySound2D(GetWorld(), BulletEmptySound);
+			}
+		}
+	}
+	// M249를 들고 있으면서 사격 가능한 상태라면
+	if(weaponArray[3]==true)
+	{
+		if(curM249Ammo>0)
+		{
+			// Clamp를 통한 탄약 수 차감
+			curM249Ammo = FMath::Clamp(curM249Ammo-1, 0, 100);
+			UE_LOG(LogTemp, Warning, TEXT("Cur M249 Bullet : %d"), curM249Ammo)
+			FVector startLoc = FollowCamera->GetComponentLocation();
+			FVector EndLoc = startLoc + FollowCamera->GetForwardVector()*10000.0f;
+			TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes; // LineTrace로 히트 가능한 오브젝트 유형들.
+			TEnumAsByte<EObjectTypeQuery> WorldStatic = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic);
+			TEnumAsByte<EObjectTypeQuery> WorldDynamic = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic);
+			TEnumAsByte<EObjectTypeQuery> Pawn = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn);
+			TEnumAsByte<EObjectTypeQuery> PhysicsBody = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody);
+			ObjectTypes.Add(WorldStatic);
+			ObjectTypes.Add(WorldDynamic);
+			ObjectTypes.Add(Pawn);
+			ObjectTypes.Add(PhysicsBody);
+			TArray<AActor*> ActorsToIgnore;
+			ActorsToIgnore.Add(this); // LineTrace에서 제외할 대상
+			FHitResult M249HitResult;
+			auto particleTrans = m249Comp->GetSocketTransform(FName("M249FirePosition"));
+			particleTrans.SetScale3D(FVector(0.7));
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), fireParticle, particleTrans);
+			FActorSpawnParameters param;
+			param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+			auto spawnTrans = m249Comp->GetSocketTransform(FName("BulletShell"));
+			auto bulletShell = GetWorld()->SpawnActor<AActor>(BulletShellFactory, spawnTrans);
+			bulletShell->SetLifeSpan(5.0f);
+			auto bulSoundLoc = GetActorLocation()*FVector(0, 0, -80);
+			UGameplayStatics::SpawnSoundAtLocation(GetWorld(), RifleBulletShellDropSound, bulSoundLoc, FRotator::ZeroRotator, 0.4, 1, 0);
+			UGameplayStatics::PlaySound2D(GetWorld(), M249FireSound);
+			auto controller = GetWorld()->GetFirstPlayerController();
+			controller->PlayerCameraManager->StartCameraShake(rifleFireShake);
+			PlayAnimMontage(zoomingMontage, 1, FName("RifleFire"));
+			bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),startLoc, EndLoc, ObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, M249HitResult, true);
+			if(bHit)
+			{
+				if(isZooming)
+				{
+					auto randF = UKismetMathLibrary::RandomFloatInRange(-0.4, -0.7);
+					auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.4, 0.4);
+					AddControllerPitchInput(randF);
+					AddControllerYawInput(randF2);			
+				}
+				else
+				{
+					auto randF = UKismetMathLibrary::RandomFloatInRange(-0.8, -1.4);
+					auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7, 0.7);
+					AddControllerPitchInput(randF);
+					AddControllerYawInput(randF2);					
+				}
+				FActorSpawnParameters params;
+				params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+				auto decalRot = UKismetMathLibrary::Conv_VectorToRotator(M249HitResult.ImpactNormal);
+				auto decalLoc = M249HitResult.Location;
+				auto decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
+				GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot+FRotator(-90, 0, 0), FVector(0.5f));
+				auto fireSocketLoc = rifleComp->GetSocketTransform(FName("RifleFirePosition")).GetLocation();
+				// 탄 궤적 나이아가라 시스템 스폰
+				UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, M249HitResult.Location, FRotator::ZeroRotator,FVector(1), true, true, ENCPoolMethod::AutoRelease);
+				if(niagara)
+				{
+					// 나이아가라 파라미터 벡터 위치 변수 할당
+					niagara->SetVectorParameter(FName("EndPoint"), fireSocketLoc);
+				}
+				CanShoot=false;
+				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
+				{
+					CanShoot=true;
+				}), 1/BulletsPerSecM249, false);
+			}
+			else
+			{
+				if(isZooming)
+				{
+					auto randF = UKismetMathLibrary::RandomFloatInRange(-0.4, -0.7);
+					auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.4, 0.4);
+					AddControllerPitchInput(randF);
+					AddControllerYawInput(randF2);			
+				}
+				else
+				{
+					auto randF = UKismetMathLibrary::RandomFloatInRange(-0.8, -1.4);
+					auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7, 0.7);
+					AddControllerPitchInput(randF);
+					AddControllerYawInput(randF2);					
+				}
+				FVector niagaraSpawnLoc = FollowCamera->K2_GetComponentLocation();
+				FVector ForwardLoc = niagaraSpawnLoc + FollowCamera->GetForwardVector()*10000.0f;
+				auto FireLoc = rifleComp->GetSocketTransform(FName("RifleFirePosition")).GetLocation();
+				UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, ForwardLoc, FRotator::ZeroRotator, FVector(1), true, true, ENCPoolMethod::AutoRelease);
+				if(niagara)
+				{
+					niagara->SetVectorParameter(FName("EndPoint"), FireLoc);
+				}
+				CanShoot=false;				
+				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
+				{
+					CanShoot=true;
+				}), 1/BulletsPerSecM249, false);
 			}
 		}
 		else

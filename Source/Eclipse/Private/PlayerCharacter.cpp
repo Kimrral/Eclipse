@@ -764,19 +764,19 @@ void APlayerCharacter::Reload()
 	bool animPlay = animInstance->IsAnyMontagePlaying();
 	if(animPlay==false)
 	{
-		if(weaponArray[0]==true&&curRifleAmmo<40)
+		if(weaponArray[0]==true&&curRifleAmmo<40&&maxRifleAmmo>0)
 		{
 			PlayAnimMontage(zoomingMontage, 1, FName("Reload"));
 		}
-		else if(weaponArray[1]==true&&curSniperAmmo<5)
+		else if(weaponArray[1]==true&&curSniperAmmo<5&&maxRifleAmmo>0)
 		{
 			PlayAnimMontage(zoomingMontage, 1, FName("Reload"));
 		}
-		else if(weaponArray[2]==true&&curPistolAmmo<8)
+		else if(weaponArray[2]==true&&curPistolAmmo<8&&maxPistolAmmo>0)
 		{
 			PlayAnimMontage(zoomingMontage, 1, FName("Reload"));
 		}
-		else if(weaponArray[3]==true&&curM249Ammo<100)
+		else if(weaponArray[3]==true&&curM249Ammo<100&&maxM249Ammo>0)
 		{
 			PlayAnimMontage(zoomingMontage, 1, FName("Reload"));
 		}

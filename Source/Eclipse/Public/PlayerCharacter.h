@@ -79,6 +79,23 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAroundAction;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* ZoomInAction;
+		
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* ZoomOutAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* FirstWeaponSwapAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* SecondWeaponSwapAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* ThirdWeaponSwapAction;
+	
+	
 
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
@@ -110,6 +127,13 @@ public:
 
 	void OnActionLookAroundPressed();
 	void OnActionLookAroundReleased();
+
+	void OnZoomIn();
+	void OnZoomOut();
+
+	void SwapFirstWeapon();
+	void SwapSecondWeapon();
+	void SwapThirdWeapon();
 	
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
@@ -176,6 +200,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	TArray<bool> weaponArray;
 
+	UPROPERTY(EditAnywhere)
+	TArray<FString> equippedWeaponStringArray;
+
 	UPROPERTY(BlueprintReadOnly)
 	class UUserWidget* crosshairUI;
 
@@ -184,6 +211,9 @@ public:
 	
 	UPROPERTY(BlueprintReadOnly)
 	class UUserWidget* sniperScopeUI;
+
+	UPROPERTY()
+	int curWeaponSlotNumber;
 
 	UFUNCTION()
 	void WeaponDetectionLineTrace();
@@ -229,6 +259,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool isZooming = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool isRunning = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool isSniperZooming = false;
@@ -278,6 +311,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category=CameraMotion)
 	TSubclassOf<class UCameraShakeBase> pistolFireShake;
+
+	UPROPERTY(EditDefaultsOnly, Category=CameraMotion)
+	TSubclassOf<class UCameraShakeBase> sniperFireShake;
 
 	//Particles
 	UPROPERTY(EditAnywhere, Category="Factory")

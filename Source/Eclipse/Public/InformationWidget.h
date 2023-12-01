@@ -19,6 +19,9 @@ public:
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
+	UFUNCTION()
+	void UpdateAmmo();
+
 	UPROPERTY()
 	class APlayerCharacter* owner;
 
@@ -27,6 +30,8 @@ public:
 
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UTextBlock* maxAmmo;
+
+
 
 
 };

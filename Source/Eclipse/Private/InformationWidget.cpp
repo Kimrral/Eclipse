@@ -19,6 +19,12 @@ void UInformationWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTi
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
+	UpdateAmmo();
+
+}
+
+void UInformationWidget::UpdateAmmo()
+{
 	if(owner->weaponArray[0]==true)
 	{
 		currentAmmo->SetText(FText::AsNumber(owner->curRifleAmmo));

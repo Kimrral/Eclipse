@@ -30,8 +30,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UTextBlock* maxAmmo;
-
-
+	
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UTextBlock* AmmoType;
 
 
 };

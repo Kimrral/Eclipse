@@ -224,6 +224,7 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	class UWeaponInfoWidget* infoWidgetUI;
 
+
 	UPROPERTY(BlueprintReadOnly)
 	class UUserWidget* informationUI;
 	

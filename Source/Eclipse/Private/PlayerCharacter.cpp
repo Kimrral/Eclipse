@@ -41,7 +41,7 @@ APlayerCharacter::APlayerCharacter()
 
 	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
 	// instead of recompiling to adjust them
-	GetCharacterMovement()->JumpZVelocity = 900.f;
+	GetCharacterMovement()->JumpZVelocity = 1000.f;
 	GetCharacterMovement()->AirControl = 0.35f;
 	GetCharacterMovement()->MaxWalkSpeed = 360.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
@@ -156,6 +156,10 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Started, this, &APlayerCharacter::Zoom);
 		EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Completed, this, &APlayerCharacter::ZoomRelease);
 
+		//Running
+		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Started, this, &APlayerCharacter::Run);
+		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Completed, this, &APlayerCharacter::RunRelease);
+
 		//Crouching
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Crouching);
 
@@ -217,6 +221,7 @@ void APlayerCharacter::Zoom()
 {
 	// Zooming Boolean
 	isZooming=true;
+	GetCharacterMovement()->MaxWalkSpeed=240.f;
 	auto animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 	if(animInst)
 	{
@@ -225,6 +230,7 @@ void APlayerCharacter::Zoom()
 	// is using sniper
 	if(weaponArray[1]==true)
 	{
+		isSniperZooming=true;
 		crosshairUI->RemoveFromParent();
 		auto cameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0));
 		cameraManager->StartCameraFade(1.0, 0.1, 3.0, FColor::Black, false, true);
@@ -261,6 +267,7 @@ void APlayerCharacter::ZoomRelease()
 {
 	// Zooming Boolean
 	isZooming = false;
+	GetCharacterMovement()->MaxWalkSpeed=360.f;
 	auto animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 	if(animInst)
 	{
@@ -268,6 +275,7 @@ void APlayerCharacter::ZoomRelease()
 	}
 	if(weaponArray[1]==true)
 	{
+		isSniperZooming=false;
 		auto controller = GetWorld()->GetFirstPlayerController();
 		controller->PlayerCameraManager->StopAllCameraShakes();
 		StopAnimMontage();
@@ -283,6 +291,24 @@ void APlayerCharacter::ZoomRelease()
 
 }
 
+void APlayerCharacter::Run()
+{
+	if(isZooming)
+	{
+		return;
+	}
+	GetCharacterMovement()->MaxWalkSpeed=520.f;
+}
+
+void APlayerCharacter::RunRelease()
+{
+	if(isZooming)
+	{
+		return;
+	}
+	GetCharacterMovement()->MaxWalkSpeed = 360.f;
+}
+
 void APlayerCharacter::OnActionLookAroundPressed()
 {
 	bUseControllerRotationYaw = false;	
@@ -296,6 +322,10 @@ void APlayerCharacter::OnActionLookAroundReleased()
 
 void APlayerCharacter::WeaponDetectionLineTrace()
 {
+	if(isSniperZooming)
+	{
+		return;
+	}
 	FHitResult actorHitResult;
 	FVector StartLoc = FollowCamera->GetComponentLocation();
 	FVector EndLoc = StartLoc+FollowCamera->GetForwardVector()*500.0f;
@@ -579,9 +609,9 @@ void APlayerCharacter::SetZoomValue(float Value)
 	if(weaponArray[1]==true)
 	{
 		// 타임라인 Float Curve 에 따른 Lerp
-		auto lerp=UKismetMathLibrary::Lerp(200,0,Value);
+		auto lerp=UKismetMathLibrary::Lerp(90,40,Value);
 		// 해당 Lerp값 Arm Length에 적용
-		CameraBoom->TargetArmLength=lerp;
+		FollowCamera->SetFieldOfView(lerp);
 	}
 	else
 	{
@@ -633,6 +663,10 @@ void APlayerCharacter::Fire()
 			UGameplayStatics::SpawnSoundAtLocation(GetWorld(), RifleBulletShellDropSound, bulSoundLoc, FRotator::ZeroRotator, 0.4, 1, 0);
 			auto controller = GetWorld()->GetFirstPlayerController();
 			controller->PlayerCameraManager->StartCameraShake(rifleFireShake);
+			if(!isZooming)
+			{
+				PlayAnimMontage(zoomingMontage, 1, FName("RifleFire"));
+			}
 			bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),startLoc, EndLoc, ObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, rifleHitResult, true);
 			if(bHit)
 			{
@@ -714,9 +748,6 @@ void APlayerCharacter::Fire()
 			TArray<AActor*> ActorsToIgnore;
 			ActorsToIgnore.Add(this); // LineTrace에서 제외할 대상
 			FHitResult sniperHitResult;
-			auto particleTrans = sniperComp->GetSocketTransform(FName("SniperFirePosition"));
-			particleTrans.SetScale3D(FVector(0.7));
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), fireParticle, particleTrans);
 			FActorSpawnParameters param;
 			param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 			auto spawnTrans = sniperComp->GetSocketTransform(FName("BulletShell"));
@@ -741,9 +772,11 @@ void APlayerCharacter::Fire()
 				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot+FRotator(-90, 0, 0), FVector(0.5f));
 				if(isZooming)
 				{
+					auto particleTrans = FollowCamera->GetComponentLocation()+FollowCamera->GetUpVector()*-40.0f;
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), fireParticle, particleTrans);
 					auto controller = GetWorld()->GetFirstPlayerController();
 					controller->PlayerCameraManager->StartCameraShake(sniperCameraShake);
-					auto fireSocketLoc = FollowCamera->GetComponentLocation()+FollowCamera->GetUpVector()*-50.0f;
+					auto fireSocketLoc = FollowCamera->GetComponentLocation()+FollowCamera->GetUpVector()*-40.0f;
 					// 탄 궤적 나이아가라 시스템 스폰
 					UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, sniperHitResult.Location, FRotator::ZeroRotator,FVector(1), true, true, ENCPoolMethod::AutoRelease);
 					if(niagara)
@@ -754,6 +787,9 @@ void APlayerCharacter::Fire()
 				}
 				else
 				{
+					auto particleTrans = sniperComp->GetSocketTransform(FName("SniperFirePosition"));
+					particleTrans.SetScale3D(FVector(0.7));
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), fireParticle, particleTrans);
 					auto fireSocketLoc = sniperComp->GetSocketTransform(FName("SniperFirePosition")).GetLocation();
 					// 탄 궤적 나이아가라 시스템 스폰
 					UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, sniperHitResult.Location, FRotator::ZeroRotator,FVector(1), true, true, ENCPoolMethod::AutoRelease);

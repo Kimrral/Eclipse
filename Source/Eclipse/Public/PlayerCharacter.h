@@ -61,6 +61,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* ZoomAction;
 
+	/** Run Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* RunAction;
+
 	/** Crouch Action Input */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* CrouchAction;
@@ -87,6 +91,11 @@ public:
 	/** Called for zooming input */
 	void ZoomRelease();
 
+	/** Called for running input */
+	void Run();
+	/** Called for running input */
+	void RunRelease();
+	
 	/** Called for fire input */
 	void Fire();
 	void FireRelease();
@@ -220,6 +229,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool isZooming = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool isSniperZooming = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool isCursorOnRifle;

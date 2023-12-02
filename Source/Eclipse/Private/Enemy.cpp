@@ -7,6 +7,10 @@
 #include "EnemyAnim.h"
 #include "EnemyFSM.h"
 #include "EnemyHPWidget.h"
+#include "M249AmmoActor.h"
+#include "PistolAmmoActor.h"
+#include "RifleAmmoActor.h"
+#include "SniperAmmoActor.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Eclipse/EclipseGameMode.h"
@@ -40,7 +44,7 @@ void AEnemy::BeginPlay()
 	enemyHPWidget = Cast<UEnemyHPWidget>(HPWidgetComponent->GetWidget());
 	PC = Cast<AEclipsePlayerController>(GetWorld()->GetFirstPlayerController());
 
-	HPWidgetComponent->SetVisibility(false);		
+	HPWidgetComponent->SetVisibility(false);
 
 }
 
@@ -110,5 +114,50 @@ void AEnemy::SetHPWidgetInvisible()
 	{
 		HPWidgetComponent->SetVisibility(false);		
 	}), 3.0f, false);
+}
+
+void AEnemy::DropReward()
+{
+	auto randIndex = FMath::RandRange(0, 3);
+	if(randIndex==0)
+	{
+		auto rifleAmmo = GetWorld()->SpawnActor<ARifleAmmoActor>(rifleAmmoFactory, GetActorLocation(), GetActorRotation());
+		if(rifleAmmo)
+		{
+			FVector force = FVector(0, 0, 5000);
+			FVector loc = rifleAmmo->GetActorUpVector();
+			rifleAmmo->ammoMesh->AddImpulseAtLocation(force, loc);
+		}
+	}
+	else if(randIndex==1)
+	{
+		auto sniperAmmo = GetWorld()->SpawnActor<ASniperAmmoActor>(sniperAmmoFactory, GetActorLocation(), GetActorRotation());
+		if(sniperAmmo)
+		{
+			FVector force = FVector(0, 0, 5000);
+			FVector loc = sniperAmmo->GetActorUpVector();
+			sniperAmmo->ammoMesh->AddImpulseAtLocation(force, loc);
+		}
+	}
+	else if(randIndex==2)
+	{
+		auto pistolAmmo = GetWorld()->SpawnActor<APistolAmmoActor>(pistolAmmoFactory, GetActorLocation(), GetActorRotation());
+		if(pistolAmmo)
+		{
+			FVector force = FVector(0, 0, 5000);
+			FVector loc = pistolAmmo->GetActorUpVector();
+			pistolAmmo->ammoMesh->AddImpulseAtLocation(force, loc);
+		}
+	}
+	else if(randIndex==3)
+	{
+		auto m249Ammo = GetWorld()->SpawnActor<AM249AmmoActor>(M249AmmoFactory, GetActorLocation(), GetActorRotation());
+		if(m249Ammo)
+		{
+			FVector force = FVector(0, 0, 5000);
+			FVector loc = m249Ammo->GetActorUpVector();
+			m249Ammo->ammoMesh->AddImpulseAtLocation(force, loc);
+		}
+	}
 }
 

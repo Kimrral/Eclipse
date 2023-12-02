@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AmmoActor.h"
 #include "GameFramework/Character.h"
 #include "Enemy.generated.h"
 
@@ -52,6 +53,18 @@ public:
 
 	UFUNCTION()
 	void SetHPWidgetInvisible();
+
+	UFUNCTION()
+	void DropReward();
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class APistolAmmoActor> pistolAmmoFactory;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class ARifleAmmoActor> rifleAmmoFactory;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class ASniperAmmoActor> sniperAmmoFactory;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AM249AmmoActor> M249AmmoFactory;	
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int curHP;

@@ -173,14 +173,14 @@ void UEnemyFSM::OnDamageProcess(int damageValue)
 	if(me->curHP<=0)
 	{
 		// 해당 HP값을 위젯 머터리얼 파라미터 값에 할당한다.
-		me->enemyHPWidget->HPdynamicMat->SetScalarParameterValue(FName("HPAlpha"), 0);
+		//me->enemyHPWidget->HPdynamicMat->SetScalarParameterValue(FName("HPAlpha"), 0);
 		// Die 상태로 전이한다.
 		SetState(EEnemyState::DIE);
 	}
 	else
 	{
 		// 해당 HP값을 위젯 머터리얼 파라미터 값에 할당한다.
-		me->enemyHPWidget->HPdynamicMat->SetScalarParameterValue(FName("HPAlpha"), me->curHP*0.01-0.001);
+		//me->enemyHPWidget->HPdynamicMat->SetScalarParameterValue(FName("HPAlpha"), me->curHP*0.01-0.001);
 		// Damage 상태로 전이한다.
 		SetState(EEnemyState::DAMAGE);
 	}

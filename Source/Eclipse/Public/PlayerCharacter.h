@@ -232,10 +232,19 @@ public:
 	class UUserWidget* sniperScopeUI;
 
 	UPROPERTY()
+	class AActor* hitActors;
+
+	UPROPERTY()
+	class AEnemy* enemyRef;
+	
+	UPROPERTY()
 	int curWeaponSlotNumber;
 
 	UFUNCTION()
 	void WeaponDetectionLineTrace();
+	
+	UFUNCTION()
+	void EnemyHPWidgetSettings(AEnemy* enemy);
 
 	UPROPERTY()
 	bool bUsingRifle;

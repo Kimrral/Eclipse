@@ -3,6 +3,9 @@
 
 #include "PlayerCharacter.h"
 
+#include "Enemy.h"
+#include "EnemyFSM.h"
+#include "EnemyHPWidget.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "M249Actor.h"
@@ -16,6 +19,7 @@
 #include "PistolActor.h"
 #include "WeaponInfoWidget.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -853,6 +857,30 @@ void APlayerCharacter::Fire()
 			bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),startLoc, EndLoc, ObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, rifleHitResult, true);
 			if(bHit)
 			{
+				// Enemy Casting
+				AEnemy* enemy=Cast<AEnemy>(rifleHitResult.GetActor());
+				// Enemy FSM Casting
+				UEnemyFSM* fsm = Cast<UEnemyFSM>(enemy->GetDefaultSubobjectByName(FName("enemyFSM")));
+				if(fsm&&enemy)
+				{
+					hitActors = rifleHitResult.GetActor();
+					auto hitBone = rifleHitResult.BoneName;
+					if(hitBone==FName("head"))
+					{
+						// FSM에 있는 Damage Process 호출		
+						fsm->OnDamageProcess(10);
+						// 헤드 적중 데미지 프로세스 호출
+						enemy->OnHeadDamaged();
+					}
+					else
+					{
+						// FSM에 있는 Damage Process 호출		
+						fsm->OnDamageProcess(5);
+						// 일반 적중 데미지 프로세스 호출
+						enemy->OnDamaged();
+					}
+					//EnemyHPWidgetSettings(enemy);
+				}
 				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.5, -0.8);
 				auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.5, 0.5);
 				AddControllerPitchInput(randF);
@@ -942,6 +970,30 @@ void APlayerCharacter::Fire()
 			// 라인 트레이스가 적중했다면
 			if(bHit)
 			{
+				// Enemy Casting
+				AEnemy* enemy=Cast<AEnemy>(sniperHitResult.GetActor());
+				// Enemy FSM Casting
+				UEnemyFSM* fsm = Cast<UEnemyFSM>(enemy->GetDefaultSubobjectByName(FName("enemyFSM")));
+				if(fsm&&enemy)
+				{
+					hitActors = sniperHitResult.GetActor();
+					auto hitBone = sniperHitResult.BoneName;
+					if(hitBone==FName("head"))
+					{
+						// FSM에 있는 Damage Process 호출		
+						fsm->OnDamageProcess(100);
+						// 헤드 적중 데미지 프로세스 호출
+						enemy->OnHeadDamaged();
+					}
+					else
+					{
+						// FSM에 있는 Damage Process 호출		
+						fsm->OnDamageProcess(70);
+						// 일반 적중 데미지 프로세스 호출
+						enemy->OnDamaged();
+					}
+					//EnemyHPWidgetSettings(enemy);
+				}
 				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.7, -1.2);
 				auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7, 0.8);
 				AddControllerPitchInput(randF);
@@ -1081,6 +1133,30 @@ void APlayerCharacter::Fire()
 			bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),startLoc, EndLoc, ObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, pistolHitResult, true);
 			if(bHit)
 			{
+				// Enemy Casting
+				AEnemy* enemy=Cast<AEnemy>(pistolHitResult.GetActor());
+				// Enemy FSM Casting
+				UEnemyFSM* fsm = Cast<UEnemyFSM>(enemy->GetDefaultSubobjectByName(FName("enemyFSM")));
+				if(fsm&&enemy)
+				{
+					hitActors = pistolHitResult.GetActor();
+					auto hitBone = pistolHitResult.BoneName;
+					if(hitBone==FName("head"))
+					{
+						// FSM에 있는 Damage Process 호출		
+						fsm->OnDamageProcess(45);
+						// 헤드 적중 데미지 프로세스 호출
+						enemy->OnHeadDamaged();
+					}
+					else
+					{
+						// FSM에 있는 Damage Process 호출		
+						fsm->OnDamageProcess(25);
+						// 일반 적중 데미지 프로세스 호출
+						enemy->OnDamaged();
+					}
+					//EnemyHPWidgetSettings(enemy);
+				}
 				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.7, -1.2);
 				auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7, 0.8);
 				AddControllerPitchInput(randF);
@@ -1176,6 +1252,30 @@ void APlayerCharacter::Fire()
 			bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),startLoc, EndLoc, ObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, M249HitResult, true);
 			if(bHit)
 			{
+				// Enemy Casting
+				AEnemy* enemy=Cast<AEnemy>(M249HitResult.GetActor());
+				// Enemy FSM Casting
+				UEnemyFSM* fsm = Cast<UEnemyFSM>(enemy->GetDefaultSubobjectByName(FName("enemyFSM")));
+				if(fsm&&enemy)
+				{
+					hitActors = M249HitResult.GetActor();
+					auto hitBone = M249HitResult.BoneName;
+					if(hitBone==FName("head"))
+					{
+						// FSM에 있는 Damage Process 호출		
+						fsm->OnDamageProcess(14);
+						// 헤드 적중 데미지 프로세스 호출
+						enemy->OnHeadDamaged();
+					}
+					else
+					{
+						// FSM에 있는 Damage Process 호출		
+						fsm->OnDamageProcess(7);
+						// 일반 적중 데미지 프로세스 호출
+						enemy->OnDamaged();
+					}
+					//EnemyHPWidgetSettings(enemy);
+				}
 				if(isZooming)
 				{
 					auto randF = UKismetMathLibrary::RandomFloatInRange(-0.4, -0.7);
@@ -1259,3 +1359,11 @@ void APlayerCharacter::FireRelease()
 	EmptySoundBoolean=false;
 }
 
+void APlayerCharacter::EnemyHPWidgetSettings(AEnemy* enemy)
+{
+	// Enemy HP Widget Settings
+	GetWorldTimerManager().ClearTimer(enemy->HPWidgetInvisibleHandle);
+	enemy->enemyHPWidget->HPdynamicMat->SetScalarParameterValue(FName("HPAlpha"), enemy->curHP*0.01-0.001);
+	enemy->HPWidgetComponent->SetVisibility(true);
+	enemy->SetHPWidgetInvisible();
+}

@@ -865,8 +865,11 @@ void APlayerCharacter::Fire()
 				{
 					hitActors = rifleHitResult.GetActor();
 					auto hitBone = rifleHitResult.BoneName;
+					auto hitLoc = rifleHitResult.Location;
+					auto hitRot = UKismetMathLibrary::Conv_VectorToRotator(rifleHitResult.ImpactNormal);
 					if(hitBone==FName("head"))
 					{
+						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.0f));
 						// FSM에 있는 Damage Process 호출		
 						fsm->OnDamageProcess(10);
 						// 헤드 적중 데미지 프로세스 호출
@@ -874,6 +877,7 @@ void APlayerCharacter::Fire()
 					}
 					else
 					{
+						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(0.5f));
 						// FSM에 있는 Damage Process 호출		
 						fsm->OnDamageProcess(5);
 						// 일반 적중 데미지 프로세스 호출
@@ -978,8 +982,11 @@ void APlayerCharacter::Fire()
 				{
 					hitActors = sniperHitResult.GetActor();
 					auto hitBone = sniperHitResult.BoneName;
+					auto hitLoc = sniperHitResult.Location;
+					auto hitRot = UKismetMathLibrary::Conv_VectorToRotator(sniperHitResult.ImpactNormal);
 					if(hitBone==FName("head"))
 					{
+						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(3.0f));
 						// FSM에 있는 Damage Process 호출		
 						fsm->OnDamageProcess(100);
 						// 헤드 적중 데미지 프로세스 호출
@@ -987,6 +994,7 @@ void APlayerCharacter::Fire()
 					}
 					else
 					{
+						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(0.8f));
 						// FSM에 있는 Damage Process 호출		
 						fsm->OnDamageProcess(70);
 						// 일반 적중 데미지 프로세스 호출
@@ -1141,8 +1149,11 @@ void APlayerCharacter::Fire()
 				{
 					hitActors = pistolHitResult.GetActor();
 					auto hitBone = pistolHitResult.BoneName;
+					auto hitLoc = pistolHitResult.Location;
+					auto hitRot = UKismetMathLibrary::Conv_VectorToRotator(pistolHitResult.ImpactNormal);
 					if(hitBone==FName("head"))
 					{
+						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.5f));
 						// FSM에 있는 Damage Process 호출		
 						fsm->OnDamageProcess(45);
 						// 헤드 적중 데미지 프로세스 호출
@@ -1150,6 +1161,7 @@ void APlayerCharacter::Fire()
 					}
 					else
 					{
+						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(0.7f));
 						// FSM에 있는 Damage Process 호출		
 						fsm->OnDamageProcess(25);
 						// 일반 적중 데미지 프로세스 호출
@@ -1260,8 +1272,11 @@ void APlayerCharacter::Fire()
 				{
 					hitActors = M249HitResult.GetActor();
 					auto hitBone = M249HitResult.BoneName;
+					auto hitLoc = M249HitResult.Location;
+					auto hitRot = UKismetMathLibrary::Conv_VectorToRotator(M249HitResult.ImpactNormal);
 					if(hitBone==FName("head"))
 					{
+						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.0f));
 						// FSM에 있는 Damage Process 호출		
 						fsm->OnDamageProcess(14);
 						// 헤드 적중 데미지 프로세스 호출
@@ -1269,6 +1284,7 @@ void APlayerCharacter::Fire()
 					}
 					else
 					{
+						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(0.5f));
 						// FSM에 있는 Damage Process 호출		
 						fsm->OnDamageProcess(7);
 						// 일반 적중 데미지 프로세스 호출

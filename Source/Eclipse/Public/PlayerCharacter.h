@@ -173,8 +173,7 @@ public:
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* RifleBulletShellDropSound;
 
-	UPROPERTY(EditAnywhere, Category="Sounds")
-	class USoundBase* M249FireSound;	
+
 
 	UPROPERTY()
 	class ARifleActor* rifleActor;
@@ -341,6 +340,30 @@ public:
 	//Sounds
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* BulletEmptySound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* BulletHitSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* BulletHeadHitSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* KillSound;
+	
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* RifleFireSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* SniperFireSound;	
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* PistolFireSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* M249FireSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* RifleReloadSound;	
 	
 	UPROPERTY()
 	FTimerHandle shootEnableHandle;

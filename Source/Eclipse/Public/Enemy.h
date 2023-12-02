@@ -86,4 +86,7 @@ public:
 	UPROPERTY(EditAnywhere, Category=EnemySettings)
 	class UMaterialInterface* M_aimingPointerHead;
 
+	UPROPERTY()
+	bool bDeath = false;
+
 };

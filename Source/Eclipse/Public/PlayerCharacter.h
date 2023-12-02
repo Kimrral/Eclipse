@@ -224,6 +224,8 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	class UWeaponInfoWidget* infoWidgetUI;
 
+	UPROPERTY(EditAnywhere)
+	class UParticleSystem* bulletImpactFactory;
 
 	UPROPERTY(BlueprintReadOnly)
 	class UUserWidget* informationUI;

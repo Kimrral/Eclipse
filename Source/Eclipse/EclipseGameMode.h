@@ -13,6 +13,14 @@ class AEclipseGameMode : public AGameModeBase
 
 public:
 	AEclipseGameMode();
+
+	UPROPERTY()
+	bool isCursorOnEnemy = false;
+
+	UPROPERTY()
+	bool isCursorOnEnemyHead = false;
+
+	
 };
 
 

@@ -892,6 +892,7 @@ void APlayerCharacter::Fire()
 								fsm->OnDamageProcess(14);
 								// 헤드 적중 데미지 프로세스 호출
 								enemy->OnHeadDamaged();
+								enemy->DropReward();
 								enemy->bDeath=true;
 							}
 							else
@@ -916,6 +917,7 @@ void APlayerCharacter::Fire()
 								fsm->OnDamageProcess(7);
 								// 일반 적중 데미지 프로세스 호출
 								enemy->OnDamaged();
+								enemy->DropReward();
 								enemy->bDeath=true;
 							}
 							else
@@ -1044,6 +1046,7 @@ void APlayerCharacter::Fire()
 							fsm->OnDamageProcess(100);
 							// 헤드 적중 데미지 프로세스 호출
 							enemy->OnHeadDamaged();
+							enemy->DropReward();
 							enemy->bDeath=true;
 						}
 						else
@@ -1057,6 +1060,7 @@ void APlayerCharacter::Fire()
 								fsm->OnDamageProcess(70);
 								// 일반 적중 데미지 프로세스 호출
 								enemy->OnDamaged();
+								enemy->DropReward();
 								enemy->bDeath=true;
 							}
 							else
@@ -1238,6 +1242,7 @@ void APlayerCharacter::Fire()
 								fsm->OnDamageProcess(45);
 								// 헤드 적중 데미지 프로세스 호출
 								enemy->OnHeadDamaged();
+								enemy->DropReward();
 								enemy->bDeath=true;
 							}
 							else
@@ -1263,6 +1268,7 @@ void APlayerCharacter::Fire()
 								fsm->OnDamageProcess(25);
 								// 일반 적중 데미지 프로세스 호출
 								enemy->OnDamaged();
+								enemy->DropReward();
 								enemy->bDeath=true;
 							}
 							else
@@ -1399,6 +1405,7 @@ void APlayerCharacter::Fire()
 								fsm->OnDamageProcess(14);
 								// 헤드 적중 데미지 프로세스 호출
 								enemy->OnHeadDamaged();
+								enemy->DropReward();
 								enemy->bDeath=true;
 							}
 							else
@@ -1424,6 +1431,7 @@ void APlayerCharacter::Fire()
 								fsm->OnDamageProcess(7);
 								// 일반 적중 데미지 프로세스 호출
 								enemy->OnDamaged();
+								enemy->DropReward();
 								enemy->bDeath=true;
 							}
 							else

@@ -3,6 +3,7 @@
 
 #include "PlayerCharacter.h"
 
+#include "CrosshairWidget.h"
 #include "Enemy.h"
 #include "EnemyFSM.h"
 #include "EnemyHPWidget.h"
@@ -136,7 +137,7 @@ void APlayerCharacter::BeginPlay()
 	pistolComp->SetVisibility(false);
 	m249Comp->SetVisibility(false);
 
-	crosshairUI = CreateWidget<UUserWidget>(GetWorld(), crosshairFactory);
+	crosshairUI = CreateWidget<UCrosshairWidget>(GetWorld(), crosshairFactory);
 	crosshairUI->AddToViewport();
 
 	infoWidgetUI = CreateWidget<UWeaponInfoWidget>(GetWorld(), infoWidgetFactory);
@@ -869,6 +870,7 @@ void APlayerCharacter::Fire()
 					auto hitRot = UKismetMathLibrary::Conv_VectorToRotator(rifleHitResult.ImpactNormal);
 					if(hitBone==FName("head"))
 					{
+						crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
 						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.0f));
 						// FSM에 있는 Damage Process 호출		
 						fsm->OnDamageProcess(10);
@@ -877,6 +879,7 @@ void APlayerCharacter::Fire()
 					}
 					else
 					{
+						crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
 						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(0.5f));
 						// FSM에 있는 Damage Process 호출		
 						fsm->OnDamageProcess(5);
@@ -986,6 +989,7 @@ void APlayerCharacter::Fire()
 					auto hitRot = UKismetMathLibrary::Conv_VectorToRotator(sniperHitResult.ImpactNormal);
 					if(hitBone==FName("head"))
 					{
+						crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
 						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(3.0f));
 						// FSM에 있는 Damage Process 호출		
 						fsm->OnDamageProcess(100);
@@ -994,6 +998,7 @@ void APlayerCharacter::Fire()
 					}
 					else
 					{
+						crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
 						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(0.8f));
 						// FSM에 있는 Damage Process 호출		
 						fsm->OnDamageProcess(70);
@@ -1153,6 +1158,7 @@ void APlayerCharacter::Fire()
 					auto hitRot = UKismetMathLibrary::Conv_VectorToRotator(pistolHitResult.ImpactNormal);
 					if(hitBone==FName("head"))
 					{
+						crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
 						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.5f));
 						// FSM에 있는 Damage Process 호출		
 						fsm->OnDamageProcess(45);
@@ -1161,6 +1167,7 @@ void APlayerCharacter::Fire()
 					}
 					else
 					{
+						crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
 						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(0.7f));
 						// FSM에 있는 Damage Process 호출		
 						fsm->OnDamageProcess(25);
@@ -1276,6 +1283,7 @@ void APlayerCharacter::Fire()
 					auto hitRot = UKismetMathLibrary::Conv_VectorToRotator(M249HitResult.ImpactNormal);
 					if(hitBone==FName("head"))
 					{
+						crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
 						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.0f));
 						// FSM에 있는 Damage Process 호출		
 						fsm->OnDamageProcess(14);
@@ -1284,6 +1292,7 @@ void APlayerCharacter::Fire()
 					}
 					else
 					{
+						crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
 						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(0.5f));
 						// FSM에 있는 Damage Process 호출		
 						fsm->OnDamageProcess(7);

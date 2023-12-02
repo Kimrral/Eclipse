@@ -219,7 +219,7 @@ public:
 	TArray<FString> equippedWeaponStringArray;
 
 	UPROPERTY(BlueprintReadOnly)
-	class UUserWidget* crosshairUI;
+	class UCrosshairWidget* crosshairUI;
 
 	UPROPERTY(BlueprintReadOnly)
 	class UWeaponInfoWidget* infoWidgetUI;

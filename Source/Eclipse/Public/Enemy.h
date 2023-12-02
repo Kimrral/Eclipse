@@ -26,18 +26,6 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
-	// Outline Function
-	UFUNCTION()
-	void CursorOver(UPrimitiveComponent* primComp);
-	UFUNCTION()
-	void CursorOverEnd(UPrimitiveComponent* primComp);
-
-	// Headshot Function
-	UFUNCTION()
-	void HeadCursorOver(UPrimitiveComponent* primComp);
-	UFUNCTION()
-	void HeadCursorOverEnd(UPrimitiveComponent* primComp);
-
 	UPROPERTY()
 	class AEclipseGameMode* gameMode;
 

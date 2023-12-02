@@ -24,23 +24,6 @@ AEnemy::AEnemy()
 	// HP Widget Component
 	HPWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HPWidgetComponent"));
 	HPWidgetComponent->SetupAttachment(RootComponent);
-
-	
-	// Character Mesh Setup
-	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
-	GetMesh()->OnBeginCursorOver.AddDynamic(this, &AEnemy::CursorOver);
-	GetMesh()->OnEndCursorOver.AddDynamic(this, &AEnemy::CursorOverEnd);
-
-	// Enemy Anim Blueprints
-	ConstructorHelpers::FClassFinder<UAnimInstance> tempAnim(TEXT("/Script/Engine.AnimBlueprint'/Game/Blueprints/ABP_Guardian.ABP_Guardian_C'"));
-	if(tempAnim.Succeeded())
-	{
-		GetMesh()->SetAnimInstanceClass(tempAnim.Class);
-	}
-
-	// Aiming Pointer Setup
-	aimingPointer = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("aimingPointer"));
-	aimingPointer->SetupAttachment(RootComponent);
 	
 }
 
@@ -57,7 +40,8 @@ void AEnemy::BeginPlay()
 	enemyHPWidget = Cast<UEnemyHPWidget>(HPWidgetComponent->GetWidget());
 	PC = Cast<AEclipsePlayerController>(GetWorld()->GetFirstPlayerController());
 
-	aimingPointer->SetVisibility(false);
+	HPWidgetComponent->SetVisibility(false);		
+
 }
 
 // Called every frame
@@ -72,36 +56,6 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-}
-
-void AEnemy::CursorOver(UPrimitiveComponent* primComp)
-{
-	// Outline Render
-	GetMesh()->SetRenderCustomDepth(true);
-	aimingPointer->SetVisibility(true);
-	gameMode->isCursorOnEnemy=true;
-}
-
-void AEnemy::CursorOverEnd(UPrimitiveComponent* primComp)
-{
-	// Outline Render
-	GetMesh()->SetRenderCustomDepth(false);
-	aimingPointer->SetVisibility(false);
-	gameMode->isCursorOnEnemy=false;
-}
-
-void AEnemy::HeadCursorOver(UPrimitiveComponent* primComp)
-{
-	gameMode->isCursorOnEnemyHead=true;
-	aimingPointer->SetMaterial(0, M_aimingPointerHead);
-	UE_LOG(LogTemp, Warning, TEXT("Head on"))
-}
-
-void AEnemy::HeadCursorOverEnd(UPrimitiveComponent* primComp)
-{
-	gameMode->isCursorOnEnemyHead=false;
-	aimingPointer->SetMaterial(0, M_aimingPointer);
-	UE_LOG(LogTemp, Warning, TEXT("Head off"))
 }
 
 void AEnemy::Move()

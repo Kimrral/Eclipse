@@ -57,6 +57,9 @@ public:
 	UFUNCTION()
 	void DropReward();
 
+	UFUNCTION()
+	void DetectPlayerLineTrace();
+
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class APistolAmmoActor> pistolAmmoFactory;
 	UPROPERTY(EditAnywhere)
@@ -101,5 +104,8 @@ public:
 
 	UPROPERTY()
 	bool bDeath = false;
+
+	UPROPERTY()
+	bool bPlayerInSight = false;
 
 };

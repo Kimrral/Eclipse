@@ -9,6 +9,7 @@
 #include "EnemyHPWidget.h"
 #include "M249AmmoActor.h"
 #include "PistolAmmoActor.h"
+#include "PlayerCharacter.h"
 #include "RifleAmmoActor.h"
 #include "SniperAmmoActor.h"
 #include "Components/CapsuleComponent.h"
@@ -52,7 +53,9 @@ void AEnemy::BeginPlay()
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-		
+
+	//DetectPlayerLineTrace();
+
 }
 
 // Called to bind functionality to input
@@ -157,6 +160,32 @@ void AEnemy::DropReward()
 			FVector force = FVector(0, 0, 5000);
 			FVector loc = m249Ammo->GetActorUpVector();
 			m249Ammo->ammoMesh->AddImpulseAtLocation(force, loc);
+		}
+	}
+}
+
+void AEnemy::DetectPlayerLineTrace()
+{
+	if(enemyFSM->state==EEnemyState::MOVE||enemyFSM->state==EEnemyState::ATTACK)
+	{
+		FHitResult enemySightResult;
+		FVector startPos = GetActorLocation();
+		FVector endPos = enemyFSM->player->GetActorLocation();
+		//DrawDebugLine(GetWorld(), startPos, endPos, FColor::Red);
+		bool bHit = GetWorld()->LineTraceSingleByChannel(enemySightResult, startPos, endPos, ECollisionChannel::ECC_Visibility);
+		if(bHit)
+		{
+			auto player = Cast<APlayerCharacter>(enemySightResult.GetActor());
+			if(player)
+			{
+				bPlayerInSight=true;
+				UE_LOG(LogTemp, Warning, TEXT("Player in Sight"))
+			}
+			else
+			{
+				bPlayerInSight=false;
+				UE_LOG(LogTemp, Warning, TEXT("Player out Sight"))
+			}
 		}
 	}
 }

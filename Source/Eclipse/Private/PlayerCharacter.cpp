@@ -1113,12 +1113,12 @@ void APlayerCharacter::Fire()
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), fireParticle, particleTrans);
 					auto fireSocketLoc = sniperComp->GetSocketTransform(FName("SniperFirePosition")).GetLocation();
 					// 탄 궤적 나이아가라 시스템 스폰
-					UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, sniperHitResult.Location, FRotator::ZeroRotator,FVector(1), true, true, ENCPoolMethod::AutoRelease);
-					if(niagara)
-					{
+					//UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, sniperHitResult.Location, FRotator::ZeroRotator,FVector(1), true, true, ENCPoolMethod::AutoRelease);
+					//if(niagara)
+					//{
 						// 나이아가라 파라미터 벡터 위치 변수 할당
-						niagara->SetVectorParameter(FName("EndPoint"), fireSocketLoc);
-					}
+					//	niagara->SetVectorParameter(FName("EndPoint"), fireSocketLoc);
+					//}
 				}
 
 				CanShoot=false;
@@ -1469,7 +1469,7 @@ void APlayerCharacter::Fire()
 				auto decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
 				GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
 				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot+FRotator(-90, 0, 0), FVector(0.5f));
-				auto fireSocketLoc = rifleComp->GetSocketTransform(FName("RifleFirePosition")).GetLocation();
+				auto fireSocketLoc = m249Comp->GetSocketTransform(FName("M249FirePosition")).GetLocation();
 				// 탄 궤적 나이아가라 시스템 스폰
 				UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, M249HitResult.Location, FRotator::ZeroRotator,FVector(1), true, true, ENCPoolMethod::AutoRelease);
 				if(niagara)

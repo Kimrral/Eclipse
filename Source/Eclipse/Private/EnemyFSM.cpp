@@ -94,7 +94,7 @@ void UEnemyFSM::TickMove()
 	// 타임라인을 이용한 Enemy 캐릭터 회전 러프
 	Timeline.PlayFromStart();
 	// 구한 값을 기준으로 이동 인풋
-	me->AddMovementInput(dir.GetSafeNormal());	
+	me->AddMovementInput(dir.GetSafeNormal());
 	float dist = player->GetDistanceTo(me);
 	if(dist<=attackRange)
 	{

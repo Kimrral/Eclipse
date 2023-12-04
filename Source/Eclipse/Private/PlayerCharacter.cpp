@@ -778,19 +778,23 @@ void APlayerCharacter::Reload()
 	{
 		if(weaponArray[0]==true&&curRifleAmmo<40&&maxRifleAmmo>0)
 		{
+			crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
 			UGameplayStatics::PlaySound2D(GetWorld(), RifleReloadSound);
 			PlayAnimMontage(zoomingMontage, 1, FName("Reload"));
 		}
 		else if(weaponArray[1]==true&&curSniperAmmo<5&&maxRifleAmmo>0)
 		{
+			crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
 			PlayAnimMontage(zoomingMontage, 1, FName("Reload"));
 		}
 		else if(weaponArray[2]==true&&curPistolAmmo<8&&maxPistolAmmo>0)
 		{
+			crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
 			PlayAnimMontage(zoomingMontage, 1, FName("Reload"));
 		}
 		else if(weaponArray[3]==true&&curM249Ammo<100&&maxM249Ammo>0)
 		{
+			crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
 			PlayAnimMontage(zoomingMontage, 1, FName("Reload"));
 		}
 	}
@@ -1113,12 +1117,12 @@ void APlayerCharacter::Fire()
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), fireParticle, particleTrans);
 					auto fireSocketLoc = sniperComp->GetSocketTransform(FName("SniperFirePosition")).GetLocation();
 					// 탄 궤적 나이아가라 시스템 스폰
-					//UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, sniperHitResult.Location, FRotator::ZeroRotator,FVector(1), true, true, ENCPoolMethod::AutoRelease);
-					//if(niagara)
-					//{
+					UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, sniperHitResult.Location, FRotator::ZeroRotator,FVector(1), true, true, ENCPoolMethod::AutoRelease);
+					if(niagara)
+					{
 						// 나이아가라 파라미터 벡터 위치 변수 할당
-					//	niagara->SetVectorParameter(FName("EndPoint"), fireSocketLoc);
-					//}
+						niagara->SetVectorParameter(FName("EndPoint"), fireSocketLoc);
+					}
 				}
 
 				CanShoot=false;

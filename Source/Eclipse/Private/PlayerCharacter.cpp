@@ -263,21 +263,23 @@ void APlayerCharacter::Zoom()
 	{
 		animInst->bZooming=true;
 	}
+	// is using rifle
+	if(weaponArray[0]==true)
+	{
+		if(animInst)
+		{
+			animInst->bRifleZooming=true;
+		}
+		Timeline.PlayFromStart();	
+	}
 	// is using sniper
-	if(weaponArray[1]==true)
+	else if(weaponArray[1]==true)
 	{
 		isSniperZooming=true;
 		crosshairUI->CrosshairImage->SetVisibility(ESlateVisibility::Hidden);
 		auto cameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0));
 		cameraManager->StartCameraFade(1.0, 0.1, 3.0, FColor::Black, false, true);
 		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-		if(animInst)
-		{
-			if(animInst->bPistol==false)
-			{
-				PlayAnimMontage(zoomingMontage, 1, FName("Zooming"));
-			}
-		}
 		auto controller = GetWorld()->GetFirstPlayerController();
 		controller->PlayerCameraManager->StartCameraShake(sniperZoomingShake);
 		// 카메라 줌 러프 타임라인 재생
@@ -286,18 +288,14 @@ void APlayerCharacter::Zoom()
 	}
 	else if(weaponArray[3]==true)
 	{
+		if(animInst)
+		{
+			animInst->bM249Zooming=true;
+		}
 		Timeline.PlayFromStart();	
 	}
 	else
 	{
-		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-		if(animInst)
-		{
-			if(animInst->bPistol==false)
-			{
-				PlayAnimMontage(zoomingMontage, 1, FName("Zooming"));
-			}
-		}
 		// 카메라 줌 러프 타임라인 재생
 		Timeline.PlayFromStart();	
 	}
@@ -313,7 +311,15 @@ void APlayerCharacter::ZoomRelease()
 	{
 		animInst->bZooming=false;
 	}
-	if(weaponArray[1]==true)
+	if(weaponArray[0]==true)
+	{
+		if(animInst)
+		{
+			animInst->bRifleZooming=false;
+		}
+		Timeline.ReverseFromEnd();
+	}
+	else if(weaponArray[1]==true)
 	{
 		isSniperZooming=false;
 		auto controller = GetWorld()->GetFirstPlayerController();
@@ -326,12 +332,16 @@ void APlayerCharacter::ZoomRelease()
 		crosshairUI->CrosshairImage->SetVisibility(ESlateVisibility::Visible);
 		Timeline.ReverseFromEnd();
 	}
+	else if(weaponArray[3]==true)
+	{
+		if(animInst)
+		{
+			animInst->bM249Zooming=false;
+		}
+		Timeline.ReverseFromEnd();
+	}
 	else
 	{
-		if(GetMesh()->GetAnimInstance()->Montage_IsPlaying(zoomingMontage))
-		{
-			StopAnimMontage();
-		}
 		Timeline.ReverseFromEnd();
 	}
 
@@ -343,7 +353,7 @@ void APlayerCharacter::Run()
 	{
 		return;
 	}
-	isRunning=true;
+	//isRunning=true;
 	GetCharacterMovement()->MaxWalkSpeed=520.f;
 }
 
@@ -353,7 +363,7 @@ void APlayerCharacter::RunRelease()
 	{
 		return;
 	}
-	isRunning=false;
+	//isRunning=false;
 	GetCharacterMovement()->MaxWalkSpeed = 360.f;
 }
 
@@ -866,7 +876,7 @@ void APlayerCharacter::Fire()
 			controller->PlayerCameraManager->StartCameraShake(rifleFireShake);
 			if(!isZooming)
 			{
-				PlayAnimMontage(zoomingMontage, 1, FName("RifleFire"));
+				//PlayAnimMontage(zoomingMontage, 1, FName("RifleFire"));
 			}
 			bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),startLoc, EndLoc, ObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, rifleHitResult, true);
 			if(bHit)
@@ -1092,7 +1102,7 @@ void APlayerCharacter::Fire()
 				auto decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
 				GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
 				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot+FRotator(-90, 0, 0), FVector(0.5f));
-				if(isZooming)
+				if(isSniperZooming)
 				{
 					auto particleTrans = FollowCamera->GetComponentLocation()+FollowCamera->GetUpVector()*-40.0f;
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), fireParticle, particleTrans);

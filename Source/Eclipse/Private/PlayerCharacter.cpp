@@ -444,9 +444,9 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
 				rifleActor->weaponMesh->SetRenderCustomDepth(true);
 				// Widget Switcher 이용한 무기 정보 위젯 스위칭
-				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(0);
+				//infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(0);
 				// Radial Slider Value 초기화
-				infoWidgetUI->weaponHoldPercent=0;
+				//infoWidgetUI->weaponHoldPercent=0;
 				// Weapon Info Widget 뷰포트에 배치
 				infoWidgetUI->AddToViewport();
 			}
@@ -461,9 +461,9 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
 				sniperActor->weaponMesh->SetRenderCustomDepth(true);
 				// Widget Switcher 이용한 무기 정보 위젯 스위칭
-				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(1);
+				//infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(1);
 				// Radial Slider Value 초기화
-				infoWidgetUI->weaponHoldPercent=0;
+				//infoWidgetUI->weaponHoldPercent=0;
 				// Weapon Info Widget 뷰포트에 배치
 				infoWidgetUI->AddToViewport();
 			}
@@ -478,9 +478,9 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
 				pistolActor->weaponMesh->SetRenderCustomDepth(true);
 				// Widget Switcher 이용한 무기 정보 위젯 스위칭
-				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(2);
+				//infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(2);
 				// Radial Slider Value 초기화
-				infoWidgetUI->weaponHoldPercent=0;
+				//infoWidgetUI->weaponHoldPercent=0;
 				// Weapon Info Widget 뷰포트에 배치
 				infoWidgetUI->AddToViewport();
 			}
@@ -495,9 +495,9 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
 				m249Actor->weaponMesh->SetRenderCustomDepth(true);
 				// Widget Switcher 이용한 무기 정보 위젯 스위칭
-				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(3);
+				//infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(3);
 				// Radial Slider Value 초기화
-				infoWidgetUI->weaponHoldPercent=0;
+				//infoWidgetUI->weaponHoldPercent=0;
 				// Weapon Info Widget 뷰포트에 배치
 				infoWidgetUI->AddToViewport();
 			}
@@ -581,8 +581,8 @@ void APlayerCharacter::ChangeWeapon()
 			// 라이플을 사용하지 않을 때만 교체
 			if(weaponArray[0]==false)
 			{
-				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.01, 0, 1);
-				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+				//infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.01, 0, 1);
+				if(infoWidgetUI)
 				{
 					infoWidgetUI->RemoveFromParent();
 					// 무기 교체 Montage 재생
@@ -634,8 +634,8 @@ void APlayerCharacter::ChangeWeapon()
 			// 스나이퍼를 사용하지 않을 때만 교체
 			if(weaponArray[1]==false)
 			{
-				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.01, 0, 1);
-				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+				//infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.01, 0, 1);
+				if(infoWidgetUI)
 				{
 					infoWidgetUI->RemoveFromParent();
 					PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
@@ -682,8 +682,8 @@ void APlayerCharacter::ChangeWeapon()
 			// 권총을 사용하지 않을 때만 교체
 			if(weaponArray[2]==false)
 			{
-				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.01, 0, 1);
-				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+				//infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.01, 0, 1);
+				if(infoWidgetUI)
 				{
 					infoWidgetUI->RemoveFromParent();
 					PlayAnimMontage(zoomingMontage, 1 , FName("PistolEquip"));
@@ -728,8 +728,8 @@ void APlayerCharacter::ChangeWeapon()
 			// M249을 사용하지 않을 때만 교체
 			if(weaponArray[3]==false)
 			{
-				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.01, 0, 1);
-				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+				//infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.01, 0, 1);
+				if(infoWidgetUI)
 				{
 					infoWidgetUI->RemoveFromParent();
 					PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
@@ -1113,12 +1113,12 @@ void APlayerCharacter::Fire()
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), fireParticle, particleTrans);
 					auto fireSocketLoc = sniperComp->GetSocketTransform(FName("SniperFirePosition")).GetLocation();
 					// 탄 궤적 나이아가라 시스템 스폰
-					//UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, sniperHitResult.Location, FRotator::ZeroRotator,FVector(1), true, true, ENCPoolMethod::AutoRelease);
-					//if(niagara)
-					//{
+					UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, sniperHitResult.Location, FRotator::ZeroRotator,FVector(1), true, true, ENCPoolMethod::AutoRelease);
+					if(niagara)
+					{
 						// 나이아가라 파라미터 벡터 위치 변수 할당
-					//	niagara->SetVectorParameter(FName("EndPoint"), fireSocketLoc);
-					//}
+						niagara->SetVectorParameter(FName("EndPoint"), fireSocketLoc);
+					}
 				}
 
 				CanShoot=false;

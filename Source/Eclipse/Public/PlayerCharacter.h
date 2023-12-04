@@ -302,8 +302,14 @@ public:
 	bool isRunning = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool isRifleZooming = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool isSniperZooming = false;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool isM249Zooming = false;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool isCursorOnRifle;
 
@@ -396,7 +402,7 @@ public:
 	class UParticleSystem* fireParticle;
 	UPROPERTY(EditAnywhere, Category="Niagara")
 	class UNiagaraSystem* BulletTrailSystem;
-
+	
 	UPROPERTY(EditAnywhere)  // Timeline 생성
 	FTimeline Timeline;					
 

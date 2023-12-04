@@ -38,6 +38,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bZooming = false;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bRifleZooming = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bM249Zooming = false;
+	
 	UPROPERTY(EditAnywhere, Category=Sound)
 	class USoundBase* walkSound;
 };

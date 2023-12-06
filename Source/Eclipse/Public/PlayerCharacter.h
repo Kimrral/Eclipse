@@ -91,10 +91,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* SecondWeaponSwapAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* ThirdWeaponSwapAction;
-	
 	
 
 	/** Called for movement input */
@@ -133,7 +129,6 @@ public:
 
 	void SwapFirstWeapon();
 	void SwapSecondWeapon();
-	void SwapThirdWeapon();
 	
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
@@ -400,6 +395,8 @@ public:
 	class UParticleSystem* bulletMarksParticle;
 	UPROPERTY(EditAnywhere, Category="Particle")
 	class UParticleSystem* fireParticle;
+	UPROPERTY(EditAnywhere, Category="Particle")
+	class UParticleSystem* trailParticle;
 	UPROPERTY(EditAnywhere, Category="Niagara")
 	class UNiagaraSystem* BulletTrailSystem;
 	

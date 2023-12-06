@@ -16,6 +16,7 @@
 #include "Components/WidgetComponent.h"
 #include "Eclipse/EclipseGameMode.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -188,5 +189,12 @@ void AEnemy::DetectPlayerLineTrace()
 			}
 		}
 	}
+}
+
+void AEnemy::EnemyAttackProcess()
+{
+	auto particleTrans=GetMesh()->GetSocketTransform(FName("Muzzle"));
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), fireParticle, particleTrans);
+
 }
 

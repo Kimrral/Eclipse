@@ -34,5 +34,16 @@ public:
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UTextBlock* AmmoType;
 
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UImage* rifleBulletImage;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UImage* sniperBulletImage;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UImage* pistolBulletImage;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UImage* M249BulletImage;
 
 };

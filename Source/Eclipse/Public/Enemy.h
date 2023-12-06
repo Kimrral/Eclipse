@@ -60,6 +60,9 @@ public:
 	UFUNCTION()
 	void DetectPlayerLineTrace();
 
+	UFUNCTION()
+	void EnemyAttackProcess();
+
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class APistolAmmoActor> pistolAmmoFactory;
 	UPROPERTY(EditAnywhere)
@@ -92,6 +95,9 @@ public:
 
 	UPROPERTY()
 	FTimerHandle HPWidgetInvisibleHandle;
+
+	UPROPERTY(EditAnywhere)
+	class UParticleSystem* fireParticle;
 
 	UPROPERTY()
 	class AEclipsePlayerController* PC;

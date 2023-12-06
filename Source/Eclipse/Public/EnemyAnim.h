@@ -34,6 +34,9 @@ public:
 	void AnimNotify_DieEnd();
 
 	UFUNCTION()
+	void AnimNotify_Fire();
+
+	UFUNCTION()
 	bool IsAttackAnimationPlaying();
 	
 	// Casting 변수를 전역변수로 선언한다.

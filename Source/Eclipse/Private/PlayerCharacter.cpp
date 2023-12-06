@@ -108,8 +108,7 @@ void APlayerCharacter::BeginPlay()
 	weaponArray.Add(bUsingM249); //3
 
 	equippedWeaponStringArray.Add(FString("Rifle")); //0
-	equippedWeaponStringArray.Add(FString("None")); //1
-	equippedWeaponStringArray.Add(FString("None")); //2
+	equippedWeaponStringArray.Add(FString("Pistol")); //1
 
 	curWeaponSlotNumber=1;
 
@@ -211,7 +210,6 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		//Weapon Swap
 		EnhancedInputComponent->BindAction(FirstWeaponSwapAction, ETriggerEvent::Started, this, &APlayerCharacter::SwapFirstWeapon);
 		EnhancedInputComponent->BindAction(SecondWeaponSwapAction, ETriggerEvent::Started, this, &APlayerCharacter::SwapSecondWeapon);
-		EnhancedInputComponent->BindAction(ThirdWeaponSwapAction, ETriggerEvent::Started, this, &APlayerCharacter::SwapThirdWeapon);
 		
 	}
 }
@@ -401,28 +399,199 @@ void APlayerCharacter::SwapFirstWeapon()
 	{
 		return;
 	}
+	auto animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+	if(animInst)
+	{
+		bool montagePlaying = animInst->IsAnyMontagePlaying();
+		if(montagePlaying)
+		{
+			return;
+		}
+	}
 	curWeaponSlotNumber=1;
-	PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+	if(equippedWeaponStringArray[0]==FString("Rifle"))
+	{
+		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+		if(animInst)
+		{
+			// 애니메이션 블루프린트에 상태 전환 불리언 전달
+			animInst->bPistol=false;
+		}
+		PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+		// Visibility 설정
+		rifleComp->SetVisibility(true);
+		sniperComp->SetVisibility(false);
+		pistolComp->SetVisibility(false);
+		m249Comp->SetVisibility(false);
+		// 무기 배열 설정
+		weaponArray[0]=true;
+		weaponArray[1]=false;
+		weaponArray[2]=false;
+		weaponArray[3]=false;
+
+	}
+	else if(equippedWeaponStringArray[0]==FString("Sniper"))
+	{
+		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+		if(animInst)
+		{
+			// 애니메이션 블루프린트에 상태 전환 불리언 전달
+			animInst->bPistol=false;
+		}
+		PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+		// Visibility 설정
+		rifleComp->SetVisibility(false);
+		sniperComp->SetVisibility(true);
+		pistolComp->SetVisibility(false);
+		m249Comp->SetVisibility(false);
+		// 무기 배열 설정
+		weaponArray[0]=false;
+		weaponArray[1]=true;
+		weaponArray[2]=false;
+		weaponArray[3]=false;
+
+	}
+	else if(equippedWeaponStringArray[0]==FString("Pistol"))
+	{
+		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+		if(animInst)
+		{
+			// 애니메이션 블루프린트에 상태 전환 불리언 전달
+			animInst->bPistol=true;
+		}
+		PlayAnimMontage(zoomingMontage, 1 , FName("PistolEquip"));
+		// Visibility 설정
+		rifleComp->SetVisibility(false);
+		sniperComp->SetVisibility(false);
+		pistolComp->SetVisibility(true);
+		m249Comp->SetVisibility(false);
+		// 무기 배열 설정
+		weaponArray[0]=false;
+		weaponArray[1]=false;
+		weaponArray[2]=true;
+		weaponArray[3]=false;
+	}
+	else if(equippedWeaponStringArray[0]==FString("M249"))
+	{
+		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+		if(animInst)
+		{
+			// 애니메이션 블루프린트에 상태 전환 불리언 전달
+			animInst->bPistol=false;
+		}
+		PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+		// Visibility 설정
+		rifleComp->SetVisibility(false);
+		sniperComp->SetVisibility(false);
+		pistolComp->SetVisibility(false);
+		m249Comp->SetVisibility(true);
+		// 무기 배열 설정
+		weaponArray[0]=false;
+		weaponArray[1]=false;
+		weaponArray[2]=false;
+		weaponArray[3]=true;
+	}
 }
 
 void APlayerCharacter::SwapSecondWeapon()
 {
-	if(equippedWeaponStringArray[1]==FString("None")||curWeaponSlotNumber==2)
+	if(curWeaponSlotNumber==2)
 	{
 		return;
+	}
+	auto animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+	if(animInst)
+	{
+		bool montagePlaying = animInst->IsAnyMontagePlaying();
+		if(montagePlaying)
+		{
+			return;
+		}
 	}
 	curWeaponSlotNumber=2;
-	PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
-}
-
-void APlayerCharacter::SwapThirdWeapon()
-{
-	if(equippedWeaponStringArray[2]==FString("None")||curWeaponSlotNumber==3)
+	if(equippedWeaponStringArray[1]==FString("Rifle"))
 	{
-		return;
+		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+		if(animInst)
+		{
+			// 애니메이션 블루프린트에 상태 전환 불리언 전달
+			animInst->bPistol=false;
+		}
+		PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+		// Visibility 설정
+		rifleComp->SetVisibility(true);
+		sniperComp->SetVisibility(false);
+		pistolComp->SetVisibility(false);
+		m249Comp->SetVisibility(false);
+		// 무기 배열 설정
+		weaponArray[0]=true;
+		weaponArray[1]=false;
+		weaponArray[2]=false;
+		weaponArray[3]=false;
+
 	}
-	curWeaponSlotNumber=3;
-	PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+	else if(equippedWeaponStringArray[1]==FString("Sniper"))
+	{
+		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+		if(animInst)
+		{
+			// 애니메이션 블루프린트에 상태 전환 불리언 전달
+			animInst->bPistol=false;
+		}
+		PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+		// Visibility 설정
+		rifleComp->SetVisibility(false);
+		sniperComp->SetVisibility(true);
+		pistolComp->SetVisibility(false);
+		m249Comp->SetVisibility(false);
+		// 무기 배열 설정
+		weaponArray[0]=false;
+		weaponArray[1]=true;
+		weaponArray[2]=false;
+		weaponArray[3]=false;
+
+	}
+	else if(equippedWeaponStringArray[1]==FString("Pistol"))
+	{
+		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+		if(animInst)
+		{
+			// 애니메이션 블루프린트에 상태 전환 불리언 전달
+			animInst->bPistol=true;
+		}
+		PlayAnimMontage(zoomingMontage, 1 , FName("PistolEquip"));
+		// Visibility 설정
+		rifleComp->SetVisibility(false);
+		sniperComp->SetVisibility(false);
+		pistolComp->SetVisibility(true);
+		m249Comp->SetVisibility(false);
+		// 무기 배열 설정
+		weaponArray[0]=false;
+		weaponArray[1]=false;
+		weaponArray[2]=true;
+		weaponArray[3]=false;
+	}
+	else if(equippedWeaponStringArray[1]==FString("M249"))
+	{
+		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+		if(animInst)
+		{
+			// 애니메이션 블루프린트에 상태 전환 불리언 전달
+			animInst->bPistol=false;
+		}
+		PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+		// Visibility 설정
+		rifleComp->SetVisibility(false);
+		sniperComp->SetVisibility(false);
+		pistolComp->SetVisibility(false);
+		m249Comp->SetVisibility(true);
+		// 무기 배열 설정
+		weaponArray[0]=false;
+		weaponArray[1]=false;
+		weaponArray[2]=false;
+		weaponArray[3]=true;
+	}
+
 }
 
 
@@ -625,6 +794,14 @@ void APlayerCharacter::ChangeWeapon()
 						// 사용중인 무기 액터 스폰
 						m249Actor = GetWorld()->SpawnActor<AM249Actor>(M249Factory, spawnPosition, spawnRotation);
 					}
+					if(curWeaponSlotNumber==1)
+					{
+						equippedWeaponStringArray[0]=FString("Rifle");
+					}
+					else if(curWeaponSlotNumber==2)
+					{
+						equippedWeaponStringArray[1]=FString("Rifle");
+					}
 					// Visibility 설정
 					rifleComp->SetVisibility(true);
 					sniperComp->SetVisibility(false);
@@ -672,7 +849,14 @@ void APlayerCharacter::ChangeWeapon()
 					{
 						m249Actor = GetWorld()->SpawnActor<AM249Actor>(M249Factory, spawnPosition, spawnRotation);
 					}
-			
+					if(curWeaponSlotNumber==1)
+					{
+						equippedWeaponStringArray[0]=FString("Sniper");
+					}
+					else if(curWeaponSlotNumber==2)
+					{
+						equippedWeaponStringArray[1]=FString("Sniper");
+					}			
 					rifleComp->SetVisibility(false);
 					sniperComp->SetVisibility(true);
 					pistolComp->SetVisibility(false);
@@ -719,7 +903,14 @@ void APlayerCharacter::ChangeWeapon()
 					{
 						m249Actor = GetWorld()->SpawnActor<AM249Actor>(M249Factory, spawnPosition, spawnRotation);
 					}
-				
+					if(curWeaponSlotNumber==1)
+					{
+						equippedWeaponStringArray[0]=FString("Pistol");
+					}
+					else if(curWeaponSlotNumber==2)
+					{
+						equippedWeaponStringArray[1]=FString("Pistol");
+					}				
 					rifleComp->SetVisibility(false);
 					sniperComp->SetVisibility(false);
 					pistolComp->SetVisibility(true);
@@ -765,7 +956,14 @@ void APlayerCharacter::ChangeWeapon()
 						}
 						pistolActor = GetWorld()->SpawnActor<APistolActor>(pistolFactory, spawnPosition, spawnRotation);
 					}
-				
+					if(curWeaponSlotNumber==1)
+					{
+						equippedWeaponStringArray[0]=FString("M249");
+					}
+					else if(curWeaponSlotNumber==2)
+					{
+						equippedWeaponStringArray[1]=FString("M249");
+					}				
 					rifleComp->SetVisibility(false);
 					sniperComp->SetVisibility(false);
 					pistolComp->SetVisibility(false);
@@ -864,6 +1062,7 @@ void APlayerCharacter::Fire()
 			auto particleTrans = rifleComp->GetSocketTransform(FName("RifleFirePosition"));
 			particleTrans.SetScale3D(FVector(0.7));
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), fireParticle, particleTrans);
+			//UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), trailParticle, particleTrans);
 			FActorSpawnParameters param;
 			param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 			auto spawnTrans = rifleComp->GetSocketTransform(FName("BulletShell"));

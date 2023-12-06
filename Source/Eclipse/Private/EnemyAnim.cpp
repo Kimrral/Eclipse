@@ -39,11 +39,22 @@ void UEnemyAnim::AnimNotify_AttackEnd()
 void UEnemyAnim::AnimNotify_DamageEnd()
 {
 	me->GetCharacterMovement()->Activate();
+	UEnemyFSM* fsm = Cast<UEnemyFSM>(me->GetDefaultSubobjectByName(FName("enemyFSM")));
+	if(fsm)
+	{
+		me->enemyFSM->state=EEnemyState::MOVE;
+	}
 }
 
 void UEnemyAnim::AnimNotify_DieEnd()
 {
 	me->GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+}
+
+void UEnemyAnim::AnimNotify_Fire()
+{
+	me->EnemyAttackProcess();
+
 }
 
 bool UEnemyAnim::IsAttackAnimationPlaying()

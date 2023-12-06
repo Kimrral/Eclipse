@@ -990,7 +990,7 @@ void APlayerCharacter::Reload()
 			UGameplayStatics::PlaySound2D(GetWorld(), RifleReloadSound);
 			PlayAnimMontage(zoomingMontage, 1, FName("Reload"));
 		}
-		else if(weaponArray[1]==true&&curSniperAmmo<5&&maxRifleAmmo>0)
+		else if(weaponArray[1]==true&&curSniperAmmo<5&&maxSniperAmmo>0)
 		{
 			crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
 			PlayAnimMontage(zoomingMontage, 1, FName("Reload"));

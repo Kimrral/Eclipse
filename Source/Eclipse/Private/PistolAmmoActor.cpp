@@ -55,6 +55,7 @@ void APistolAmmoActor::SphereOnOverlap(UPrimitiveComponent* OverlappedComponent,
 		if(player)
 		{
 			bTracePlayer=true;
+			ammoMesh->SetCollisionResponseToAllChannels(ECR_Overlap);
 		}
 	}
 }

@@ -26,6 +26,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
+	UPROPERTY(VisibleAnywhere)
+	class UWidgetComponent* InfoWidgetComponent;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -168,7 +171,14 @@ public:
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* RifleBulletShellDropSound;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
+	TSubclassOf<class ADamageWidgetActor> damageWidgetFactory;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
+	TSubclassOf<class UDamageWidget> damageWidgetUIFactory;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = widget)
+	class UDamageWidget* damageWidgetUI;
 
 	UPROPERTY()
 	class ARifleActor* rifleActor;
@@ -238,6 +248,9 @@ public:
 
 	UFUNCTION()
 	void WeaponDetectionLineTrace();
+
+	UFUNCTION()
+	void SetDamageWidget(int damage, FVector spawnLoc);
 	
 	UFUNCTION()
 	void EnemyHPWidgetSettings(AEnemy* enemy);

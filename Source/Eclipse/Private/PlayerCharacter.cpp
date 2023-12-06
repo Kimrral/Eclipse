@@ -4,6 +4,8 @@
 #include "PlayerCharacter.h"
 
 #include "CrosshairWidget.h"
+#include "DamageWidget.h"
+#include "DamageWidgetActor.h"
 #include "Enemy.h"
 #include "EnemyFSM.h"
 #include "EnemyHPWidget.h"
@@ -21,6 +23,7 @@
 #include "WeaponInfoWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/Image.h"
+#include "Components/TextBlock.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -67,6 +70,9 @@ APlayerCharacter::APlayerCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+
+	InfoWidgetComponent= CreateDefaultSubobject<UWidgetComponent>(TEXT("InfoWidgetComponent"));
+	InfoWidgetComponent->SetupAttachment(FollowCamera);
 
 	sniperComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("sniperComp"));
 	sniperComp->SetupAttachment(GetMesh(), FName("hand_r"));
@@ -145,7 +151,9 @@ void APlayerCharacter::BeginPlay()
 	sniperScopeUI=CreateWidget<UUserWidget>(GetWorld(), sniperScopeFactory);
 
 	informationUI = CreateWidget<UUserWidget>(GetWorld(), informationWidgetFactory);
-	informationUI->AddToViewport();
+
+	damageWidgetUI = CreateWidget<UDamageWidget>(GetWorld(), damageWidgetUIFactory);
+	
 }
 
 // Called every frame
@@ -156,6 +164,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 	Timeline.TickTimeline(DeltaTime);
 	
 	WeaponDetectionLineTrace();
+
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -737,6 +746,53 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 
 }
 
+void APlayerCharacter::SetDamageWidget(int damage, FVector spawnLoc)
+{
+
+	auto damWidget = GetWorld()->SpawnActor<ADamageWidgetActor>(damageWidgetFactory, spawnLoc+FVector(0, 0, 50), FRotator::ZeroRotator);
+	if(damWidget)
+	{
+		auto widui = damWidget->DamageWidgetComponent->GetUserWidgetObject();
+		if(widui)
+		{
+			damageWidgetUI=Cast<UDamageWidget>(widui);
+			if(damageWidgetUI)
+			{
+				damageWidgetUI->damage=damage;
+				if(weaponArray[0]==true)
+				{
+					damageWidgetUI->rifleBulletImage->SetVisibility(ESlateVisibility::Visible);
+					damageWidgetUI->sniperBulletImage->SetVisibility(ESlateVisibility::Hidden);
+					damageWidgetUI->pistolBulletImage->SetVisibility(ESlateVisibility::Hidden);
+					damageWidgetUI->M249BulletImage->SetVisibility(ESlateVisibility::Hidden);
+				}
+				else if(weaponArray[1]==true)
+				{
+					damageWidgetUI->rifleBulletImage->SetVisibility(ESlateVisibility::Hidden);
+					damageWidgetUI->sniperBulletImage->SetVisibility(ESlateVisibility::Visible);
+					damageWidgetUI->pistolBulletImage->SetVisibility(ESlateVisibility::Hidden);
+					damageWidgetUI->M249BulletImage->SetVisibility(ESlateVisibility::Hidden);
+				}
+				else if(weaponArray[2]==true)
+				{
+					damageWidgetUI->rifleBulletImage->SetVisibility(ESlateVisibility::Hidden);
+					damageWidgetUI->sniperBulletImage->SetVisibility(ESlateVisibility::Hidden);
+					damageWidgetUI->pistolBulletImage->SetVisibility(ESlateVisibility::Visible);
+					damageWidgetUI->M249BulletImage->SetVisibility(ESlateVisibility::Hidden);
+				}
+				else if(weaponArray[3]==true)
+				{
+					damageWidgetUI->rifleBulletImage->SetVisibility(ESlateVisibility::Hidden);
+					damageWidgetUI->sniperBulletImage->SetVisibility(ESlateVisibility::Hidden);
+					damageWidgetUI->pistolBulletImage->SetVisibility(ESlateVisibility::Hidden);
+					damageWidgetUI->M249BulletImage->SetVisibility(ESlateVisibility::Visible);
+				}
+				damageWidgetUI->PlayAnimation(damageWidgetUI->DamageFloat);
+			}
+		}
+	}
+}
+
 void APlayerCharacter::Crouching()
 {
 }
@@ -1102,7 +1158,8 @@ void APlayerCharacter::Fire()
 								UGameplayStatics::PlaySoundAtLocation(GetWorld(), KillSound, hitLoc);
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.0f));
 								// FSM에 있는 Damage Process 호출		
-								fsm->OnDamageProcess(14);
+								fsm->OnDamageProcess(14);								
+								SetDamageWidget(14, hitLoc);
 								// 헤드 적중 데미지 프로세스 호출
 								enemy->OnHeadDamaged();
 								enemy->DropReward();
@@ -1115,6 +1172,8 @@ void APlayerCharacter::Fire()
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.0f));
 								// FSM에 있는 Damage Process 호출		
 								fsm->OnDamageProcess(14);
+								SetDamageWidget(14, hitLoc);
+
 								// 헤드 적중 데미지 프로세스 호출
 								enemy->OnHeadDamaged();
 							}
@@ -1128,6 +1187,8 @@ void APlayerCharacter::Fire()
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.0f));
 								// FSM에 있는 Damage Process 호출		
 								fsm->OnDamageProcess(7);
+								SetDamageWidget(7, hitLoc);
+
 								// 일반 적중 데미지 프로세스 호출
 								enemy->OnDamaged();
 								enemy->DropReward();
@@ -1140,6 +1201,8 @@ void APlayerCharacter::Fire()
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(0.5f));
 								// FSM에 있는 Damage Process 호출		
 								fsm->OnDamageProcess(7);
+								SetDamageWidget(7, hitLoc);
+
 								// 일반 적중 데미지 프로세스 호출
 								enemy->OnDamaged();
 							}
@@ -1257,6 +1320,7 @@ void APlayerCharacter::Fire()
 							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(3.0f));
 							// FSM에 있는 Damage Process 호출		
 							fsm->OnDamageProcess(100);
+							SetDamageWidget(100, hitLoc);
 							// 헤드 적중 데미지 프로세스 호출
 							enemy->OnHeadDamaged();
 							enemy->DropReward();
@@ -1271,6 +1335,8 @@ void APlayerCharacter::Fire()
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(3.0f));
 								// FSM에 있는 Damage Process 호출		
 								fsm->OnDamageProcess(70);
+								SetDamageWidget(70, hitLoc);
+
 								// 일반 적중 데미지 프로세스 호출
 								enemy->OnDamaged();
 								enemy->DropReward();
@@ -1283,6 +1349,8 @@ void APlayerCharacter::Fire()
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(0.8f));
 								// FSM에 있는 Damage Process 호출		
 								fsm->OnDamageProcess(70);
+								SetDamageWidget(70, hitLoc);
+
 								// 일반 적중 데미지 프로세스 호출
 								enemy->OnDamaged();
 							}
@@ -1303,11 +1371,11 @@ void APlayerCharacter::Fire()
 				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot+FRotator(-90, 0, 0), FVector(0.5f));
 				if(isSniperZooming)
 				{
-					auto particleTrans = FollowCamera->GetComponentLocation()+FollowCamera->GetUpVector()*-40.0f;
+					auto particleTrans = FollowCamera->GetComponentLocation()+FollowCamera->GetUpVector()*-50.0f;
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), fireParticle, particleTrans);
 					auto controller = GetWorld()->GetFirstPlayerController();
 					controller->PlayerCameraManager->StartCameraShake(sniperCameraShake);
-					auto fireSocketLoc = FollowCamera->GetComponentLocation()+FollowCamera->GetUpVector()*-40.0f;
+					auto fireSocketLoc = FollowCamera->GetComponentLocation()+FollowCamera->GetUpVector()*-50.0f;
 					// 탄 궤적 나이아가라 시스템 스폰
 					UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, sniperHitResult.Location, FRotator::ZeroRotator,FVector(1), true, true, ENCPoolMethod::AutoRelease);
 					if(niagara)
@@ -1453,6 +1521,8 @@ void APlayerCharacter::Fire()
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.5f));
 								// FSM에 있는 Damage Process 호출		
 								fsm->OnDamageProcess(45);
+								SetDamageWidget(45, hitLoc);
+
 								// 헤드 적중 데미지 프로세스 호출
 								enemy->OnHeadDamaged();
 								enemy->DropReward();
@@ -1465,6 +1535,8 @@ void APlayerCharacter::Fire()
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.5f));
 								// FSM에 있는 Damage Process 호출		
 								fsm->OnDamageProcess(45);
+								SetDamageWidget(45, hitLoc);
+
 								// 헤드 적중 데미지 프로세스 호출
 								enemy->OnHeadDamaged();
 							}
@@ -1479,6 +1551,8 @@ void APlayerCharacter::Fire()
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.5f));
 								// FSM에 있는 Damage Process 호출		
 								fsm->OnDamageProcess(25);
+								SetDamageWidget(25, hitLoc);
+
 								// 일반 적중 데미지 프로세스 호출
 								enemy->OnDamaged();
 								enemy->DropReward();
@@ -1491,6 +1565,8 @@ void APlayerCharacter::Fire()
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(0.7f));
 								// FSM에 있는 Damage Process 호출		
 								fsm->OnDamageProcess(25);
+								SetDamageWidget(25, hitLoc);
+
 								// 일반 적중 데미지 프로세스 호출
 								enemy->OnDamaged();
 							}
@@ -1616,6 +1692,8 @@ void APlayerCharacter::Fire()
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.0f));
 								// FSM에 있는 Damage Process 호출		
 								fsm->OnDamageProcess(14);
+								SetDamageWidget(14, hitLoc);
+
 								// 헤드 적중 데미지 프로세스 호출
 								enemy->OnHeadDamaged();
 								enemy->DropReward();
@@ -1628,6 +1706,8 @@ void APlayerCharacter::Fire()
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.0f));
 								// FSM에 있는 Damage Process 호출		
 								fsm->OnDamageProcess(14);
+								SetDamageWidget(14, hitLoc);
+
 								// 헤드 적중 데미지 프로세스 호출
 								enemy->OnHeadDamaged();
 							}
@@ -1642,6 +1722,8 @@ void APlayerCharacter::Fire()
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.0f));
 								// FSM에 있는 Damage Process 호출		
 								fsm->OnDamageProcess(7);
+								SetDamageWidget(7, hitLoc);
+
 								// 일반 적중 데미지 프로세스 호출
 								enemy->OnDamaged();
 								enemy->DropReward();
@@ -1654,6 +1736,8 @@ void APlayerCharacter::Fire()
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(0.5f));
 								// FSM에 있는 Damage Process 호출		
 								fsm->OnDamageProcess(7);
+								SetDamageWidget(7, hitLoc);
+
 								// 일반 적중 데미지 프로세스 호출
 								enemy->OnDamaged();
 							}

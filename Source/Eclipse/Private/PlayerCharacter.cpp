@@ -30,6 +30,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Materials/MaterialExpressionChannelMaskParameterColor.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -793,6 +794,54 @@ void APlayerCharacter::SetDamageWidget(int damage, FVector spawnLoc)
 	}
 }
 
+void APlayerCharacter::SetHeadDamageWidget(int damage, FVector spawnLoc)
+{
+	auto damWidget = GetWorld()->SpawnActor<ADamageWidgetActor>(damageWidgetFactory, spawnLoc+FVector(0, 0, 50), FRotator::ZeroRotator);
+	if(damWidget)
+	{
+		auto widui = damWidget->DamageWidgetComponent->GetUserWidgetObject();
+		if(widui)
+		{
+			damageWidgetUI=Cast<UDamageWidget>(widui);
+			if(damageWidgetUI)
+			{
+				FSlateColor SlateColor = FLinearColor(1, 0, 0, 0.6);
+				damageWidgetUI->damage=damage;
+				damageWidgetUI->damageText->SetColorAndOpacity(SlateColor);
+				if(weaponArray[0]==true)
+				{
+					damageWidgetUI->rifleBulletImage->SetVisibility(ESlateVisibility::Visible);
+					damageWidgetUI->sniperBulletImage->SetVisibility(ESlateVisibility::Hidden);
+					damageWidgetUI->pistolBulletImage->SetVisibility(ESlateVisibility::Hidden);
+					damageWidgetUI->M249BulletImage->SetVisibility(ESlateVisibility::Hidden);
+				}
+				else if(weaponArray[1]==true)
+				{
+					damageWidgetUI->rifleBulletImage->SetVisibility(ESlateVisibility::Hidden);
+					damageWidgetUI->sniperBulletImage->SetVisibility(ESlateVisibility::Visible);
+					damageWidgetUI->pistolBulletImage->SetVisibility(ESlateVisibility::Hidden);
+					damageWidgetUI->M249BulletImage->SetVisibility(ESlateVisibility::Hidden);
+				}
+				else if(weaponArray[2]==true)
+				{
+					damageWidgetUI->rifleBulletImage->SetVisibility(ESlateVisibility::Hidden);
+					damageWidgetUI->sniperBulletImage->SetVisibility(ESlateVisibility::Hidden);
+					damageWidgetUI->pistolBulletImage->SetVisibility(ESlateVisibility::Visible);
+					damageWidgetUI->M249BulletImage->SetVisibility(ESlateVisibility::Hidden);
+				}
+				else if(weaponArray[3]==true)
+				{
+					damageWidgetUI->rifleBulletImage->SetVisibility(ESlateVisibility::Hidden);
+					damageWidgetUI->sniperBulletImage->SetVisibility(ESlateVisibility::Hidden);
+					damageWidgetUI->pistolBulletImage->SetVisibility(ESlateVisibility::Hidden);
+					damageWidgetUI->M249BulletImage->SetVisibility(ESlateVisibility::Visible);
+				}
+				damageWidgetUI->PlayAnimation(damageWidgetUI->DamageFloat);
+			}
+		}
+	}
+}
+
 void APlayerCharacter::Crouching()
 {
 }
@@ -1151,15 +1200,16 @@ void APlayerCharacter::Fire()
 						auto hitRot = UKismetMathLibrary::Conv_VectorToRotator(rifleHitResult.ImpactNormal);
 						if(hitBone==FName("head"))
 						{
+							auto randRifleHeadDamage = FMath::RandRange(12, 18);
 							// 이번 공격에 적이 죽는다면
-							if(enemy->curHP<=15)
+							if(enemy->curHP<=randRifleHeadDamage)
 							{
 								crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
 								UGameplayStatics::PlaySoundAtLocation(GetWorld(), KillSound, hitLoc);
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.0f));
 								// FSM에 있는 Damage Process 호출		
-								fsm->OnDamageProcess(14);								
-								SetDamageWidget(14, hitLoc);
+								fsm->OnDamageProcess(randRifleHeadDamage);								
+								SetHeadDamageWidget(randRifleHeadDamage, hitLoc);
 								// 헤드 적중 데미지 프로세스 호출
 								enemy->OnHeadDamaged();
 								enemy->DropReward();
@@ -1171,8 +1221,8 @@ void APlayerCharacter::Fire()
 								UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHeadHitSound, hitLoc);
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.0f));
 								// FSM에 있는 Damage Process 호출		
-								fsm->OnDamageProcess(14);
-								SetDamageWidget(14, hitLoc);
+								fsm->OnDamageProcess(randRifleHeadDamage);
+								SetHeadDamageWidget(randRifleHeadDamage, hitLoc);
 
 								// 헤드 적중 데미지 프로세스 호출
 								enemy->OnHeadDamaged();
@@ -1180,14 +1230,15 @@ void APlayerCharacter::Fire()
 						}
 						else
 						{
-							if(enemy->curHP<=7)
+							auto randRifleBodyDamage = FMath::RandRange(6, 9);
+							if(enemy->curHP<=randRifleBodyDamage)
 							{
 								crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
 								UGameplayStatics::PlaySoundAtLocation(GetWorld(), KillSound, hitLoc);
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.0f));
 								// FSM에 있는 Damage Process 호출		
-								fsm->OnDamageProcess(7);
-								SetDamageWidget(7, hitLoc);
+								fsm->OnDamageProcess(randRifleBodyDamage);
+								SetDamageWidget(randRifleBodyDamage, hitLoc);
 
 								// 일반 적중 데미지 프로세스 호출
 								enemy->OnDamaged();
@@ -1200,8 +1251,8 @@ void APlayerCharacter::Fire()
 								UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(0.5f));
 								// FSM에 있는 Damage Process 호출		
-								fsm->OnDamageProcess(7);
-								SetDamageWidget(7, hitLoc);
+								fsm->OnDamageProcess(randRifleBodyDamage);
+								SetDamageWidget(randRifleBodyDamage, hitLoc);
 
 								// 일반 적중 데미지 프로세스 호출
 								enemy->OnDamaged();
@@ -1320,7 +1371,7 @@ void APlayerCharacter::Fire()
 							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(3.0f));
 							// FSM에 있는 Damage Process 호출		
 							fsm->OnDamageProcess(100);
-							SetDamageWidget(100, hitLoc);
+							SetHeadDamageWidget(100, hitLoc);
 							// 헤드 적중 데미지 프로세스 호출
 							enemy->OnHeadDamaged();
 							enemy->DropReward();
@@ -1328,14 +1379,15 @@ void APlayerCharacter::Fire()
 						}
 						else
 						{
-							if(enemy->curHP<=70)
+							auto randSniperDamage = FMath::RandRange(65, 85);
+							if(enemy->curHP<=randSniperDamage)
 							{
 								crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
 								UGameplayStatics::PlaySoundAtLocation(GetWorld(), KillSound, hitLoc);
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(3.0f));
 								// FSM에 있는 Damage Process 호출		
-								fsm->OnDamageProcess(70);
-								SetDamageWidget(70, hitLoc);
+								fsm->OnDamageProcess(randSniperDamage);
+								SetDamageWidget(randSniperDamage, hitLoc);
 
 								// 일반 적중 데미지 프로세스 호출
 								enemy->OnDamaged();
@@ -1348,8 +1400,8 @@ void APlayerCharacter::Fire()
 								UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(0.8f));
 								// FSM에 있는 Damage Process 호출		
-								fsm->OnDamageProcess(70);
-								SetDamageWidget(70, hitLoc);
+								fsm->OnDamageProcess(randSniperDamage);
+								SetDamageWidget(randSniperDamage, hitLoc);
 
 								// 일반 적중 데미지 프로세스 호출
 								enemy->OnDamaged();
@@ -1513,15 +1565,16 @@ void APlayerCharacter::Fire()
 						auto hitRot = UKismetMathLibrary::Conv_VectorToRotator(pistolHitResult.ImpactNormal);
 						if(hitBone==FName("head"))
 						{
+							auto randPistolHeadDamage = FMath::RandRange(45, 55);
 							// 이번 공격에 Enemy가 죽는다면
-							if(enemy->curHP<=45)
+							if(enemy->curHP<=randPistolHeadDamage)
 							{
 								crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
 								UGameplayStatics::PlaySoundAtLocation(GetWorld(), KillSound, hitLoc);
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.5f));
 								// FSM에 있는 Damage Process 호출		
-								fsm->OnDamageProcess(45);
-								SetDamageWidget(45, hitLoc);
+								fsm->OnDamageProcess(randPistolHeadDamage);
+								SetHeadDamageWidget(randPistolHeadDamage, hitLoc);
 
 								// 헤드 적중 데미지 프로세스 호출
 								enemy->OnHeadDamaged();
@@ -1534,8 +1587,8 @@ void APlayerCharacter::Fire()
 								UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHeadHitSound, hitLoc);
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.5f));
 								// FSM에 있는 Damage Process 호출		
-								fsm->OnDamageProcess(45);
-								SetDamageWidget(45, hitLoc);
+								fsm->OnDamageProcess(randPistolHeadDamage);
+								SetHeadDamageWidget(randPistolHeadDamage, hitLoc);
 
 								// 헤드 적중 데미지 프로세스 호출
 								enemy->OnHeadDamaged();
@@ -1543,6 +1596,7 @@ void APlayerCharacter::Fire()
 						}
 						else
 						{
+							auto randPistolDamage = FMath::RandRange(22, 30);
 							// 이번 공격에 Enemy가 죽는다면
 							if(enemy->curHP<=25)
 							{
@@ -1550,8 +1604,8 @@ void APlayerCharacter::Fire()
 								UGameplayStatics::PlaySoundAtLocation(GetWorld(), KillSound, hitLoc);
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.5f));
 								// FSM에 있는 Damage Process 호출		
-								fsm->OnDamageProcess(25);
-								SetDamageWidget(25, hitLoc);
+								fsm->OnDamageProcess(randPistolDamage);
+								SetDamageWidget(randPistolDamage, hitLoc);
 
 								// 일반 적중 데미지 프로세스 호출
 								enemy->OnDamaged();
@@ -1564,8 +1618,8 @@ void APlayerCharacter::Fire()
 								UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(0.7f));
 								// FSM에 있는 Damage Process 호출		
-								fsm->OnDamageProcess(25);
-								SetDamageWidget(25, hitLoc);
+								fsm->OnDamageProcess(randPistolDamage);
+								SetDamageWidget(randPistolDamage, hitLoc);
 
 								// 일반 적중 데미지 프로세스 호출
 								enemy->OnDamaged();
@@ -1684,15 +1738,16 @@ void APlayerCharacter::Fire()
 						auto hitRot = UKismetMathLibrary::Conv_VectorToRotator(M249HitResult.ImpactNormal);
 						if(hitBone==FName("head"))
 						{
+							auto randM249HeadDamage = FMath::RandRange(18, 22);
 							// 이번 공격에 Enemy가 죽는다면
-							if(enemy->curHP<=14)
+							if(enemy->curHP<=randM249HeadDamage)
 							{
 								crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
 								UGameplayStatics::PlaySoundAtLocation(GetWorld(), KillSound, hitLoc);
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.0f));
 								// FSM에 있는 Damage Process 호출		
-								fsm->OnDamageProcess(14);
-								SetDamageWidget(14, hitLoc);
+								fsm->OnDamageProcess(randM249HeadDamage);
+								SetHeadDamageWidget(randM249HeadDamage, hitLoc);
 
 								// 헤드 적중 데미지 프로세스 호출
 								enemy->OnHeadDamaged();
@@ -1705,8 +1760,8 @@ void APlayerCharacter::Fire()
 								UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHeadHitSound, hitLoc);
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.0f));
 								// FSM에 있는 Damage Process 호출		
-								fsm->OnDamageProcess(14);
-								SetDamageWidget(14, hitLoc);
+								fsm->OnDamageProcess(randM249HeadDamage);
+								SetHeadDamageWidget(randM249HeadDamage, hitLoc);
 
 								// 헤드 적중 데미지 프로세스 호출
 								enemy->OnHeadDamaged();
@@ -1714,15 +1769,16 @@ void APlayerCharacter::Fire()
 						}
 						else
 						{
+							auto randM249Damage = FMath::RandRange(9, 11);
 							// 이번 공격에 Enemy가 죽는다면
-							if(enemy->curHP<=7)
+							if(enemy->curHP<=randM249Damage)
 							{
 								crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
 								UGameplayStatics::PlaySoundAtLocation(GetWorld(), KillSound, hitLoc);
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.0f));
 								// FSM에 있는 Damage Process 호출		
-								fsm->OnDamageProcess(7);
-								SetDamageWidget(7, hitLoc);
+								fsm->OnDamageProcess(randM249Damage);
+								SetDamageWidget(randM249Damage, hitLoc);
 
 								// 일반 적중 데미지 프로세스 호출
 								enemy->OnDamaged();
@@ -1735,8 +1791,8 @@ void APlayerCharacter::Fire()
 								UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(0.5f));
 								// FSM에 있는 Damage Process 호출		
-								fsm->OnDamageProcess(7);
-								SetDamageWidget(7, hitLoc);
+								fsm->OnDamageProcess(randM249Damage);
+								SetDamageWidget(randM249Damage, hitLoc);
 
 								// 일반 적중 데미지 프로세스 호출
 								enemy->OnDamaged();

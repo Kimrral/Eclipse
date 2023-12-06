@@ -251,6 +251,9 @@ public:
 
 	UFUNCTION()
 	void SetDamageWidget(int damage, FVector spawnLoc);
+
+	UFUNCTION()
+	void SetHeadDamageWidget(int damage, FVector spawnLoc);
 	
 	UFUNCTION()
 	void EnemyHPWidgetSettings(AEnemy* enemy);

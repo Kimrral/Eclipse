@@ -48,6 +48,7 @@ void UEnemyAnim::AnimNotify_DamageEnd()
 
 void UEnemyAnim::AnimNotify_DieEnd()
 {
+	me->GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 	me->GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 }
 

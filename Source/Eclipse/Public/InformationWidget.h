@@ -98,4 +98,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UImage* M249Icon_1;
+
+	UPROPERTY(BlueprintReadWrite, Transient, meta = (BindWidgetAnim))
+	class UWidgetAnimation* WeaponSwap;
 };

@@ -95,6 +95,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* SecondWeaponSwapAction;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* TabAction;
+	
 
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
@@ -132,6 +135,8 @@ public:
 
 	void SwapFirstWeapon();
 	void SwapSecondWeapon();
+
+	void Tab();
 	
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
@@ -217,6 +222,12 @@ public:
 	TSubclassOf<class UUserWidget> informationWidgetFactory;
 
 	UPROPERTY(EditAnywhere)
+	TSubclassOf<UUserWidget> tabWidgetFactory;
+
+	UPROPERTY(EditAnywhere)
+	class UTabWidget* tabWidgetUI;
+
+	UPROPERTY(EditAnywhere)
 	TArray<bool> weaponArray;
 
 	UPROPERTY(EditAnywhere)
@@ -245,6 +256,9 @@ public:
 	
 	UPROPERTY()
 	int curWeaponSlotNumber;
+
+	UPROPERTY()
+	bool TabBool = false;
 
 	UFUNCTION()
 	void WeaponDetectionLineTrace();

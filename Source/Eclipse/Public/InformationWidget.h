@@ -48,4 +48,16 @@ public:
 
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class URetainerBox* MaterialRetainerBox;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UImage* RifleIcon;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UImage* SniperIcon;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UImage* PistolIcon;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UImage* M249Icon;
 };

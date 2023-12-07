@@ -13,5 +13,7 @@ UCLASS()
 class ECLIPSE_API UTabWidget : public UUserWidget
 {
 	GENERATED_BODY()
+
+public:
 	
 };

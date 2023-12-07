@@ -22,6 +22,9 @@ public:
 	UFUNCTION()
 	void UpdateAmmo();
 
+	UFUNCTION()
+	void UpdateAmmo_Secondary();
+
 	UPROPERTY()
 	class APlayerCharacter* owner;
 
@@ -60,4 +63,39 @@ public:
 
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UImage* M249Icon;
+
+	
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UTextBlock* currentAmmo_1;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UTextBlock* maxAmmo_1;
+	
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UTextBlock* AmmoType_1;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UImage* rifleBulletImage_1;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UImage* sniperBulletImage_1;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UImage* pistolBulletImage_1;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UImage* M249BulletImage_1;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UImage* RifleIcon_1;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UImage* SniperIcon_1;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UImage* PistolIcon_1;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UImage* M249Icon_1;
 };

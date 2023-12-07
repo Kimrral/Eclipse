@@ -11,6 +11,7 @@
 #include "EnemyHPWidget.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "InformationWidget.h"
 #include "M249Actor.h"
 #include "PlayerAnim.h"
 #include "RifleActor.h"
@@ -151,7 +152,7 @@ void APlayerCharacter::BeginPlay()
 
 	sniperScopeUI=CreateWidget<UUserWidget>(GetWorld(), sniperScopeFactory);
 
-	informationUI = CreateWidget<UUserWidget>(GetWorld(), informationWidgetFactory);
+	informationUI = CreateWidget<UInformationWidget>(GetWorld(), informationWidgetFactory);
 	informationUI->AddToViewport();
 
 	damageWidgetUI = CreateWidget<UDamageWidget>(GetWorld(), damageWidgetUIFactory);
@@ -444,6 +445,9 @@ void APlayerCharacter::SwapFirstWeapon()
 		weaponArray[2]=false;
 		weaponArray[3]=false;
 
+		informationUI->UpdateAmmo_Secondary();
+
+
 	}
 	else if(equippedWeaponStringArray[0]==FString("Sniper"))
 	{
@@ -465,6 +469,8 @@ void APlayerCharacter::SwapFirstWeapon()
 		weaponArray[2]=false;
 		weaponArray[3]=false;
 
+		informationUI->UpdateAmmo_Secondary();
+
 	}
 	else if(equippedWeaponStringArray[0]==FString("Pistol"))
 	{
@@ -485,6 +491,9 @@ void APlayerCharacter::SwapFirstWeapon()
 		weaponArray[1]=false;
 		weaponArray[2]=true;
 		weaponArray[3]=false;
+
+		informationUI->UpdateAmmo_Secondary();
+
 	}
 	else if(equippedWeaponStringArray[0]==FString("M249"))
 	{
@@ -505,6 +514,9 @@ void APlayerCharacter::SwapFirstWeapon()
 		weaponArray[1]=false;
 		weaponArray[2]=false;
 		weaponArray[3]=true;
+
+		informationUI->UpdateAmmo_Secondary();
+
 	}
 }
 
@@ -544,6 +556,9 @@ void APlayerCharacter::SwapSecondWeapon()
 		weaponArray[2]=false;
 		weaponArray[3]=false;
 
+		informationUI->UpdateAmmo_Secondary();
+
+
 	}
 	else if(equippedWeaponStringArray[1]==FString("Sniper"))
 	{
@@ -565,6 +580,9 @@ void APlayerCharacter::SwapSecondWeapon()
 		weaponArray[2]=false;
 		weaponArray[3]=false;
 
+		informationUI->UpdateAmmo_Secondary();
+
+
 	}
 	else if(equippedWeaponStringArray[1]==FString("Pistol"))
 	{
@@ -585,6 +603,9 @@ void APlayerCharacter::SwapSecondWeapon()
 		weaponArray[1]=false;
 		weaponArray[2]=true;
 		weaponArray[3]=false;
+
+		informationUI->UpdateAmmo_Secondary();
+
 	}
 	else if(equippedWeaponStringArray[1]==FString("M249"))
 	{
@@ -605,6 +626,9 @@ void APlayerCharacter::SwapSecondWeapon()
 		weaponArray[1]=false;
 		weaponArray[2]=false;
 		weaponArray[3]=true;
+
+		informationUI->UpdateAmmo_Secondary();
+
 	}
 
 }
@@ -1914,4 +1938,8 @@ void APlayerCharacter::EnemyHPWidgetSettings(AEnemy* enemy)
 	enemy->enemyHPWidget->HPdynamicMat->SetScalarParameterValue(FName("HPAlpha"), enemy->curHP*0.01-0.001);
 	enemy->HPWidgetComponent->SetVisibility(true);
 	enemy->SetHPWidgetInvisible();
+}
+
+void APlayerCharacter::InfoWidgetUpdate()
+{
 }

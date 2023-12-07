@@ -15,13 +15,10 @@ void UInformationWidget::NativeConstruct()
 
 	owner =  Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 
-	rifleBulletImage->SetVisibility(ESlateVisibility::Hidden);
-	sniperBulletImage->SetVisibility(ESlateVisibility::Hidden);
-	pistolBulletImage->SetVisibility(ESlateVisibility::Hidden);
-	M249BulletImage->SetVisibility(ESlateVisibility::Hidden);
-
 	FTimerHandle ammoUpdateHandle;
 	GetWorld()->GetTimerManager().SetTimer(ammoUpdateHandle, this, &UInformationWidget::UpdateAmmo, 0.01f, true);
+
+	UpdateAmmo_Secondary();
 	
 }
 
@@ -99,4 +96,144 @@ void UInformationWidget::UpdateAmmo()
 	}
 
 	MaterialRetainerBox->RequestRender();
+}
+
+void UInformationWidget::UpdateAmmo_Secondary()
+{
+	if(owner->curWeaponSlotNumber==1)
+	{
+		if(owner->equippedWeaponStringArray[1]==FString("Rifle"))
+		{
+			currentAmmo_1->SetText(FText::AsNumber(owner->curRifleAmmo));
+			maxAmmo_1->SetText(FText::AsNumber(owner->maxRifleAmmo));
+			AmmoType_1->SetText(FText::FromString("5.56mm"));
+		
+			rifleBulletImage_1->SetVisibility(ESlateVisibility::Visible);
+			sniperBulletImage_1->SetVisibility(ESlateVisibility::Hidden);
+			pistolBulletImage_1->SetVisibility(ESlateVisibility::Hidden);
+			M249BulletImage_1->SetVisibility(ESlateVisibility::Hidden);
+
+			RifleIcon_1->SetVisibility(ESlateVisibility::Visible);
+			SniperIcon_1->SetVisibility(ESlateVisibility::Hidden);
+			PistolIcon_1->SetVisibility(ESlateVisibility::Hidden);
+			M249Icon_1->SetVisibility(ESlateVisibility::Hidden);
+		}
+		else if(owner->equippedWeaponStringArray[1]==FString("Sniper"))
+		{
+			currentAmmo_1->SetText(FText::AsNumber(owner->curSniperAmmo));
+			maxAmmo_1->SetText(FText::AsNumber(owner->maxSniperAmmo));
+			AmmoType_1->SetText(FText::FromString("7.92mm"));
+		
+			rifleBulletImage_1->SetVisibility(ESlateVisibility::Hidden);
+			sniperBulletImage_1->SetVisibility(ESlateVisibility::Visible);
+			pistolBulletImage_1->SetVisibility(ESlateVisibility::Hidden);
+			M249BulletImage_1->SetVisibility(ESlateVisibility::Hidden);
+
+			RifleIcon_1->SetVisibility(ESlateVisibility::Hidden);
+			SniperIcon_1->SetVisibility(ESlateVisibility::Visible);
+			PistolIcon_1->SetVisibility(ESlateVisibility::Hidden);
+			M249Icon_1->SetVisibility(ESlateVisibility::Hidden);
+		}
+		else if(owner->equippedWeaponStringArray[1]==FString("Pistol"))
+		{
+			currentAmmo_1->SetText(FText::AsNumber(owner->curPistolAmmo));
+			maxAmmo_1->SetText(FText::AsNumber(owner->maxPistolAmmo));
+			AmmoType_1->SetText(FText::FromString("9mm"));
+		
+			rifleBulletImage_1->SetVisibility(ESlateVisibility::Hidden);
+			sniperBulletImage_1->SetVisibility(ESlateVisibility::Hidden);
+			pistolBulletImage_1->SetVisibility(ESlateVisibility::Visible);
+			M249BulletImage_1->SetVisibility(ESlateVisibility::Hidden);
+
+			RifleIcon_1->SetVisibility(ESlateVisibility::Hidden);
+			SniperIcon_1->SetVisibility(ESlateVisibility::Hidden);
+			PistolIcon_1->SetVisibility(ESlateVisibility::Visible);
+			M249Icon_1->SetVisibility(ESlateVisibility::Hidden);
+		}
+		else if(owner->equippedWeaponStringArray[1]==FString("M249"))
+		{
+			currentAmmo_1->SetText(FText::AsNumber(owner->curM249Ammo));
+			maxAmmo_1->SetText(FText::AsNumber(owner->maxM249Ammo));
+			AmmoType_1->SetText(FText::FromString("7.62mm"));
+		
+			rifleBulletImage_1->SetVisibility(ESlateVisibility::Hidden);
+			sniperBulletImage_1->SetVisibility(ESlateVisibility::Hidden);
+			pistolBulletImage_1->SetVisibility(ESlateVisibility::Hidden);
+			M249BulletImage_1->SetVisibility(ESlateVisibility::Visible);
+
+			RifleIcon_1->SetVisibility(ESlateVisibility::Hidden);
+			SniperIcon_1->SetVisibility(ESlateVisibility::Hidden);
+			PistolIcon_1->SetVisibility(ESlateVisibility::Hidden);
+			M249Icon_1->SetVisibility(ESlateVisibility::Visible);
+		}
+	}
+	else
+	{
+		if(owner->equippedWeaponStringArray[0]==FString("Rifle"))
+		{
+			currentAmmo_1->SetText(FText::AsNumber(owner->curRifleAmmo));
+			maxAmmo_1->SetText(FText::AsNumber(owner->maxRifleAmmo));
+			AmmoType_1->SetText(FText::FromString("5.56mm"));
+		
+			rifleBulletImage_1->SetVisibility(ESlateVisibility::Visible);
+			sniperBulletImage_1->SetVisibility(ESlateVisibility::Hidden);
+			pistolBulletImage_1->SetVisibility(ESlateVisibility::Hidden);
+			M249BulletImage_1->SetVisibility(ESlateVisibility::Hidden);
+
+			RifleIcon_1->SetVisibility(ESlateVisibility::Visible);
+			SniperIcon_1->SetVisibility(ESlateVisibility::Hidden);
+			PistolIcon_1->SetVisibility(ESlateVisibility::Hidden);
+			M249Icon_1->SetVisibility(ESlateVisibility::Hidden);
+		}
+		else if(owner->equippedWeaponStringArray[0]==FString("Sniper"))
+		{
+			currentAmmo_1->SetText(FText::AsNumber(owner->curSniperAmmo));
+			maxAmmo_1->SetText(FText::AsNumber(owner->maxSniperAmmo));
+			AmmoType_1->SetText(FText::FromString("7.92mm"));
+		
+			rifleBulletImage_1->SetVisibility(ESlateVisibility::Hidden);
+			sniperBulletImage_1->SetVisibility(ESlateVisibility::Visible);
+			pistolBulletImage_1->SetVisibility(ESlateVisibility::Hidden);
+			M249BulletImage_1->SetVisibility(ESlateVisibility::Hidden);
+
+			RifleIcon_1->SetVisibility(ESlateVisibility::Hidden);
+			SniperIcon_1->SetVisibility(ESlateVisibility::Visible);
+			PistolIcon_1->SetVisibility(ESlateVisibility::Hidden);
+			M249Icon_1->SetVisibility(ESlateVisibility::Hidden);
+		}
+		else if(owner->equippedWeaponStringArray[0]==FString("Pistol"))
+		{
+			currentAmmo_1->SetText(FText::AsNumber(owner->curPistolAmmo));
+			maxAmmo_1->SetText(FText::AsNumber(owner->maxPistolAmmo));
+			AmmoType_1->SetText(FText::FromString("9mm"));
+		
+			rifleBulletImage_1->SetVisibility(ESlateVisibility::Hidden);
+			sniperBulletImage_1->SetVisibility(ESlateVisibility::Hidden);
+			pistolBulletImage_1->SetVisibility(ESlateVisibility::Visible);
+			M249BulletImage_1->SetVisibility(ESlateVisibility::Hidden);
+
+			RifleIcon_1->SetVisibility(ESlateVisibility::Hidden);
+			SniperIcon_1->SetVisibility(ESlateVisibility::Hidden);
+			PistolIcon_1->SetVisibility(ESlateVisibility::Visible);
+			M249Icon_1->SetVisibility(ESlateVisibility::Hidden);
+		}
+		else if(owner->equippedWeaponStringArray[0]==FString("M249"))
+		{
+			currentAmmo_1->SetText(FText::AsNumber(owner->curM249Ammo));
+			maxAmmo_1->SetText(FText::AsNumber(owner->maxM249Ammo));
+			AmmoType_1->SetText(FText::FromString("7.62mm"));
+		
+			rifleBulletImage_1->SetVisibility(ESlateVisibility::Hidden);
+			sniperBulletImage_1->SetVisibility(ESlateVisibility::Hidden);
+			pistolBulletImage_1->SetVisibility(ESlateVisibility::Hidden);
+			M249BulletImage_1->SetVisibility(ESlateVisibility::Visible);
+
+			RifleIcon_1->SetVisibility(ESlateVisibility::Hidden);
+			SniperIcon_1->SetVisibility(ESlateVisibility::Hidden);
+			PistolIcon_1->SetVisibility(ESlateVisibility::Hidden);
+			M249Icon_1->SetVisibility(ESlateVisibility::Visible);
+		}
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Update Ammo"))
 }

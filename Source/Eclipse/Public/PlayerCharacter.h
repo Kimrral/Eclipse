@@ -219,7 +219,7 @@ public:
 	TSubclassOf<class UWeaponInfoWidget> infoWidgetFactory;
 
 	UPROPERTY(EditAnywhere)		
-	TSubclassOf<class UUserWidget> informationWidgetFactory;
+	TSubclassOf<class UInformationWidget> informationWidgetFactory;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UUserWidget> tabWidgetFactory;
@@ -243,7 +243,7 @@ public:
 	class UParticleSystem* bulletImpactFactory;
 
 	UPROPERTY(BlueprintReadOnly)
-	class UUserWidget* informationUI;
+	class UInformationWidget* informationUI;
 	
 	UPROPERTY(BlueprintReadOnly)
 	class UUserWidget* sniperScopeUI;
@@ -271,6 +271,9 @@ public:
 	
 	UFUNCTION()
 	void EnemyHPWidgetSettings(AEnemy* enemy);
+
+	UFUNCTION()
+	void InfoWidgetUpdate();
 
 	UPROPERTY()
 	bool bUsingRifle;

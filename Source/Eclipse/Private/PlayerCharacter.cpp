@@ -20,6 +20,7 @@
 #include "Components/CapsuleComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "PistolActor.h"
+#include "TabWidget.h"
 #include "WeaponInfoWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/Image.h"
@@ -30,7 +31,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
-#include "Materials/MaterialExpressionChannelMaskParameterColor.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -155,6 +155,8 @@ void APlayerCharacter::BeginPlay()
 	informationUI->AddToViewport();
 
 	damageWidgetUI = CreateWidget<UDamageWidget>(GetWorld(), damageWidgetUIFactory);
+
+	tabWidgetUI=CreateWidget<UTabWidget>(GetWorld(), tabWidgetFactory);
 	
 }
 
@@ -221,7 +223,9 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		//Weapon Swap
 		EnhancedInputComponent->BindAction(FirstWeaponSwapAction, ETriggerEvent::Started, this, &APlayerCharacter::SwapFirstWeapon);
 		EnhancedInputComponent->BindAction(SecondWeaponSwapAction, ETriggerEvent::Started, this, &APlayerCharacter::SwapSecondWeapon);
-		
+
+		//Tab
+		EnhancedInputComponent->BindAction(TabAction, ETriggerEvent::Started, this, &APlayerCharacter::Tab);		
 	}
 }
 
@@ -406,7 +410,7 @@ void APlayerCharacter::OnZoomOut()
 
 void APlayerCharacter::SwapFirstWeapon()
 {
-	if(curWeaponSlotNumber==1)
+	if(curWeaponSlotNumber==1||isSniperZooming)
 	{
 		return;
 	}
@@ -506,7 +510,7 @@ void APlayerCharacter::SwapFirstWeapon()
 
 void APlayerCharacter::SwapSecondWeapon()
 {
-	if(curWeaponSlotNumber==2)
+	if(curWeaponSlotNumber==2||isSniperZooming)
 	{
 		return;
 	}
@@ -603,6 +607,23 @@ void APlayerCharacter::SwapSecondWeapon()
 		weaponArray[3]=true;
 	}
 
+}
+
+void APlayerCharacter::Tab()
+{
+	if(TabBool==false)
+	{
+		TabBool=true;
+		if(tabWidgetUI)
+		{
+			tabWidgetUI->AddToViewport();
+		}
+	}
+	else
+	{
+		TabBool=false;
+		tabWidgetUI->RemoveFromParent();
+	}
 }
 
 
@@ -806,7 +827,7 @@ void APlayerCharacter::SetHeadDamageWidget(int damage, FVector spawnLoc)
 			damageWidgetUI=Cast<UDamageWidget>(widui);
 			if(damageWidgetUI)
 			{
-				FSlateColor SlateColor = FLinearColor(1, 0, 0, 0.8);
+				FSlateColor SlateColor = FLinearColor(1, 0.75, 0, 1);
 				damageWidgetUI->damage=damage;
 				damageWidgetUI->damageText->SetColorAndOpacity(SlateColor);
 				if(weaponArray[0]==true)

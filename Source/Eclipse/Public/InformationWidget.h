@@ -46,4 +46,6 @@ public:
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UImage* M249BulletImage;
 
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class URetainerBox* MaterialRetainerBox;
 };

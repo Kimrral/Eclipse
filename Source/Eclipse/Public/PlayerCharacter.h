@@ -26,8 +26,8 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
-	UPROPERTY(VisibleAnywhere)
-	class UWidgetComponent* InfoWidgetComponent;
+	//UPROPERTY(VisibleAnywhere)
+	//class UWidgetComponent* InfoWidgetComponent;
 
 protected:
 	// Called when the game starts or when spawned

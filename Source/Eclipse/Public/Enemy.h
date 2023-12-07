@@ -76,7 +76,7 @@ public:
 	int curHP;
 	
 	UPROPERTY(VisibleAnywhere, Category=EnemySettings)
-	int maxHP = 100.0f;
+	int maxHP = 1000.0f;
 
 	UPROPERTY(EditAnywhere, Category=EnemySettings)
 	UAnimMontage* damageMontage;

@@ -72,8 +72,8 @@ APlayerCharacter::APlayerCharacter()
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 
-	InfoWidgetComponent= CreateDefaultSubobject<UWidgetComponent>(TEXT("InfoWidgetComponent"));
-	InfoWidgetComponent->SetupAttachment(FollowCamera);
+	//InfoWidgetComponent= CreateDefaultSubobject<UWidgetComponent>(TEXT("InfoWidgetComponent"));
+	//InfoWidgetComponent->SetupAttachment(FollowCamera);
 
 	sniperComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("sniperComp"));
 	sniperComp->SetupAttachment(GetMesh(), FName("hand_r"));
@@ -152,6 +152,7 @@ void APlayerCharacter::BeginPlay()
 	sniperScopeUI=CreateWidget<UUserWidget>(GetWorld(), sniperScopeFactory);
 
 	informationUI = CreateWidget<UUserWidget>(GetWorld(), informationWidgetFactory);
+	informationUI->AddToViewport();
 
 	damageWidgetUI = CreateWidget<UDamageWidget>(GetWorld(), damageWidgetUIFactory);
 	
@@ -805,7 +806,7 @@ void APlayerCharacter::SetHeadDamageWidget(int damage, FVector spawnLoc)
 			damageWidgetUI=Cast<UDamageWidget>(widui);
 			if(damageWidgetUI)
 			{
-				FSlateColor SlateColor = FLinearColor(1, 0, 0, 0.6);
+				FSlateColor SlateColor = FLinearColor(1, 0, 0, 0.8);
 				damageWidgetUI->damage=damage;
 				damageWidgetUI->damageText->SetColorAndOpacity(SlateColor);
 				if(weaponArray[0]==true)
@@ -1200,7 +1201,7 @@ void APlayerCharacter::Fire()
 						auto hitRot = UKismetMathLibrary::Conv_VectorToRotator(rifleHitResult.ImpactNormal);
 						if(hitBone==FName("head"))
 						{
-							auto randRifleHeadDamage = FMath::RandRange(12, 18);
+							auto randRifleHeadDamage = FMath::RandRange(120, 180);
 							// 이번 공격에 적이 죽는다면
 							if(enemy->curHP<=randRifleHeadDamage)
 							{
@@ -1230,7 +1231,7 @@ void APlayerCharacter::Fire()
 						}
 						else
 						{
-							auto randRifleBodyDamage = FMath::RandRange(6, 9);
+							auto randRifleBodyDamage = FMath::RandRange(60, 90);
 							if(enemy->curHP<=randRifleBodyDamage)
 							{
 								crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
@@ -1366,12 +1367,13 @@ void APlayerCharacter::Fire()
 						auto hitRot = UKismetMathLibrary::Conv_VectorToRotator(sniperHitResult.ImpactNormal);
 						if(hitBone==FName("head"))
 						{
+							auto randSniperHeadDamage = FMath::RandRange(1000, 1200);
 							crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
 							UGameplayStatics::PlaySoundAtLocation(GetWorld(), KillSound, hitLoc);
 							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(3.0f));
 							// FSM에 있는 Damage Process 호출		
-							fsm->OnDamageProcess(100);
-							SetHeadDamageWidget(100, hitLoc);
+							fsm->OnDamageProcess(randSniperHeadDamage);
+							SetHeadDamageWidget(randSniperHeadDamage, hitLoc);
 							// 헤드 적중 데미지 프로세스 호출
 							enemy->OnHeadDamaged();
 							enemy->DropReward();
@@ -1379,7 +1381,7 @@ void APlayerCharacter::Fire()
 						}
 						else
 						{
-							auto randSniperDamage = FMath::RandRange(65, 85);
+							auto randSniperDamage = FMath::RandRange(650, 850);
 							if(enemy->curHP<=randSniperDamage)
 							{
 								crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
@@ -1565,7 +1567,7 @@ void APlayerCharacter::Fire()
 						auto hitRot = UKismetMathLibrary::Conv_VectorToRotator(pistolHitResult.ImpactNormal);
 						if(hitBone==FName("head"))
 						{
-							auto randPistolHeadDamage = FMath::RandRange(45, 55);
+							auto randPistolHeadDamage = FMath::RandRange(450, 550);
 							// 이번 공격에 Enemy가 죽는다면
 							if(enemy->curHP<=randPistolHeadDamage)
 							{
@@ -1596,9 +1598,9 @@ void APlayerCharacter::Fire()
 						}
 						else
 						{
-							auto randPistolDamage = FMath::RandRange(22, 30);
+							auto randPistolDamage = FMath::RandRange(220, 300);
 							// 이번 공격에 Enemy가 죽는다면
-							if(enemy->curHP<=25)
+							if(enemy->curHP<=randPistolDamage)
 							{
 								crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
 								UGameplayStatics::PlaySoundAtLocation(GetWorld(), KillSound, hitLoc);
@@ -1738,7 +1740,7 @@ void APlayerCharacter::Fire()
 						auto hitRot = UKismetMathLibrary::Conv_VectorToRotator(M249HitResult.ImpactNormal);
 						if(hitBone==FName("head"))
 						{
-							auto randM249HeadDamage = FMath::RandRange(18, 22);
+							auto randM249HeadDamage = FMath::RandRange(180, 220);
 							// 이번 공격에 Enemy가 죽는다면
 							if(enemy->curHP<=randM249HeadDamage)
 							{
@@ -1769,7 +1771,7 @@ void APlayerCharacter::Fire()
 						}
 						else
 						{
-							auto randM249Damage = FMath::RandRange(9, 11);
+							auto randM249Damage = FMath::RandRange(90, 110);
 							// 이번 공격에 Enemy가 죽는다면
 							if(enemy->curHP<=randM249Damage)
 							{

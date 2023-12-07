@@ -5,6 +5,7 @@
 
 #include "PlayerCharacter.h"
 #include "Components/Image.h"
+#include "Components/RetainerBox.h"
 #include "Components/TextBlock.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -19,13 +20,16 @@ void UInformationWidget::NativeConstruct()
 	pistolBulletImage->SetVisibility(ESlateVisibility::Hidden);
 	M249BulletImage->SetVisibility(ESlateVisibility::Hidden);
 
+	FTimerHandle ammoUpdateHandle;
+	GetWorld()->GetTimerManager().SetTimer(ammoUpdateHandle, this, &UInformationWidget::UpdateAmmo, 0.01f, true);
+	
 }
 
 void UInformationWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
-	UpdateAmmo();
+	//UpdateAmmo();
 
 }
 
@@ -71,4 +75,6 @@ void UInformationWidget::UpdateAmmo()
 		pistolBulletImage->SetVisibility(ESlateVisibility::Hidden);
 		M249BulletImage->SetVisibility(ESlateVisibility::Visible);
 	}
+
+	MaterialRetainerBox->RequestRender();
 }

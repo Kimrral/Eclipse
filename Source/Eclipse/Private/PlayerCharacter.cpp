@@ -445,6 +445,7 @@ void APlayerCharacter::SwapFirstWeapon()
 		weaponArray[2]=false;
 		weaponArray[3]=false;
 
+		informationUI->PlayAnimation(informationUI->WeaponSwap);
 		informationUI->UpdateAmmo_Secondary();
 
 
@@ -469,6 +470,7 @@ void APlayerCharacter::SwapFirstWeapon()
 		weaponArray[2]=false;
 		weaponArray[3]=false;
 
+		informationUI->PlayAnimation(informationUI->WeaponSwap);
 		informationUI->UpdateAmmo_Secondary();
 
 	}
@@ -492,6 +494,7 @@ void APlayerCharacter::SwapFirstWeapon()
 		weaponArray[2]=true;
 		weaponArray[3]=false;
 
+		informationUI->PlayAnimation(informationUI->WeaponSwap);
 		informationUI->UpdateAmmo_Secondary();
 
 	}
@@ -515,6 +518,7 @@ void APlayerCharacter::SwapFirstWeapon()
 		weaponArray[2]=false;
 		weaponArray[3]=true;
 
+		informationUI->PlayAnimation(informationUI->WeaponSwap);
 		informationUI->UpdateAmmo_Secondary();
 
 	}
@@ -556,6 +560,7 @@ void APlayerCharacter::SwapSecondWeapon()
 		weaponArray[2]=false;
 		weaponArray[3]=false;
 
+		informationUI->PlayAnimation(informationUI->WeaponSwap);
 		informationUI->UpdateAmmo_Secondary();
 
 
@@ -580,6 +585,7 @@ void APlayerCharacter::SwapSecondWeapon()
 		weaponArray[2]=false;
 		weaponArray[3]=false;
 
+		informationUI->PlayAnimation(informationUI->WeaponSwap);
 		informationUI->UpdateAmmo_Secondary();
 
 
@@ -604,6 +610,7 @@ void APlayerCharacter::SwapSecondWeapon()
 		weaponArray[2]=true;
 		weaponArray[3]=false;
 
+		informationUI->PlayAnimation(informationUI->WeaponSwap);
 		informationUI->UpdateAmmo_Secondary();
 
 	}
@@ -627,6 +634,7 @@ void APlayerCharacter::SwapSecondWeapon()
 		weaponArray[2]=false;
 		weaponArray[3]=true;
 
+		informationUI->PlayAnimation(informationUI->WeaponSwap);
 		informationUI->UpdateAmmo_Secondary();
 
 	}

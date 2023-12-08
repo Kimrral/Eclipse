@@ -3,6 +3,7 @@
 
 #include "M249AmmoActor.h"
 
+#include "InformationWidget.h"
 #include "PlayerCharacter.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -41,6 +42,7 @@ void AM249AmmoActor::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 		if(player)
 		{
 			player->maxM249Ammo+=100;
+			player->informationUI->UpdateAmmo_Secondary();
 			this->Destroy();
 		}
 	}

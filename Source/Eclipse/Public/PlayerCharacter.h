@@ -221,6 +221,12 @@ public:
 	UPROPERTY(EditAnywhere)		
 	TSubclassOf<class UInformationWidget> informationWidgetFactory;
 
+	UPROPERTY(BlueprintReadOnly)
+	class UInformationWidget* informationUI;
+	
+	UPROPERTY(BlueprintReadOnly)
+	class UWeaponInfoWidget* infoWidgetUI;
+
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UUserWidget> tabWidgetFactory;
 
@@ -236,14 +242,10 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	class UCrosshairWidget* crosshairUI;
 
-	UPROPERTY(BlueprintReadOnly)
-	class UWeaponInfoWidget* infoWidgetUI;
-
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* bulletImpactFactory;
 
-	UPROPERTY(BlueprintReadOnly)
-	class UInformationWidget* informationUI;
+
 	
 	UPROPERTY(BlueprintReadOnly)
 	class UUserWidget* sniperScopeUI;

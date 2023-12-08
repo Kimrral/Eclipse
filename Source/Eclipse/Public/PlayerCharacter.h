@@ -262,6 +262,9 @@ public:
 	UPROPERTY()
 	bool TabBool = false;
 
+	UPROPERTY()
+	bool TabOn = false;
+
 	UFUNCTION()
 	void WeaponDetectionLineTrace();
 
@@ -276,6 +279,15 @@ public:
 
 	UFUNCTION()
 	void InfoWidgetUpdate();
+
+	UFUNCTION()
+	float DamageMultiplier();
+
+	UFUNCTION()
+	float FireRateMultiplier();
+
+	UFUNCTION()
+	float RecoilRateMultiplier();
 
 	UPROPERTY()
 	bool bUsingRifle;
@@ -443,4 +455,26 @@ public:
 
 	UFUNCTION()  // Bind function
 	void SetZoomValue(float Value);
+
+	UPROPERTY()
+	bool CoreEquipped = false;
+
+	UPROPERTY()
+	int randRifleDamage;
+	UPROPERTY()
+	int randRifleHeadDamage;
+	UPROPERTY()
+	int randSniperDamage;
+	UPROPERTY()
+	int randSniperHeadDamage;
+	UPROPERTY()
+	int randPistolDamage;
+	UPROPERTY()
+	int randPistolHeadDamage;
+	UPROPERTY()
+	int randM249Damage;
+	UPROPERTY()
+	int randM249HeadDamage;
+
+	
 };

@@ -256,6 +256,10 @@ void APlayerCharacter::Move(const FInputActionValue& Value)
 
 void APlayerCharacter::Look(const FInputActionValue& Value)
 {
+	if(TabOn)
+	{
+		return;
+	}
 	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
@@ -649,12 +653,24 @@ void APlayerCharacter::Tab()
 		if(tabWidgetUI)
 		{
 			tabWidgetUI->AddToViewport();
+			auto PC = Cast<APlayerController>(GetWorld()->GetFirstPlayerController());
+			if(PC)
+			{
+				PC->SetShowMouseCursor(true);
+				TabOn=true;
+			}
 		}
 	}
 	else
 	{
 		TabBool=false;
 		tabWidgetUI->RemoveFromParent();
+		auto PC = Cast<APlayerController>(GetWorld()->GetFirstPlayerController());
+		if(PC)
+		{
+			PC->SetShowMouseCursor(false);
+			TabOn=false;
+		}
 	}
 }
 
@@ -1188,11 +1204,7 @@ void APlayerCharacter::SetZoomValue(float Value)
 
 void APlayerCharacter::Fire()
 {
-	if(!CanShoot)
-	{
-		return;
-	}
-	if(isRunning)
+	if(!CanShoot||isRunning||TabOn)
 	{
 		return;
 	}
@@ -1221,7 +1233,6 @@ void APlayerCharacter::Fire()
 			auto particleTrans = rifleComp->GetSocketTransform(FName("RifleFirePosition"));
 			particleTrans.SetScale3D(FVector(0.7));
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), fireParticle, particleTrans);
-			//UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), trailParticle, particleTrans);
 			FActorSpawnParameters param;
 			param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 			auto spawnTrans = rifleComp->GetSocketTransform(FName("BulletShell"));
@@ -1254,7 +1265,9 @@ void APlayerCharacter::Fire()
 						auto hitRot = UKismetMathLibrary::Conv_VectorToRotator(rifleHitResult.ImpactNormal);
 						if(hitBone==FName("head"))
 						{
-							auto randRifleHeadDamage = FMath::RandRange(120, 180);
+							auto min = FMath::RoundFromZero(120*DamageMultiplier());
+							auto max = FMath::RoundFromZero(180*DamageMultiplier());
+							randRifleHeadDamage = FMath::RandRange(min, max);
 							// 이번 공격에 적이 죽는다면
 							if(enemy->curHP<=randRifleHeadDamage)
 							{
@@ -1284,15 +1297,17 @@ void APlayerCharacter::Fire()
 						}
 						else
 						{
-							auto randRifleBodyDamage = FMath::RandRange(60, 90);
-							if(enemy->curHP<=randRifleBodyDamage)
+							auto min = FMath::RoundFromZero(60*DamageMultiplier());
+							auto max = FMath::RoundFromZero(90*DamageMultiplier());
+							randRifleDamage = FMath::RandRange(min, max);
+							if(enemy->curHP<=randRifleDamage)
 							{
 								crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
 								UGameplayStatics::PlaySoundAtLocation(GetWorld(), KillSound, hitLoc);
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.0f));
 								// FSM에 있는 Damage Process 호출		
-								fsm->OnDamageProcess(randRifleBodyDamage);
-								SetDamageWidget(randRifleBodyDamage, hitLoc);
+								fsm->OnDamageProcess(randRifleDamage);
+								SetDamageWidget(randRifleDamage, hitLoc);
 
 								// 일반 적중 데미지 프로세스 호출
 								enemy->OnDamaged();
@@ -1305,8 +1320,8 @@ void APlayerCharacter::Fire()
 								UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(0.5f));
 								// FSM에 있는 Damage Process 호출		
-								fsm->OnDamageProcess(randRifleBodyDamage);
-								SetDamageWidget(randRifleBodyDamage, hitLoc);
+								fsm->OnDamageProcess(randRifleDamage);
+								SetDamageWidget(randRifleDamage, hitLoc);
 
 								// 일반 적중 데미지 프로세스 호출
 								enemy->OnDamaged();
@@ -1315,8 +1330,8 @@ void APlayerCharacter::Fire()
 						//EnemyHPWidgetSettings(enemy);
 					}
 				}
-				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.3, -0.5);
-				auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.3, 0.3);
+				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.3*RecoilRateMultiplier(), -0.5*RecoilRateMultiplier());
+				auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.3*RecoilRateMultiplier(), 0.3*RecoilRateMultiplier());
 				AddControllerPitchInput(randF);
 				AddControllerYawInput(randF2);
 				FActorSpawnParameters params;
@@ -1338,12 +1353,12 @@ void APlayerCharacter::Fire()
 				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
 				{
 					CanShoot=true;
-				}), 1/BulletsPerSecRifle, false);
+				}), 1/(BulletsPerSecRifle*FireRateMultiplier()), false);
 			}
 			else
 			{
-				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.3, -0.5);
-				auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.3, 0.3);
+				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.3*RecoilRateMultiplier(), -0.5*RecoilRateMultiplier());
+				auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.3*RecoilRateMultiplier(), 0.3*RecoilRateMultiplier());
 				AddControllerPitchInput(randF);
 				AddControllerYawInput(randF2);
 				FVector niagaraSpawnLoc = FollowCamera->K2_GetComponentLocation();
@@ -1358,7 +1373,7 @@ void APlayerCharacter::Fire()
 				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
 				{
 					CanShoot=true;
-				}), 1/BulletsPerSecRifle, false);
+				}), 1/(BulletsPerSecRifle*FireRateMultiplier()), false);
 			}
 		}
 		else
@@ -1420,7 +1435,9 @@ void APlayerCharacter::Fire()
 						auto hitRot = UKismetMathLibrary::Conv_VectorToRotator(sniperHitResult.ImpactNormal);
 						if(hitBone==FName("head"))
 						{
-							auto randSniperHeadDamage = FMath::RandRange(1000, 1200);
+							auto min = FMath::RoundFromZero(1000*DamageMultiplier());
+							auto max = FMath::RoundFromZero(1200*DamageMultiplier());
+							randSniperHeadDamage = FMath::RandRange(min, max);
 							crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
 							UGameplayStatics::PlaySoundAtLocation(GetWorld(), KillSound, hitLoc);
 							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(3.0f));
@@ -1434,7 +1451,9 @@ void APlayerCharacter::Fire()
 						}
 						else
 						{
-							auto randSniperDamage = FMath::RandRange(650, 850);
+							auto min = FMath::RoundFromZero(650*DamageMultiplier());
+							auto max = FMath::RoundFromZero(850*DamageMultiplier());
+							randSniperDamage = FMath::RandRange(min, max);
 							if(enemy->curHP<=randSniperDamage)
 							{
 								crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
@@ -1465,8 +1484,8 @@ void APlayerCharacter::Fire()
 						//EnemyHPWidgetSettings(enemy);
 					}
 				}
-				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.7, -1.2);
-				auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7, 0.8);
+				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.7*RecoilRateMultiplier(), -1.2*RecoilRateMultiplier());
+				auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7*RecoilRateMultiplier(), 0.8*RecoilRateMultiplier());
 				AddControllerPitchInput(randF);
 				AddControllerYawInput(randF2);
 				FActorSpawnParameters params;
@@ -1513,13 +1532,13 @@ void APlayerCharacter::Fire()
 				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
 				{
 					CanShoot=true;
-				}), BulletsPerSecSniper, false);
+				}), BulletsPerSecSniper*FireRateMultiplier(), false);
 			}
 			// 라인 트레이스가 적중하지 않았다면
 			else
 			{
-				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.7, -1.2);
-				auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7, 0.8);
+				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.7*RecoilRateMultiplier(), -1.2*RecoilRateMultiplier());
+				auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7*RecoilRateMultiplier(), 0.8*RecoilRateMultiplier());
 				AddControllerPitchInput(randF);
 				AddControllerYawInput(randF2);
 				FVector niagaraSpawnLoc = FollowCamera->K2_GetComponentLocation();
@@ -1546,7 +1565,7 @@ void APlayerCharacter::Fire()
 				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
 				{
 					CanShoot=true;
-				}), BulletsPerSecSniper, false);
+				}), BulletsPerSecSniper*FireRateMultiplier(), false);
 			}
 		}
 		else
@@ -1620,7 +1639,9 @@ void APlayerCharacter::Fire()
 						auto hitRot = UKismetMathLibrary::Conv_VectorToRotator(pistolHitResult.ImpactNormal);
 						if(hitBone==FName("head"))
 						{
-							auto randPistolHeadDamage = FMath::RandRange(450, 550);
+							auto min = FMath::RoundFromZero(450*DamageMultiplier());
+							auto max = FMath::RoundFromZero(550*DamageMultiplier());
+							randPistolHeadDamage = FMath::RandRange(min, max);
 							// 이번 공격에 Enemy가 죽는다면
 							if(enemy->curHP<=randPistolHeadDamage)
 							{
@@ -1651,7 +1672,9 @@ void APlayerCharacter::Fire()
 						}
 						else
 						{
-							auto randPistolDamage = FMath::RandRange(220, 300);
+							auto min = FMath::RoundFromZero(220*DamageMultiplier());
+							auto max = FMath::RoundFromZero(300*DamageMultiplier());
+							randPistolDamage = FMath::RandRange(min, max);
 							// 이번 공격에 Enemy가 죽는다면
 							if(enemy->curHP<=randPistolDamage)
 							{
@@ -1683,8 +1706,8 @@ void APlayerCharacter::Fire()
 						//EnemyHPWidgetSettings(enemy);
 					}
 				}
-				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.7, -1.2);
-				auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7, 0.8);
+				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.7*RecoilRateMultiplier(), -1.2*RecoilRateMultiplier());
+				auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7*RecoilRateMultiplier(), 0.8*RecoilRateMultiplier());
 				AddControllerPitchInput(randF);
 				AddControllerYawInput(randF2);
 				FActorSpawnParameters params;
@@ -1706,12 +1729,12 @@ void APlayerCharacter::Fire()
 				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
 				{
 					CanShoot=true;
-				}), 1/BulletsPerSecPistol, false);
+				}), 1/(BulletsPerSecPistol*FireRateMultiplier()), false);
 			}
 			else
 			{
-				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.7, -1.2);
-				auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7, 0.8);
+				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.7*RecoilRateMultiplier(), -1.2*RecoilRateMultiplier());
+				auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7*RecoilRateMultiplier(), 0.8*RecoilRateMultiplier());
 				AddControllerPitchInput(randF);
 				AddControllerYawInput(randF2);
 				FVector niagaraSpawnLoc = FollowCamera->K2_GetComponentLocation();
@@ -1726,7 +1749,7 @@ void APlayerCharacter::Fire()
 				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
 				{
 					CanShoot=true;
-				}), 1/BulletsPerSecPistol, false);
+				}), 1/(BulletsPerSecPistol*FireRateMultiplier()), false);
 			}
 		}
 		else
@@ -1793,7 +1816,9 @@ void APlayerCharacter::Fire()
 						auto hitRot = UKismetMathLibrary::Conv_VectorToRotator(M249HitResult.ImpactNormal);
 						if(hitBone==FName("head"))
 						{
-							auto randM249HeadDamage = FMath::RandRange(180, 220);
+							auto min = FMath::RoundFromZero(180*DamageMultiplier());
+							auto max = FMath::RoundFromZero(220*DamageMultiplier());
+							randM249HeadDamage = FMath::RandRange(min, max);
 							// 이번 공격에 Enemy가 죽는다면
 							if(enemy->curHP<=randM249HeadDamage)
 							{
@@ -1824,7 +1849,9 @@ void APlayerCharacter::Fire()
 						}
 						else
 						{
-							auto randM249Damage = FMath::RandRange(90, 110);
+							auto min = FMath::RoundFromZero(90*DamageMultiplier());
+							auto max = FMath::RoundFromZero(110*DamageMultiplier());
+							randM249Damage = FMath::RandRange(min, max);
 							// 이번 공격에 Enemy가 죽는다면
 							if(enemy->curHP<=randM249Damage)
 							{
@@ -1858,15 +1885,15 @@ void APlayerCharacter::Fire()
 				}
 				if(isZooming)
 				{
-					auto randF = UKismetMathLibrary::RandomFloatInRange(-0.4, -0.7);
-					auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.4, 0.4);
+					auto randF = UKismetMathLibrary::RandomFloatInRange(-0.4*RecoilRateMultiplier(), -0.7*RecoilRateMultiplier());
+					auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.4*RecoilRateMultiplier(), 0.4*RecoilRateMultiplier());
 					AddControllerPitchInput(randF);
 					AddControllerYawInput(randF2);			
 				}
 				else
 				{
-					auto randF = UKismetMathLibrary::RandomFloatInRange(-0.6, -1.1);
-					auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.5, 0.5);
+					auto randF = UKismetMathLibrary::RandomFloatInRange(-0.6*RecoilRateMultiplier(), -1.1*RecoilRateMultiplier());
+					auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.5*RecoilRateMultiplier(), 0.5*RecoilRateMultiplier());
 					AddControllerPitchInput(randF);
 					AddControllerYawInput(randF2);					
 				}
@@ -1889,21 +1916,21 @@ void APlayerCharacter::Fire()
 				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
 				{
 					CanShoot=true;
-				}), 1/BulletsPerSecM249, false);
+				}), 1/(BulletsPerSecM249*FireRateMultiplier()), false);
 			}
 			else
 			{
 				if(isZooming)
 				{
-					auto randF = UKismetMathLibrary::RandomFloatInRange(-0.4, -0.7);
-					auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.4, 0.4);
+					auto randF = UKismetMathLibrary::RandomFloatInRange(-0.4*RecoilRateMultiplier(), -0.7*RecoilRateMultiplier());
+					auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.4*RecoilRateMultiplier(), 0.4*RecoilRateMultiplier());
 					AddControllerPitchInput(randF);
 					AddControllerYawInput(randF2);			
 				}
 				else
 				{
-					auto randF = UKismetMathLibrary::RandomFloatInRange(-0.6, -1.1);
-					auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.5, 0.5);
+					auto randF = UKismetMathLibrary::RandomFloatInRange(-0.6*RecoilRateMultiplier(), -1.1*RecoilRateMultiplier());
+					auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.5*RecoilRateMultiplier(), 0.5*RecoilRateMultiplier());
 					AddControllerPitchInput(randF);
 					AddControllerYawInput(randF2);					
 				}
@@ -1919,7 +1946,7 @@ void APlayerCharacter::Fire()
 				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
 				{
 					CanShoot=true;
-				}), 1/BulletsPerSecM249, false);
+				}), 1/(BulletsPerSecM249*FireRateMultiplier()), false);
 			}
 		}
 		else
@@ -1950,4 +1977,31 @@ void APlayerCharacter::EnemyHPWidgetSettings(AEnemy* enemy)
 
 void APlayerCharacter::InfoWidgetUpdate()
 {
+}
+
+float APlayerCharacter::DamageMultiplier()
+{
+	if(CoreEquipped)
+	{
+		return 1.2f;
+	}
+	return 1.f;
+}
+
+float APlayerCharacter::FireRateMultiplier()
+{
+	if(CoreEquipped)
+	{
+		return 1.2f;
+	}
+	return 1.f;
+}
+
+float APlayerCharacter::RecoilRateMultiplier()
+{
+	if(CoreEquipped)
+	{
+		return 1.2f;
+	}
+	return 1.f;
 }

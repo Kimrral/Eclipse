@@ -306,7 +306,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
 	class UAnimMontage* zoomingMontage;
-
+	
 	UPROPERTY()
 	int curRifleAmmo;
 

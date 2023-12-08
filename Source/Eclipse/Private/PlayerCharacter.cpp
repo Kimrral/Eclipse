@@ -21,6 +21,7 @@
 #include "Components/CapsuleComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "PistolActor.h"
+#include "RewardContainer.h"
 #include "TabWidget.h"
 #include "WeaponInfoWidget.h"
 #include "Blueprint/UserWidget.h"
@@ -1254,6 +1255,8 @@ void APlayerCharacter::Fire()
 				AEnemy* enemy=Cast<AEnemy>(rifleHitResult.GetActor());
 				// Enemy FSM Casting
 				UEnemyFSM* fsm = Cast<UEnemyFSM>(enemy->GetDefaultSubobjectByName(FName("enemyFSM")));
+				// Reward Container Casting
+				auto rewardContainer=Cast<ARewardContainer>(rifleHitResult.GetActor());
 				if(fsm&&enemy)
 				{
 					// 이미 죽지 않은 적에게만 실행
@@ -1328,6 +1331,23 @@ void APlayerCharacter::Fire()
 							}
 						}
 						//EnemyHPWidgetSettings(enemy);
+					}
+				}
+				else if(rewardContainer)
+				{
+					auto hitLoc = rifleHitResult.Location;
+					crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
+					UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
+					FVector force = FVector(100);
+					FVector loc = FollowCamera->GetForwardVector();
+					//rewardContainer->containerMesh->AddImpulseAtLocation(force, loc);
+					if(rewardContainer->curBoxHP<=0)
+					{
+						rewardContainer->BoxDestroyed();
+					}
+					else
+					{
+						rewardContainer->curBoxHP=FMath::Clamp(rewardContainer->curBoxHP-1, 0, 10);						
 					}
 				}
 				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.3*RecoilRateMultiplier(), -0.5*RecoilRateMultiplier());

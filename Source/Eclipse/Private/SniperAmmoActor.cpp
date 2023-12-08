@@ -3,6 +3,7 @@
 
 #include "SniperAmmoActor.h"
 
+#include "InformationWidget.h"
 #include "PlayerCharacter.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -41,6 +42,8 @@ void ASniperAmmoActor::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 		if(player)
 		{
 			player->maxSniperAmmo+=5;
+			player->informationUI->UpdateAmmo_Secondary();
+
 			this->Destroy();
 		}
 	}

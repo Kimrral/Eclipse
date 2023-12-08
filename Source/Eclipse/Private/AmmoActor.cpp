@@ -4,6 +4,7 @@
 #include "AmmoActor.h"
 
 #include "PlayerCharacter.h"
+#include "Blueprint/UserWidget.h"
 #include "Components/SphereComponent.h"
 
 // Sets default values
@@ -24,7 +25,7 @@ AAmmoActor::AAmmoActor()
 // Called when the game starts or when spawned
 void AAmmoActor::BeginPlay()
 {
-	Super::BeginPlay();	
+	Super::BeginPlay();
 }
 
 // Called every frame

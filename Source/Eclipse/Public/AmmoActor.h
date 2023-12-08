@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InformationWidget.h"
 #include "GameFramework/Actor.h"
 #include "AmmoActor.generated.h"
 
@@ -28,4 +29,5 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	class USphereComponent* playerTraceSphereCollision;
+
 };

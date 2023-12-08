@@ -3,6 +3,7 @@
 
 #include "RifleAmmoActor.h"
 
+#include "InformationWidget.h"
 #include "PlayerCharacter.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -41,6 +42,8 @@ void ARifleAmmoActor::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor
 		if(player)
 		{
 			player->maxRifleAmmo+=40;
+			player->informationUI->UpdateAmmo_Secondary();
+
 			this->Destroy();
 		}
 	}

@@ -3,6 +3,7 @@
 
 #include "PistolAmmoActor.h"
 
+#include "InformationWidget.h"
 #include "PlayerCharacter.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -42,6 +43,8 @@ void APistolAmmoActor::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 		if(player)
 		{
 			player->maxPistolAmmo+=8;
+			player->informationUI->UpdateAmmo_Secondary();
+
 			this->Destroy();
 		}
 	}

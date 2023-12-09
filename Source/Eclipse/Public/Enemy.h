@@ -75,7 +75,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int curHP;
 	
-	UPROPERTY(VisibleAnywhere, Category=EnemySettings)
+	UPROPERTY(EditDefaultsOnly, Category=EnemySettings)
 	int maxHP = 1000.0f;
 
 	UPROPERTY(EditAnywhere, Category=EnemySettings)
@@ -90,9 +90,6 @@ public:
 	UPROPERTY()
 	class UEnemyHPWidget* enemyHPWidget;
 
-	UPROPERTY(EditAnywhere, Category=EnemySettings)
-	class UStaticMeshComponent* aimingPointer;
-
 	UPROPERTY()
 	FTimerHandle HPWidgetInvisibleHandle;
 
@@ -102,11 +99,6 @@ public:
 	UPROPERTY()
 	class AEclipsePlayerController* PC;
 
-	UPROPERTY(EditAnywhere, Category=EnemySettings)
-	class UMaterialInterface* M_aimingPointer;
-
-	UPROPERTY(EditAnywhere, Category=EnemySettings)
-	class UMaterialInterface* M_aimingPointerHead;
 
 	UPROPERTY()
 	bool bDeath = false;

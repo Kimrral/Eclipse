@@ -30,6 +30,7 @@
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GeometryCollection/GeometryCollectionComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -1224,10 +1225,12 @@ void APlayerCharacter::Fire()
 			TEnumAsByte<EObjectTypeQuery> WorldDynamic = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic);
 			TEnumAsByte<EObjectTypeQuery> Pawn = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn);
 			TEnumAsByte<EObjectTypeQuery> PhysicsBody = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody);
+			TEnumAsByte<EObjectTypeQuery> Destructible = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Destructible);
 			ObjectTypes.Add(WorldStatic);
 			ObjectTypes.Add(WorldDynamic);
 			ObjectTypes.Add(Pawn);
 			ObjectTypes.Add(PhysicsBody);
+			ObjectTypes.Add(Destructible);
 			TArray<AActor*> ActorsToIgnore;
 			ActorsToIgnore.Add(this); // LineTrace에서 제외할 대상
 			FHitResult rifleHitResult;
@@ -1256,7 +1259,7 @@ void APlayerCharacter::Fire()
 				// Enemy FSM Casting
 				UEnemyFSM* fsm = Cast<UEnemyFSM>(enemy->GetDefaultSubobjectByName(FName("enemyFSM")));
 				// Reward Container Casting
-				auto rewardContainer=Cast<ARewardContainer>(rifleHitResult.GetActor());
+				ARewardContainer* rewardContainer=Cast<ARewardContainer>(rifleHitResult.GetActor());
 				if(fsm&&enemy)
 				{
 					// 이미 죽지 않은 적에게만 실행
@@ -1338,16 +1341,16 @@ void APlayerCharacter::Fire()
 					auto hitLoc = rifleHitResult.Location;
 					crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
 					UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
-					FVector force = FVector(100);
-					FVector loc = FollowCamera->GetForwardVector();
-					//rewardContainer->containerMesh->AddImpulseAtLocation(force, loc);
 					if(rewardContainer->curBoxHP<=0)
 					{
 						rewardContainer->BoxDestroyed();
+						rewardContainer->containerMesh->SetSimulatePhysics(true);
+						ContainerLoc = rewardContainer->GetActorLocation();
+						containerDele.ExecuteIfBound();
 					}
 					else
 					{
-						rewardContainer->curBoxHP=FMath::Clamp(rewardContainer->curBoxHP-1, 0, 10);						
+						rewardContainer->curBoxHP=FMath::Clamp(rewardContainer->curBoxHP-1, 0, 10);
 					}
 				}
 				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.3*RecoilRateMultiplier(), -0.5*RecoilRateMultiplier());
@@ -1421,10 +1424,12 @@ void APlayerCharacter::Fire()
 			TEnumAsByte<EObjectTypeQuery> WorldDynamic = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic);
 			TEnumAsByte<EObjectTypeQuery> Pawn = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn);
 			TEnumAsByte<EObjectTypeQuery> PhysicsBody = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody);
+			TEnumAsByte<EObjectTypeQuery> Destructible = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Destructible);
 			ObjectTypes.Add(WorldStatic);
 			ObjectTypes.Add(WorldDynamic);
 			ObjectTypes.Add(Pawn);
 			ObjectTypes.Add(PhysicsBody);
+			ObjectTypes.Add(Destructible);
 			TArray<AActor*> ActorsToIgnore;
 			ActorsToIgnore.Add(this); // LineTrace에서 제외할 대상
 			FHitResult sniperHitResult;
@@ -1623,10 +1628,12 @@ void APlayerCharacter::Fire()
 			TEnumAsByte<EObjectTypeQuery> WorldDynamic = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic);
 			TEnumAsByte<EObjectTypeQuery> Pawn = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn);
 			TEnumAsByte<EObjectTypeQuery> PhysicsBody = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody);
+			TEnumAsByte<EObjectTypeQuery> Destructible = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Destructible);
 			ObjectTypes.Add(WorldStatic);
 			ObjectTypes.Add(WorldDynamic);
 			ObjectTypes.Add(Pawn);
 			ObjectTypes.Add(PhysicsBody);
+			ObjectTypes.Add(Destructible);
 			TArray<AActor*> ActorsToIgnore;
 			ActorsToIgnore.Add(this); // LineTrace에서 제외할 대상
 			FHitResult pistolHitResult;
@@ -1797,10 +1804,12 @@ void APlayerCharacter::Fire()
 			TEnumAsByte<EObjectTypeQuery> WorldDynamic = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic);
 			TEnumAsByte<EObjectTypeQuery> Pawn = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn);
 			TEnumAsByte<EObjectTypeQuery> PhysicsBody = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody);
+			TEnumAsByte<EObjectTypeQuery> Destructible = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Destructible);
 			ObjectTypes.Add(WorldStatic);
 			ObjectTypes.Add(WorldDynamic);
 			ObjectTypes.Add(Pawn);
 			ObjectTypes.Add(PhysicsBody);
+			ObjectTypes.Add(Destructible);
 			TArray<AActor*> ActorsToIgnore;
 			ActorsToIgnore.Add(this); // LineTrace에서 제외할 대상
 			FHitResult M249HitResult;

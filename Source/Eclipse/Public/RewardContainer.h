@@ -15,8 +15,8 @@ public:
 	// Sets default values for this actor's properties
 	ARewardContainer();
 
-	UPROPERTY(EditAnywhere)
-	class UStaticMeshComponent* containerMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	class UGeometryCollectionComponent* containerMesh;
 
 	UPROPERTY(EditAnywhere)
 	class USphereComponent* playerDetectCollision;
@@ -49,7 +49,7 @@ public:
 	int curBoxHP;
 
 	UPROPERTY()
-	int maxBoxHP = 15;
+	int maxBoxHP = 10;
 
 protected:
 	// Called when the game starts or when spawned

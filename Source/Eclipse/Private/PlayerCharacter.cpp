@@ -431,6 +431,7 @@ void APlayerCharacter::SwapFirstWeapon()
 		}
 	}
 	curWeaponSlotNumber=1;
+	UGameplayStatics::PlaySound2D(GetWorld(), SwapSound);
 	if(equippedWeaponStringArray[0]==FString("Rifle"))
 	{
 		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
@@ -546,6 +547,7 @@ void APlayerCharacter::SwapSecondWeapon()
 		}
 	}
 	curWeaponSlotNumber=2;
+	UGameplayStatics::PlaySound2D(GetWorld(), SwapSound);
 	if(equippedWeaponStringArray[1]==FString("Rifle"))
 	{
 		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());

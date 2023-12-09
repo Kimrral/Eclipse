@@ -416,7 +416,10 @@ public:
 	class USoundBase* M249FireSound;
 
 	UPROPERTY(EditAnywhere, Category="Sounds")
-	class USoundBase* RifleReloadSound;	
+	class USoundBase* RifleReloadSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* SwapSound;
 	
 	UPROPERTY()
 	FTimerHandle shootEnableHandle;

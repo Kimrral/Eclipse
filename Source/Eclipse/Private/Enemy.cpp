@@ -96,10 +96,10 @@ void AEnemy::OnDamaged()
 void AEnemy::OnHeadDamaged()
 {
 	FTimerHandle overlayMatHandle;
-	GetController()->StopMovement();
-	GetCharacterMovement()->Deactivate();
+	//GetController()->StopMovement();
+	//GetCharacterMovement()->Deactivate();
 	GetMesh()->SetOverlayMaterial(overlayMatRed);
-	PlayAnimMontage(damageMontage, 1);
+	//PlayAnimMontage(damageMontage, 1);
 	GetWorldTimerManager().ClearTimer(overlayMatHandle);
 	GetWorldTimerManager().SetTimer(overlayMatHandle, FTimerDelegate::CreateLambda([this]()->void
 	{

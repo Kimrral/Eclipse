@@ -125,6 +125,6 @@ void ARewardContainer::BoxDestroyed()
 {
 	DropReward();
 	playerDetectCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	containerMesh->SetCollisionObjectType(ECC_Vehicle);
 	containerMesh->SetRenderCustomDepth(false);
+	bDestroyed=true;
 }

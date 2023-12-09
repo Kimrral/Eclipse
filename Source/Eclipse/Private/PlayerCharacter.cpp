@@ -1338,19 +1338,22 @@ void APlayerCharacter::Fire()
 				}
 				else if(rewardContainer)
 				{
-					auto hitLoc = rifleHitResult.Location;
-					crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
-					UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
-					if(rewardContainer->curBoxHP<=0)
+					if(!rewardContainer->bDestroyed)
 					{
-						rewardContainer->BoxDestroyed();
-						rewardContainer->containerMesh->SetSimulatePhysics(true);
-						ContainerLoc = rewardContainer->GetActorLocation();
-						containerDele.ExecuteIfBound();
-					}
-					else
-					{
-						rewardContainer->curBoxHP=FMath::Clamp(rewardContainer->curBoxHP-1, 0, 10);
+						auto hitLoc = rifleHitResult.Location;
+						crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
+						UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
+						if(rewardContainer->curBoxHP<=1)
+						{
+							rewardContainer->BoxDestroyed();
+							rewardContainer->containerMesh->SetSimulatePhysics(true);
+							ContainerLoc = rewardContainer->GetActorLocation();
+							containerDele.ExecuteIfBound();
+						}
+						else
+						{
+							rewardContainer->curBoxHP=FMath::Clamp(rewardContainer->curBoxHP-1, 0, 10);
+						}
 					}
 				}
 				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.3*RecoilRateMultiplier(), -0.5*RecoilRateMultiplier());
@@ -1449,6 +1452,8 @@ void APlayerCharacter::Fire()
 				AEnemy* enemy=Cast<AEnemy>(sniperHitResult.GetActor());
 				// Enemy FSM Casting
 				UEnemyFSM* fsm = Cast<UEnemyFSM>(enemy->GetDefaultSubobjectByName(FName("enemyFSM")));
+				// Reward Container Casting
+				ARewardContainer* rewardContainer=Cast<ARewardContainer>(sniperHitResult.GetActor());
 				if(fsm&&enemy)
 				{
 					// 이미 죽지 않은 적에게만 실행
@@ -1507,6 +1512,26 @@ void APlayerCharacter::Fire()
 							}
 						}
 						//EnemyHPWidgetSettings(enemy);
+					}
+				}
+				else if(rewardContainer)
+				{
+					if(!rewardContainer->bDestroyed)
+					{
+						auto hitLoc = sniperHitResult.Location;
+						crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
+						UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
+						if(rewardContainer->curBoxHP<=5)
+						{
+							rewardContainer->BoxDestroyed();
+							rewardContainer->containerMesh->SetSimulatePhysics(true);
+							ContainerLoc = rewardContainer->GetActorLocation();
+							containerDele.ExecuteIfBound();
+						}
+						else
+						{
+							rewardContainer->curBoxHP=FMath::Clamp(rewardContainer->curBoxHP-5, 0, 10);
+						}
 					}
 				}
 				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.7*RecoilRateMultiplier(), -1.2*RecoilRateMultiplier());
@@ -1655,6 +1680,8 @@ void APlayerCharacter::Fire()
 				AEnemy* enemy=Cast<AEnemy>(pistolHitResult.GetActor());
 				// Enemy FSM Casting
 				UEnemyFSM* fsm = Cast<UEnemyFSM>(enemy->GetDefaultSubobjectByName(FName("enemyFSM")));
+				// Reward Container Casting
+				ARewardContainer* rewardContainer=Cast<ARewardContainer>(pistolHitResult.GetActor());
 				if(fsm&&enemy)
 				{
 					// 이미 죽지 않은 적에게만 실행
@@ -1731,6 +1758,26 @@ void APlayerCharacter::Fire()
 							}
 						}
 						//EnemyHPWidgetSettings(enemy);
+					}
+				}
+				else if(rewardContainer)
+				{
+					if(!rewardContainer->bDestroyed)
+					{
+						auto hitLoc = pistolHitResult.Location;
+						crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
+						UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
+						if(rewardContainer->curBoxHP<=2)
+						{
+							rewardContainer->BoxDestroyed();
+							rewardContainer->containerMesh->SetSimulatePhysics(true);
+							ContainerLoc = rewardContainer->GetActorLocation();
+							containerDele.ExecuteIfBound();
+						}
+						else
+						{
+							rewardContainer->curBoxHP=FMath::Clamp(rewardContainer->curBoxHP-2, 0, 10);
+						}
 					}
 				}
 				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.7*RecoilRateMultiplier(), -1.2*RecoilRateMultiplier());
@@ -1834,6 +1881,8 @@ void APlayerCharacter::Fire()
 				AEnemy* enemy=Cast<AEnemy>(M249HitResult.GetActor());
 				// Enemy FSM Casting
 				UEnemyFSM* fsm = Cast<UEnemyFSM>(enemy->GetDefaultSubobjectByName(FName("enemyFSM")));
+				// Reward Container Casting
+				ARewardContainer* rewardContainer=Cast<ARewardContainer>(M249HitResult.GetActor());
 				if(fsm&&enemy)
 				{
 					// 이미 죽지 않은 적에게만 실행
@@ -1910,6 +1959,26 @@ void APlayerCharacter::Fire()
 							}
 						}
 						//EnemyHPWidgetSettings(enemy);
+					}
+				}
+				else if(rewardContainer)
+				{
+					if(!rewardContainer->bDestroyed)
+					{
+						auto hitLoc = M249HitResult.Location;
+						crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
+						UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
+						if(rewardContainer->curBoxHP<=1)
+						{
+							rewardContainer->BoxDestroyed();
+							rewardContainer->containerMesh->SetSimulatePhysics(true);
+							ContainerLoc = rewardContainer->GetActorLocation();
+							containerDele.ExecuteIfBound();
+						}
+						else
+						{
+							rewardContainer->curBoxHP=FMath::Clamp(rewardContainer->curBoxHP-1, 0, 10);
+						}
 					}
 				}
 				if(isZooming)

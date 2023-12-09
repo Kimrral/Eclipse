@@ -51,6 +51,9 @@ public:
 	UPROPERTY()
 	int maxBoxHP = 10;
 
+	UPROPERTY()
+	bool bDestroyed = false;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

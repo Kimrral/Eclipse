@@ -9,6 +9,8 @@
 #include "Components/TimelineComponent.h"
 #include "PlayerCharacter.generated.h"
 
+DECLARE_DYNAMIC_DELEGATE(FRewardContainerDestruct);
+
 UCLASS()
 class ECLIPSE_API APlayerCharacter : public ACharacter
 {
@@ -97,7 +99,9 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* TabAction;
-	
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FRewardContainerDestruct containerDele;
 
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
@@ -245,7 +249,8 @@ public:
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* bulletImpactFactory;
 
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	FVector ContainerLoc;
 	
 	UPROPERTY(BlueprintReadOnly)
 	class UUserWidget* sniperScopeUI;

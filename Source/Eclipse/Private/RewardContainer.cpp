@@ -9,6 +9,8 @@
 #include "RifleAmmoActor.h"
 #include "SniperAmmoActor.h"
 #include "Components/SphereComponent.h"
+#include "GeometryCollection/GeometryCollectionComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ARewardContainer::ARewardContainer()
@@ -16,7 +18,7 @@ ARewardContainer::ARewardContainer()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	containerMesh=CreateDefaultSubobject<UStaticMeshComponent>(TEXT("containerMesh"));
+	containerMesh=CreateDefaultSubobject<UGeometryCollectionComponent>(TEXT("containerMesh"));
 	SetRootComponent(containerMesh);
 
 	playerDetectCollision=CreateDefaultSubobject<USphereComponent>(TEXT("playerDetectCollision"));
@@ -25,6 +27,8 @@ ARewardContainer::ARewardContainer()
 	playerDetectCollision->OnComponentBeginOverlap.AddDynamic(this, &ARewardContainer::SphereOnOverlap);
 	playerDetectCollision->OnComponentEndOverlap.AddDynamic(this, &ARewardContainer::SphereEndOverlap);
 
+	curBoxHP=maxBoxHP;
+
 }
 
 // Called when the game starts or when spawned
@@ -32,8 +36,8 @@ void ARewardContainer::BeginPlay()
 {
 	Super::BeginPlay();
 
-	curBoxHP=maxBoxHP;
-	
+	containerMesh->SetRenderCustomDepth(false);
+	containerMesh->SetSimulatePhysics(true);
 }
 
 // Called every frame
@@ -62,7 +66,7 @@ void ARewardContainer::SphereEndOverlap(UPrimitiveComponent* OverlappedComponent
 		auto player=Cast<APlayerCharacter>(OtherActor);
 		if(player)
 		{
-			containerMesh->SetRenderCustomDepth(false);
+			//containerMesh->SetRenderCustomDepth(false);
 		}
 	}
 }
@@ -120,5 +124,7 @@ void ARewardContainer::DropAmmo()
 void ARewardContainer::BoxDestroyed()
 {
 	DropReward();
+	playerDetectCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	containerMesh->SetCollisionObjectType(ECC_Vehicle);
+	containerMesh->SetRenderCustomDepth(false);
 }

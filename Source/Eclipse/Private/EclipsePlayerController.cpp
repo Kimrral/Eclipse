@@ -7,10 +7,12 @@
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
 
+// 사망지점에서 가장 가까운 플레이어 스타트 지점에서 리스폰
 void AEclipsePlayerController::Respawn(APlayerCharacter* me)
 {
 	if(me)
 	{
+		// 레벨에 배치된 모든 플레이어 스타트 액터
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), playerStartFactory, outActors);
 		int ClosestIndex = 0;
 		for(int i=0; i<outActors.Num(); i++)
@@ -27,12 +29,14 @@ void AEclipsePlayerController::Respawn(APlayerCharacter* me)
 				ClosestIndex = i;
 			}	
 		}
+		// 플레이어 스타트 액터 캐스팅
 		auto playerStart = Cast<APlayerStart>(outActors[ClosestIndex]);
 		if(playerStart)
 		{				
 			auto GM=Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());
 			if(GM)
-			{			
+			{
+				// 게임모드의 리스타트 함수 호출
 				GM->RestartPlayerAtPlayerStart(this, playerStart);
 			}
 		}

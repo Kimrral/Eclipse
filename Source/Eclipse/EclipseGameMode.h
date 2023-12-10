@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "GameFramework/PlayerStart.h"
 #include "EclipseGameMode.generated.h"
 
 UCLASS(minimalapi)
@@ -13,6 +14,15 @@ class AEclipseGameMode : public AGameModeBase
 
 public:
 	AEclipseGameMode();
+
+	UFUNCTION()
+	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
+
+	UPROPERTY()
+	TArray<class AActor*> outActors;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<APlayerStart> playerStartFactory;
 
 	UPROPERTY()
 	int ConsoleCount;

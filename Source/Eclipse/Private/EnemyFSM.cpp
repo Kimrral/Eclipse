@@ -105,23 +105,6 @@ void UEnemyFSM::TickMove()
 
 void UEnemyFSM::TickAttack()
 {
-	// curTime에 DeltaTime 누적
-	curTime+=GetWorld()->DeltaTimeSeconds;
-	if(!bIsAttacking&&curTime>=0.1f)
-	{
-		me->enemyAnim->bIsAttacking=true;
-		bIsAttacking=true;
-		float dist = player->GetDistanceTo(me);
-		{
-			if(dist<=attackRange)
-			{
-				if(player)
-				{
-					
-				}
-			}
-		}
-	}
 	if(me->enemyAnim->IsAttackAnimationPlaying()==false)
 	{
 		// 플레이어와의 거리 도출
@@ -131,12 +114,6 @@ void UEnemyFSM::TickAttack()
 		{
 			// 이동상태로 전이한다
 			SetState(EEnemyState::MOVE);
-		}
-		else
-		{
-			curTime=0;
-			bIsAttacking=false;
-			me->enemyAnim->bIsAttacking=false;
 		}
 	}
 }

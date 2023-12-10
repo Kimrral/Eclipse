@@ -34,6 +34,9 @@ public:
 	void DropAmmo();
 
 	UFUNCTION()
+	void DropConsole();
+
+	UFUNCTION()
 	void BoxDestroyed();
 
 	UPROPERTY(EditAnywhere)
@@ -43,7 +46,10 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class ASniperAmmoActor> sniperAmmoFactory;
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AM249AmmoActor> M249AmmoFactory;	
+	TSubclassOf<class AM249AmmoActor> M249AmmoFactory;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AHackingConsole> HackingConsoleFactory;	
+
 
 	UPROPERTY()
 	int curBoxHP;

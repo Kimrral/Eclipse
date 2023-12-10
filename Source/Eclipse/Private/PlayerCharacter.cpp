@@ -3,7 +3,10 @@
 
 #include "PlayerCharacter.h"
 
+#include <ratio>
+
 #include "CrosshairWidget.h"
+#include "Crunch.h"
 #include "DamageWidget.h"
 #include "DamageWidgetActor.h"
 #include "Enemy.h"
@@ -11,8 +14,11 @@
 #include "EnemyHPWidget.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Guardian.h"
+#include "HackingConsole.h"
 #include "InformationWidget.h"
 #include "M249Actor.h"
+#include "MissionChecker.h"
 #include "PlayerAnim.h"
 #include "RifleActor.h"
 #include "SniperActor.h"
@@ -26,6 +32,7 @@
 #include "WeaponInfoWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/Image.h"
+#include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -160,6 +167,8 @@ void APlayerCharacter::BeginPlay()
 	damageWidgetUI = CreateWidget<UDamageWidget>(GetWorld(), damageWidgetUIFactory);
 
 	tabWidgetUI=CreateWidget<UTabWidget>(GetWorld(), tabWidgetFactory);
+
+	bossHPUI=CreateWidget<UBossHPWidget>(GetWorld(), bossHPWidgetFactory);
 	
 }
 
@@ -681,6 +690,7 @@ void APlayerCharacter::Tab()
 
 void APlayerCharacter::WeaponDetectionLineTrace()
 {
+	// 스나이퍼 줌 도중 교체 불가
 	if(isSniperZooming)
 	{
 		return;
@@ -697,6 +707,9 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 		sniperActor=Cast<ASniperActor>(actorHitResult.GetActor());
 		pistolActor=Cast<APistolActor>(actorHitResult.GetActor());
 		m249Actor=Cast<AM249Actor>(actorHitResult.GetActor());
+		HackingConsole=Cast<AHackingConsole>(actorHitResult.GetActor());
+		MissionChecker=Cast<AMissionChecker>(actorHitResult.GetActor());
+		// 라이플 탐지
 		if(rifleActor)
 		{
 			// 1회 실행 불리언
@@ -765,11 +778,45 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 				infoWidgetUI->AddToViewport();
 			}
 		}
+		else if(HackingConsole)
+		{
+			// 1회 실행 불리언
+			if(TickOverlapBoolean==false)
+			{
+				TickOverlapBoolean=true;
+				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+				HackingConsole->rewardMesh->SetRenderCustomDepth(true);
+				// Widget Switcher 이용한 무기 정보 위젯 스위칭
+				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(4);
+				// Radial Slider Value 초기화
+				infoWidgetUI->weaponHoldPercent=0;
+				// Weapon Info Widget 뷰포트에 배치
+				infoWidgetUI->AddToViewport();
+			}
+		}
+		else if(MissionChecker)
+		{
+			// 1회 실행 불리언
+			if(TickOverlapBoolean==false)
+			{
+				TickOverlapBoolean=true;
+				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+				MissionChecker->checkerMesh->SetRenderCustomDepth(true);
+				// Widget Switcher 이용한 무기 정보 위젯 스위칭
+				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(5);
+				// Radial Slider Value 초기화
+				infoWidgetUI->weaponHoldPercent=0;
+				// Weapon Info Widget 뷰포트에 배치
+				infoWidgetUI->AddToViewport();
+			}
+		}
 		else
 		{
+			// 1회 실행 불리언
 			if(TickOverlapBoolean==true)
 			{
 				TickOverlapBoolean=false;
+				// 무기 액터 정보 위젯 파괴
 				infoWidgetUI->RemoveFromParent();
 				// 중심점
 				FVector Center = this->GetActorLocation();
@@ -790,6 +837,8 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 						sniperActor=Cast<ASniperActor>(HitObj[i].GetActor());
 						pistolActor=Cast<APistolActor>(HitObj[i].GetActor());
 						m249Actor=Cast<AM249Actor>(HitObj[i].GetActor());
+						HackingConsole=Cast<AHackingConsole>(HitObj[i].GetActor());
+						MissionChecker=Cast<AMissionChecker>(HitObj[i].GetActor());
 						if(rifleActor)
 						{
 							// Render Custom Depth 활용한 무기 액터 외곽선 해제
@@ -808,7 +857,18 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 						else if(m249Actor)
 						{
 							// Render Custom Depth 활용한 무기 액터 외곽선 해제
-							m249Actor->weaponMesh->SetRenderCustomDepth(false);						}
+							m249Actor->weaponMesh->SetRenderCustomDepth(false);
+						}
+						else if(HackingConsole)
+						{
+							// Render Custom Depth 활용한 무기 액터 외곽선 해제
+							HackingConsole->rewardMesh->SetRenderCustomDepth(false);
+						}
+						else if(MissionChecker)
+						{
+							// Render Custom Depth 활용한 무기 액터 외곽선 해제
+							MissionChecker->checkerMesh->SetRenderCustomDepth(false);
+						}
 					}
 				}
 			}
@@ -819,6 +879,15 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 
 	}
 
+}
+
+void APlayerCharacter::SetBossHPWidget(AEnemy* enemy)
+{
+	if(enemy&&bossHPUI)
+	{
+		float bossHP = enemy->curHP*0.0002;
+		bossHPUI->progressBar->SetPercent(bossHP);
+	}
 }
 
 void APlayerCharacter::SetDamageWidget(int damage, FVector spawnLoc)
@@ -929,23 +998,31 @@ void APlayerCharacter::ChangeWeapon()
 	bool bHit = GetWorld()->LineTraceSingleByChannel(actorHitResult, StartLoc, EndLoc, ECC_Visibility);
 	if(bHit)
 	{
+		// 무기 액터 캐스팅
 		rifleActor = Cast<ARifleActor>(actorHitResult.GetActor());
 		sniperActor=Cast<ASniperActor>(actorHitResult.GetActor());
 		pistolActor=Cast<APistolActor>(actorHitResult.GetActor());
 		m249Actor=Cast<AM249Actor>(actorHitResult.GetActor());
+		HackingConsole=Cast<AHackingConsole>(actorHitResult.GetActor());
+		MissionChecker=Cast<AMissionChecker>(actorHitResult.GetActor());
 		// 라이플로 교체
 		if(rifleActor)
 		{
 			// 라이플을 사용하지 않을 때만 교체
 			if(weaponArray[0]==false)
 			{
-				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.01, 0, 1);
+				// 키다운 시간 동안 Radial Slider 게이지 상승
+				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+				// 게이지가 모두 채워졌을 때
 				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 				{
+					// 무기 정보 위젯 제거
 					infoWidgetUI->RemoveFromParent();
 					// 무기 교체 Montage 재생
 					PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+					// 교체 대상 무기 액터 파괴
 					rifleActor->Destroy();
+					// 액터 스폰 지점 할당
 					FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
 					FRotator spawnRotation = FRotator::ZeroRotator;
 					FActorSpawnParameters param;
@@ -959,6 +1036,7 @@ void APlayerCharacter::ChangeWeapon()
 					// 권총을 사용중일 때
 					else if(weaponArray[2]==true)
 					{
+						// 애니메이션 인스턴스 캐스팅
 						auto animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 						if(animInst)
 						{
@@ -973,12 +1051,16 @@ void APlayerCharacter::ChangeWeapon()
 						// 사용중인 무기 액터 스폰
 						m249Actor = GetWorld()->SpawnActor<AM249Actor>(M249Factory, spawnPosition, spawnRotation);
 					}
+					// 현재 활성화된 슬롯이 1번이라면
 					if(curWeaponSlotNumber==1)
 					{
+						// 장착 무기 이름 배열에 할당
 						equippedWeaponStringArray[0]=FString("Rifle");
 					}
+					// 현재 활성화된 슬롯이 2번이라면
 					else if(curWeaponSlotNumber==2)
 					{
+						// 장착 무기 이름 배열에 할당
 						equippedWeaponStringArray[1]=FString("Rifle");
 					}
 					// Visibility 설정
@@ -1000,7 +1082,7 @@ void APlayerCharacter::ChangeWeapon()
 			// 스나이퍼를 사용하지 않을 때만 교체
 			if(weaponArray[1]==false)
 			{
-				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.01, 0, 1);
+				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 				{
 					infoWidgetUI->RemoveFromParent();
@@ -1055,7 +1137,7 @@ void APlayerCharacter::ChangeWeapon()
 			// 권총을 사용하지 않을 때만 교체
 			if(weaponArray[2]==false)
 			{
-				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.01, 0, 1);
+				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 				{
 					infoWidgetUI->RemoveFromParent();
@@ -1108,7 +1190,7 @@ void APlayerCharacter::ChangeWeapon()
 			// M249을 사용하지 않을 때만 교체
 			if(weaponArray[3]==false)
 			{
-				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.01, 0, 1);
+				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 				{
 					infoWidgetUI->RemoveFromParent();
@@ -1152,6 +1234,35 @@ void APlayerCharacter::ChangeWeapon()
 					weaponArray[1]=false;
 					weaponArray[2]=false;
 					weaponArray[3]=true;
+				}
+			}
+		}
+		else if(HackingConsole)
+		{
+			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+			{
+				infoWidgetUI->RemoveFromParent();
+				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+				HackingConsole->Destroy();
+				ConsoleCount++;
+				informationUI->ConsoleCount->SetText(FText::AsNumber(ConsoleCount));
+			}
+		}
+		else if(MissionChecker)
+		{
+			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+			{
+				if(GuardianCount>=7&&ConsoleCount>=5&&BossCount>=1)
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Next Stage"))
+					infoWidgetUI->weaponHoldPercent=0;
+				}
+				else
+				{
+					infoWidgetUI->PlayAnimation(infoWidgetUI->LackMission);
+					infoWidgetUI->weaponHoldPercent=0;
 				}
 			}
 		}
@@ -1249,10 +1360,6 @@ void APlayerCharacter::Fire()
 			UGameplayStatics::PlaySound2D(GetWorld(), RifleFireSound);
 			auto controller = GetWorld()->GetFirstPlayerController();
 			controller->PlayerCameraManager->StartCameraShake(rifleFireShake);
-			if(!isZooming)
-			{
-				//PlayAnimMontage(zoomingMontage, 1, FName("RifleFire"));
-			}
 			bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),startLoc, EndLoc, ObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, rifleHitResult, true);
 			if(bHit)
 			{
@@ -1264,6 +1371,16 @@ void APlayerCharacter::Fire()
 				ARewardContainer* rewardContainer=Cast<ARewardContainer>(rifleHitResult.GetActor());
 				if(fsm&&enemy)
 				{
+					auto guardian=Cast<AGuardian>(enemy);
+					auto crunch = Cast<ACrunch>(enemy);
+					if(guardian)
+					{
+						bGuardian=true;
+					}
+					else if(crunch)
+					{
+						bCrunch=true;
+					}
 					// 이미 죽지 않은 적에게만 실행
 					if(enemy->bDeath==false)
 					{
@@ -1271,47 +1388,83 @@ void APlayerCharacter::Fire()
 						auto hitBone = rifleHitResult.BoneName;
 						auto hitLoc = rifleHitResult.Location;
 						auto hitRot = UKismetMathLibrary::Conv_VectorToRotator(rifleHitResult.ImpactNormal);
+						// 헤드샷 적중
 						if(hitBone==FName("head"))
 						{
+							// 반환값 float의 데미지 증가 처리 함수와 곱연산
 							auto min = FMath::RoundFromZero(120*DamageMultiplier());
 							auto max = FMath::RoundFromZero(180*DamageMultiplier());
+							// 헤드 데미지 랜덤 산출
 							randRifleHeadDamage = FMath::RandRange(min, max);
 							// 이번 공격에 적이 죽는다면
 							if(enemy->curHP<=randRifleHeadDamage)
 							{
+								// Enemy Kill 위젯 애니메이션 재생
 								crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
+								// 킬 사운드 재생
 								UGameplayStatics::PlaySoundAtLocation(GetWorld(), KillSound, hitLoc);
+								// 킬 파티클 스폰
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.0f));
 								// FSM에 있는 Damage Process 호출		
 								fsm->OnDamageProcess(randRifleHeadDamage);								
 								SetHeadDamageWidget(randRifleHeadDamage, hitLoc);
+								
 								// 헤드 적중 데미지 프로세스 호출
 								enemy->OnHeadDamaged();
+								// 전리품 드롭
 								enemy->DropReward();
+								// 사망 불리언 활성화
 								enemy->bDeath=true;
+								if(bGuardian)
+								{
+									GuardianCount++;
+									informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
+								}
+								else if(bCrunch)
+								{
+									BossCount++;
+									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
+									SetBossHPWidget(enemy);
+								}
 							}
+							// 이번 공격에 적이 죽지 않는다면
 							else
 							{
+								// 헤드 적중 위젯 애니메이션 재생
 								crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
+								// 헤드 적중 사운드 재생
 								UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHeadHitSound, hitLoc);
+								// 헤드 적중 파티클 스폰
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.0f));
 								// FSM에 있는 Damage Process 호출		
 								fsm->OnDamageProcess(randRifleHeadDamage);
+								// 데미지 위젯에 피해 값과 적 위치벡터 할당
 								SetHeadDamageWidget(randRifleHeadDamage, hitLoc);
 
 								// 헤드 적중 데미지 프로세스 호출
 								enemy->OnHeadDamaged();
+								if(bCrunch)
+								{
+									SetBossHPWidget(enemy);
+								}
 							}
 						}
+						// 일반 적중
 						else
 						{
+							// 반환값 float의 데미지 증가 처리 함수와 곱연산
 							auto min = FMath::RoundFromZero(60*DamageMultiplier());
 							auto max = FMath::RoundFromZero(90*DamageMultiplier());
+							// 일반 데미지 랜덤 산출
 							randRifleDamage = FMath::RandRange(min, max);
+							// 이번 공격에 적이 죽는다면
 							if(enemy->curHP<=randRifleDamage)
 							{
+								// Enemy Kill 위젯 애니메이션 재생
 								crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
+								// 킬 사운드 재생
 								UGameplayStatics::PlaySoundAtLocation(GetWorld(), KillSound, hitLoc);
+								// 킬 파티클 스폰
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.0f));
 								// FSM에 있는 Damage Process 호출		
 								fsm->OnDamageProcess(randRifleDamage);
@@ -1319,24 +1472,47 @@ void APlayerCharacter::Fire()
 
 								// 일반 적중 데미지 프로세스 호출
 								enemy->OnDamaged();
+								// 전리품 드롭
 								enemy->DropReward();
+								// 사망 불리언 활성화
 								enemy->bDeath=true;
+								if(bGuardian)
+								{
+									GuardianCount++;
+									informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
+
+								}
+								else if(bCrunch)
+								{
+									BossCount++;
+									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
+									SetBossHPWidget(enemy);
+								}
 							}
 							else
 							{
+								// 적중 위젯 애니메이션 재생
 								crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
+								// 적중 사운드 재생
 								UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
+								// 적중 파티클 스폰
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(0.5f));
 								// FSM에 있는 Damage Process 호출		
 								fsm->OnDamageProcess(randRifleDamage);
+								// 데미지 위젯에 피해 값과 적 위치벡터 할당
 								SetDamageWidget(randRifleDamage, hitLoc);
 
 								// 일반 적중 데미지 프로세스 호출
 								enemy->OnDamaged();
+								if(bCrunch)
+								{
+									SetBossHPWidget(enemy);
+								}
 							}
 						}
-						//EnemyHPWidgetSettings(enemy);
 					}
+					bGuardian=false;
+					bCrunch=false;
 				}
 				else if(rewardContainer)
 				{
@@ -1458,6 +1634,16 @@ void APlayerCharacter::Fire()
 				ARewardContainer* rewardContainer=Cast<ARewardContainer>(sniperHitResult.GetActor());
 				if(fsm&&enemy)
 				{
+					auto guardian=Cast<AGuardian>(enemy);
+					auto crunch = Cast<ACrunch>(enemy);
+					if(guardian)
+					{
+						bGuardian=true;
+					}
+					else if(crunch)
+					{
+						bCrunch=true;
+					}
 					// 이미 죽지 않은 적에게만 실행
 					if(enemy->bDeath==false)
 					{
@@ -1480,6 +1666,16 @@ void APlayerCharacter::Fire()
 							enemy->OnHeadDamaged();
 							enemy->DropReward();
 							enemy->bDeath=true;
+							if(bGuardian)
+							{
+								GuardianCount++;
+								informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
+							}
+							else if(bCrunch)
+							{
+								BossCount++;
+								informationUI->BossCount->SetText(FText::AsNumber(BossCount));
+							}
 						}
 						else
 						{
@@ -1499,6 +1695,16 @@ void APlayerCharacter::Fire()
 								enemy->OnDamaged();
 								enemy->DropReward();
 								enemy->bDeath=true;
+								if(bGuardian)
+								{
+									GuardianCount++;
+									informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
+								}
+								else if(bCrunch)
+								{
+									BossCount++;
+									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
+								}
 							}
 							else
 							{
@@ -1515,6 +1721,8 @@ void APlayerCharacter::Fire()
 						}
 						//EnemyHPWidgetSettings(enemy);
 					}
+					bGuardian=false;
+					bCrunch=false;
 				}
 				else if(rewardContainer)
 				{
@@ -1686,6 +1894,16 @@ void APlayerCharacter::Fire()
 				ARewardContainer* rewardContainer=Cast<ARewardContainer>(pistolHitResult.GetActor());
 				if(fsm&&enemy)
 				{
+					auto guardian=Cast<AGuardian>(enemy);
+					auto crunch = Cast<ACrunch>(enemy);
+					if(guardian)
+					{
+						bGuardian=true;
+					}
+					else if(crunch)
+					{
+						bCrunch=true;
+					}
 					// 이미 죽지 않은 적에게만 실행
 					if(enemy->bDeath==false)
 					{
@@ -1712,6 +1930,16 @@ void APlayerCharacter::Fire()
 								enemy->OnHeadDamaged();
 								enemy->DropReward();
 								enemy->bDeath=true;
+								if(bGuardian)
+								{
+									GuardianCount++;
+									informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
+								}
+								else if(bCrunch)
+								{
+									BossCount++;
+									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
+								}
 							}
 							else
 							{
@@ -1745,6 +1973,18 @@ void APlayerCharacter::Fire()
 								enemy->OnDamaged();
 								enemy->DropReward();
 								enemy->bDeath=true;
+								if(bGuardian)
+								{
+									GuardianCount++;
+									informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
+
+								}
+								else if(bCrunch)
+								{
+									BossCount++;
+									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
+
+								}
 							}
 							else
 							{
@@ -1761,6 +2001,8 @@ void APlayerCharacter::Fire()
 						}
 						//EnemyHPWidgetSettings(enemy);
 					}
+					bGuardian=false;
+					bCrunch=false;
 				}
 				else if(rewardContainer)
 				{
@@ -1887,6 +2129,16 @@ void APlayerCharacter::Fire()
 				ARewardContainer* rewardContainer=Cast<ARewardContainer>(M249HitResult.GetActor());
 				if(fsm&&enemy)
 				{
+					auto guardian=Cast<AGuardian>(enemy);
+					auto crunch = Cast<ACrunch>(enemy);
+					if(guardian)
+					{
+						bGuardian=true;
+					}
+					else if(crunch)
+					{
+						bCrunch=true;
+					}
 					// 이미 죽지 않은 적에게만 실행
 					if(enemy->bDeath==false)
 					{
@@ -1913,6 +2165,16 @@ void APlayerCharacter::Fire()
 								enemy->OnHeadDamaged();
 								enemy->DropReward();
 								enemy->bDeath=true;
+								if(bGuardian)
+								{
+									GuardianCount++;
+									informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
+								}
+								else if(bCrunch)
+								{
+									BossCount++;
+									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
+								}
 							}
 							else
 							{
@@ -1946,6 +2208,16 @@ void APlayerCharacter::Fire()
 								enemy->OnDamaged();
 								enemy->DropReward();
 								enemy->bDeath=true;
+								if(bGuardian)
+								{
+									GuardianCount++;
+									informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
+								}
+								else if(bCrunch)
+								{
+									BossCount++;
+									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
+								}
 							}
 							else
 							{
@@ -1962,6 +2234,8 @@ void APlayerCharacter::Fire()
 						}
 						//EnemyHPWidgetSettings(enemy);
 					}
+					bGuardian=false;
+					bCrunch=false;
 				}
 				else if(rewardContainer)
 				{
@@ -2070,8 +2344,6 @@ void APlayerCharacter::EnemyHPWidgetSettings(AEnemy* enemy)
 {
 	// Enemy HP Widget Settings
 	GetWorldTimerManager().ClearTimer(enemy->HPWidgetInvisibleHandle);
-	enemy->enemyHPWidget->HPdynamicMat->SetScalarParameterValue(FName("HPAlpha"), enemy->curHP*0.01-0.001);
-	enemy->HPWidgetComponent->SetVisibility(true);
 	enemy->SetHPWidgetInvisible();
 }
 

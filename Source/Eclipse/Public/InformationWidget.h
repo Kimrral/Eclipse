@@ -101,4 +101,13 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Transient, meta = (BindWidgetAnim))
 	class UWidgetAnimation* WeaponSwap;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UTextBlock* GuardianCount;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UTextBlock* BossCount;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UTextBlock* ConsoleCount;
 };

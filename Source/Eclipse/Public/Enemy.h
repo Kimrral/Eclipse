@@ -36,6 +36,7 @@ public:
 	UPROPERTY()
 	class UEnemyAnim* enemyAnim;
 
+	
 	UFUNCTION()
 	void Move();
 
@@ -80,9 +81,6 @@ public:
 
 	UPROPERTY(EditAnywhere, Category=EnemySettings)
 	UAnimMontage* damageMontage;
-
-	UPROPERTY(EditAnywhere, Category=EnemySettings)
-	class UWidgetComponent* HPWidgetComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category=EnemySettings)
 	class UMaterialInterface* overlayMatRed;

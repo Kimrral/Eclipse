@@ -68,8 +68,7 @@ public:
 	
 	UPROPERTY()
 	float curTime;
-	UPROPERTY()
-	bool bIsAttacking;
+
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=EnemySettings)

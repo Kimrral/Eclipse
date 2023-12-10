@@ -26,10 +26,6 @@ AEnemy::AEnemy()
 
 	// Enemy FSM
 	enemyFSM=CreateDefaultSubobject<UEnemyFSM>(TEXT("enemyFSM"));
-
-	// HP Widget Component
-	HPWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HPWidgetComponent"));
-	HPWidgetComponent->SetupAttachment(RootComponent);
 	
 }
 
@@ -43,11 +39,7 @@ void AEnemy::BeginPlay()
 
 	enemyAnim = Cast<UEnemyAnim>(GetMesh()->GetAnimInstance());
 	gameMode = Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());
-	enemyHPWidget = Cast<UEnemyHPWidget>(HPWidgetComponent->GetWidget());
 	PC = Cast<AEclipsePlayerController>(GetWorld()->GetFirstPlayerController());
-
-	HPWidgetComponent->SetVisibility(false);
-
 }
 
 // Called every frame
@@ -116,7 +108,6 @@ void AEnemy::SetHPWidgetInvisible()
 {	
 	GetWorldTimerManager().SetTimer(HPWidgetInvisibleHandle, FTimerDelegate::CreateLambda([this]()->void
 	{
-		HPWidgetComponent->SetVisibility(false);		
 	}), 3.0f, false);
 }
 

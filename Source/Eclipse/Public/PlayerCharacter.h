@@ -99,6 +99,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* TabAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* QAction;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FRewardContainerDestruct containerDele;
 
@@ -140,6 +143,8 @@ public:
 	void SwapSecondWeapon();
 
 	void Tab();
+
+	void Q();
 	
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
@@ -260,15 +265,18 @@ public:
 	
 	UPROPERTY(BlueprintReadOnly)
 	class UUserWidget* sniperScopeUI;
-
+	
 	UPROPERTY()
 	class AActor* hitActors;
 
 	UPROPERTY()
 	class AEnemy* enemyRef;
+
+	UPROPERTY()
+	FVector DeathPosition;
 	
 	UPROPERTY()
-	int curWeaponSlotNumber;
+	int curWeaponSlotNumber = 1;
 
 	UPROPERTY()
 	bool TabBool = false;
@@ -292,6 +300,9 @@ public:
 	void EnemyHPWidgetSettings(AEnemy* enemy);
 
 	UFUNCTION()
+	void RemoveBossHPWidget();
+	
+	UFUNCTION()
 	void InfoWidgetUpdate();
 
 	UFUNCTION()
@@ -302,6 +313,9 @@ public:
 
 	UFUNCTION()
 	float RecoilRateMultiplier();
+
+	UFUNCTION()
+	void PlayerDeath();
 
 	UPROPERTY()
 	bool bUsingRifle;
@@ -322,34 +336,37 @@ public:
 	class UAnimMontage* zoomingMontage;
 	
 	UPROPERTY()
-	int curRifleAmmo;
+	int curRifleAmmo = 40;
 
 	UPROPERTY()
-	int curSniperAmmo;
+	int curSniperAmmo = 5;
 
 	UPROPERTY()
-	int curPistolAmmo;
+	int curPistolAmmo = 8;
 
 	UPROPERTY()
-	int curM249Ammo;
+	int curM249Ammo = 100;
 
 	UPROPERTY()
 	bool EmptySoundBoolean = false;
 
 	UPROPERTY()
-	int maxRifleAmmo;
+	int maxRifleAmmo = 80;
 
 	UPROPERTY()
-	int maxSniperAmmo;
+	int maxSniperAmmo = 10;
 
 	UPROPERTY()
-	int maxPistolAmmo;
+	int maxPistolAmmo = 16;
 
 	UPROPERTY()
-	int maxM249Ammo;
+	int maxM249Ammo = 200;
 
 	UPROPERTY()
 	float zoomTriggeredTime;
+
+	UPROPERTY()
+	bool bPlayerDeath;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool isZooming = false;
@@ -461,6 +478,8 @@ public:
 	class UParticleSystem* fireParticle;
 	UPROPERTY(EditAnywhere, Category="Particle")
 	class UParticleSystem* trailParticle;
+	UPROPERTY(EditAnywhere, Category="Particle")
+	class UParticleSystem* recallParticle;
 	UPROPERTY(EditAnywhere, Category="Niagara")
 	class UNiagaraSystem* BulletTrailSystem;
 	
@@ -470,8 +489,17 @@ public:
 	UPROPERTY(EditAnywhere)  // Timeline 커브
 	UCurveFloat* CurveFloat;  
 
+	UPROPERTY()
+	class AEclipseGameMode* gm;
+	
 	UFUNCTION()  // Bind function
 	void SetZoomValue(float Value);
+
+	UFUNCTION()
+	void CachingValues();
+
+	UFUNCTION()
+	void ApplyCachingValues();
 
 	UPROPERTY()
 	bool CoreEquipped = false;
@@ -513,4 +541,13 @@ public:
 
 	UPROPERTY()
 	bool bCrunch;
+
+	UPROPERTY()
+	bool bEnding;
+
+	UPROPERTY()
+	int curHP;
+
+	UPROPERTY()
+	int maxHP = 100.f;
 };

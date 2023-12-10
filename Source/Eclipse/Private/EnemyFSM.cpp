@@ -80,10 +80,13 @@ void UEnemyFSM::TickIdle()
 	player = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
 	// 플레이어와 적 간의 거리값 도출
 	auto distToPlayer = player->GetDistanceTo(me);
-	if(player&&distToPlayer<=aggressiveRange)
+	if(player)
 	{
-		// 탐색 범위 내에 플레이어가 있다면, 이동 상태로 전이
-		SetState(EEnemyState::MOVE);
+		if(distToPlayer<=aggressiveRange)
+		{
+			// 탐색 범위 내에 플레이어가 있다면, 이동 상태로 전이
+			SetState(EEnemyState::MOVE);
+		}
 	}
 }
 
@@ -95,40 +98,59 @@ void UEnemyFSM::TickMove()
 	Timeline.PlayFromStart();
 	// 구한 값을 기준으로 이동 인풋
 	me->AddMovementInput(dir.GetSafeNormal());
-	float dist = player->GetDistanceTo(me);
-	if(dist<=attackRange)
+	if(player)
 	{
-		// 플레이어가 공격 범위 내에 위치한다면, 공격 상태로 전이
-		SetState(EEnemyState::ATTACK);
+		float dist = player->GetDistanceTo(me);
+		if(dist<=attackRange)
+		{
+			// 플레이어가 공격 범위 내에 위치한다면, 공격 상태로 전이
+			SetState(EEnemyState::ATTACK);
+		}
+
+		if(player->bPlayerDeath)
+		{
+			// 이동상태로 전이한다
+			SetState(EEnemyState::IDLE);
+		}
+	}
+	else
+	{
+		SetState(EEnemyState::IDLE);
 	}
 }
 
 void UEnemyFSM::TickAttack()
 {
-	if(me->enemyAnim->IsAttackAnimationPlaying()==false)
+	if(player)
 	{
-		// 플레이어와의 거리 도출
-		float dist = player->GetDistanceTo(me);
-		// 공격거리보다 멀어졌다면
-		if(dist>attackRange)
+		if(me->enemyAnim->IsAttackAnimationPlaying()==false)
+		{
+			// 플레이어와의 거리 도출
+			float dist = player->GetDistanceTo(me);
+			// 공격거리보다 멀어졌다면
+			if(dist>attackRange)
+			{
+				// 이동상태로 전이한다
+				SetState(EEnemyState::MOVE);
+			}
+		}
+
+		if(player->bPlayerDeath)
 		{
 			// 이동상태로 전이한다
-			SetState(EEnemyState::MOVE);
+			SetState(EEnemyState::IDLE);
 		}
+	}
+	else
+	{
+		SetState(EEnemyState::IDLE);
 	}
 }
 
 void UEnemyFSM::TickDamage()
 {
-	curTime+=GetWorld()->GetDeltaSeconds();
-	// Damage 상태로 전이하고 1.0초가 경과하면
-	if(curTime>0.0f)
-	{
 		// Move 상태로 전이한다.
 		SetState(EEnemyState::MOVE);
-		// 시간 누적 변수 초기화
-		curTime=0;
-	}
 }
 
 void UEnemyFSM::TickDie()
@@ -149,15 +171,11 @@ void UEnemyFSM::OnDamageProcess(int damageValue)
 	me->curHP=FMath::Clamp(me->curHP-=damageValue, 0, me->maxHP);
 	if(me->curHP<=0)
 	{
-		// 해당 HP값을 위젯 머터리얼 파라미터 값에 할당한다.
-		//me->enemyHPWidget->HPdynamicMat->SetScalarParameterValue(FName("HPAlpha"), 0);
 		// Die 상태로 전이한다.
 		SetState(EEnemyState::DIE);
 	}
 	else
 	{
-		// 해당 HP값을 위젯 머터리얼 파라미터 값에 할당한다.
-		//me->enemyHPWidget->HPdynamicMat->SetScalarParameterValue(FName("HPAlpha"), me->curHP*0.01-0.001);
 		// Damage 상태로 전이한다.
 		SetState(EEnemyState::DAMAGE);
 	}

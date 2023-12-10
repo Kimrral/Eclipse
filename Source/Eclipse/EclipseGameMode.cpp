@@ -6,10 +6,12 @@
 
 AEclipseGameMode::AEclipseGameMode()
 {
-	// set default pawn class to our Blueprinted character
-	/*static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/ThirdPerson/Blueprints/BP_ThirdPersonCharacter"));
-	if (PlayerPawnBPClass.Class != NULL)
-	{
-		DefaultPawnClass = PlayerPawnBPClass.Class;
-	}*/
+	curRifleAmmo=40;
+	curSniperAmmo=5;
+	curPistolAmmo=8;
+	curM249Ammo=100;
+	maxRifleAmmo=80;
+	maxSniperAmmo=10;
+	maxPistolAmmo=16;
+	maxM249Ammo=200;
 }

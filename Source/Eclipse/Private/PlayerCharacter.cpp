@@ -9,6 +9,7 @@
 #include "Crunch.h"
 #include "DamageWidget.h"
 #include "DamageWidgetActor.h"
+#include "EclipsePlayerController.h"
 #include "Enemy.h"
 #include "EnemyFSM.h"
 #include "EnemyHPWidget.h"
@@ -29,12 +30,15 @@
 #include "PistolActor.h"
 #include "RewardContainer.h"
 #include "TabWidget.h"
+#include "ToolMenus.h"
 #include "WeaponInfoWidget.h"
 #include "Blueprint/UserWidget.h"
+#include "Blueprint/WidgetLayoutLibrary.h"
 #include "Components/Image.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "Components/WidgetComponent.h"
+#include "Eclipse/EclipseGameMode.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GeometryCollection/GeometryCollectionComponent.h"
@@ -82,9 +86,6 @@ APlayerCharacter::APlayerCharacter()
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 
-	//InfoWidgetComponent= CreateDefaultSubobject<UWidgetComponent>(TEXT("InfoWidgetComponent"));
-	//InfoWidgetComponent->SetupAttachment(FollowCamera);
-
 	sniperComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("sniperComp"));
 	sniperComp->SetupAttachment(GetMesh(), FName("hand_r"));
 
@@ -96,23 +97,6 @@ APlayerCharacter::APlayerCharacter()
 
 	m249Comp= CreateDefaultSubobject<UStaticMeshComponent>(TEXT("m249Comp"));
 	m249Comp->SetupAttachment(GetMesh(), FName("hand_r"));
-
-
-}
-
-// Called when the game starts or when spawned
-void APlayerCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-
-	//Add Input Mapping Context
-	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
-		}
-	}
 
 	bUsingRifle=true;
 	bUsingSniper=false;
@@ -127,19 +111,36 @@ void APlayerCharacter::BeginPlay()
 	equippedWeaponStringArray.Add(FString("Rifle")); //0
 	equippedWeaponStringArray.Add(FString("Pistol")); //1
 
-	curWeaponSlotNumber=1;
+	rifleComp->SetVisibility(true);
+	sniperComp->SetVisibility(false);
+	pistolComp->SetVisibility(false);
+	m249Comp->SetVisibility(false);
+
+}
+
+// Called when the game starts or when spawned
+void APlayerCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	//Add Input Mapping Context
+	if (AEclipsePlayerController* PlayerController = Cast<AEclipsePlayerController>(Controller))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(DefaultMappingContext, 0);
+		}
+	}
+
+	gm=Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());
+
+	ApplyCachingValues();
+
+	bPlayerDeath=false;
 
 	animInstance=Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 
-	curRifleAmmo=40;
-	curSniperAmmo=5;
-	curPistolAmmo=8;
-	curM249Ammo=100;
-
-	maxRifleAmmo=80;
-	maxSniperAmmo=10;
-	maxPistolAmmo=16;
-	maxM249Ammo=200;
+	curHP=maxHP;
 
 	// Timeline Binding
 	if (CurveFloat)
@@ -149,26 +150,56 @@ void APlayerCharacter::BeginPlay()
 		Timeline.AddInterpFloat(CurveFloat, TimelineProgress);
 	}
 
-	rifleComp->SetVisibility(true);
-	sniperComp->SetVisibility(false);
-	pistolComp->SetVisibility(false);
-	m249Comp->SetVisibility(false);
-
+	UWidgetLayoutLibrary::RemoveAllWidgets(GetWorld());
+	
 	crosshairUI = CreateWidget<UCrosshairWidget>(GetWorld(), crosshairFactory);
-	crosshairUI->AddToViewport();
+	if(!crosshairUI->IsInViewport())
+	{
+		crosshairUI->AddToViewport();
+	}
 
 	infoWidgetUI = CreateWidget<UWeaponInfoWidget>(GetWorld(), infoWidgetFactory);
 
 	sniperScopeUI=CreateWidget<UUserWidget>(GetWorld(), sniperScopeFactory);
 
 	informationUI = CreateWidget<UInformationWidget>(GetWorld(), informationWidgetFactory);
-	informationUI->AddToViewport();
+	if(informationUI)
+	{
+		FTimerHandle respawnTimer;
+		GetWorldTimerManager().SetTimer(respawnTimer, FTimerDelegate::CreateLambda([this]()->void
+		{
+			informationUI->owner=this;
+			informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
+			informationUI->BossCount->SetText(FText::AsNumber(BossCount));
+			informationUI->ConsoleCount->SetText(FText::AsNumber(ConsoleCount));
+			informationUI->UpdateAmmo();
+			informationUI->UpdateAmmo_Secondary();
+			if(!informationUI->IsInViewport())
+			{
+				informationUI->AddToViewport();
+			}
+		}), 0.5, false);
+	}
 
 	damageWidgetUI = CreateWidget<UDamageWidget>(GetWorld(), damageWidgetUIFactory);
 
 	tabWidgetUI=CreateWidget<UTabWidget>(GetWorld(), tabWidgetFactory);
 
 	bossHPUI=CreateWidget<UBossHPWidget>(GetWorld(), bossHPWidgetFactory);
+
+	StopAnimMontage();
+	AEclipsePlayerController* PlayerController = Cast<AEclipsePlayerController>(GetWorld()->GetFirstPlayerController());
+	if(PlayerController)
+	{
+		PlayerController->EnableInput(PlayerController);		
+	}
+	PlayAnimMontage(zoomingMontage, 1, FName("Respawn"));
+
+	auto playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+	playerCam->StopCameraFade();
+	playerCam->StartCameraFade(1, 0, 7.0, FLinearColor::Black, false, false);
+
+	
 	
 }
 
@@ -180,6 +211,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 	Timeline.TickTimeline(DeltaTime);
 	
 	WeaponDetectionLineTrace();
+	
 
 }
 
@@ -237,7 +269,11 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(SecondWeaponSwapAction, ETriggerEvent::Started, this, &APlayerCharacter::SwapSecondWeapon);
 
 		//Tab
-		EnhancedInputComponent->BindAction(TabAction, ETriggerEvent::Started, this, &APlayerCharacter::Tab);		
+		EnhancedInputComponent->BindAction(TabAction, ETriggerEvent::Started, this, &APlayerCharacter::Tab);
+
+		//Q
+		EnhancedInputComponent->BindAction(QAction, ETriggerEvent::Started, this, &APlayerCharacter::Q);
+
 	}
 }
 
@@ -687,6 +723,11 @@ void APlayerCharacter::Tab()
 	}
 }
 
+void APlayerCharacter::Q()
+{
+	PlayerDeath();
+}
+
 
 void APlayerCharacter::WeaponDetectionLineTrace()
 {
@@ -991,6 +1032,10 @@ void APlayerCharacter::Crouching()
 
 void APlayerCharacter::ChangeWeapon()
 {
+	if(bEnding)
+	{
+		return;
+	}
 	FHitResult actorHitResult;
 	FVector StartLoc = FollowCamera->GetComponentLocation();
 	FVector EndLoc = StartLoc+FollowCamera->GetForwardVector()*500.0f;
@@ -1258,6 +1303,23 @@ void APlayerCharacter::ChangeWeapon()
 				{
 					UE_LOG(LogTemp, Warning, TEXT("Next Stage"))
 					infoWidgetUI->weaponHoldPercent=0;
+					bEnding=true;
+					auto playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+					playerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
+					StopAnimMontage();
+					GetCharacterMovement()->StopActiveMovement();
+					GetCharacterMovement()->DisableMovement();
+					auto spawnTrans = this->GetTransform();
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), recallParticle, spawnTrans);
+					PlayAnimMontage(zoomingMontage, 1, FName("LevelEnd"));
+					bUseControllerRotationYaw=false;
+					FTimerHandle endHandle;
+					GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()->void
+					{
+						auto pc = GetWorld()->GetFirstPlayerController();
+						TEnumAsByte<EQuitPreference::Type> types = EQuitPreference::Quit;
+						UKismetSystemLibrary::QuitGame(GetWorld(),pc, types, false);
+					}), 7.0f, false);
 				}
 				else
 				{
@@ -1316,10 +1378,66 @@ void APlayerCharacter::SetZoomValue(float Value)
 	}
 }
 
+void APlayerCharacter::CachingValues()
+{
+	if(gm)
+	{
+		 gm->ConsoleCount = ConsoleCount;
+
+		 gm->GuardianCount = GuardianCount;
+
+		 gm->BossCount = BossCount;
+
+		 gm->curRifleAmmo = curRifleAmmo;
+
+		 gm->curSniperAmmo = curSniperAmmo;
+
+		 gm->curPistolAmmo = curPistolAmmo;
+
+		 gm->curM249Ammo = curM249Ammo;
+
+		 gm->maxRifleAmmo = maxRifleAmmo;
+
+		 gm->maxSniperAmmo = maxSniperAmmo;
+
+		 gm->maxPistolAmmo = maxPistolAmmo;
+
+		 gm->maxM249Ammo = maxM249Ammo;
+	}
+}
+
+void APlayerCharacter::ApplyCachingValues()
+{
+	if(gm)
+	{
+		ConsoleCount = gm->ConsoleCount;
+
+		GuardianCount = gm->GuardianCount;
+
+		BossCount = gm->BossCount;
+
+		curRifleAmmo = gm->curRifleAmmo;
+
+		curSniperAmmo = gm->curSniperAmmo;
+
+		curPistolAmmo = gm->curPistolAmmo;
+
+		curM249Ammo = gm->curM249Ammo;
+
+		maxRifleAmmo = gm->maxRifleAmmo;
+
+		maxSniperAmmo = gm->maxSniperAmmo;
+
+		maxPistolAmmo = gm->maxPistolAmmo;
+
+		maxM249Ammo = gm->maxM249Ammo;
+	}
+}
+
 
 void APlayerCharacter::Fire()
-{
-	if(!CanShoot||isRunning||TabOn)
+{	
+	if(!CanShoot||isRunning||TabOn||bEnding)
 	{
 		return;
 	}
@@ -1425,6 +1543,8 @@ void APlayerCharacter::Fire()
 									BossCount++;
 									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
 									SetBossHPWidget(enemy);
+									FTimerHandle removeHandle;
+									GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
 								}
 							}
 							// 이번 공격에 적이 죽지 않는다면
@@ -1487,6 +1607,8 @@ void APlayerCharacter::Fire()
 									BossCount++;
 									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
 									SetBossHPWidget(enemy);
+									FTimerHandle removeHandle;
+									GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
 								}
 							}
 							else
@@ -1675,6 +1797,9 @@ void APlayerCharacter::Fire()
 							{
 								BossCount++;
 								informationUI->BossCount->SetText(FText::AsNumber(BossCount));
+								SetBossHPWidget(enemy);
+								FTimerHandle removeHandle;
+								GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
 							}
 						}
 						else
@@ -1704,6 +1829,9 @@ void APlayerCharacter::Fire()
 								{
 									BossCount++;
 									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
+									SetBossHPWidget(enemy);
+									FTimerHandle removeHandle;
+									GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
 								}
 							}
 							else
@@ -1717,6 +1845,7 @@ void APlayerCharacter::Fire()
 
 								// 일반 적중 데미지 프로세스 호출
 								enemy->OnDamaged();
+								SetBossHPWidget(enemy);
 							}
 						}
 						//EnemyHPWidgetSettings(enemy);
@@ -1939,6 +2068,9 @@ void APlayerCharacter::Fire()
 								{
 									BossCount++;
 									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
+									SetBossHPWidget(enemy);
+									FTimerHandle removeHandle;
+									GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
 								}
 							}
 							else
@@ -1952,6 +2084,10 @@ void APlayerCharacter::Fire()
 
 								// 헤드 적중 데미지 프로세스 호출
 								enemy->OnHeadDamaged();
+								if(bCrunch)
+								{
+									SetBossHPWidget(enemy);
+								}
 							}
 						}
 						else
@@ -1983,7 +2119,9 @@ void APlayerCharacter::Fire()
 								{
 									BossCount++;
 									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
-
+									SetBossHPWidget(enemy);
+									FTimerHandle removeHandle;
+									GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
 								}
 							}
 							else
@@ -1997,9 +2135,12 @@ void APlayerCharacter::Fire()
 
 								// 일반 적중 데미지 프로세스 호출
 								enemy->OnDamaged();
+								if(bCrunch)
+								{
+									SetBossHPWidget(enemy);
+								}
 							}
 						}
-						//EnemyHPWidgetSettings(enemy);
 					}
 					bGuardian=false;
 					bCrunch=false;
@@ -2174,6 +2315,9 @@ void APlayerCharacter::Fire()
 								{
 									BossCount++;
 									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
+									SetBossHPWidget(enemy);
+									FTimerHandle removeHandle;
+									GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
 								}
 							}
 							else
@@ -2187,6 +2331,10 @@ void APlayerCharacter::Fire()
 
 								// 헤드 적중 데미지 프로세스 호출
 								enemy->OnHeadDamaged();
+								if(bCrunch)
+								{
+									SetBossHPWidget(enemy);
+								}
 							}
 						}
 						else
@@ -2217,6 +2365,9 @@ void APlayerCharacter::Fire()
 								{
 									BossCount++;
 									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
+									SetBossHPWidget(enemy);
+									FTimerHandle removeHandle;
+									GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
 								}
 							}
 							else
@@ -2230,9 +2381,12 @@ void APlayerCharacter::Fire()
 
 								// 일반 적중 데미지 프로세스 호출
 								enemy->OnDamaged();
+								if(bCrunch)
+								{
+									SetBossHPWidget(enemy);
+								}
 							}
 						}
-						//EnemyHPWidgetSettings(enemy);
 					}
 					bGuardian=false;
 					bCrunch=false;
@@ -2347,6 +2501,14 @@ void APlayerCharacter::EnemyHPWidgetSettings(AEnemy* enemy)
 	enemy->SetHPWidgetInvisible();
 }
 
+void APlayerCharacter::RemoveBossHPWidget()
+{
+	if(bossHPUI)
+	{
+		bossHPUI->RemoveFromParent();
+	}
+}
+
 void APlayerCharacter::InfoWidgetUpdate()
 {
 }
@@ -2376,4 +2538,33 @@ float APlayerCharacter::RecoilRateMultiplier()
 		return 1.2f;
 	}
 	return 1.f;
+}
+
+void APlayerCharacter::PlayerDeath()
+{
+	DeathPosition=GetActorLocation();
+	auto playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+	playerCam->StartCameraFade(0, 1, 5.0, FLinearColor::Black, false, true);
+	StopAnimMontage();
+	DisableInput(GetWorld()->GetFirstPlayerController());
+	PlayAnimMontage(zoomingMontage, 1, FName("Death"));
+	bUseControllerRotationYaw=false;
+	CachingValues();
+	FTimerHandle endHandle;
+	GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()->void
+	{
+		bPlayerDeath=true;
+		auto* PC = Cast<AEclipsePlayerController>(GetController());
+		this->Destroy();
+		PC->Respawn(this);	
+	}), 7.0f, false);
+	FTimerHandle possesHandle;
+	GetWorld()->GetTimerManager().SetTimer(possesHandle, FTimerDelegate::CreateLambda([this]()->void
+		{
+			auto* PC = Cast<AEclipsePlayerController>(GetController());
+			if (PC != nullptr)
+			{						
+				PC->Possess(this);
+			}
+		}), 0.4f, false);
 }

@@ -40,7 +40,11 @@ void ABossHPWidgetTrigger::OnOverlap(UPrimitiveComponent* OverlappedComponent, A
 		auto player=Cast<APlayerCharacter>(OtherActor);
 		if(player)
 		{
-			player->bossHPUI->AddToViewport();
+			if(!player->bossHPUI->IsInViewport())
+			{
+				player->bossHPUI->AddToViewport();
+				this->Destroy();
+			}
 		}
 	}
 }

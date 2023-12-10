@@ -15,10 +15,37 @@ public:
 	AEclipseGameMode();
 
 	UPROPERTY()
-	bool isCursorOnEnemy = false;
+	int ConsoleCount;
 
 	UPROPERTY()
-	bool isCursorOnEnemyHead = false;
+	int GuardianCount;
+
+	UPROPERTY()
+	int BossCount;
+
+	UPROPERTY()
+	int curRifleAmmo;
+
+	UPROPERTY()
+	int curSniperAmmo;
+
+	UPROPERTY()
+	int curPistolAmmo;
+
+	UPROPERTY()
+	int curM249Ammo;
+
+	UPROPERTY()
+	int maxRifleAmmo;
+
+	UPROPERTY()
+	int maxSniperAmmo;
+
+	UPROPERTY()
+	int maxPistolAmmo;
+
+	UPROPERTY()
+	int maxM249Ammo;
 
 	
 };

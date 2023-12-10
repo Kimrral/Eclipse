@@ -3,7 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "PlayerCharacter.h"
 #include "GameFramework/PlayerController.h"
+#include "GameFramework/PlayerStart.h"
 #include "EclipsePlayerController.generated.h"
 
 /**
@@ -13,5 +15,15 @@ UCLASS()
 class ECLIPSE_API AEclipsePlayerController : public APlayerController
 {
 	GENERATED_BODY()
+
+public:
+	UPROPERTY()
+	TArray<class AActor*> outActors;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<APlayerStart> playerStartFactory;
 	
+	UFUNCTION()
+	void Respawn(APlayerCharacter* me);
+
 };

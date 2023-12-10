@@ -32,8 +32,17 @@ public:
 	class URadialSlider* progressSlider_3;
 
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
-	class UWidgetSwitcher* WidgetSwitcher_Weapon;
+	class URadialSlider* progressSlider_4;
 
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class URadialSlider* progressSlider_5;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UWidgetSwitcher* WidgetSwitcher_Weapon;
+	
+	UPROPERTY(BlueprintReadWrite, Transient, meta = (BindWidgetAnim))
+	class UWidgetAnimation* LackMission;
+	
 	UPROPERTY()
 	double weaponHoldPercent = 0.f;
 

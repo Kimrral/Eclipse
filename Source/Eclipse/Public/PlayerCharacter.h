@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BossHPWidget.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "RifleActor.h"
@@ -28,8 +29,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
-	//UPROPERTY(VisibleAnywhere)
-	//class UWidgetComponent* InfoWidgetComponent;
 
 protected:
 	// Called when the game starts or when spawned
@@ -186,8 +185,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
 	TSubclassOf<class UDamageWidget> damageWidgetUIFactory;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
+	TSubclassOf<UBossHPWidget> bossHPWidgetFactory;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = widget)
 	class UDamageWidget* damageWidgetUI;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = widget)
+	class UBossHPWidget* bossHPUI;
+
 
 	UPROPERTY()
 	class ARifleActor* rifleActor;
@@ -273,6 +279,9 @@ public:
 	UFUNCTION()
 	void WeaponDetectionLineTrace();
 
+	UFUNCTION()
+	void SetBossHPWidget(AEnemy* enemy);
+	
 	UFUNCTION()
 	void SetDamageWidget(int damage, FVector spawnLoc);
 
@@ -484,5 +493,24 @@ public:
 	UPROPERTY()
 	int randM249HeadDamage;
 
-	
+	UPROPERTY()
+	class AHackingConsole* HackingConsole;
+
+	UPROPERTY()
+	class AMissionChecker* MissionChecker;
+
+	UPROPERTY()
+	int ConsoleCount;
+
+	UPROPERTY()
+	int GuardianCount;
+
+	UPROPERTY()
+	int BossCount;
+
+	UPROPERTY()
+	bool bGuardian;
+
+	UPROPERTY()
+	bool bCrunch;
 };

@@ -3,6 +3,7 @@
 
 #include "RewardContainer.h"
 
+#include "HackingConsole.h"
 #include "M249AmmoActor.h"
 #include "PistolAmmoActor.h"
 #include "PlayerCharacter.h"
@@ -74,6 +75,7 @@ void ARewardContainer::SphereEndOverlap(UPrimitiveComponent* OverlappedComponent
 void ARewardContainer::DropReward()
 {
 	DropAmmo();
+	DropConsole();
 }
 
 void ARewardContainer::DropAmmo()
@@ -84,7 +86,7 @@ void ARewardContainer::DropAmmo()
 		auto rifleAmmo = GetWorld()->SpawnActor<ARifleAmmoActor>(rifleAmmoFactory, GetActorLocation(), GetActorRotation());
 		if(rifleAmmo)
 		{
-			FVector force = FVector(0, 0, 5000);
+			FVector force = FVector(0, 0, 2500);
 			FVector loc = rifleAmmo->GetActorUpVector();
 			rifleAmmo->ammoMesh->AddImpulseAtLocation(force, loc);
 		}
@@ -94,7 +96,7 @@ void ARewardContainer::DropAmmo()
 		auto sniperAmmo = GetWorld()->SpawnActor<ASniperAmmoActor>(sniperAmmoFactory, GetActorLocation(), GetActorRotation());
 		if(sniperAmmo)
 		{
-			FVector force = FVector(0, 0, 5000);
+			FVector force = FVector(0, 0, 2500);
 			FVector loc = sniperAmmo->GetActorUpVector();
 			sniperAmmo->ammoMesh->AddImpulseAtLocation(force, loc);
 		}
@@ -104,7 +106,7 @@ void ARewardContainer::DropAmmo()
 		auto pistolAmmo = GetWorld()->SpawnActor<APistolAmmoActor>(pistolAmmoFactory, GetActorLocation(), GetActorRotation());
 		if(pistolAmmo)
 		{
-			FVector force = FVector(0, 0, 5000);
+			FVector force = FVector(0, 0, 2500);
 			FVector loc = pistolAmmo->GetActorUpVector();
 			pistolAmmo->ammoMesh->AddImpulseAtLocation(force, loc);
 		}
@@ -114,10 +116,21 @@ void ARewardContainer::DropAmmo()
 		auto m249Ammo = GetWorld()->SpawnActor<AM249AmmoActor>(M249AmmoFactory, GetActorLocation(), GetActorRotation());
 		if(m249Ammo)
 		{
-			FVector force = FVector(0, 0, 5000);
+			FVector force = FVector(0, 0, 2500);
 			FVector loc = m249Ammo->GetActorUpVector();
 			m249Ammo->ammoMesh->AddImpulseAtLocation(force, loc);
 		}
+	}
+}
+
+void ARewardContainer::DropConsole()
+{
+	auto HackingConsole = GetWorld()->SpawnActor<AHackingConsole>(HackingConsoleFactory, GetActorLocation(), GetActorRotation());
+	if(HackingConsole)
+	{
+		FVector force = FVector(0, 0, 2500);
+		FVector loc = HackingConsole->GetActorUpVector();
+		HackingConsole->rewardMesh->AddImpulseAtLocation(force, loc);
 	}
 }
 

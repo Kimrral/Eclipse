@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "RewardActor.generated.h"
+#include "MissionChecker.generated.h"
 
 UCLASS()
-class ECLIPSE_API ARewardActor : public AActor
+class ECLIPSE_API AMissionChecker : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	ARewardActor();
+	AMissionChecker();
 
 protected:
 	// Called when the game starts or when spawned
@@ -22,8 +22,9 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
+	
 	UPROPERTY(EditAnywhere)
-	class UStaticMeshComponent* rewardMesh;
+	class UStaticMeshComponent* checkerMesh;
+
 
 };

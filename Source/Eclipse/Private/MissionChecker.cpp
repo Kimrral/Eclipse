@@ -1,30 +1,29 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "RewardActor.h"
-
-#include "Components/SphereComponent.h"
+#include "MissionChecker.h"
 
 // Sets default values
-ARewardActor::ARewardActor()
+AMissionChecker::AMissionChecker()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	rewardMesh=CreateDefaultSubobject<UStaticMeshComponent>(TEXT("rewardMesh"));
-	SetRootComponent(rewardMesh);
-	rewardMesh->SetGenerateOverlapEvents(true);
+	checkerMesh=CreateDefaultSubobject<UStaticMeshComponent>(TEXT("checkerMesh"));
+	SetRootComponent(checkerMesh);
+	checkerMesh->SetGenerateOverlapEvents(true);
+
 }
 
 // Called when the game starts or when spawned
-void ARewardActor::BeginPlay()
+void AMissionChecker::BeginPlay()
 {
 	Super::BeginPlay();
 	
 }
 
 // Called every frame
-void ARewardActor::Tick(float DeltaTime)
+void AMissionChecker::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 

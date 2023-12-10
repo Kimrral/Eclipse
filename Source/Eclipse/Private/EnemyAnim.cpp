@@ -22,7 +22,7 @@ void UEnemyAnim::AnimNotify_AttackStart()
 	if(fsm)
 	{
 		me->enemyFSM->Timeline.PlayFromStart();
-		me->enemyFSM->bIsAttackReady=false;
+		bIsAttackingAnim=true;
 	}
 }
 
@@ -33,6 +33,7 @@ void UEnemyAnim::AnimNotify_AttackEnd()
 	if(fsm)
 	{
 		me->enemyFSM->Timeline.Stop();
+		bIsAttackingAnim=false;
 	}
 }
 

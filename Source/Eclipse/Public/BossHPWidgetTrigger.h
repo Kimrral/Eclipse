@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "RewardActor.generated.h"
+#include "BossHPWidgetTrigger.generated.h"
 
 UCLASS()
-class ECLIPSE_API ARewardActor : public AActor
+class ECLIPSE_API ABossHPWidgetTrigger : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	ARewardActor();
+	ABossHPWidgetTrigger();
 
 protected:
 	// Called when the game starts or when spawned
@@ -24,6 +24,9 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditAnywhere)
-	class UStaticMeshComponent* rewardMesh;
+	class UBoxComponent* boxCollision;
+
+	UFUNCTION()
+	void OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) ;
 
 };

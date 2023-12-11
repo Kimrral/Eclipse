@@ -48,6 +48,7 @@ public:
 	void SetState(EEnemyState next);
 	UFUNCTION()
 	void SetRotToPlayer(float Value);
+
 	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -60,6 +61,9 @@ public:
 
 	UPROPERTY()
 	class AEnemy* me;
+
+	UPROPERTY()
+	class AAIController* ai;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=EnemySettings)
 	float aggressiveRange = 600.f;

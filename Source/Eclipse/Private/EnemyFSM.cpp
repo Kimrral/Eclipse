@@ -82,7 +82,7 @@ void UEnemyFSM::TickIdle()
 	auto distToPlayer = player->GetDistanceTo(me);
 	if(player)
 	{
-		if(distToPlayer<=aggressiveRange)
+		if(distToPlayer<=aggressiveRange&&me->bPlayerInSight)
 		{
 			// 탐색 범위 내에 플레이어가 있다면, 이동 상태로 전이
 			SetState(EEnemyState::MOVE);
@@ -101,7 +101,7 @@ void UEnemyFSM::TickMove()
 	if(player)
 	{
 		float dist = player->GetDistanceTo(me);
-		if(dist<=attackRange)
+		if(dist<=attackRange&&me->bPlayerInSight)
 		{
 			// 플레이어가 공격 범위 내에 위치한다면, 공격 상태로 전이
 			SetState(EEnemyState::ATTACK);
@@ -128,7 +128,7 @@ void UEnemyFSM::TickAttack()
 			// 플레이어와의 거리 도출
 			float dist = player->GetDistanceTo(me);
 			// 공격거리보다 멀어졌다면
-			if(dist>attackRange)
+			if(dist>attackRange||!me->bPlayerInSight)
 			{
 				// 이동상태로 전이한다
 				SetState(EEnemyState::MOVE);

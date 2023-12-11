@@ -36,6 +36,8 @@ public:
 	UPROPERTY()
 	class UEnemyAnim* enemyAnim;
 
+	UPROPERTY(EditAnywhere)
+	class UPawnSensingComponent* PawnSensingComponent;
 	
 	UFUNCTION()
 	void Move();
@@ -53,13 +55,10 @@ public:
 	void OnDestroy();
 
 	UFUNCTION()
-	void SetHPWidgetInvisible();
+	virtual void DropReward();
 
 	UFUNCTION()
-	void DropReward();
-
-	UFUNCTION()
-	void DetectPlayerLineTrace();
+	void SeePlayer();
 
 	UFUNCTION()
 	void EnemyAttackProcess();
@@ -101,7 +100,7 @@ public:
 	UPROPERTY()
 	bool bDeath = false;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bPlayerInSight = false;
 
 };

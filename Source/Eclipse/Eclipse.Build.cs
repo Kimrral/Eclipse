@@ -8,6 +8,6 @@ public class Eclipse : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "EnhancedInput", "UMG", "VirtualCamera", "Niagara","AdvancedWidgets", "SlateCore", "GeometryCollectionEngine"});
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "EnhancedInput", "UMG", "VirtualCamera", "Niagara","AdvancedWidgets", "SlateCore", "GeometryCollectionEngine", "AIModule", "NavigationSystem"});
 	}
 }

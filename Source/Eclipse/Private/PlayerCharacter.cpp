@@ -3,8 +3,6 @@
 
 #include "PlayerCharacter.h"
 
-#include <ratio>
-
 #include "CrosshairWidget.h"
 #include "Crunch.h"
 #include "DamageWidget.h"
@@ -12,7 +10,6 @@
 #include "EclipsePlayerController.h"
 #include "Enemy.h"
 #include "EnemyFSM.h"
-#include "EnemyHPWidget.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Guardian.h"
@@ -30,7 +27,6 @@
 #include "PistolActor.h"
 #include "RewardContainer.h"
 #include "TabWidget.h"
-#include "ToolMenus.h"
 #include "WeaponInfoWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
@@ -1434,6 +1430,11 @@ void APlayerCharacter::ApplyCachingValues()
 	}
 }
 
+void APlayerCharacter::Damaged(int damage)
+{
+	curHP = FMath::Clamp(curHP-damage, 0, maxHP);
+}
+
 
 void APlayerCharacter::Fire()
 {	
@@ -1848,7 +1849,6 @@ void APlayerCharacter::Fire()
 								SetBossHPWidget(enemy);
 							}
 						}
-						//EnemyHPWidgetSettings(enemy);
 					}
 					bGuardian=false;
 					bCrunch=false;
@@ -1886,18 +1886,11 @@ void APlayerCharacter::Fire()
 				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot+FRotator(-90, 0, 0), FVector(0.5f));
 				if(isSniperZooming)
 				{
-					auto particleTrans = FollowCamera->GetComponentLocation()+FollowCamera->GetUpVector()*-50.0f;
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), fireParticle, particleTrans);
+					auto particleTrans = FollowCamera->GetComponentLocation()+FollowCamera->GetUpVector()*-70.0f;
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperFireParticle, particleTrans);
 					auto controller = GetWorld()->GetFirstPlayerController();
 					controller->PlayerCameraManager->StartCameraShake(sniperCameraShake);
-					auto fireSocketLoc = FollowCamera->GetComponentLocation()+FollowCamera->GetUpVector()*-50.0f;
-					// 탄 궤적 나이아가라 시스템 스폰
-					UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, sniperHitResult.Location, FRotator::ZeroRotator,FVector(1), true, true, ENCPoolMethod::AutoRelease);
-					if(niagara)
-					{
-						// 나이아가라 파라미터 벡터 위치 변수 할당
-						niagara->SetVectorParameter(FName("EndPoint"), fireSocketLoc);
-					}
+					auto fireSocketLoc = FollowCamera->GetComponentLocation()+FollowCamera->GetUpVector()*-70.0f;
 				}
 				else
 				{
@@ -1906,15 +1899,7 @@ void APlayerCharacter::Fire()
 					controller->PlayerCameraManager->StartCameraShake(sniperFireShake);
 					auto particleTrans = sniperComp->GetSocketTransform(FName("SniperFirePosition"));
 					particleTrans.SetScale3D(FVector(0.7));
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), fireParticle, particleTrans);
-					auto fireSocketLoc = sniperComp->GetSocketTransform(FName("SniperFirePosition")).GetLocation();
-					// 탄 궤적 나이아가라 시스템 스폰
-					UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, sniperHitResult.Location, FRotator::ZeroRotator,FVector(1), true, true, ENCPoolMethod::AutoRelease);
-					if(niagara)
-					{
-						// 나이아가라 파라미터 벡터 위치 변수 할당
-						niagara->SetVectorParameter(FName("EndPoint"), fireSocketLoc);
-					}
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperFireParticle, particleTrans);
 				}
 
 				CanShoot=false;
@@ -1934,21 +1919,14 @@ void APlayerCharacter::Fire()
 				FVector ForwardLoc = niagaraSpawnLoc + FollowCamera->GetForwardVector()*10000.0f;
 				if(isZooming)
 				{
-					auto FireLoc = FollowCamera->GetComponentLocation()+FollowCamera->GetUpVector()*-50.0f;
-					UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, ForwardLoc, FRotator::ZeroRotator, FVector(1), true, true, ENCPoolMethod::AutoRelease);
-					if(niagara)
-					{
-						niagara->SetVectorParameter(FName("EndPoint"), FireLoc);
-					}
+					auto particleTrans = FollowCamera->GetComponentLocation()+FollowCamera->GetUpVector()*-70.0f;
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperFireParticle, particleTrans);
 				}
 				else
 				{
-					auto FireLoc = sniperComp->GetSocketTransform(FName("PistolFirePosition")).GetLocation();
-					UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, ForwardLoc, FRotator::ZeroRotator, FVector(1), true, true, ENCPoolMethod::AutoRelease);
-					if(niagara)
-					{
-						niagara->SetVectorParameter(FName("EndPoint"), FireLoc);
-					}
+					auto particleTrans = sniperComp->GetSocketTransform(FName("SniperFirePosition"));
+					particleTrans.SetScale3D(FVector(0.7));
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperFireParticle, particleTrans);
 				}
 				CanShoot=false;				
 				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
@@ -2494,12 +2472,6 @@ void APlayerCharacter::FireRelease()
 	EmptySoundBoolean=false;
 }
 
-void APlayerCharacter::EnemyHPWidgetSettings(AEnemy* enemy)
-{
-	// Enemy HP Widget Settings
-	GetWorldTimerManager().ClearTimer(enemy->HPWidgetInvisibleHandle);
-	enemy->SetHPWidgetInvisible();
-}
 
 void APlayerCharacter::RemoveBossHPWidget()
 {

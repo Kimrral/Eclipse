@@ -295,9 +295,6 @@ public:
 
 	UFUNCTION()
 	void SetHeadDamageWidget(int damage, FVector spawnLoc);
-	
-	UFUNCTION()
-	void EnemyHPWidgetSettings(AEnemy* enemy);
 
 	UFUNCTION()
 	void RemoveBossHPWidget();
@@ -471,17 +468,18 @@ public:
 	UPROPERTY(EditAnywhere, Category="Factory")
 	TSubclassOf<class AActor> BulletShellFactory;
 	UPROPERTY(EditAnywhere, Category="Particle")
-	class UParticleSystem* bloodParticle;
-	UPROPERTY(EditAnywhere, Category="Particle")
 	class UParticleSystem* bulletMarksParticle;
 	UPROPERTY(EditAnywhere, Category="Particle")
 	class UParticleSystem* fireParticle;
 	UPROPERTY(EditAnywhere, Category="Particle")
-	class UParticleSystem* trailParticle;
+	class UParticleSystem* shieldParticle;
 	UPROPERTY(EditAnywhere, Category="Particle")
 	class UParticleSystem* recallParticle;
 	UPROPERTY(EditAnywhere, Category="Niagara")
 	class UNiagaraSystem* BulletTrailSystem;
+	UPROPERTY(EditAnywhere, Category="Niagara")
+	class UParticleSystem* SniperFireParticle;
+	
 	
 	UPROPERTY(EditAnywhere)  // Timeline 생성
 	FTimeline Timeline;					
@@ -500,6 +498,9 @@ public:
 
 	UFUNCTION()
 	void ApplyCachingValues();
+
+	UFUNCTION()
+	void Damaged(int damage);
 
 	UPROPERTY()
 	bool CoreEquipped = false;

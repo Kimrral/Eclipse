@@ -6,17 +6,17 @@
 #include "EclipsePlayerController.h"
 #include "EnemyAnim.h"
 #include "EnemyFSM.h"
-#include "EnemyHPWidget.h"
 #include "M249AmmoActor.h"
+#include "NavigationInvokerComponent.h"
 #include "PistolAmmoActor.h"
 #include "PlayerCharacter.h"
 #include "RifleAmmoActor.h"
 #include "SniperAmmoActor.h"
 #include "Components/CapsuleComponent.h"
-#include "Components/WidgetComponent.h"
 #include "Eclipse/EclipseGameMode.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Perception/PawnSensingComponent.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -26,6 +26,8 @@ AEnemy::AEnemy()
 
 	// Enemy FSM
 	enemyFSM=CreateDefaultSubobject<UEnemyFSM>(TEXT("enemyFSM"));
+
+	PawnSensingComponent=CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComponent"));
 	
 }
 
@@ -40,14 +42,13 @@ void AEnemy::BeginPlay()
 	enemyAnim = Cast<UEnemyAnim>(GetMesh()->GetAnimInstance());
 	gameMode = Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());
 	PC = Cast<AEclipsePlayerController>(GetWorld()->GetFirstPlayerController());
+
 }
 
 // Called every frame
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	//DetectPlayerLineTrace();
 
 }
 
@@ -104,13 +105,6 @@ void AEnemy::OnDestroy()
 	this->Destroy();
 }
 
-void AEnemy::SetHPWidgetInvisible()
-{	
-	GetWorldTimerManager().SetTimer(HPWidgetInvisibleHandle, FTimerDelegate::CreateLambda([this]()->void
-	{
-	}), 3.0f, false);
-}
-
 void AEnemy::DropReward()
 {
 	auto randIndex = FMath::RandRange(0, 3);
@@ -156,31 +150,10 @@ void AEnemy::DropReward()
 	}
 }
 
-void AEnemy::DetectPlayerLineTrace()
+void AEnemy::SeePlayer()
 {
-	if(enemyFSM->state==EEnemyState::MOVE||enemyFSM->state==EEnemyState::ATTACK)
-	{
-		FHitResult enemySightResult;
-		FVector startPos = GetActorLocation();
-		FVector endPos = enemyFSM->player->GetActorLocation();
-		//DrawDebugLine(GetWorld(), startPos, endPos, FColor::Red);
-		bool bHit = GetWorld()->LineTraceSingleByChannel(enemySightResult, startPos, endPos, ECollisionChannel::ECC_Visibility);
-		if(bHit)
-		{
-			auto player = Cast<APlayerCharacter>(enemySightResult.GetActor());
-			if(player)
-			{
-				bPlayerInSight=true;
-				UE_LOG(LogTemp, Warning, TEXT("Player in Sight"))
-			}
-			else
-			{
-				bPlayerInSight=false;
-				UE_LOG(LogTemp, Warning, TEXT("Player out Sight"))
-			}
-		}
-	}
 }
+
 
 void AEnemy::EnemyAttackProcess()
 {

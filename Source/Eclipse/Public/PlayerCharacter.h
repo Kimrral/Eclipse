@@ -506,6 +506,18 @@ public:
 	UFUNCTION()
 	void Damaged(int damage);
 
+	UFUNCTION()
+	void SetTabWidget();
+
+	UFUNCTION()
+	int32 SetRifleAdditionalMagazine();
+	UFUNCTION()
+	int32 SetSniperAdditionalMagazine();
+	UFUNCTION()
+	int32 SetPistolAdditionalMagazine();
+	UFUNCTION()
+	int32 SetM249AdditionalMagazine();
+
 	UPROPERTY()
 	bool CoreEquipped = false;
 
@@ -527,11 +539,29 @@ public:
 	int randM249HeadDamage;
 
 	UPROPERTY()
+	bool bRifleAdditionalMag;
+	UPROPERTY()
+	bool bSniperAdditionalMag;
+	UPROPERTY()
+	bool bPistolAdditionalMag;
+	UPROPERTY()
+	bool bM249AdditionalMag;
+	
+	UPROPERTY()
 	class AHackingConsole* HackingConsole;
 
 	UPROPERTY()
 	class AMissionChecker* MissionChecker;
 
+	UPROPERTY()
+	class ARifleMagActor* RifleMagActor;
+	UPROPERTY()
+	class ASniperMagActor* SniperMagActor;
+	UPROPERTY()
+	class APistolMagActor* PistolMagActor;
+	UPROPERTY()
+	class AM249MagActor* M249MagActor;
+	
 	UPROPERTY()
 	int ConsoleCount;
 

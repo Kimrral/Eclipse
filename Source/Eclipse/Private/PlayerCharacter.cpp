@@ -1476,7 +1476,11 @@ void APlayerCharacter::Fire()
 			FHitResult rifleHitResult;
 			auto particleTrans = rifleComp->GetSocketTransform(FName("RifleFirePosition"));
 			particleTrans.SetScale3D(FVector(0.7));
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), fireParticle, particleTrans);
+			auto particleLoc2 = rifleComp->GetSocketLocation(FName("RifleFirePosition"));
+			auto particleRot2 = rifleComp->GetSocketRotation(FName("RifleFirePosition"))+FRotator(0, 0, 90);
+			auto particleTrans2=UKismetMathLibrary::MakeTransform(particleLoc2, particleRot2, FVector(0.4));
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle, particleTrans);
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle2, particleTrans2);
 			FActorSpawnParameters param;
 			param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 			auto spawnTrans = rifleComp->GetSocketTransform(FName("BulletShell"));
@@ -1678,12 +1682,12 @@ void APlayerCharacter::Fire()
 				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot+FRotator(-90, 0, 0), FVector(0.5f));
 				auto fireSocketLoc = rifleComp->GetSocketTransform(FName("RifleFirePosition")).GetLocation();
 				// 탄 궤적 나이아가라 시스템 스폰
-				UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, rifleHitResult.Location, FRotator::ZeroRotator,FVector(1), true, true, ENCPoolMethod::AutoRelease);
-				if(niagara)
-				{
+				//UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, rifleHitResult.Location, FRotator::ZeroRotator,FVector(1), true, true, ENCPoolMethod::AutoRelease);
+				//if(niagara)
+				//{
 					// 나이아가라 파라미터 벡터 위치 변수 할당
-					niagara->SetVectorParameter(FName("EndPoint"), fireSocketLoc);
-				}
+				//	niagara->SetVectorParameter(FName("EndPoint"), fireSocketLoc);
+				//}
 				CanShoot=false;
 				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
 				{
@@ -1699,11 +1703,11 @@ void APlayerCharacter::Fire()
 				FVector niagaraSpawnLoc = FollowCamera->K2_GetComponentLocation();
 				FVector ForwardLoc = niagaraSpawnLoc + FollowCamera->GetForwardVector()*10000.0f;
 				auto FireLoc = rifleComp->GetSocketTransform(FName("RifleFirePosition")).GetLocation();
-				UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, ForwardLoc, FRotator::ZeroRotator, FVector(1), true, true, ENCPoolMethod::AutoRelease);
-				if(niagara)
-				{
-					niagara->SetVectorParameter(FName("EndPoint"), FireLoc);
-				}
+				//UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, ForwardLoc, FRotator::ZeroRotator, FVector(1), true, true, ENCPoolMethod::AutoRelease);
+				//if(niagara)
+				//{
+				//	niagara->SetVectorParameter(FName("EndPoint"), FireLoc);
+				//}
 				CanShoot=false;				
 				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
 				{
@@ -1989,7 +1993,7 @@ void APlayerCharacter::Fire()
 			FHitResult pistolHitResult;
 			auto particleTrans = pistolComp->GetSocketTransform(FName("PistolFirePosition"));
 			particleTrans.SetScale3D(FVector(0.7));
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), fireParticle, particleTrans);
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PistolfireParticle, particleTrans);
 			FActorSpawnParameters param;
 			param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 			auto spawnTrans = pistolComp->GetSocketTransform(FName("BulletShell"));
@@ -2233,7 +2237,7 @@ void APlayerCharacter::Fire()
 			FHitResult M249HitResult;
 			auto particleTrans = m249Comp->GetSocketTransform(FName("M249FirePosition"));
 			particleTrans.SetScale3D(FVector(0.7));
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), fireParticle, particleTrans);
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PistolfireParticle, particleTrans);
 			FActorSpawnParameters param;
 			param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 			auto spawnTrans = m249Comp->GetSocketTransform(FName("BulletShell"));

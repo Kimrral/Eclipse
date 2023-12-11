@@ -470,7 +470,11 @@ public:
 	UPROPERTY(EditAnywhere, Category="Particle")
 	class UParticleSystem* bulletMarksParticle;
 	UPROPERTY(EditAnywhere, Category="Particle")
-	class UParticleSystem* fireParticle;
+	class UParticleSystem* RifleFireParticle;
+	UPROPERTY(EditAnywhere, Category="Particle")
+	class UParticleSystem* RifleFireParticle2;
+	UPROPERTY(EditAnywhere, Category="Particle")
+	class UParticleSystem* PistolfireParticle;
 	UPROPERTY(EditAnywhere, Category="Particle")
 	class UParticleSystem* shieldParticle;
 	UPROPERTY(EditAnywhere, Category="Particle")

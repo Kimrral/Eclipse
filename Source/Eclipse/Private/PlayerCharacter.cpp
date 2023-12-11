@@ -728,7 +728,7 @@ void APlayerCharacter::Q()
 void APlayerCharacter::WeaponDetectionLineTrace()
 {
 	// 스나이퍼 줌 도중 교체 불가
-	if(isSniperZooming)
+	if(isSniperZooming||bEnding)
 	{
 		return;
 	}
@@ -839,6 +839,14 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 				TickOverlapBoolean=true;
 				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
 				MissionChecker->checkerMesh->SetRenderCustomDepth(true);
+				if(BossCount>=1&&GuardianCount>=7)
+				{
+					infoWidgetUI->MissionCheck1->SetText(FText::FromString(infoWidgetUI->missionArray[0]));
+				}
+				if(ConsoleCount>=5)
+				{
+					infoWidgetUI->MissionCheck2->SetText(FText::FromString(infoWidgetUI->missionArray[0]));
+				}
 				// Widget Switcher 이용한 무기 정보 위젯 스위칭
 				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(5);
 				// Radial Slider Value 초기화

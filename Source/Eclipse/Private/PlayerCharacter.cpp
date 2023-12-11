@@ -16,6 +16,7 @@
 #include "HackingConsole.h"
 #include "InformationWidget.h"
 #include "M249Actor.h"
+#include "M249MagActor.h"
 #include "MissionChecker.h"
 #include "PlayerAnim.h"
 #include "RifleActor.h"
@@ -25,7 +26,10 @@
 #include "Components/CapsuleComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "PistolActor.h"
+#include "PistolMagActor.h"
 #include "RewardContainer.h"
+#include "RifleMagActor.h"
+#include "SniperMagActor.h"
 #include "TabWidget.h"
 #include "WeaponInfoWidget.h"
 #include "Blueprint/UserWidget.h"
@@ -697,6 +701,7 @@ void APlayerCharacter::Tab()
 		TabBool=true;
 		if(tabWidgetUI)
 		{
+			SetTabWidget();
 			tabWidgetUI->AddToViewport();
 			auto PC = Cast<APlayerController>(GetWorld()->GetFirstPlayerController());
 			if(PC)
@@ -744,8 +749,15 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 		sniperActor=Cast<ASniperActor>(actorHitResult.GetActor());
 		pistolActor=Cast<APistolActor>(actorHitResult.GetActor());
 		m249Actor=Cast<AM249Actor>(actorHitResult.GetActor());
+		
 		HackingConsole=Cast<AHackingConsole>(actorHitResult.GetActor());
 		MissionChecker=Cast<AMissionChecker>(actorHitResult.GetActor());
+
+		RifleMagActor = Cast<ARifleMagActor>(actorHitResult.GetActor());
+		SniperMagActor = Cast<ASniperMagActor>(actorHitResult.GetActor());
+		PistolMagActor = Cast<APistolMagActor>(actorHitResult.GetActor());
+		M249MagActor = Cast<AM249MagActor>(actorHitResult.GetActor());
+		
 		// 라이플 탐지
 		if(rifleActor)
 		{
@@ -855,6 +867,70 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 				infoWidgetUI->AddToViewport();
 			}
 		}
+		else if(RifleMagActor)
+		{
+			// 1회 실행 불리언
+			if(TickOverlapBoolean==false)
+			{
+				TickOverlapBoolean=true;
+				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+				RifleMagActor->magMesh->SetRenderCustomDepth(true);
+				// Widget Switcher 이용한 무기 정보 위젯 스위칭
+				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(6);
+				// Radial Slider Value 초기화
+				infoWidgetUI->weaponHoldPercent=0;
+				// Weapon Info Widget 뷰포트에 배치
+				infoWidgetUI->AddToViewport();
+			}
+		}
+		else if(SniperMagActor)
+		{
+			// 1회 실행 불리언
+			if(TickOverlapBoolean==false)
+			{
+				TickOverlapBoolean=true;
+				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+				SniperMagActor->magMesh->SetRenderCustomDepth(true);
+				// Widget Switcher 이용한 무기 정보 위젯 스위칭
+				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(7);
+				// Radial Slider Value 초기화
+				infoWidgetUI->weaponHoldPercent=0;
+				// Weapon Info Widget 뷰포트에 배치
+				infoWidgetUI->AddToViewport();
+			}
+		}
+		else if(PistolMagActor)
+		{
+			// 1회 실행 불리언
+			if(TickOverlapBoolean==false)
+			{
+				TickOverlapBoolean=true;
+				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+				PistolMagActor->magMesh->SetRenderCustomDepth(true);
+				// Widget Switcher 이용한 무기 정보 위젯 스위칭
+				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(8);
+				// Radial Slider Value 초기화
+				infoWidgetUI->weaponHoldPercent=0;
+				// Weapon Info Widget 뷰포트에 배치
+				infoWidgetUI->AddToViewport();
+			}
+		}
+		else if(M249MagActor)
+		{
+			// 1회 실행 불리언
+			if(TickOverlapBoolean==false)
+			{
+				TickOverlapBoolean=true;
+				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+				M249MagActor->magMesh->SetRenderCustomDepth(true);
+				// Widget Switcher 이용한 무기 정보 위젯 스위칭
+				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(9);
+				// Radial Slider Value 초기화
+				infoWidgetUI->weaponHoldPercent=0;
+				// Weapon Info Widget 뷰포트에 배치
+				infoWidgetUI->AddToViewport();
+			}
+		}
 		else
 		{
 			// 1회 실행 불리언
@@ -884,6 +960,10 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 						m249Actor=Cast<AM249Actor>(HitObj[i].GetActor());
 						HackingConsole=Cast<AHackingConsole>(HitObj[i].GetActor());
 						MissionChecker=Cast<AMissionChecker>(HitObj[i].GetActor());
+						RifleMagActor = Cast<ARifleMagActor>(HitObj[i].GetActor());
+						SniperMagActor = Cast<ASniperMagActor>(HitObj[i].GetActor());
+						PistolMagActor = Cast<APistolMagActor>(HitObj[i].GetActor());
+						M249MagActor = Cast<AM249MagActor>(HitObj[i].GetActor());
 						if(rifleActor)
 						{
 							// Render Custom Depth 활용한 무기 액터 외곽선 해제
@@ -913,6 +993,26 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 						{
 							// Render Custom Depth 활용한 무기 액터 외곽선 해제
 							MissionChecker->checkerMesh->SetRenderCustomDepth(false);
+						}
+						else if(RifleMagActor)
+						{
+							// Render Custom Depth 활용한 무기 액터 외곽선 해제
+							RifleMagActor->magMesh->SetRenderCustomDepth(false);
+						}
+						else if(SniperMagActor)
+						{
+							// Render Custom Depth 활용한 무기 액터 외곽선 해제
+							SniperMagActor->magMesh->SetRenderCustomDepth(false);
+						}
+						else if(PistolMagActor)
+						{
+							// Render Custom Depth 활용한 무기 액터 외곽선 해제
+							PistolMagActor->magMesh->SetRenderCustomDepth(false);
+						}
+						else if(M249MagActor)
+						{
+							// Render Custom Depth 활용한 무기 액터 외곽선 해제
+							M249MagActor->magMesh->SetRenderCustomDepth(false);
 						}
 					}
 				}
@@ -1441,6 +1541,192 @@ void APlayerCharacter::ApplyCachingValues()
 void APlayerCharacter::Damaged(int damage)
 {
 	curHP = FMath::Clamp(curHP-damage, 0, maxHP);
+}
+
+void APlayerCharacter::SetTabWidget()
+{
+	if(tabWidgetUI)
+	{
+
+		tabWidgetUI->MaxBulletText1->SetText(FText::AsNumber(maxRifleAmmo));
+		tabWidgetUI->MaxBulletText2->SetText(FText::AsNumber(maxSniperAmmo));
+		tabWidgetUI->MaxBulletText3->SetText(FText::AsNumber(maxPistolAmmo));
+		tabWidgetUI->MaxBulletText4->SetText(FText::AsNumber(maxM249Ammo));
+		
+		if(equippedWeaponStringArray[0]==FString("Rifle"))
+		{
+			tabWidgetUI->CurWeaponImage1->SetVisibility(ESlateVisibility::Visible);
+			tabWidgetUI->CurWeaponImage1_1->SetVisibility(ESlateVisibility::Hidden);
+			tabWidgetUI->CurWeaponImage1_2->SetVisibility(ESlateVisibility::Hidden);
+			tabWidgetUI->CurWeaponImage1_3->SetVisibility(ESlateVisibility::Hidden);
+			
+			tabWidgetUI->CurBulletImage1->SetVisibility(ESlateVisibility::Visible);
+			tabWidgetUI->CurBulletImage1_1->SetVisibility(ESlateVisibility::Hidden);
+			tabWidgetUI->CurBulletImage1_2->SetVisibility(ESlateVisibility::Hidden);
+			tabWidgetUI->CurBulletImage1_3->SetVisibility(ESlateVisibility::Hidden);
+
+			tabWidgetUI->WeaponText1->SetText(FText::FromString("ASSAULT RIFLE"));
+			tabWidgetUI->BulletText1->SetText(FText::FromString("5.56mm"));
+			tabWidgetUI->CurBulletText1->SetText(FText::AsNumber(curRifleAmmo));
+
+		}
+		else if(equippedWeaponStringArray[0]==FString("Sniper"))
+		{
+			tabWidgetUI->CurWeaponImage1->SetVisibility(ESlateVisibility::Hidden);
+			tabWidgetUI->CurWeaponImage1_1->SetVisibility(ESlateVisibility::Visible);
+			tabWidgetUI->CurWeaponImage1_2->SetVisibility(ESlateVisibility::Hidden);
+			tabWidgetUI->CurWeaponImage1_3->SetVisibility(ESlateVisibility::Hidden);
+
+			tabWidgetUI->CurBulletImage1->SetVisibility(ESlateVisibility::Hidden);
+			tabWidgetUI->CurBulletImage1_1->SetVisibility(ESlateVisibility::Visible);
+			tabWidgetUI->CurBulletImage1_2->SetVisibility(ESlateVisibility::Hidden);
+			tabWidgetUI->CurBulletImage1_3->SetVisibility(ESlateVisibility::Hidden);
+
+			tabWidgetUI->WeaponText1->SetText(FText::FromString("SNIPER RIFLE"));
+			tabWidgetUI->BulletText1->SetText(FText::FromString("7.92mm"));
+			tabWidgetUI->CurBulletText1->SetText(FText::AsNumber(curSniperAmmo));
+
+		}
+		else if(equippedWeaponStringArray[0]==FString("Pistol"))
+		{
+			tabWidgetUI->CurWeaponImage1->SetVisibility(ESlateVisibility::Hidden);
+			tabWidgetUI->CurWeaponImage1_1->SetVisibility(ESlateVisibility::Hidden);
+			tabWidgetUI->CurWeaponImage1_2->SetVisibility(ESlateVisibility::Visible);
+			tabWidgetUI->CurWeaponImage1_3->SetVisibility(ESlateVisibility::Hidden);
+
+			tabWidgetUI->CurBulletImage1->SetVisibility(ESlateVisibility::Hidden);
+			tabWidgetUI->CurBulletImage1_1->SetVisibility(ESlateVisibility::Hidden);
+			tabWidgetUI->CurBulletImage1_2->SetVisibility(ESlateVisibility::Visible);
+			tabWidgetUI->CurBulletImage1_3->SetVisibility(ESlateVisibility::Hidden);
+
+			tabWidgetUI->WeaponText1->SetText(FText::FromString("PISTOL"));
+			tabWidgetUI->BulletText1->SetText(FText::FromString("9mm"));
+			tabWidgetUI->CurBulletText1->SetText(FText::AsNumber(curPistolAmmo));
+
+		}
+		else if(equippedWeaponStringArray[0]==FString("M249"))
+		{
+			tabWidgetUI->CurWeaponImage1->SetVisibility(ESlateVisibility::Hidden);
+			tabWidgetUI->CurWeaponImage1_1->SetVisibility(ESlateVisibility::Hidden);
+			tabWidgetUI->CurWeaponImage1_2->SetVisibility(ESlateVisibility::Hidden);
+			tabWidgetUI->CurWeaponImage1_3->SetVisibility(ESlateVisibility::Visible);
+
+			tabWidgetUI->CurBulletImage1->SetVisibility(ESlateVisibility::Hidden);
+			tabWidgetUI->CurBulletImage1_1->SetVisibility(ESlateVisibility::Hidden);
+			tabWidgetUI->CurBulletImage1_2->SetVisibility(ESlateVisibility::Hidden);
+			tabWidgetUI->CurBulletImage1_3->SetVisibility(ESlateVisibility::Visible);
+
+			tabWidgetUI->WeaponText1->SetText(FText::FromString("M249"));
+			tabWidgetUI->BulletText1->SetText(FText::FromString("7.62mm"));
+			tabWidgetUI->CurBulletText1->SetText(FText::AsNumber(curM249Ammo));
+
+		}
+
+		
+		if(equippedWeaponStringArray[1]==FString("Rifle"))
+		{
+
+			tabWidgetUI->CurWeaponImage2->SetVisibility(ESlateVisibility::Visible);
+			tabWidgetUI->CurWeaponImage2_1->SetVisibility(ESlateVisibility::Hidden);
+			tabWidgetUI->CurWeaponImage2_2->SetVisibility(ESlateVisibility::Hidden);
+			tabWidgetUI->CurWeaponImage2_3->SetVisibility(ESlateVisibility::Hidden);
+			
+			tabWidgetUI->CurBulletImage2->SetVisibility(ESlateVisibility::Visible);
+			tabWidgetUI->CurBulletImage2_1->SetVisibility(ESlateVisibility::Hidden);
+			tabWidgetUI->CurBulletImage2_2->SetVisibility(ESlateVisibility::Hidden);
+			tabWidgetUI->CurBulletImage2_3->SetVisibility(ESlateVisibility::Hidden);
+
+			tabWidgetUI->WeaponText2->SetText(FText::FromString("ASSAULT RIFLE"));
+			tabWidgetUI->BulletText2->SetText(FText::FromString("5.56mm"));
+			tabWidgetUI->CurBulletText2->SetText(FText::AsNumber(curRifleAmmo));
+
+		}
+		else if(equippedWeaponStringArray[1]==FString("Sniper"))
+		{
+				tabWidgetUI->CurWeaponImage2->SetVisibility(ESlateVisibility::Hidden);
+				tabWidgetUI->CurWeaponImage2_1->SetVisibility(ESlateVisibility::Visible);
+				tabWidgetUI->CurWeaponImage2_2->SetVisibility(ESlateVisibility::Hidden);
+				tabWidgetUI->CurWeaponImage2_3->SetVisibility(ESlateVisibility::Hidden);
+			
+				tabWidgetUI->CurBulletImage2->SetVisibility(ESlateVisibility::Hidden);
+				tabWidgetUI->CurBulletImage2_1->SetVisibility(ESlateVisibility::Visible);
+				tabWidgetUI->CurBulletImage2_2->SetVisibility(ESlateVisibility::Hidden);
+				tabWidgetUI->CurBulletImage2_3->SetVisibility(ESlateVisibility::Hidden);
+
+			tabWidgetUI->WeaponText2->SetText(FText::FromString("SNIPER RIFLE"));
+			tabWidgetUI->BulletText2->SetText(FText::FromString("7.92mm"));
+			tabWidgetUI->CurBulletText2->SetText(FText::AsNumber(curSniperAmmo));
+		}
+		else if(equippedWeaponStringArray[1]==FString("Pistol"))
+		{
+			tabWidgetUI->CurWeaponImage2->SetVisibility(ESlateVisibility::Hidden);
+			tabWidgetUI->CurWeaponImage2_1->SetVisibility(ESlateVisibility::Hidden);
+			tabWidgetUI->CurWeaponImage2_2->SetVisibility(ESlateVisibility::Visible);
+			tabWidgetUI->CurWeaponImage2_3->SetVisibility(ESlateVisibility::Hidden);
+			
+			tabWidgetUI->CurBulletImage2->SetVisibility(ESlateVisibility::Hidden);
+			tabWidgetUI->CurBulletImage2_1->SetVisibility(ESlateVisibility::Hidden);
+			tabWidgetUI->CurBulletImage2_2->SetVisibility(ESlateVisibility::Visible);
+			tabWidgetUI->CurBulletImage2_3->SetVisibility(ESlateVisibility::Hidden);
+
+			tabWidgetUI->WeaponText2->SetText(FText::FromString("PISTOL"));
+			tabWidgetUI->BulletText2->SetText(FText::FromString("9mm"));
+			tabWidgetUI->CurBulletText2->SetText(FText::AsNumber(curPistolAmmo));
+
+		}
+		else if(equippedWeaponStringArray[1]==FString("M249"))
+		{
+			tabWidgetUI->CurWeaponImage2->SetVisibility(ESlateVisibility::Hidden);
+			tabWidgetUI->CurWeaponImage2_1->SetVisibility(ESlateVisibility::Hidden);
+			tabWidgetUI->CurWeaponImage2_2->SetVisibility(ESlateVisibility::Hidden);
+			tabWidgetUI->CurWeaponImage2_3->SetVisibility(ESlateVisibility::Visible);
+			
+			tabWidgetUI->CurBulletImage2->SetVisibility(ESlateVisibility::Hidden);
+			tabWidgetUI->CurBulletImage2_1->SetVisibility(ESlateVisibility::Hidden);
+			tabWidgetUI->CurBulletImage2_2->SetVisibility(ESlateVisibility::Hidden);
+			tabWidgetUI->CurBulletImage2_3->SetVisibility(ESlateVisibility::Visible);
+
+			tabWidgetUI->WeaponText2->SetText(FText::FromString("M249"));
+			tabWidgetUI->BulletText2->SetText(FText::FromString("7.62mm"));
+			tabWidgetUI->CurBulletText2->SetText(FText::AsNumber(curM249Ammo));
+		}		
+	}
+}
+
+int32 APlayerCharacter::SetRifleAdditionalMagazine()
+{
+	if(bRifleAdditionalMag)
+	{
+		return 10;
+	}
+	return 0;
+}
+
+int32 APlayerCharacter::SetSniperAdditionalMagazine()
+{
+	if(bSniperAdditionalMag)
+	{
+		return 10;
+	}
+	return 0;
+}
+
+int32 APlayerCharacter::SetPistolAdditionalMagazine()
+{
+	if(bPistolAdditionalMag)
+	{
+		return 10;
+	}
+	return 0;
+}
+
+int32 APlayerCharacter::SetM249AdditionalMagazine()
+{
+	if(bM249AdditionalMag)
+	{
+		return 10;
+	}
+	return 0;
 }
 
 

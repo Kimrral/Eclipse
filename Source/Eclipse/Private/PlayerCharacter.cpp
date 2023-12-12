@@ -30,6 +30,7 @@
 #include "RewardContainer.h"
 #include "RifleMagActor.h"
 #include "SniperMagActor.h"
+#include "TabHoveredInfoWidget.h"
 #include "TabWidget.h"
 #include "WeaponInfoWidget.h"
 #include "Blueprint/UserWidget.h"
@@ -727,6 +728,10 @@ void APlayerCharacter::Tab()
 	{
 		TabBool=false;
 		tabWidgetUI->RemoveFromParent();
+		if(tabWidgetUI->TabHoveredInfoWidget->IsInViewport())
+		{
+			tabWidgetUI->TabHoveredInfoWidget->RemoveFromParent();
+		}
 		auto PC = Cast<APlayerController>(GetWorld()->GetFirstPlayerController());
 		if(PC)
 		{

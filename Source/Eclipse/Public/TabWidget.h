@@ -19,9 +19,6 @@ class ECLIPSE_API UTabWidget : public UUserWidget
 public:
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-
-	UFUNCTION()
-	void SetInventoryButtonArray();
 	
 	UFUNCTION()
 	void SetInventoryImageArray();
@@ -30,7 +27,7 @@ public:
 	void SetInventoryTextureMap();
 
 	UFUNCTION(BlueprintCallable)
-	void ShowHoveredInfoWidget();
+	void ShowHoveredInfoWidget(int32 indexNumber);
 
 	UFUNCTION()
 	void SetSwitcherIndexMap();
@@ -70,12 +67,6 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TMap<FString, int32> switcherIndexMap;
-
-	UPROPERTY()
-	class ARifleMagActor* RifleMagActor;
-
-	UPROPERTY()
-	class ASniperMagActor* SniperMagActor;
 
 	UFUNCTION()
 	void SetInventoryArray(FString ActorString);

@@ -5,10 +5,14 @@
 
 #include "HackingConsole.h"
 #include "M249AmmoActor.h"
+#include "M249MagActor.h"
 #include "PistolAmmoActor.h"
+#include "PistolMagActor.h"
 #include "PlayerCharacter.h"
 #include "RifleAmmoActor.h"
+#include "RifleMagActor.h"
 #include "SniperAmmoActor.h"
+#include "SniperMagActor.h"
 #include "Components/SphereComponent.h"
 #include "GeometryCollection/GeometryCollectionComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -39,6 +43,8 @@ void ARewardContainer::BeginPlay()
 
 	containerMesh->SetRenderCustomDepth(false);
 	containerMesh->SetSimulatePhysics(true);
+
+	DropForce=FVector(80);
 }
 
 // Called every frame
@@ -76,6 +82,7 @@ void ARewardContainer::DropReward()
 {
 	DropAmmo();
 	DropConsole();
+	DropMagazine();
 }
 
 void ARewardContainer::DropAmmo()
@@ -86,9 +93,8 @@ void ARewardContainer::DropAmmo()
 		auto rifleAmmo = GetWorld()->SpawnActor<ARifleAmmoActor>(rifleAmmoFactory, GetActorLocation(), GetActorRotation());
 		if(rifleAmmo)
 		{
-			FVector force = FVector(0, 0, 2500);
 			FVector loc = rifleAmmo->GetActorUpVector();
-			rifleAmmo->ammoMesh->AddImpulseAtLocation(force, loc);
+			rifleAmmo->ammoMesh->AddImpulseAtLocation(DropForce, loc);
 		}
 	}
 	else if(randIndex==1)
@@ -96,9 +102,8 @@ void ARewardContainer::DropAmmo()
 		auto sniperAmmo = GetWorld()->SpawnActor<ASniperAmmoActor>(sniperAmmoFactory, GetActorLocation(), GetActorRotation());
 		if(sniperAmmo)
 		{
-			FVector force = FVector(0, 0, 2500);
 			FVector loc = sniperAmmo->GetActorUpVector();
-			sniperAmmo->ammoMesh->AddImpulseAtLocation(force, loc);
+			sniperAmmo->ammoMesh->AddImpulseAtLocation(DropForce, loc);
 		}
 	}
 	else if(randIndex==2)
@@ -106,9 +111,8 @@ void ARewardContainer::DropAmmo()
 		auto pistolAmmo = GetWorld()->SpawnActor<APistolAmmoActor>(pistolAmmoFactory, GetActorLocation(), GetActorRotation());
 		if(pistolAmmo)
 		{
-			FVector force = FVector(0, 0, 2500);
 			FVector loc = pistolAmmo->GetActorUpVector();
-			pistolAmmo->ammoMesh->AddImpulseAtLocation(force, loc);
+			pistolAmmo->ammoMesh->AddImpulseAtLocation(DropForce, loc);
 		}
 	}
 	else if(randIndex==3)
@@ -116,9 +120,8 @@ void ARewardContainer::DropAmmo()
 		auto m249Ammo = GetWorld()->SpawnActor<AM249AmmoActor>(M249AmmoFactory, GetActorLocation(), GetActorRotation());
 		if(m249Ammo)
 		{
-			FVector force = FVector(0, 0, 2500);
 			FVector loc = m249Ammo->GetActorUpVector();
-			m249Ammo->ammoMesh->AddImpulseAtLocation(force, loc);
+			m249Ammo->ammoMesh->AddImpulseAtLocation(DropForce, loc);
 		}
 	}
 }
@@ -128,9 +131,50 @@ void ARewardContainer::DropConsole()
 	auto HackingConsole = GetWorld()->SpawnActor<AHackingConsole>(HackingConsoleFactory, GetActorLocation(), GetActorRotation());
 	if(HackingConsole)
 	{
-		FVector force = FVector(0, 0, 2500);
 		FVector loc = HackingConsole->GetActorUpVector();
-		HackingConsole->rewardMesh->AddImpulseAtLocation(force, loc);
+		HackingConsole->rewardMesh->AddImpulseAtLocation(DropForce, loc);
+	}
+}
+
+void ARewardContainer::DropMagazine()
+{
+
+	auto randIndex = FMath::RandRange(0, 3);
+	if(randIndex==0)
+	{
+		auto RifleMagActor = GetWorld()->SpawnActor<ARifleMagActor>(RifleMagActorFactory, GetActorLocation(), GetActorRotation());
+		if(RifleMagActor)
+		{
+			FVector loc = RifleMagActor->GetActorUpVector();
+			RifleMagActor->magMesh->AddImpulseAtLocation(DropForce, loc);
+		}
+	}
+	else if(randIndex==1)
+	{
+		auto SniperMagActor = GetWorld()->SpawnActor<ASniperMagActor>(SniperMagActorFactory, GetActorLocation(), GetActorRotation());
+		if(SniperMagActor)
+		{
+			FVector loc = SniperMagActor->GetActorUpVector();
+			SniperMagActor->magMesh->AddImpulseAtLocation(DropForce, loc);
+		}
+	}
+	else if(randIndex==2)
+	{
+		auto PistolMagActor = GetWorld()->SpawnActor<APistolMagActor>(PistolMagActorFactory, GetActorLocation(), GetActorRotation());
+		if(PistolMagActor)
+		{
+			FVector loc = PistolMagActor->GetActorUpVector();
+			PistolMagActor->magMesh->AddImpulseAtLocation(DropForce, loc);
+		}
+	}
+	else if(randIndex==3)
+	{
+		auto M249MagActor = GetWorld()->SpawnActor<AM249MagActor>(M249MagActorFactory, GetActorLocation(), GetActorRotation());
+		if(M249MagActor)
+		{
+			FVector loc = M249MagActor->GetActorUpVector();
+			M249MagActor->magMesh->AddImpulseAtLocation(DropForce, loc);
+		}
 	}
 }
 

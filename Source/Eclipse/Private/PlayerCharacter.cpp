@@ -1152,8 +1152,14 @@ void APlayerCharacter::ChangeWeapon()
 		sniperActor=Cast<ASniperActor>(actorHitResult.GetActor());
 		pistolActor=Cast<APistolActor>(actorHitResult.GetActor());
 		m249Actor=Cast<AM249Actor>(actorHitResult.GetActor());
+		
 		HackingConsole=Cast<AHackingConsole>(actorHitResult.GetActor());
 		MissionChecker=Cast<AMissionChecker>(actorHitResult.GetActor());
+
+		RifleMagActor = Cast<ARifleMagActor>(actorHitResult.GetActor());
+		SniperMagActor = Cast<ASniperMagActor>(actorHitResult.GetActor());
+		PistolMagActor = Cast<APistolMagActor>(actorHitResult.GetActor());
+		M249MagActor = Cast<AM249MagActor>(actorHitResult.GetActor());
 		// 라이플로 교체
 		if(rifleActor)
 		{
@@ -1432,6 +1438,50 @@ void APlayerCharacter::ChangeWeapon()
 				}
 			}
 		}
+		else if(RifleMagActor)
+		{
+			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+			{
+				infoWidgetUI->RemoveFromParent();
+				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+				RifleMagActor->Destroy();
+				bRifleAdditionalMag=true;
+			}
+		}
+		else if(SniperMagActor)
+		{
+			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+			{
+				infoWidgetUI->RemoveFromParent();
+				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+				SniperMagActor->Destroy();
+				bSniperAdditionalMag=true;
+			}
+		}
+		else if(PistolMagActor)
+		{
+			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+			{
+				infoWidgetUI->RemoveFromParent();
+				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+				PistolMagActor->Destroy();
+				bPistolAdditionalMag=true;
+			}
+		}
+		else if(M249MagActor)
+		{
+			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+			{
+				infoWidgetUI->RemoveFromParent();
+				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+				M249MagActor->Destroy();
+				bM249AdditionalMag=true;
+			}
+		}
 	}	
 }
 
@@ -1440,23 +1490,23 @@ void APlayerCharacter::Reload()
 	bool animPlay = animInstance->IsAnyMontagePlaying();
 	if(animPlay==false)
 	{
-		if(weaponArray[0]==true&&curRifleAmmo<40&&maxRifleAmmo>0)
+		if(weaponArray[0]==true&&curRifleAmmo<40+SetRifleAdditionalMagazine()&&maxRifleAmmo>0)
 		{
 			crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
 			UGameplayStatics::PlaySound2D(GetWorld(), RifleReloadSound);
 			PlayAnimMontage(zoomingMontage, 1, FName("Reload"));
 		}
-		else if(weaponArray[1]==true&&curSniperAmmo<5&&maxSniperAmmo>0)
+		else if(weaponArray[1]==true&&curSniperAmmo<5+SetSniperAdditionalMagazine()&&maxSniperAmmo>0)
 		{
 			crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
 			PlayAnimMontage(zoomingMontage, 1, FName("Reload"));
 		}
-		else if(weaponArray[2]==true&&curPistolAmmo<8&&maxPistolAmmo>0)
+		else if(weaponArray[2]==true&&curPistolAmmo<8+SetPistolAdditionalMagazine()&&maxPistolAmmo>0)
 		{
 			crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
 			PlayAnimMontage(zoomingMontage, 1, FName("Reload"));
 		}
-		else if(weaponArray[3]==true&&curM249Ammo<100&&maxM249Ammo>0)
+		else if(weaponArray[3]==true&&curM249Ammo<100+SetM249AdditionalMagazine()&&maxM249Ammo>0)
 		{
 			crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
 			PlayAnimMontage(zoomingMontage, 1, FName("Reload"));
@@ -1697,7 +1747,7 @@ int32 APlayerCharacter::SetRifleAdditionalMagazine()
 {
 	if(bRifleAdditionalMag)
 	{
-		return 10;
+		return 15;
 	}
 	return 0;
 }
@@ -1706,7 +1756,7 @@ int32 APlayerCharacter::SetSniperAdditionalMagazine()
 {
 	if(bSniperAdditionalMag)
 	{
-		return 10;
+		return 2;
 	}
 	return 0;
 }
@@ -1715,7 +1765,7 @@ int32 APlayerCharacter::SetPistolAdditionalMagazine()
 {
 	if(bPistolAdditionalMag)
 	{
-		return 10;
+		return 4;
 	}
 	return 0;
 }
@@ -1724,7 +1774,7 @@ int32 APlayerCharacter::SetM249AdditionalMagazine()
 {
 	if(bM249AdditionalMag)
 	{
-		return 10;
+		return 30;
 	}
 	return 0;
 }
@@ -1742,7 +1792,7 @@ void APlayerCharacter::Fire()
 		if(curRifleAmmo>0)
 		{
 			// Clamp를 통한 탄약 수 차감
-			curRifleAmmo = FMath::Clamp(curRifleAmmo-1, 0, 40);
+			curRifleAmmo = FMath::Clamp(curRifleAmmo-1, 0, 40+SetRifleAdditionalMagazine());
 			UE_LOG(LogTemp, Warning, TEXT("Cur Rifle Bullet : %d"), curRifleAmmo)
 			FVector startLoc = FollowCamera->GetComponentLocation();
 			FVector EndLoc = startLoc + FollowCamera->GetForwardVector()*10000.0f;
@@ -2017,7 +2067,7 @@ void APlayerCharacter::Fire()
 		if(curSniperAmmo>0)
 		{
 			// Clamp를 통한 탄약 수 차감
-			curSniperAmmo = FMath::Clamp(curSniperAmmo-1, 0, 5);
+			curSniperAmmo = FMath::Clamp(curSniperAmmo-1, 0, 5+SetSniperAdditionalMagazine());
 			UE_LOG(LogTemp, Warning, TEXT("Cur Sniper Bullet : %d"), curSniperAmmo)
 			FVector startLoc = FollowCamera->GetComponentLocation();
 			FVector EndLoc = startLoc + FollowCamera->GetForwardVector()*10000.0f;
@@ -2249,7 +2299,7 @@ void APlayerCharacter::Fire()
 		if(curPistolAmmo>0)
 		{
 			// Clamp를 통한 탄약 수 차감
-			curPistolAmmo = FMath::Clamp(curPistolAmmo-1, 0, 8);
+			curPistolAmmo = FMath::Clamp(curPistolAmmo-1, 0, 8+SetPistolAdditionalMagazine());
 			UE_LOG(LogTemp, Warning, TEXT("Cur Pistol Bullet : %d"), curPistolAmmo)
 			auto controller = GetWorld()->GetFirstPlayerController();
 			controller->PlayerCameraManager->StartCameraShake(pistolFireShake);
@@ -2503,7 +2553,7 @@ void APlayerCharacter::Fire()
 		if(curM249Ammo>0)
 		{
 			// Clamp를 통한 탄약 수 차감
-			curM249Ammo = FMath::Clamp(curM249Ammo-1, 0, 100);
+			curM249Ammo = FMath::Clamp(curM249Ammo-1, 0, 100+SetM249AdditionalMagazine());
 			UE_LOG(LogTemp, Warning, TEXT("Cur M249 Bullet : %d"), curM249Ammo)
 			FVector startLoc = FollowCamera->GetComponentLocation();
 			FVector EndLoc = startLoc + FollowCamera->GetForwardVector()*10000.0f;

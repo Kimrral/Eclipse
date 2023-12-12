@@ -37,6 +37,9 @@ public:
 	void DropConsole();
 
 	UFUNCTION()
+	void DropMagazine();
+
+	UFUNCTION()
 	void BoxDestroyed();
 
 	UPROPERTY(EditAnywhere)
@@ -49,8 +52,18 @@ public:
 	TSubclassOf<class AM249AmmoActor> M249AmmoFactory;
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AHackingConsole> HackingConsoleFactory;	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class ARifleMagActor> RifleMagActorFactory;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class ASniperMagActor> SniperMagActorFactory;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class APistolMagActor> PistolMagActorFactory;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AM249MagActor> M249MagActorFactory;
 
-
+	UPROPERTY()
+	FVector DropForce;
+	
 	UPROPERTY()
 	int curBoxHP;
 

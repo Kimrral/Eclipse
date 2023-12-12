@@ -13,8 +13,6 @@
 void UTabWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	SetInventoryButtonArray();
 	
 	SetInventoryImageArray();
 
@@ -28,8 +26,6 @@ void UTabWidget::NativeConstruct()
 
 	TabHoveredInfoWidget=CreateWidget<UTabHoveredInfoWidget>(GetWorld(), TabHoveredInfoWidgetFactory);
 
-	Inventory_1->OnHovered.AddDynamic(this, &UTabWidget::ShowHoveredInfoWidget);
-	Inventory_1->OnUnhovered.AddDynamic(this, &UTabWidget::HideHoveredInfoWidget);
 }
 
 void UTabWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -37,13 +33,6 @@ void UTabWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
 	UpdatePosition();
-}
-
-void UTabWidget::SetInventoryButtonArray()
-{
-	inventoryButtonArray.Add(Inventory_1);
-	inventoryButtonArray.Add(Inventory_2);
-
 }
 
 void UTabWidget::SetInventoryImageArray()
@@ -72,17 +61,15 @@ void UTabWidget::SetSwitcherIndexMap()
 	switcherIndexMap.Add(FString("M249MagActor"), 8);	
 }
 
-void UTabWidget::ShowHoveredInfoWidget()
+void UTabWidget::ShowHoveredInfoWidget(int32 indexNumber)
 {
-	if(TabHoveredInfoWidget)
+	if(TabHoveredInfoWidget&&inventoryArray.IsValidIndex(indexNumber-1))
 	{
 		bHovered=true;
-		TabHoveredInfoWidget->WidgetSwitcher_Info->SetActiveWidgetIndex(switcherIndexMap[inventoryArray[0]]);
+		TabHoveredInfoWidget->WidgetSwitcher_Info->SetActiveWidgetIndex(switcherIndexMap[inventoryArray[indexNumber-1]]);
 		TabHoveredInfoWidget->AddToViewport();
 	}
 }
-
-
 
 void UTabWidget::HideHoveredInfoWidget()
 {
@@ -132,7 +119,7 @@ void UTabWidget::SetInventoryArray(FString ActorString)
 	{
 		// 인벤토리 액터 배열에 추가
 		int32 arrayIndex = inventoryArray.Num();
-		inventoryArray.Add(ActorString);		
+		inventoryArray.Emplace(ActorString);		
 		// 현재 인벤토리 칸의 액터 개수 +1
 		inventoryCountArray[arrayIndex]+=1;
 		// 인벤토리 이미지 설정

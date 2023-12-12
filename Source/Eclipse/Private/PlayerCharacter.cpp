@@ -184,6 +184,10 @@ void APlayerCharacter::BeginPlay()
 	damageWidgetUI = CreateWidget<UDamageWidget>(GetWorld(), damageWidgetUIFactory);
 
 	tabWidgetUI=CreateWidget<UTabWidget>(GetWorld(), tabWidgetFactory);
+	if(tabWidgetUI)
+	{
+		tabWidgetUI->NativeConstruct();
+	}
 
 	bossHPUI=CreateWidget<UBossHPWidget>(GetWorld(), bossHPWidgetFactory);
 
@@ -320,6 +324,10 @@ void APlayerCharacter::Look(const FInputActionValue& Value)
 
 void APlayerCharacter::Zoom()
 {
+	if(TabOn)
+	{
+		return;
+	}
 	// Zooming Boolean
 	isZooming=true;
 	GetCharacterMovement()->MaxWalkSpeed=240.f;
@@ -368,6 +376,10 @@ void APlayerCharacter::Zoom()
 
 void APlayerCharacter::ZoomRelease()
 {
+	if(TabOn)
+	{
+		return;
+	}
 	// Zooming Boolean
 	isZooming = false;
 	GetCharacterMovement()->MaxWalkSpeed=360.f;
@@ -1445,8 +1457,8 @@ void APlayerCharacter::ChangeWeapon()
 			{
 				infoWidgetUI->RemoveFromParent();
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+				tabWidgetUI->SetInventoryArray(FString("RifleMagActor"));
 				RifleMagActor->Destroy();
-				bRifleAdditionalMag=true;
 			}
 		}
 		else if(SniperMagActor)
@@ -1456,8 +1468,8 @@ void APlayerCharacter::ChangeWeapon()
 			{
 				infoWidgetUI->RemoveFromParent();
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+				tabWidgetUI->SetInventoryArray(FString("SniperMagActor"));
 				SniperMagActor->Destroy();
-				bSniperAdditionalMag=true;
 			}
 		}
 		else if(PistolMagActor)
@@ -1467,8 +1479,8 @@ void APlayerCharacter::ChangeWeapon()
 			{
 				infoWidgetUI->RemoveFromParent();
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+				tabWidgetUI->SetInventoryArray(FString("PistolMagActor"));
 				PistolMagActor->Destroy();
-				bPistolAdditionalMag=true;
 			}
 		}
 		else if(M249MagActor)
@@ -1478,8 +1490,8 @@ void APlayerCharacter::ChangeWeapon()
 			{
 				infoWidgetUI->RemoveFromParent();
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+				tabWidgetUI->SetInventoryArray(FString("M249MagActor"));
 				M249MagActor->Destroy();
-				bM249AdditionalMag=true;
 			}
 		}
 	}	

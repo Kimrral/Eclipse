@@ -133,6 +133,7 @@ void APlayerCharacter::BeginPlay()
 		}
 	}
 
+	pc=Cast<AEclipsePlayerController>(GetWorld()->GetFirstPlayerController());
 	gm=Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());
 
 	ApplyCachingValues();

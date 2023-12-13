@@ -3,6 +3,7 @@
 
 #include "TabWidget.h"
 
+#include "DragThumbnail.h"
 #include "EclipsePlayerController.h"
 #include "TabHoveredInfoWidget.h"
 #include "Components/WidgetSwitcher.h"
@@ -25,6 +26,9 @@ void UTabWidget::NativeConstruct()
 	pc=Cast<AEclipsePlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 
 	TabHoveredInfoWidget=CreateWidget<UTabHoveredInfoWidget>(GetWorld(), TabHoveredInfoWidgetFactory);
+
+	DragThumbnail=CreateWidget<UDragThumbnail>(GetWorld(), DragThumbnailFactory);
+	
 
 }
 
@@ -73,22 +77,49 @@ void UTabWidget::ShowHoveredInfoWidget(int32 indexNumber)
 
 void UTabWidget::HideHoveredInfoWidget()
 {
-	if(TabHoveredInfoWidget&&pc)
+	if(TabHoveredInfoWidget)
 	{
 		bHovered=false;
 		TabHoveredInfoWidget->RemoveFromParent();
 	}
 }
 
+void UTabWidget::ShowDragThumbnail(int32 indexNumber)
+{
+	if(DragThumbnail&&inventoryArray.IsValidIndex(indexNumber-1))
+	{
+		bShowThumbnail=true;
+		DragThumbnail->WidgetSwitcher_thumbnail->SetActiveWidgetIndex(switcherIndexMap[inventoryArray[indexNumber-1]]);
+		DragThumbnail->AddToViewport();
+	}
+}
+
+void UTabWidget::HideDragThumbnail()
+{
+	if(DragThumbnail->IsInViewport())
+	{
+		bShowThumbnail=false;
+		DragThumbnail->RemoveFromParent();
+	}
+}
+
 void UTabWidget::UpdatePosition()
 {
-	if(bHovered)
+	if(bHovered&&pc)
 	{
 		float X;
 		float Y;
 		pc->GetMousePosition(X, Y);
 		auto mousePos = UKismetMathLibrary::MakeVector2D(X, Y);
 		TabHoveredInfoWidget->SetPositionInViewport(mousePos);
+	}
+	if(bShowThumbnail&&pc)
+	{
+		float X;
+		float Y;
+		pc->GetMousePosition(X, Y);
+		auto mousePosT = UKismetMathLibrary::MakeVector2D(X, Y);
+		DragThumbnail->SetPositionInViewport(mousePosT);
 	}
 }
 
@@ -124,7 +155,7 @@ void UTabWidget::SetInventoryArray(FString ActorString)
 		inventoryCountArray[arrayIndex]+=1;
 		// 인벤토리 이미지 설정
 		inventoryImageArray[arrayIndex]->SetBrushFromTexture(inventoryTextureMap[ActorString], true);
-		inventoryImageArray[arrayIndex]->SetVisibility(ESlateVisibility::Visible);
+		inventoryImageArray[arrayIndex]->SetVisibility(ESlateVisibility::HitTestInvisible);
 		bIndividual=false;		
 	 }	
 }

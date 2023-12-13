@@ -4,18 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "TabHoveredInfoWidget.generated.h"
+#include "DragThumbnail.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class ECLIPSE_API UTabHoveredInfoWidget : public UUserWidget
+class ECLIPSE_API UDragThumbnail : public UUserWidget
 {
 	GENERATED_BODY()
 
 public:
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
-	class UWidgetSwitcher* WidgetSwitcher_Info;
-
+	class UWidgetSwitcher* WidgetSwitcher_thumbnail;
+	
 };

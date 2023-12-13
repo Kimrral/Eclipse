@@ -35,20 +35,35 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void HideHoveredInfoWidget();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
+	void ShowDragThumbnail(int32 indexNumber);
+
+	UFUNCTION(BlueprintCallable)
+	void HideDragThumbnail();
+
+	UFUNCTION(BlueprintCallable)
 	void UpdatePosition();
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bHovered;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	bool bShowThumbnail;
+	
 	UPROPERTY()
 	class AEclipsePlayerController* pc;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	class UTabHoveredInfoWidget* TabHoveredInfoWidget;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UTabHoveredInfoWidget> TabHoveredInfoWidgetFactory;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	class UDragThumbnail* DragThumbnail;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UDragThumbnail> DragThumbnailFactory;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TArray<FString> inventoryArray;

@@ -546,6 +546,9 @@ public:
 	bool bPistolAdditionalMag;
 	UPROPERTY()
 	bool bM249AdditionalMag;
+
+	UPROPERTY()
+	class AEclipsePlayerController* pc;
 	
 	UPROPERTY()
 	class AHackingConsole* HackingConsole;

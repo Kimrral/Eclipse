@@ -13,5 +13,9 @@ UCLASS()
 class ECLIPSE_API AM249MagActor : public AMagActor
 {
 	GENERATED_BODY()
+
+public:
+	UFUNCTION(BlueprintImplementableEvent)
+	void AddInventory();
 	
 };

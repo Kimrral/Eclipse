@@ -34,6 +34,7 @@
 #include "TabWidget.h"
 #include "WeaponInfoWidget.h"
 #include "Blueprint/UserWidget.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Components/Image.h"
 #include "Components/ProgressBar.h"
@@ -188,7 +189,7 @@ void APlayerCharacter::BeginPlay()
 	tabWidgetUI=CreateWidget<UTabWidget>(GetWorld(), tabWidgetFactory);
 	if(tabWidgetUI)
 	{
-		tabWidgetUI->NativeConstruct();
+		//tabWidgetUI->NativeConstruct();
 	}
 
 	bossHPUI=CreateWidget<UBossHPWidget>(GetWorld(), bossHPWidgetFactory);
@@ -720,6 +721,7 @@ void APlayerCharacter::Tab()
 			auto PC = Cast<APlayerController>(GetWorld()->GetFirstPlayerController());
 			if(PC)
 			{
+				UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(PC, tabWidgetUI);
 				PC->SetShowMouseCursor(true);
 				TabOn=true;
 			}
@@ -729,13 +731,10 @@ void APlayerCharacter::Tab()
 	{
 		TabBool=false;
 		tabWidgetUI->RemoveFromParent();
-		if(tabWidgetUI->TabHoveredInfoWidget->IsInViewport())
-		{
-			tabWidgetUI->TabHoveredInfoWidget->RemoveFromParent();
-		}
 		auto PC = Cast<APlayerController>(GetWorld()->GetFirstPlayerController());
 		if(PC)
 		{
+			UWidgetBlueprintLibrary::SetInputMode_GameOnly(PC);
 			PC->SetShowMouseCursor(false);
 			TabOn=false;
 		}
@@ -1463,7 +1462,7 @@ void APlayerCharacter::ChangeWeapon()
 			{
 				infoWidgetUI->RemoveFromParent();
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
-				tabWidgetUI->SetInventoryArray(FString("RifleMagActor"));
+				RifleMagActor->AddInventory();
 				RifleMagActor->Destroy();
 			}
 		}
@@ -1474,7 +1473,7 @@ void APlayerCharacter::ChangeWeapon()
 			{
 				infoWidgetUI->RemoveFromParent();
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
-				tabWidgetUI->SetInventoryArray(FString("SniperMagActor"));
+				SniperMagActor->AddInventory();
 				SniperMagActor->Destroy();
 			}
 		}
@@ -1485,7 +1484,7 @@ void APlayerCharacter::ChangeWeapon()
 			{
 				infoWidgetUI->RemoveFromParent();
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
-				tabWidgetUI->SetInventoryArray(FString("PistolMagActor"));
+				PistolMagActor->AddInventory();
 				PistolMagActor->Destroy();
 			}
 		}
@@ -1496,7 +1495,7 @@ void APlayerCharacter::ChangeWeapon()
 			{
 				infoWidgetUI->RemoveFromParent();
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
-				tabWidgetUI->SetInventoryArray(FString("M249MagActor"));
+				M249MagActor->AddInventory();
 				M249MagActor->Destroy();
 			}
 		}

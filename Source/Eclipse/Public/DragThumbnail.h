@@ -15,7 +15,7 @@ class ECLIPSE_API UDragThumbnail : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
-	class UWidgetSwitcher* WidgetSwitcher_thumbnail;
+	//UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	//class UWidgetSwitcher* WidgetSwitcher_thumbnail;
 	
 };

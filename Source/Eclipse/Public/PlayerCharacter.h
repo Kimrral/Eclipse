@@ -245,7 +245,7 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UUserWidget> tabWidgetFactory;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UTabWidget* tabWidgetUI;
 
 	UPROPERTY(EditAnywhere)

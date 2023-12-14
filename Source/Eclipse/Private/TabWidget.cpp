@@ -5,6 +5,7 @@
 
 #include "DragThumbnail.h"
 #include "EclipsePlayerController.h"
+#include "InventorySlot.h"
 #include "TabHoveredInfoWidget.h"
 #include "Components/WidgetSwitcher.h"
 #include "Kismet/GameplayStatics.h"
@@ -20,6 +21,8 @@ void UTabWidget::NativeConstruct()
 	SetInventoryTextureMap();
 
 	SetSwitcherIndexMap();
+
+	SetInventoryWBPArray();
 
 	inventoryCountArray.SetNum(29);
 
@@ -156,6 +159,15 @@ void UTabWidget::SetInventoryArray(FString ActorString)
 		// 인벤토리 이미지 설정
 		inventoryImageArray[arrayIndex]->SetBrushFromTexture(inventoryTextureMap[ActorString], true);
 		inventoryImageArray[arrayIndex]->SetVisibility(ESlateVisibility::HitTestInvisible);
+
+		inventoryWBPArray[arrayIndex]->InventoryImage_1->SetBrushFromTexture(inventoryTextureMap[FString("RifleMagActor")], true);
+		inventoryWBPArray[arrayIndex]->InventoryImage_1->SetVisibility(ESlateVisibility::HitTestInvisible);
 		bIndividual=false;		
 	 }	
+}
+
+void UTabWidget::SetInventoryWBPArray()
+{
+	inventoryWBPArray.Emplace(WBP_Inventory_1);
+	inventoryWBPArray.Emplace(WBP_Inventory_2);
 }

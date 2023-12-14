@@ -278,10 +278,10 @@ public:
 	UPROPERTY()
 	int curWeaponSlotNumber = 1;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool TabBool = false;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool TabOn = false;
 
 	UFUNCTION()

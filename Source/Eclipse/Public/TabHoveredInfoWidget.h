@@ -15,7 +15,6 @@ class ECLIPSE_API UTabHoveredInfoWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
-	class UWidgetSwitcher* WidgetSwitcher_Info;
+
 
 };

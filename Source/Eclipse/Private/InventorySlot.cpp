@@ -33,12 +33,7 @@ void UInventorySlot::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 
 void UInventorySlot::ShowHoveredInfoWidget(int32 indexNumber)
 {
-	if(TabWidget->TabHoveredInfoWidget&&TabWidget->inventoryArray.IsValidIndex(indexNumber-1))
-	{
-		bHovered=true;
-		TabHoveredInfoWidget->WidgetSwitcher_Info->SetActiveWidgetIndex(TabWidget->switcherIndexMap[TabWidget->inventoryArray[indexNumber-1]]);
-		TabHoveredInfoWidget->AddToViewport();
-	}
+
 }
 
 void UInventorySlot::HideHoveredInfoWidget()
@@ -64,8 +59,5 @@ void UInventorySlot::UpdatePosition()
 
 void UInventorySlot::SetThumbnail()
 {
-	if(DragThumbnail&&TabWidget->inventoryArray.IsValidIndex(1))
-	{
-		DragThumbnail->WidgetSwitcher_thumbnail->SetActiveWidgetIndex(TabWidget->switcherIndexMap[TabWidget->inventoryArray[1]]);
-	}
+
 }

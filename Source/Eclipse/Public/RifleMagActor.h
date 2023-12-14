@@ -13,5 +13,8 @@ UCLASS()
 class ECLIPSE_API ARifleMagActor : public AMagActor
 {
 	GENERATED_BODY()
-	
+
+public:
+	UFUNCTION(BlueprintImplementableEvent)
+	void AddInventory();
 };

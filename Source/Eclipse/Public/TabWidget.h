@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InventorySlot.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/Button.h"
 #include "Components/Image.h"
@@ -78,6 +79,9 @@ public:
 	TArray<UImage*> inventoryImageArray;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	TArray<UInventorySlot*> inventoryWBPArray;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TMap<FString, UTexture2D*> inventoryTextureMap;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
@@ -85,6 +89,9 @@ public:
 
 	UFUNCTION()
 	void SetInventoryArray(FString ActorString);
+
+	UFUNCTION()
+	void SetInventoryWBPArray();
 	
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UTextBlock* WeaponText1;
@@ -151,6 +158,12 @@ public:
 	class UImage* CurWeaponImage2_2;
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UImage* CurWeaponImage2_3;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UInventorySlot* WBP_Inventory_1;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UInventorySlot* WBP_Inventory_2;
 
 	// Inventory Button
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (BindWidget))

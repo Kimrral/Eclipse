@@ -221,7 +221,10 @@ void APlayerCharacter::BeginPlay()
 	playerCam->StopCameraFade();
 	playerCam->StartCameraFade(1, 0, 7.0, FLinearColor::Black, false, false);
 
-	
+	GoggleSlot->SetVisibility(false);
+	HelmetSlot->SetVisibility(false);
+	HeadSetSlot->SetVisibility(false);
+	MaskSlot->SetVisibility(false);
 	
 }
 
@@ -2898,4 +2901,44 @@ void APlayerCharacter::PlayerDeath()
 				PC->Possess(this);
 			}
 		}), 0.4f, false);
+}
+
+void APlayerCharacter::EquipHelmet()
+{
+	HelmetSlot->SetVisibility(true);
+}
+
+void APlayerCharacter::EquipHeadset()
+{
+	HeadSetSlot->SetVisibility(true);
+}
+
+void APlayerCharacter::EquipMask()
+{
+	MaskSlot->SetVisibility(true);
+}
+
+void APlayerCharacter::EquipGoggle()
+{
+	GoggleSlot->SetVisibility(true);
+}
+
+void APlayerCharacter::UnEquipHelmet()
+{
+	HelmetSlot->SetVisibility(false);
+}
+
+void APlayerCharacter::UnEquipHeadset()
+{
+	HeadSetSlot->SetVisibility(false);
+}
+
+void APlayerCharacter::UnEquipMask()
+{
+	MaskSlot->SetVisibility(false);
+}
+
+void APlayerCharacter::UnEquipGoggle()
+{
+	GoggleSlot->SetVisibility(false);
 }

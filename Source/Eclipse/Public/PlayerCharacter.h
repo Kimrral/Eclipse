@@ -337,6 +337,30 @@ public:
 	UFUNCTION()
 	void PlayerDeath();
 
+	UFUNCTION(BlueprintCallable)
+	void EquipHelmet();
+
+	UFUNCTION(BlueprintCallable)
+	void EquipHeadset();
+
+	UFUNCTION(BlueprintCallable)
+	void EquipMask();
+
+	UFUNCTION(BlueprintCallable)
+	void EquipGoggle();
+
+	UFUNCTION(BlueprintCallable)
+	void UnEquipHelmet();
+
+	UFUNCTION(BlueprintCallable)
+	void UnEquipHeadset();
+
+	UFUNCTION(BlueprintCallable)
+	void UnEquipMask();
+
+	UFUNCTION(BlueprintCallable)
+	void UnEquipGoggle();
+
 	UPROPERTY()
 	bool bUsingRifle;
 	

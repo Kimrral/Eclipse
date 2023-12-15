@@ -30,8 +30,6 @@
 #include "RewardContainer.h"
 #include "RifleMagActor.h"
 #include "SniperMagActor.h"
-#include "TabHoveredInfoWidget.h"
-#include "TabWidget.h"
 #include "WeaponInfoWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
@@ -99,6 +97,19 @@ APlayerCharacter::APlayerCharacter()
 
 	m249Comp= CreateDefaultSubobject<UStaticMeshComponent>(TEXT("m249Comp"));
 	m249Comp->SetupAttachment(GetMesh(), FName("hand_r"));
+
+	GoggleSlot= CreateDefaultSubobject<UStaticMeshComponent>(TEXT("GoggleSlot"));
+	GoggleSlot->SetupAttachment(GetMesh(), FName("head"));
+
+	HeadSetSlot= CreateDefaultSubobject<UStaticMeshComponent>(TEXT("HeadSetSlot"));
+	HeadSetSlot->SetupAttachment(GetMesh(), FName("head"));
+
+	MaskSlot= CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MaskSlot"));
+	MaskSlot->SetupAttachment(GetMesh(), FName("head"));
+
+	HelmetSlot= CreateDefaultSubobject<UStaticMeshComponent>(TEXT("HelmetSlot"));
+	HelmetSlot->SetupAttachment(GetMesh(), FName("head"));
+	
 
 	bUsingRifle=true;
 	bUsingSniper=false;
@@ -711,34 +722,7 @@ void APlayerCharacter::SwapSecondWeapon()
 
 void APlayerCharacter::Tab()
 {
-	// if(TabBool==false)
-	// {
-	// 	TabBool=true;
-	// 	if(tabWidgetUI)
-	// 	{
-	// 		SetTabWidget();
-	// 		tabWidgetUI->AddToViewport();
-	// 		auto PC = Cast<APlayerController>(GetWorld()->GetFirstPlayerController());
-	// 		if(PC)
-	// 		{
-	// 			UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(PC, tabWidgetUI);
-	// 			PC->SetShowMouseCursor(true);
-	// 			TabOn=true;
-	// 		}
-	// 	}
-	// }
-	// else
-	// {
-	// 	TabBool=false;
-	// 	tabWidgetUI->RemoveFromParent();
-	// 	auto PC = Cast<APlayerController>(GetWorld()->GetFirstPlayerController());
-	// 	if(PC)
-	// 	{
-	// 		UWidgetBlueprintLibrary::SetInputMode_GameOnly(PC);
-	// 		PC->SetShowMouseCursor(false);
-	// 		TabOn=false;
-	// 	}
-	// }
+
 }
 
 void APlayerCharacter::Q()
@@ -1610,155 +1594,7 @@ void APlayerCharacter::Damaged(int damage)
 	curHP = FMath::Clamp(curHP-damage, 0, maxHP);
 }
 
-void APlayerCharacter::SetTabWidget()
-{
-	// if(tabWidgetUI)
-	// {
-	//
-	// 	tabWidgetUI->MaxBulletText1->SetText(FText::AsNumber(maxRifleAmmo));
-	// 	tabWidgetUI->MaxBulletText2->SetText(FText::AsNumber(maxSniperAmmo));
-	// 	tabWidgetUI->MaxBulletText3->SetText(FText::AsNumber(maxPistolAmmo));
-	// 	tabWidgetUI->MaxBulletText4->SetText(FText::AsNumber(maxM249Ammo));
-	// 	
-	// 	if(equippedWeaponStringArray[0]==FString("Rifle"))
-	// 	{
-	// 		tabWidgetUI->CurWeaponImage1->SetVisibility(ESlateVisibility::Visible);
-	// 		tabWidgetUI->CurWeaponImage1_1->SetVisibility(ESlateVisibility::Hidden);
-	// 		tabWidgetUI->CurWeaponImage1_2->SetVisibility(ESlateVisibility::Hidden);
-	// 		tabWidgetUI->CurWeaponImage1_3->SetVisibility(ESlateVisibility::Hidden);
-	// 		
-	// 		tabWidgetUI->CurBulletImage1->SetVisibility(ESlateVisibility::Visible);
-	// 		tabWidgetUI->CurBulletImage1_1->SetVisibility(ESlateVisibility::Hidden);
-	// 		tabWidgetUI->CurBulletImage1_2->SetVisibility(ESlateVisibility::Hidden);
-	// 		tabWidgetUI->CurBulletImage1_3->SetVisibility(ESlateVisibility::Hidden);
-	//
-	// 		tabWidgetUI->WeaponText1->SetText(FText::FromString("ASSAULT RIFLE"));
-	// 		tabWidgetUI->BulletText1->SetText(FText::FromString("5.56mm"));
-	// 		tabWidgetUI->CurBulletText1->SetText(FText::AsNumber(curRifleAmmo));
-	//
-	// 	}
-	// 	else if(equippedWeaponStringArray[0]==FString("Sniper"))
-	// 	{
-	// 		tabWidgetUI->CurWeaponImage1->SetVisibility(ESlateVisibility::Hidden);
-	// 		tabWidgetUI->CurWeaponImage1_1->SetVisibility(ESlateVisibility::Visible);
-	// 		tabWidgetUI->CurWeaponImage1_2->SetVisibility(ESlateVisibility::Hidden);
-	// 		tabWidgetUI->CurWeaponImage1_3->SetVisibility(ESlateVisibility::Hidden);
-	//
-	// 		tabWidgetUI->CurBulletImage1->SetVisibility(ESlateVisibility::Hidden);
-	// 		tabWidgetUI->CurBulletImage1_1->SetVisibility(ESlateVisibility::Visible);
-	// 		tabWidgetUI->CurBulletImage1_2->SetVisibility(ESlateVisibility::Hidden);
-	// 		tabWidgetUI->CurBulletImage1_3->SetVisibility(ESlateVisibility::Hidden);
-	//
-	// 		tabWidgetUI->WeaponText1->SetText(FText::FromString("SNIPER RIFLE"));
-	// 		tabWidgetUI->BulletText1->SetText(FText::FromString("7.92mm"));
-	// 		tabWidgetUI->CurBulletText1->SetText(FText::AsNumber(curSniperAmmo));
-	//
-	// 	}
-	// 	else if(equippedWeaponStringArray[0]==FString("Pistol"))
-	// 	{
-	// 		tabWidgetUI->CurWeaponImage1->SetVisibility(ESlateVisibility::Hidden);
-	// 		tabWidgetUI->CurWeaponImage1_1->SetVisibility(ESlateVisibility::Hidden);
-	// 		tabWidgetUI->CurWeaponImage1_2->SetVisibility(ESlateVisibility::Visible);
-	// 		tabWidgetUI->CurWeaponImage1_3->SetVisibility(ESlateVisibility::Hidden);
-	//
-	// 		tabWidgetUI->CurBulletImage1->SetVisibility(ESlateVisibility::Hidden);
-	// 		tabWidgetUI->CurBulletImage1_1->SetVisibility(ESlateVisibility::Hidden);
-	// 		tabWidgetUI->CurBulletImage1_2->SetVisibility(ESlateVisibility::Visible);
-	// 		tabWidgetUI->CurBulletImage1_3->SetVisibility(ESlateVisibility::Hidden);
-	//
-	// 		tabWidgetUI->WeaponText1->SetText(FText::FromString("PISTOL"));
-	// 		tabWidgetUI->BulletText1->SetText(FText::FromString("9mm"));
-	// 		tabWidgetUI->CurBulletText1->SetText(FText::AsNumber(curPistolAmmo));
-	//
-	// 	}
-	// 	else if(equippedWeaponStringArray[0]==FString("M249"))
-	// 	{
-	// 		tabWidgetUI->CurWeaponImage1->SetVisibility(ESlateVisibility::Hidden);
-	// 		tabWidgetUI->CurWeaponImage1_1->SetVisibility(ESlateVisibility::Hidden);
-	// 		tabWidgetUI->CurWeaponImage1_2->SetVisibility(ESlateVisibility::Hidden);
-	// 		tabWidgetUI->CurWeaponImage1_3->SetVisibility(ESlateVisibility::Visible);
-	//
-	// 		tabWidgetUI->CurBulletImage1->SetVisibility(ESlateVisibility::Hidden);
-	// 		tabWidgetUI->CurBulletImage1_1->SetVisibility(ESlateVisibility::Hidden);
-	// 		tabWidgetUI->CurBulletImage1_2->SetVisibility(ESlateVisibility::Hidden);
-	// 		tabWidgetUI->CurBulletImage1_3->SetVisibility(ESlateVisibility::Visible);
-	//
-	// 		tabWidgetUI->WeaponText1->SetText(FText::FromString("M249"));
-	// 		tabWidgetUI->BulletText1->SetText(FText::FromString("7.62mm"));
-	// 		tabWidgetUI->CurBulletText1->SetText(FText::AsNumber(curM249Ammo));
-	//
-	// 	}
-	//
-	// 	
-	// 	if(equippedWeaponStringArray[1]==FString("Rifle"))
-	// 	{
-	//
-	// 		tabWidgetUI->CurWeaponImage2->SetVisibility(ESlateVisibility::Visible);
-	// 		tabWidgetUI->CurWeaponImage2_1->SetVisibility(ESlateVisibility::Hidden);
-	// 		tabWidgetUI->CurWeaponImage2_2->SetVisibility(ESlateVisibility::Hidden);
-	// 		tabWidgetUI->CurWeaponImage2_3->SetVisibility(ESlateVisibility::Hidden);
-	// 		
-	// 		tabWidgetUI->CurBulletImage2->SetVisibility(ESlateVisibility::Visible);
-	// 		tabWidgetUI->CurBulletImage2_1->SetVisibility(ESlateVisibility::Hidden);
-	// 		tabWidgetUI->CurBulletImage2_2->SetVisibility(ESlateVisibility::Hidden);
-	// 		tabWidgetUI->CurBulletImage2_3->SetVisibility(ESlateVisibility::Hidden);
-	//
-	// 		tabWidgetUI->WeaponText2->SetText(FText::FromString("ASSAULT RIFLE"));
-	// 		tabWidgetUI->BulletText2->SetText(FText::FromString("5.56mm"));
-	// 		tabWidgetUI->CurBulletText2->SetText(FText::AsNumber(curRifleAmmo));
-	//
-	// 	}
-	// 	else if(equippedWeaponStringArray[1]==FString("Sniper"))
-	// 	{
-	// 			tabWidgetUI->CurWeaponImage2->SetVisibility(ESlateVisibility::Hidden);
-	// 			tabWidgetUI->CurWeaponImage2_1->SetVisibility(ESlateVisibility::Visible);
-	// 			tabWidgetUI->CurWeaponImage2_2->SetVisibility(ESlateVisibility::Hidden);
-	// 			tabWidgetUI->CurWeaponImage2_3->SetVisibility(ESlateVisibility::Hidden);
-	// 		
-	// 			tabWidgetUI->CurBulletImage2->SetVisibility(ESlateVisibility::Hidden);
-	// 			tabWidgetUI->CurBulletImage2_1->SetVisibility(ESlateVisibility::Visible);
-	// 			tabWidgetUI->CurBulletImage2_2->SetVisibility(ESlateVisibility::Hidden);
-	// 			tabWidgetUI->CurBulletImage2_3->SetVisibility(ESlateVisibility::Hidden);
-	//
-	// 		tabWidgetUI->WeaponText2->SetText(FText::FromString("SNIPER RIFLE"));
-	// 		tabWidgetUI->BulletText2->SetText(FText::FromString("7.92mm"));
-	// 		tabWidgetUI->CurBulletText2->SetText(FText::AsNumber(curSniperAmmo));
-	// 	}
-	// 	else if(equippedWeaponStringArray[1]==FString("Pistol"))
-	// 	{
-	// 		tabWidgetUI->CurWeaponImage2->SetVisibility(ESlateVisibility::Hidden);
-	// 		tabWidgetUI->CurWeaponImage2_1->SetVisibility(ESlateVisibility::Hidden);
-	// 		tabWidgetUI->CurWeaponImage2_2->SetVisibility(ESlateVisibility::Visible);
-	// 		tabWidgetUI->CurWeaponImage2_3->SetVisibility(ESlateVisibility::Hidden);
-	// 		
-	// 		tabWidgetUI->CurBulletImage2->SetVisibility(ESlateVisibility::Hidden);
-	// 		tabWidgetUI->CurBulletImage2_1->SetVisibility(ESlateVisibility::Hidden);
-	// 		tabWidgetUI->CurBulletImage2_2->SetVisibility(ESlateVisibility::Visible);
-	// 		tabWidgetUI->CurBulletImage2_3->SetVisibility(ESlateVisibility::Hidden);
-	//
-	// 		tabWidgetUI->WeaponText2->SetText(FText::FromString("PISTOL"));
-	// 		tabWidgetUI->BulletText2->SetText(FText::FromString("9mm"));
-	// 		tabWidgetUI->CurBulletText2->SetText(FText::AsNumber(curPistolAmmo));
-	//
-	// 	}
-	// 	else if(equippedWeaponStringArray[1]==FString("M249"))
-	// 	{
-	// 		tabWidgetUI->CurWeaponImage2->SetVisibility(ESlateVisibility::Hidden);
-	// 		tabWidgetUI->CurWeaponImage2_1->SetVisibility(ESlateVisibility::Hidden);
-	// 		tabWidgetUI->CurWeaponImage2_2->SetVisibility(ESlateVisibility::Hidden);
-	// 		tabWidgetUI->CurWeaponImage2_3->SetVisibility(ESlateVisibility::Visible);
-	// 		
-	// 		tabWidgetUI->CurBulletImage2->SetVisibility(ESlateVisibility::Hidden);
-	// 		tabWidgetUI->CurBulletImage2_1->SetVisibility(ESlateVisibility::Hidden);
-	// 		tabWidgetUI->CurBulletImage2_2->SetVisibility(ESlateVisibility::Hidden);
-	// 		tabWidgetUI->CurBulletImage2_3->SetVisibility(ESlateVisibility::Visible);
-	//
-	// 		tabWidgetUI->WeaponText2->SetText(FText::FromString("M249"));
-	// 		tabWidgetUI->BulletText2->SetText(FText::FromString("7.62mm"));
-	// 		tabWidgetUI->CurBulletText2->SetText(FText::AsNumber(curM249Ammo));
-	// 	}		
-	// }
-}
+
 
 int32 APlayerCharacter::SetRifleAdditionalMagazine()
 {

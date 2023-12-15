@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "InventorySlot.h"
 #include "Blueprint/UserWidget.h"
 #include "TabWidget.generated.h"
 
@@ -15,7 +14,14 @@ class ECLIPSE_API UTabWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
-public:
+public:	
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class APlayerCharacter* player;
+	
+	UFUNCTION(BlueprintCallable)
+	void SetTabWidget();
+	
 	UPROPERTY()
 	class AEclipsePlayerController* pc;
 

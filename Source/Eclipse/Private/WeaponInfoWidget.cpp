@@ -26,5 +26,9 @@ void UWeaponInfoWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTim
 	progressSlider_7->SetValue(weaponHoldPercent);
 	progressSlider_8->SetValue(weaponHoldPercent);
 	progressSlider_9->SetValue(weaponHoldPercent);
+	progressSlider_10->SetValue(weaponHoldPercent);
+	progressSlider_11->SetValue(weaponHoldPercent);
+	progressSlider_12->SetValue(weaponHoldPercent);
+	progressSlider_13->SetValue(weaponHoldPercent);
 
 }

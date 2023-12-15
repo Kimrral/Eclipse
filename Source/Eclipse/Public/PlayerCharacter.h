@@ -211,6 +211,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = widget)
 	class UBossHPWidget* bossHPUI;
 
+	UPROPERTY()
+	class AMaskActor* MaskActor;
+
+	UPROPERTY()
+	class AHelmetActor* HelmetActor;
+
+	UPROPERTY()
+	class AHeadsetActor* HeadsetActor;
+
+	UPROPERTY()
+	class AGoggleActor* GoggleActor;
 
 	UPROPERTY()
 	class ARifleActor* rifleActor;

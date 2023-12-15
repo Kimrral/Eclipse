@@ -12,11 +12,15 @@
 #include "EnemyFSM.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "GoggleActor.h"
 #include "Guardian.h"
 #include "HackingConsole.h"
+#include "HeadsetActor.h"
+#include "HelmetActor.h"
 #include "InformationWidget.h"
 #include "M249Actor.h"
 #include "M249MagActor.h"
+#include "MaskActor.h"
 #include "MissionChecker.h"
 #include "PlayerAnim.h"
 #include "RifleActor.h"
@@ -758,6 +762,11 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 		SniperMagActor = Cast<ASniperMagActor>(actorHitResult.GetActor());
 		PistolMagActor = Cast<APistolMagActor>(actorHitResult.GetActor());
 		M249MagActor = Cast<AM249MagActor>(actorHitResult.GetActor());
+
+		GoggleActor= Cast<AGoggleActor>(actorHitResult.GetActor());
+		MaskActor= Cast<AMaskActor>(actorHitResult.GetActor());
+		HelmetActor= Cast<AHelmetActor>(actorHitResult.GetActor());
+		HeadsetActor= Cast<AHeadsetActor>(actorHitResult.GetActor());
 		
 		// 라이플 탐지
 		if(rifleActor)
@@ -932,6 +941,70 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 				infoWidgetUI->AddToViewport();
 			}
 		}
+		else if(GoggleActor)
+		{
+			// 1회 실행 불리언
+			if(TickOverlapBoolean==false)
+			{
+				TickOverlapBoolean=true;
+				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+				GoggleActor->gearMesh->SetRenderCustomDepth(true);
+				// Widget Switcher 이용한 무기 정보 위젯 스위칭
+				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(10);
+				// Radial Slider Value 초기화
+				infoWidgetUI->weaponHoldPercent=0;
+				// Weapon Info Widget 뷰포트에 배치
+				infoWidgetUI->AddToViewport();
+			}
+		}
+		else if(HelmetActor)
+		{
+			// 1회 실행 불리언
+			if(TickOverlapBoolean==false)
+			{
+				TickOverlapBoolean=true;
+				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+				HelmetActor->gearMesh->SetRenderCustomDepth(true);
+				// Widget Switcher 이용한 무기 정보 위젯 스위칭
+				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(11);
+				// Radial Slider Value 초기화
+				infoWidgetUI->weaponHoldPercent=0;
+				// Weapon Info Widget 뷰포트에 배치
+				infoWidgetUI->AddToViewport();
+			}
+		}
+		else if(HeadsetActor)
+		{
+			// 1회 실행 불리언
+			if(TickOverlapBoolean==false)
+			{
+				TickOverlapBoolean=true;
+				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+				HeadsetActor->gearMesh->SetRenderCustomDepth(true);
+				// Widget Switcher 이용한 무기 정보 위젯 스위칭
+				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(12);
+				// Radial Slider Value 초기화
+				infoWidgetUI->weaponHoldPercent=0;
+				// Weapon Info Widget 뷰포트에 배치
+				infoWidgetUI->AddToViewport();
+			}
+		}
+		else if(MaskActor)
+		{
+			// 1회 실행 불리언
+			if(TickOverlapBoolean==false)
+			{
+				TickOverlapBoolean=true;
+				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+				MaskActor->gearMesh->SetRenderCustomDepth(true);
+				// Widget Switcher 이용한 무기 정보 위젯 스위칭
+				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(13);
+				// Radial Slider Value 초기화
+				infoWidgetUI->weaponHoldPercent=0;
+				// Weapon Info Widget 뷰포트에 배치
+				infoWidgetUI->AddToViewport();
+			}
+		}
 		else
 		{
 			// 1회 실행 불리언
@@ -965,6 +1038,10 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 						SniperMagActor = Cast<ASniperMagActor>(HitObj[i].GetActor());
 						PistolMagActor = Cast<APistolMagActor>(HitObj[i].GetActor());
 						M249MagActor = Cast<AM249MagActor>(HitObj[i].GetActor());
+						GoggleActor= Cast<AGoggleActor>(HitObj[i].GetActor());
+						MaskActor= Cast<AMaskActor>(HitObj[i].GetActor());
+						HelmetActor= Cast<AHelmetActor>(HitObj[i].GetActor());
+						HeadsetActor= Cast<AHeadsetActor>(HitObj[i].GetActor());
 						if(rifleActor)
 						{
 							// Render Custom Depth 활용한 무기 액터 외곽선 해제
@@ -1014,6 +1091,26 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 						{
 							// Render Custom Depth 활용한 무기 액터 외곽선 해제
 							M249MagActor->magMesh->SetRenderCustomDepth(false);
+						}
+						else if(GoggleActor)
+						{
+							// Render Custom Depth 활용한 무기 액터 외곽선 해제
+							GoggleActor->gearMesh->SetRenderCustomDepth(false);
+						}
+						else if(HelmetActor)
+						{
+							// Render Custom Depth 활용한 무기 액터 외곽선 해제
+							HelmetActor->gearMesh->SetRenderCustomDepth(false);
+						}
+						else if(HeadsetActor)
+						{
+							// Render Custom Depth 활용한 무기 액터 외곽선 해제
+							HeadsetActor->gearMesh->SetRenderCustomDepth(false);
+						}
+						else if(MaskActor)
+						{
+							// Render Custom Depth 활용한 무기 액터 외곽선 해제
+							MaskActor->gearMesh->SetRenderCustomDepth(false);
 						}
 					}
 				}
@@ -1161,6 +1258,11 @@ void APlayerCharacter::ChangeWeapon()
 		SniperMagActor = Cast<ASniperMagActor>(actorHitResult.GetActor());
 		PistolMagActor = Cast<APistolMagActor>(actorHitResult.GetActor());
 		M249MagActor = Cast<AM249MagActor>(actorHitResult.GetActor());
+
+		GoggleActor= Cast<AGoggleActor>(actorHitResult.GetActor());
+		MaskActor= Cast<AMaskActor>(actorHitResult.GetActor());
+		HelmetActor= Cast<AHelmetActor>(actorHitResult.GetActor());
+		HeadsetActor= Cast<AHeadsetActor>(actorHitResult.GetActor());
 		// 라이플로 교체
 		if(rifleActor)
 		{
@@ -1481,6 +1583,50 @@ void APlayerCharacter::ChangeWeapon()
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
 				M249MagActor->AddInventory();
 				M249MagActor->Destroy();
+			}
+		}
+		else if(GoggleActor)
+		{
+			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+			{
+				infoWidgetUI->RemoveFromParent();
+				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+				GoggleActor->AddInventory();
+				GoggleActor->Destroy();
+			}
+		}
+		else if(HelmetActor)
+		{
+			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+			{
+				infoWidgetUI->RemoveFromParent();
+				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+				HelmetActor->AddInventory();
+				HelmetActor->Destroy();
+			}
+		}
+		else if(HeadsetActor)
+		{
+			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+			{
+				infoWidgetUI->RemoveFromParent();
+				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+				HeadsetActor->AddInventory();
+				HeadsetActor->Destroy();
+			}
+		}
+		else if(MaskActor)
+		{
+			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+			{
+				infoWidgetUI->RemoveFromParent();
+				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+				MaskActor->AddInventory();
+				MaskActor->Destroy();
 			}
 		}
 	}	

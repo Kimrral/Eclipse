@@ -169,6 +169,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
 	class UStaticMeshComponent* rocketLauncher;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
+	class UStaticMeshComponent* HeadSetSlot;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
+	class UStaticMeshComponent* GoggleSlot;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
+	class UStaticMeshComponent* MaskSlot;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
+	class UStaticMeshComponent* HelmetSlot;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
 	TSubclassOf<class ARifleActor> rifleFactory;
 
@@ -505,9 +517,6 @@ public:
 
 	UFUNCTION()
 	void Damaged(int damage);
-
-	UFUNCTION()
-	void SetTabWidget();
 
 	UFUNCTION()
 	int32 SetRifleAdditionalMagazine();

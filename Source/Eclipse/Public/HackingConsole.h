@@ -17,5 +17,8 @@ class ECLIPSE_API AHackingConsole : public ARewardActor
 public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void AddInventory();
 		
 };

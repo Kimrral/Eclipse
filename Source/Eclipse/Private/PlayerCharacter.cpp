@@ -1502,6 +1502,7 @@ void APlayerCharacter::ChangeWeapon()
 			{
 				infoWidgetUI->RemoveFromParent();
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+				HackingConsole->AddInventory();
 				HackingConsole->Destroy();
 				ConsoleCount++;
 				informationUI->ConsoleCount->SetText(FText::AsNumber(ConsoleCount));

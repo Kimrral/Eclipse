@@ -181,6 +181,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
 	class UStaticMeshComponent* HelmetSlot;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
+	class UStaticMeshComponent* ArmorSlot;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
 	TSubclassOf<class ARifleActor> rifleFactory;
 
@@ -222,6 +225,9 @@ public:
 
 	UPROPERTY()
 	class AGoggleActor* GoggleActor;
+
+	UPROPERTY()
+	class AArmorActor* ArmorActor;
 
 	UPROPERTY()
 	class ARifleActor* rifleActor;
@@ -360,6 +366,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void UnEquipGoggle();
+
+	UFUNCTION(BlueprintCallable)
+	void EquipArmor();
+
+	UFUNCTION(BlueprintCallable)
+	void UnEquipArmor();
 
 	UPROPERTY()
 	bool bUsingRifle;

@@ -3,6 +3,7 @@
 
 #include "PlayerCharacter.h"
 
+#include "ArmorActor.h"
 #include "CrosshairWidget.h"
 #include "Crunch.h"
 #include "DamageWidget.h"
@@ -113,6 +114,9 @@ APlayerCharacter::APlayerCharacter()
 
 	HelmetSlot= CreateDefaultSubobject<UStaticMeshComponent>(TEXT("HelmetSlot"));
 	HelmetSlot->SetupAttachment(GetMesh(), FName("head"));
+
+	ArmorSlot= CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ArmorSlot"));
+	ArmorSlot->SetupAttachment(GetMesh(), FName("spine_03"));
 	
 
 	bUsingRifle=true;
@@ -225,6 +229,7 @@ void APlayerCharacter::BeginPlay()
 	HelmetSlot->SetVisibility(false);
 	HeadSetSlot->SetVisibility(false);
 	MaskSlot->SetVisibility(false);
+	ArmorSlot->SetVisibility(false);
 	
 }
 
@@ -770,6 +775,7 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 		MaskActor= Cast<AMaskActor>(actorHitResult.GetActor());
 		HelmetActor= Cast<AHelmetActor>(actorHitResult.GetActor());
 		HeadsetActor= Cast<AHeadsetActor>(actorHitResult.GetActor());
+		ArmorActor= Cast<AArmorActor>(actorHitResult.GetActor());
 		
 		// 라이플 탐지
 		if(rifleActor)
@@ -1008,6 +1014,22 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 				infoWidgetUI->AddToViewport();
 			}
 		}
+		else if(ArmorActor)
+		{
+			// 1회 실행 불리언
+			if(TickOverlapBoolean==false)
+			{
+				TickOverlapBoolean=true;
+				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+				ArmorActor->gearMesh->SetRenderCustomDepth(true);
+				// Widget Switcher 이용한 무기 정보 위젯 스위칭
+				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(14);
+				// Radial Slider Value 초기화
+				infoWidgetUI->weaponHoldPercent=0;
+				// Weapon Info Widget 뷰포트에 배치
+				infoWidgetUI->AddToViewport();
+			}
+		}
 		else
 		{
 			// 1회 실행 불리언
@@ -1045,6 +1067,7 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 						MaskActor= Cast<AMaskActor>(HitObj[i].GetActor());
 						HelmetActor= Cast<AHelmetActor>(HitObj[i].GetActor());
 						HeadsetActor= Cast<AHeadsetActor>(HitObj[i].GetActor());
+						ArmorActor= Cast<AArmorActor>(HitObj[i].GetActor());
 						if(rifleActor)
 						{
 							// Render Custom Depth 활용한 무기 액터 외곽선 해제
@@ -1114,6 +1137,11 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 						{
 							// Render Custom Depth 활용한 무기 액터 외곽선 해제
 							MaskActor->gearMesh->SetRenderCustomDepth(false);
+						}
+						else if(ArmorActor)
+						{
+							// Render Custom Depth 활용한 무기 액터 외곽선 해제
+							ArmorActor->gearMesh->SetRenderCustomDepth(false);
 						}
 					}
 				}
@@ -1266,6 +1294,7 @@ void APlayerCharacter::ChangeWeapon()
 		MaskActor= Cast<AMaskActor>(actorHitResult.GetActor());
 		HelmetActor= Cast<AHelmetActor>(actorHitResult.GetActor());
 		HeadsetActor= Cast<AHeadsetActor>(actorHitResult.GetActor());
+		ArmorActor= Cast<AArmorActor>(actorHitResult.GetActor());
 		// 라이플로 교체
 		if(rifleActor)
 		{
@@ -1631,6 +1660,17 @@ void APlayerCharacter::ChangeWeapon()
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
 				MaskActor->AddInventory();
 				MaskActor->Destroy();
+			}
+		}
+		else if(ArmorActor)
+		{
+			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+			{
+				infoWidgetUI->RemoveFromParent();
+				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+				ArmorActor->AddInventory();
+				ArmorActor->Destroy();
 			}
 		}
 	}	
@@ -2941,4 +2981,14 @@ void APlayerCharacter::UnEquipMask()
 void APlayerCharacter::UnEquipGoggle()
 {
 	GoggleSlot->SetVisibility(false);
+}
+
+void APlayerCharacter::EquipArmor()
+{
+	ArmorSlot->SetVisibility(true);
+}
+
+void APlayerCharacter::UnEquipArmor()
+{
+	ArmorSlot->SetVisibility(false);
 }

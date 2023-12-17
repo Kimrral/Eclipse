@@ -230,6 +230,9 @@ public:
 	class AArmorActor* ArmorActor;
 
 	UPROPERTY()
+	class AMedKitActor* MedKitActor;
+
+	UPROPERTY()
 	class ARifleActor* rifleActor;
 
 	UPROPERTY()

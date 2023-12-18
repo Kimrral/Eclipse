@@ -2984,25 +2984,25 @@ void APlayerCharacter::InfoWidgetUpdate()
 
 float APlayerCharacter::DamageMultiplier()
 {
-	if(CoreEquipped)
+	if(HeadsetEquipped)
 	{
-		return 1.2f;
+		return 1.16f;
 	}
 	return 1.f;
 }
 
 float APlayerCharacter::FireRateMultiplier()
 {
-	if(CoreEquipped)
+	if(MaskEquipped)
 	{
-		return 1.2f;
+		return 1.23f;
 	}
 	return 1.f;
 }
 
 float APlayerCharacter::RecoilRateMultiplier()
 {
-	if(CoreEquipped)
+	if(GoggleEquipped)
 	{
 		return 1.2f;
 	}
@@ -3052,21 +3052,25 @@ void APlayerCharacter::PlayerDeath()
 void APlayerCharacter::EquipHelmet()
 {
 	HelmetSlot->SetVisibility(true);
+	HelmetEquipped=true;
 }
 
 void APlayerCharacter::EquipHeadset()
 {
 	HeadSetSlot->SetVisibility(true);
+	HeadsetEquipped=true;
 }
 
 void APlayerCharacter::EquipMask()
 {
 	MaskSlot->SetVisibility(true);
+	MaskEquipped=true;
 }
 
 void APlayerCharacter::EquipGoggle()
 {
 	GoggleSlot->SetVisibility(true);
+	GoggleEquipped=true;
 }
 
 void APlayerCharacter::UnEquipHelmet()

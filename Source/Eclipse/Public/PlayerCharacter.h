@@ -578,7 +578,19 @@ public:
 	int32 SetM249AdditionalMagazine();
 
 	UPROPERTY()
-	bool CoreEquipped = false;
+	bool HelmetEquipped = false;
+
+	UPROPERTY()
+	bool MaskEquipped = false;
+
+	UPROPERTY()
+	bool HeadsetEquipped = false;
+
+	UPROPERTY()
+	bool GoggleEquipped = false;
+
+	UPROPERTY()
+	bool ArmorEquipped = false;
 
 	UPROPERTY()
 	int randRifleDamage;

@@ -12,6 +12,8 @@ void UTabWidget::SetTabWidget()
 {
 	if(player)
 	{
+		CurHPText->SetText(FText::AsNumber(player->curHP));
+		MaxHPText->SetText(FText::AsNumber(player->maxHP));
 		MaxBulletText1->SetText(FText::AsNumber(player->maxRifleAmmo));
 		MaxBulletText2->SetText(FText::AsNumber(player->maxSniperAmmo));
 		MaxBulletText3->SetText(FText::AsNumber(player->maxPistolAmmo));

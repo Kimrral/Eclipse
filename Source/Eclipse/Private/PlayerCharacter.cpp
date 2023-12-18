@@ -1860,6 +1860,58 @@ int32 APlayerCharacter::SetM249AdditionalMagazine()
 	return 0;
 }
 
+void APlayerCharacter::SetRifleAdditionalMagazineSlot()
+{
+	bRifleAdditionalMag=true;
+}
+
+void APlayerCharacter::SetSniperAdditionalMagazineSlot()
+{
+	bSniperAdditionalMag=true;
+}
+
+void APlayerCharacter::SetPistolAdditionalMagazineSlot()
+{
+	bPistolAdditionalMag=true;
+}
+
+void APlayerCharacter::SetM249AdditionalMagazineSlot()
+{
+	bM249AdditionalMag=true;
+}
+
+
+
+void APlayerCharacter::UnSetRifleAdditionalMagazineSlot()
+{
+	bRifleAdditionalMag=false;
+	// if(curRifleAmmo>=15)
+	// {
+	// 	curRifleAmmo-=15;
+	// 	maxRifleAmmo+=15;
+	// }
+	// else
+	// {
+	// 	curRifleAmmo=0;
+	// 	maxRifleAmmo+=curRifleAmmo;
+	// }
+}
+
+void APlayerCharacter::UnSetSniperAdditionalMagazineSlot()
+{
+	bSniperAdditionalMag=false;
+}
+
+void APlayerCharacter::UnSetPistolAdditionalMagazineSlot()
+{
+	bPistolAdditionalMag=false;
+}
+
+void APlayerCharacter::UnSetM249AdditionalMagazineSlot()
+{
+	bM249AdditionalMag=false;
+}
+
 
 void APlayerCharacter::Fire()
 {	
@@ -2208,28 +2260,44 @@ void APlayerCharacter::Fire()
 							auto min = FMath::RoundFromZero(1000*DamageMultiplier());
 							auto max = FMath::RoundFromZero(1200*DamageMultiplier());
 							randSniperHeadDamage = FMath::RandRange(min, max);
-							crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
-							UGameplayStatics::PlaySoundAtLocation(GetWorld(), KillSound, hitLoc);
-							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(3.0f));
-							// FSM에 있는 Damage Process 호출		
-							fsm->OnDamageProcess(randSniperHeadDamage);
-							SetHeadDamageWidget(randSniperHeadDamage, hitLoc);
-							// 헤드 적중 데미지 프로세스 호출
-							enemy->OnHeadDamaged();
-							enemy->DropReward();
-							enemy->bDeath=true;
-							if(bGuardian)
+							if(enemy->curHP<=randSniperHeadDamage)
 							{
-								GuardianCount++;
-								informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
+								crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
+								UGameplayStatics::PlaySoundAtLocation(GetWorld(), KillSound, hitLoc);
+								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(3.0f));
+								// FSM에 있는 Damage Process 호출		
+								fsm->OnDamageProcess(randSniperHeadDamage);
+								SetHeadDamageWidget(randSniperHeadDamage, hitLoc);
+								// 헤드 적중 데미지 프로세스 호출
+								enemy->OnHeadDamaged();
+								enemy->DropReward();
+								enemy->bDeath=true;
+								if(bGuardian)
+								{
+									GuardianCount++;
+									informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
+								}
+								else if(bCrunch)
+								{
+									BossCount++;
+									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
+									SetBossHPWidget(enemy);
+									FTimerHandle removeHandle;
+									GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
+								}
 							}
-							else if(bCrunch)
+							else
 							{
-								BossCount++;
-								informationUI->BossCount->SetText(FText::AsNumber(BossCount));
+								crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
+								UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHeadHitSound, hitLoc);
+								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(3.0f));
+								// FSM에 있는 Damage Process 호출		
+								fsm->OnDamageProcess(randSniperHeadDamage);
+								SetHeadDamageWidget(randSniperHeadDamage, hitLoc);
+
+								// 일반 적중 데미지 프로세스 호출
+								enemy->OnDamaged();
 								SetBossHPWidget(enemy);
-								FTimerHandle removeHandle;
-								GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
 							}
 						}
 						else

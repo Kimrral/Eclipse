@@ -111,6 +111,12 @@ public:
 
 	UPROPERTY()
 	bool bIndividual;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UTextBlock* CurHPText;
+	
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UTextBlock* MaxHPText;
 	
 	
 };

@@ -464,7 +464,7 @@ public:
 	bool CanShoot = true;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float BulletsPerSecRifle = 13.0f;
+	float BulletsPerSecRifle = 11.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float BulletsPerSecPistol = 3.0f;
@@ -473,7 +473,7 @@ public:
 	float BulletsPerSecSniper = 1.8f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float BulletsPerSecM249 = 9.0f;
+	float BulletsPerSecM249 = 8.0f;
 
 	//Sounds
 	UPROPERTY(EditAnywhere, Category="Sounds")

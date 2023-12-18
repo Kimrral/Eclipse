@@ -283,7 +283,7 @@ public:
 	UPROPERTY(EditAnywhere)
 	TArray<bool> weaponArray;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<FString> equippedWeaponStringArray;
 
 	UPROPERTY(BlueprintReadOnly)
@@ -307,7 +307,7 @@ public:
 	UPROPERTY()
 	FVector DeathPosition;
 	
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	int curWeaponSlotNumber = 1;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -376,16 +376,16 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UnEquipArmor();
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bUsingRifle;
 	
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bUsingSniper;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bUsingPistol;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bUsingM249;
 	
 	UPROPERTY()
@@ -596,6 +596,24 @@ public:
 	int randM249Damage;
 	UPROPERTY()
 	int randM249HeadDamage;
+
+	UFUNCTION(BlueprintCallable)
+	void SetRifleAdditionalMagazineSlot();
+	UFUNCTION(BlueprintCallable)
+	void SetSniperAdditionalMagazineSlot();
+	UFUNCTION(BlueprintCallable)
+	void SetPistolAdditionalMagazineSlot();
+	UFUNCTION(BlueprintCallable)
+	void SetM249AdditionalMagazineSlot();
+
+	UFUNCTION(BlueprintCallable)
+	void UnSetRifleAdditionalMagazineSlot();
+	UFUNCTION(BlueprintCallable)
+	void UnSetSniperAdditionalMagazineSlot();
+	UFUNCTION(BlueprintCallable)
+	void UnSetPistolAdditionalMagazineSlot();
+	UFUNCTION(BlueprintCallable)
+	void UnSetM249AdditionalMagazineSlot();
 
 	UPROPERTY()
 	bool bRifleAdditionalMag;

@@ -180,6 +180,7 @@ void ARewardContainer::DropMagazine()
 
 void ARewardContainer::BoxDestroyed()
 {
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), containerBreakSound, this->GetActorLocation());
 	DropReward();
 	playerDetectCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	containerMesh->SetRenderCustomDepth(false);

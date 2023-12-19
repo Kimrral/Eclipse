@@ -645,13 +645,13 @@ public:
 	UPROPERTY()
 	class AMissionChecker* MissionChecker;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	class ARifleMagActor* RifleMagActor;
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	class ASniperMagActor* SniperMagActor;
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	class APistolMagActor* PistolMagActor;
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	class AM249MagActor* M249MagActor;
 	
 	UPROPERTY()

@@ -61,6 +61,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AM249MagActor> M249MagActorFactory;
 
+	UPROPERTY(EditAnywhere)
+	class USoundBase* containerBreakSound;
+	
 	UPROPERTY()
 	FVector DropForce;
 	

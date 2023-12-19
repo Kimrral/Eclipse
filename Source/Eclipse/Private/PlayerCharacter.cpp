@@ -3096,9 +3096,13 @@ void APlayerCharacter::UnEquipGoggle()
 void APlayerCharacter::EquipArmor()
 {
 	ArmorSlot->SetVisibility(true);
+	curHP+=35;
+	maxHP+=35;
 }
 
 void APlayerCharacter::UnEquipArmor()
 {
 	ArmorSlot->SetVisibility(false);
+	curHP-=35;
+	maxHP-=35;
 }

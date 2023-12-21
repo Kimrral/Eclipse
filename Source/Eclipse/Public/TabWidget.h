@@ -117,6 +117,29 @@ public:
 	
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UTextBlock* MaxHPText;
-	
-	
+
+
+	UPROPERTY()
+	class ARifleMagActor* RifleMagActor;
+	UPROPERTY()
+	class ASniperMagActor* SniperMagActor;
+	UPROPERTY()
+	class APistolMagActor* PistolMagActor;
+	UPROPERTY()
+	class AM249MagActor* M249MagActor;
+	UPROPERTY()
+	class AHackingConsole* HackingConsole;
+	UPROPERTY()
+	class AMaskActor* MaskActor;
+	UPROPERTY()
+	class AHelmetActor* HelmetActor;
+	UPROPERTY()
+	class AHeadsetActor* HeadsetActor;
+	UPROPERTY()
+	class AGoggleActor* GoggleActor;
+	UPROPERTY()
+	class AArmorActor* ArmorActor;
+	UPROPERTY()
+	class AMedKitActor* MedKitActor;
+
 };

@@ -3,7 +3,18 @@
 
 #include "TabWidget.h"
 
+#include "ArmorActor.h"
+#include "GoggleActor.h"
+#include "HackingConsole.h"
+#include "HeadsetActor.h"
+#include "HelmetActor.h"
+#include "M249MagActor.h"
+#include "MaskActor.h"
+#include "MedKitActor.h"
+#include "PistolMagActor.h"
 #include "PlayerCharacter.h"
+#include "RifleMagActor.h"
+#include "SniperMagActor.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 
@@ -158,3 +169,4 @@ void UTabWidget::SetTabWidget()
 		}
 	}
 }
+

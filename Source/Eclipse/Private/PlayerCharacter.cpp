@@ -36,6 +36,7 @@
 #include "RewardContainer.h"
 #include "RifleMagActor.h"
 #include "SniperMagActor.h"
+#include "TabWidget.h"
 #include "WeaponInfoWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
@@ -3103,6 +3104,4 @@ void APlayerCharacter::EquipArmor()
 void APlayerCharacter::UnEquipArmor()
 {
 	ArmorSlot->SetVisibility(false);
-	curHP-=35;
-	maxHP-=35;
 }

@@ -199,9 +199,14 @@ public:
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* SniperZoomInSound;
 
-
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* SniperZoomOutSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* PickUpSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* WeaponSwapSound;
 
 	UPROPERTY()
 	bool isSniperZoomed = false;

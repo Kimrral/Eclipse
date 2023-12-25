@@ -136,9 +136,6 @@ public:
 	void OnActionLookAroundPressed();
 	void OnActionLookAroundReleased();
 
-	void OnZoomIn();
-	void OnZoomOut();
-
 	void SwapFirstWeapon();
 	void SwapSecondWeapon();
 
@@ -198,6 +195,17 @@ public:
 	
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* RifleBulletShellDropSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* SniperZoomInSound;
+
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* SniperZoomOutSound;
+
+	UPROPERTY()
+	bool isSniperZoomed = false;
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
 	TSubclassOf<class ADamageWidgetActor> damageWidgetFactory;
@@ -555,6 +563,11 @@ public:
 
 	UPROPERTY()
 	class AEclipseGameMode* gm;
+
+	UPROPERTY()
+	FTimerHandle SniperZoomHandle;
+	UPROPERTY()
+	FTimerHandle SniperZoomOutHandle;
 	
 	UFUNCTION()  // Bind function
 	void SetZoomValue(float Value);
@@ -677,4 +690,10 @@ public:
 
 	UPROPERTY()
 	int maxHP = 100.f;
+
+	UPROPERTY()
+	bool SniperZoomBool;
+
+	UPROPERTY()
+	bool SniperZoomOutBool;
 };

@@ -242,8 +242,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 
 	Timeline.TickTimeline(DeltaTime);
 	
-	WeaponDetectionLineTrace();
-	
+	WeaponDetectionLineTrace();	
 
 }
 
@@ -293,8 +292,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(LookAroundAction, ETriggerEvent::Completed, this, &APlayerCharacter::OnActionLookAroundReleased);
 
 		//Scrolling
-		EnhancedInputComponent->BindAction(ZoomInAction, ETriggerEvent::Started, this, &APlayerCharacter::OnZoomIn);
-		EnhancedInputComponent->BindAction(ZoomOutAction, ETriggerEvent::Started, this, &APlayerCharacter::OnZoomOut);
+		//EnhancedInputComponent->BindAction(ZoomInAction, ETriggerEvent::Started, this, &APlayerCharacter::OnZoomIn);
+		//EnhancedInputComponent->BindAction(ZoomOutAction, ETriggerEvent::Started, this, &APlayerCharacter::OnZoomOut);
 
 		//Weapon Swap
 		EnhancedInputComponent->BindAction(FirstWeaponSwapAction, ETriggerEvent::Started, this, &APlayerCharacter::SwapFirstWeapon);
@@ -435,6 +434,8 @@ void APlayerCharacter::ZoomRelease()
 		}
 		sniperScopeUI->RemoveFromParent();
 		crosshairUI->CrosshairImage->SetVisibility(ESlateVisibility::Visible);
+		SniperZoomBool=false;
+		SniperZoomOutBool=false;
 		Timeline.ReverseFromEnd();
 	}
 	else if(weaponArray[3]==true)
@@ -449,16 +450,40 @@ void APlayerCharacter::ZoomRelease()
 	{
 		Timeline.ReverseFromEnd();
 	}
-
 }
 
 void APlayerCharacter::Run()
 {
+	if (isSniperZooming)
+	{
+		if(!isSniperZoomed)
+		{
+			GetWorldTimerManager().ClearTimer(SniperZoomOutHandle);
+			SniperZoomBool=true;
+			SniperZoomOutBool=false;
+			Timeline.Stop();
+			FollowCamera->SetFieldOfView(40);
+			Timeline.PlayFromStart();
+			UGameplayStatics::PlaySound2D(GetWorld(), SniperZoomInSound);
+			isSniperZoomed=true;
+		}
+		else if(isSniperZoomed)
+		{
+			GetWorldTimerManager().ClearTimer(SniperZoomHandle);
+			SniperZoomOutBool=true;
+			SniperZoomBool=false;
+			Timeline.Stop();
+			FollowCamera->SetFieldOfView(20);
+			Timeline.PlayFromStart();
+			UGameplayStatics::PlaySound2D(GetWorld(), SniperZoomOutSound);
+			isSniperZoomed=false;
+		}
+		return;
+	}
 	if(isZooming)
 	{
 		return;
 	}
-	//isRunning=true;
 	GetCharacterMovement()->MaxWalkSpeed=520.f;
 }
 
@@ -482,23 +507,6 @@ void APlayerCharacter::OnActionLookAroundReleased()
 	bUseControllerRotationYaw = true;
 }
 
-void APlayerCharacter::OnZoomIn()
-{
-	if (isSniperZooming)
-	{
-		// Camera의 FOV 조절		
-		FollowCamera->FieldOfView=FMath::Clamp(FollowCamera->FieldOfView -= 3, 10, 40);			
-	}
-}
-
-void APlayerCharacter::OnZoomOut()
-{
-	if (isSniperZooming)
-	{
-		// Camera의 FOV 조절		
-		FollowCamera->FieldOfView=FMath::Clamp(FollowCamera->FieldOfView += 3, 10, 40);			
-	}
-}
 
 void APlayerCharacter::SwapFirstWeapon()
 {
@@ -1746,19 +1754,38 @@ void APlayerCharacter::Reload()
 
 void APlayerCharacter::SetZoomValue(float Value)
 {
-	if(weaponArray[1]==true)
+
+	if(weaponArray[1]==true&&!SniperZoomBool&&!SniperZoomOutBool)
 	{
 		// 타임라인 Float Curve 에 따른 Lerp
 		auto lerp=UKismetMathLibrary::Lerp(90,40,Value);
 		// 해당 Lerp값 Arm Length에 적용
 		FollowCamera->SetFieldOfView(lerp);
 	}
-	else
+	else if(weaponArray[1]==false)
 	{
 		// 타임라인 Float Curve 에 따른 Lerp
 		auto lerp=UKismetMathLibrary::Lerp(200,120,Value);
 		// 해당 Lerp값 Arm Length에 적용
 		CameraBoom->TargetArmLength=lerp;
+	}
+	else if(SniperZoomBool)
+	{
+		auto lerp = UKismetMathLibrary::Lerp(40,20,Value);
+		FollowCamera->SetFieldOfView(lerp);
+		GetWorldTimerManager().SetTimer(SniperZoomHandle, FTimerDelegate::CreateLambda([this]()->void
+		{
+			SniperZoomBool=false;
+		}), 1.0f, false);
+	}
+	else if(SniperZoomOutBool)
+	{
+		auto lerp = FollowCamera->FieldOfView = UKismetMathLibrary::Lerp(20,40,Value);
+		FollowCamera->SetFieldOfView(lerp);
+		GetWorldTimerManager().SetTimer(SniperZoomOutHandle, FTimerDelegate::CreateLambda([this]()->void
+	{
+		SniperZoomOutBool=false;
+	}), 1.0f, false);
 	}
 }
 
@@ -1912,6 +1939,7 @@ void APlayerCharacter::UnSetM249AdditionalMagazineSlot()
 {
 	bM249AdditionalMag=false;
 }
+
 
 
 void APlayerCharacter::Fire()

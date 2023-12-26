@@ -357,6 +357,7 @@ void APlayerCharacter::Zoom()
 	}
 	// Zooming Boolean
 	isZooming=true;
+	UGameplayStatics::PlaySound2D(GetWorld(), zoomSound);
 	GetCharacterMovement()->MaxWalkSpeed=240.f;
 	auto animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 	if(animInst)

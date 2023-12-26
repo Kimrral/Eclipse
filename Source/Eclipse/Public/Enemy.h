@@ -111,6 +111,9 @@ public:
 	UPROPERTY()
 	class AEclipsePlayerController* PC;
 
+	UPROPERTY(EditAnywhere)
+	class USoundBase* GuardianFireSound;
+
 
 	UPROPERTY()
 	bool bDeath = false;

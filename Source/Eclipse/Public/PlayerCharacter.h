@@ -519,6 +519,9 @@ public:
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* SwapSound;
 	
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* zoomSound;
+	
 	UPROPERTY()
 	FTimerHandle shootEnableHandle;
 

@@ -36,6 +36,9 @@ public:
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	class UImage* M249BulletImage;
 
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	class UImage* ShieldImage;
+	
 	UPROPERTY()
 	int damage;
 	

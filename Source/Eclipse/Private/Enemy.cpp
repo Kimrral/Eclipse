@@ -38,6 +38,8 @@ void AEnemy::BeginPlay()
 
 	// Set HP
 	curHP=maxHP;
+	// Set Shield
+	curShield=maxShield;
 
 	enemyAnim = Cast<UEnemyAnim>(GetMesh()->GetAnimInstance());
 	gameMode = Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());
@@ -89,10 +91,7 @@ void AEnemy::OnDamaged()
 void AEnemy::OnHeadDamaged()
 {
 	FTimerHandle overlayMatHandle;
-	//GetController()->StopMovement();
-	//GetCharacterMovement()->Deactivate();
 	GetMesh()->SetOverlayMaterial(overlayMatRed);
-	//PlayAnimMontage(damageMontage, 1);
 	GetWorldTimerManager().ClearTimer(overlayMatHandle);
 	GetWorldTimerManager().SetTimer(overlayMatHandle, FTimerDelegate::CreateLambda([this]()->void
 	{

@@ -45,11 +45,19 @@ public:
 	UFUNCTION()
 	void OnDamageProcess(int damageValue);
 	UFUNCTION()
+	void OnShieldDamageProcess(int damageValue);
+	UFUNCTION()
 	void SetState(EEnemyState next);
 	UFUNCTION()
 	void SetRotToPlayer(float Value);
+	UFUNCTION()
+	int32 StunDamageMultiplier();
 
-	
+	UPROPERTY(EditAnywhere)
+	class USoundBase* ShieldBreakSound;
+
+	UPROPERTY(EditAnywhere)
+	class UParticleSystem* ShieldBreakEmitter;
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 

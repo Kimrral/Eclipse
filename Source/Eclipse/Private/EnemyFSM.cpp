@@ -149,8 +149,8 @@ void UEnemyFSM::TickAttack()
 
 void UEnemyFSM::TickDamage()
 {
-		// Move 상태로 전이한다.
-		SetState(EEnemyState::MOVE);
+	// Move 상태로 전이한다.
+	SetState(EEnemyState::MOVE);
 }
 
 void UEnemyFSM::TickDie()
@@ -168,18 +168,62 @@ void UEnemyFSM::TickDie()
 void UEnemyFSM::OnDamageProcess(int damageValue)
 {
 	// 매개변수 damageValue의 값만큼 현재 HP에서 차감한다.
-	me->curHP=FMath::Clamp(me->curHP-=damageValue, 0, me->maxHP);
+	me->curHP=FMath::Clamp(me->curHP-=damageValue*StunDamageMultiplier(), 0, me->maxHP);
+	// 현재 HP가 0 이하라면
 	if(me->curHP<=0)
 	{
 		// Die 상태로 전이한다.
 		SetState(EEnemyState::DIE);
 	}
+	// 현재 HP가 1 이상이라면
 	else
 	{
-		// Damage 상태로 전이한다.
-		SetState(EEnemyState::DAMAGE);
+		if(me->enemyAnim->IsAttackAnimationPlaying()==false)
+		{
+			// Move 상태로 전이한다.
+			SetState(EEnemyState::MOVE);
+		}
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Enemy HP : %d"), me->curHP);}
+	UE_LOG(LogTemp, Warning, TEXT("Enemy HP : %d"), me->curHP);
+}
+
+void UEnemyFSM::OnShieldDamageProcess(int damageValue)
+{
+	// 매개변수 damageValue의 값만큼 현재 Shield에서 차감한다.
+	me->curShield=FMath::Clamp(me->curShield-=(damageValue/20), 0, me->maxShield);
+	// 현재 실드가 0 이하라면
+	if(me->curShield<=0&&me->isShieldBroken==false)
+	{
+		me->isShieldBroken=true;
+		me->isStunned=true;
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ShieldBreakSound, me->GetActorLocation(), FRotator::ZeroRotator);
+		auto EmitterTrans = me->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
+		EmitterTrans.SetScale3D(FVector(4));
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldBreakEmitter, EmitterTrans);
+		me->GetCharacterMovement()->StopMovementImmediately();
+		me->GetCharacterMovement()->SetMovementMode(MOVE_None);
+		me->StopAnimMontage();
+		me->PlayAnimMontage(me->stunMontage, 1, FName("StunStart"));
+		FTimerHandle stunHandle;
+		GetWorld()->GetTimerManager().SetTimer(stunHandle, FTimerDelegate::CreateLambda([this]()->void
+		{
+			me->isStunned=false;
+			me->StopAnimMontage();
+			me->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+			SetState(EEnemyState::MOVE);
+		}), 7.0f, false);
+	}
+	// 현재 실드가 1 이상이라면
+	else
+	{
+		if(me->enemyAnim->IsAttackAnimationPlaying()==false)
+		{
+			// Move 상태로 전이한다.
+			SetState(EEnemyState::MOVE);
+		}
+	}
+	UE_LOG(LogTemp, Warning, TEXT("Enemy Shield : %d"), me->curShield);
+}
 
 void UEnemyFSM::SetState(EEnemyState next) // 상태 전이함수
 {
@@ -202,4 +246,13 @@ void UEnemyFSM::SetRotToPlayer(float Value)
 		// 해당 회전값 Enemy에 할당
 		me->SetActorRotation(FRotator(0, lerp.Yaw, 0));
 	}
+}
+
+int32 UEnemyFSM::StunDamageMultiplier()
+{
+	if(me->isStunned)
+	{
+		return 2;
+	}
+	return 1;
 }

@@ -21,6 +21,8 @@ public:
 	
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UProgressBar* progressBar;
-	
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UProgressBar* shieldProgressBar;
 	
 };

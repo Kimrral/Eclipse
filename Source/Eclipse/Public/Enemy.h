@@ -63,6 +63,9 @@ public:
 	UFUNCTION()
 	void EnemyAttackProcess();
 
+	UPROPERTY()
+	bool isStunned = false;
+
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class APistolAmmoActor> pistolAmmoFactory;
 	UPROPERTY(EditAnywhere)
@@ -78,8 +81,20 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category=EnemySettings)
 	int maxHP = 1000.0f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	int curShield;
+
+	UPROPERTY(EditDefaultsOnly, Category=EnemySettings)
+	int maxShield = 100;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	bool isShieldBroken = false;
+	
 	UPROPERTY(EditAnywhere, Category=EnemySettings)
 	UAnimMontage* damageMontage;
+	
+	UPROPERTY(EditAnywhere, Category=EnemySettings)
+	UAnimMontage* stunMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category=EnemySettings)
 	class UMaterialInterface* overlayMatRed;

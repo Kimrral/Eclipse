@@ -10,6 +10,7 @@ void UBossHPWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	progressBar->SetPercent(1);
+	shieldProgressBar->SetPercent(1);
 }
 
 void UBossHPWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)

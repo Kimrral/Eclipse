@@ -227,6 +227,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = widget)
 	class UBossHPWidget* bossHPUI;
 
+	UPROPERTY(EditAnywhere)
+	class UParticleSystem* ShieldHitEmitter;
+
 	UPROPERTY()
 	class AMaskActor* MaskActor;
 
@@ -336,10 +339,7 @@ public:
 	void SetBossHPWidget(AEnemy* enemy);
 	
 	UFUNCTION()
-	void SetDamageWidget(int damage, FVector spawnLoc);
-
-	UFUNCTION()
-	void SetHeadDamageWidget(int damage, FVector spawnLoc);
+	void SetDamageWidget(int damage, FVector spawnLoc, bool isShieldIconEnable, FLinearColor DamageTextColor);
 
 	UFUNCTION()
 	void RemoveBossHPWidget();
@@ -550,8 +550,6 @@ public:
 	class UParticleSystem* RifleFireParticle2;
 	UPROPERTY(EditAnywhere, Category="Particle")
 	class UParticleSystem* PistolfireParticle;
-	UPROPERTY(EditAnywhere, Category="Particle")
-	class UParticleSystem* shieldParticle;
 	UPROPERTY(EditAnywhere, Category="Particle")
 	class UParticleSystem* recallParticle;
 	UPROPERTY(EditAnywhere, Category="Niagara")

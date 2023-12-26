@@ -158,6 +158,7 @@ void AEnemy::EnemyAttackProcess()
 {
 	auto particleTrans=GetMesh()->GetSocketTransform(FName("Muzzle"));
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), fireParticle, particleTrans);
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), GuardianFireSound, this->GetActorLocation());
 
 }
 

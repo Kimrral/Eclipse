@@ -30,4 +30,7 @@ public:
 	UPROPERTY(EditAnywhere)
 	class USphereComponent* playerTraceSphereCollision;
 
+	UPROPERTY(EditAnywhere)
+	class USoundBase* ammoPickupSound;
+
 };

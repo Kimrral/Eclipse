@@ -14,4 +14,7 @@ class ECLIPSE_API ACrunch : public AEnemy
 {
 	GENERATED_BODY()
 
+public:
+	virtual void DropReward() override;
+
 };

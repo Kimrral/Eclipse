@@ -203,8 +203,7 @@ void UEnemyFSM::OnShieldDamageProcess(int damageValue)
 		me->GetCharacterMovement()->StopMovementImmediately();
 		me->GetCharacterMovement()->SetMovementMode(MOVE_None);
 		me->StopAnimMontage();
-		me->PlayAnimMontage(me->stunMontage, 1, FName("StunStart"));
-		FTimerHandle stunHandle;
+		me->PlayAnimMontage(me->stunMontage, 1, FName("StunStart"));		
 		GetWorld()->GetTimerManager().SetTimer(stunHandle, FTimerDelegate::CreateLambda([this]()->void
 		{
 			me->isStunned=false;

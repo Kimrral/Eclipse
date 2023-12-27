@@ -2019,21 +2019,22 @@ void APlayerCharacter::Fire()
 								fsm->OnDamageProcess(randRifleHeadDamage);								
 								SetDamageWidget(randRifleHeadDamage, hitLoc, false, FLinearColor::Yellow);								
 								// 헤드 적중 데미지 프로세스 호출
-								enemy->OnHeadDamaged();
-								// 전리품 드롭
-								enemy->DropReward();
+								enemy->OnHeadDamaged();								
 								// 사망 불리언 활성화
 								enemy->bDeath=true;
 								if(bGuardian)
 								{
 									GuardianCount++;
 									informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
+									// 전리품 드롭
+									guardian->DropReward();
 								}
 								else if(bCrunch)
 								{									
 									BossCount++;
 									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
 									SetBossHPWidget(enemy);
+									crunch->DropReward();
 									FTimerHandle removeHandle;
 									GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
 								}
@@ -2118,14 +2119,15 @@ void APlayerCharacter::Fire()
 
 								// 일반 적중 데미지 프로세스 호출
 								enemy->OnDamaged();
-								// 전리품 드롭
-								enemy->DropReward();
+								
 								// 사망 불리언 활성화
 								enemy->bDeath=true;
 								if(bGuardian)
 								{
 									GuardianCount++;
 									informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
+									// 전리품 드롭
+									guardian->DropReward();
 
 								}
 								else if(bCrunch)
@@ -2133,6 +2135,8 @@ void APlayerCharacter::Fire()
 									BossCount++;
 									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
 									SetBossHPWidget(enemy);
+									// 전리품 드롭
+									crunch->DropReward();
 									FTimerHandle removeHandle;
 									GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
 								}
@@ -2333,19 +2337,20 @@ void APlayerCharacter::Fire()
 								fsm->OnDamageProcess(randSniperHeadDamage);
 								SetDamageWidget(randSniperHeadDamage, hitLoc, false, FLinearColor::Yellow);
 								// 헤드 적중 데미지 프로세스 호출
-								enemy->OnHeadDamaged();
-								enemy->DropReward();
+								enemy->OnHeadDamaged();								
 								enemy->bDeath=true;
 								if(bGuardian)
 								{
 									GuardianCount++;
 									informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
+									guardian->DropReward();
 								}
 								else if(bCrunch)
 								{
 									BossCount++;
 									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
 									SetBossHPWidget(enemy);
+									crunch->DropReward();
 									FTimerHandle removeHandle;
 									GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
 								}
@@ -2419,18 +2424,19 @@ void APlayerCharacter::Fire()
 
 								// 일반 적중 데미지 프로세스 호출
 								enemy->OnDamaged();
-								enemy->DropReward();
 								enemy->bDeath=true;
 								if(bGuardian)
 								{
 									GuardianCount++;
 									informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
+									guardian->DropReward();
 								}
 								else if(bCrunch)
 								{
 									BossCount++;
 									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
 									SetBossHPWidget(enemy);
+									crunch->DropReward();
 									FTimerHandle removeHandle;
 									GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
 								}
@@ -2674,18 +2680,19 @@ void APlayerCharacter::Fire()
 
 								// 헤드 적중 데미지 프로세스 호출
 								enemy->OnHeadDamaged();
-								enemy->DropReward();
 								enemy->bDeath=true;
 								if(bGuardian)
 								{
 									GuardianCount++;
 									informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
+									guardian->DropReward();
 								}
 								else if(bCrunch)
 								{
 									BossCount++;
 									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
 									SetBossHPWidget(enemy);
+									crunch->DropReward();
 									FTimerHandle removeHandle;
 									GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
 								}
@@ -2760,12 +2767,12 @@ void APlayerCharacter::Fire()
 
 								// 일반 적중 데미지 프로세스 호출
 								enemy->OnDamaged();
-								enemy->DropReward();
 								enemy->bDeath=true;
 								if(bGuardian)
 								{
 									GuardianCount++;
 									informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
+									guardian->DropReward();
 
 								}
 								else if(bCrunch)
@@ -2773,6 +2780,7 @@ void APlayerCharacter::Fire()
 									BossCount++;
 									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
 									SetBossHPWidget(enemy);
+									crunch->DropReward();
 									FTimerHandle removeHandle;
 									GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
 								}
@@ -2993,11 +3001,11 @@ void APlayerCharacter::Fire()
 
 								// 헤드 적중 데미지 프로세스 호출
 								enemy->OnHeadDamaged();
-								enemy->DropReward();
 								enemy->bDeath=true;
 								if(bGuardian)
 								{
 									GuardianCount++;
+									guardian->DropReward();
 									informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
 								}
 								else if(bCrunch)
@@ -3005,6 +3013,7 @@ void APlayerCharacter::Fire()
 									BossCount++;
 									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
 									SetBossHPWidget(enemy);
+									crunch->DropReward();
 									FTimerHandle removeHandle;
 									GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
 								}
@@ -3079,11 +3088,11 @@ void APlayerCharacter::Fire()
 
 								// 일반 적중 데미지 프로세스 호출
 								enemy->OnDamaged();
-								enemy->DropReward();
 								enemy->bDeath=true;
 								if(bGuardian)
 								{
 									GuardianCount++;
+									guardian->DropReward();
 									informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
 								}
 								else if(bCrunch)
@@ -3091,6 +3100,7 @@ void APlayerCharacter::Fire()
 									BossCount++;
 									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
 									SetBossHPWidget(enemy);
+									crunch->DropReward();
 									FTimerHandle removeHandle;
 									GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
 								}

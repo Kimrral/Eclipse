@@ -174,6 +174,7 @@ void UEnemyFSM::OnDamageProcess(int damageValue)
 	{
 		// Die 상태로 전이한다.
 		SetState(EEnemyState::DIE);
+		UE_LOG(LogTemp, Warning, TEXT("Enemy Die State"));
 	}
 	// 현재 HP가 1 이상이라면
 	else

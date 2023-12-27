@@ -58,7 +58,13 @@ public:
 	virtual void DropReward();
 
 	UFUNCTION()
-	void SeePlayer();
+	void DropAmmo();
+
+	UFUNCTION()
+	void DropMagazine();
+
+	UFUNCTION()
+	void DropGear();
 
 	UFUNCTION()
 	void EnemyAttackProcess();
@@ -73,7 +79,27 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class ASniperAmmoActor> sniperAmmoFactory;
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AM249AmmoActor> M249AmmoFactory;	
+	TSubclassOf<class AM249AmmoActor> M249AmmoFactory;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class ARifleMagActor> RifleMagActorFactory;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class ASniperMagActor> SniperMagActorFactory;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class APistolMagActor> PistolMagActorFactory;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AM249MagActor> M249MagActorFactory;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AHelmetActor> HelmetActorFactory;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AGoggleActor> GoggleActorFactory;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AMaskActor> MaskActorFactory;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AArmorActor> ArmorActorFactory;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AHeadsetActor> HeadsetActorFactory;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int curHP;
@@ -114,6 +140,8 @@ public:
 	UPROPERTY(EditAnywhere)
 	class USoundBase* GuardianFireSound;
 
+	UPROPERTY()
+	FVector DropForce = FVector(10);
 
 	UPROPERTY()
 	bool bDeath = false;

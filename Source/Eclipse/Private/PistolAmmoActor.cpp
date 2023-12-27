@@ -42,6 +42,7 @@ void APistolAmmoActor::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 		auto player=Cast<APlayerCharacter>(OtherActor);
 		if(player)
 		{
+			UGameplayStatics::PlaySound2D(GetWorld(), ammoPickupSound);
 			player->maxPistolAmmo+=8;
 			player->informationUI->UpdateAmmo_Secondary();
 
@@ -59,6 +60,8 @@ void APistolAmmoActor::SphereOnOverlap(UPrimitiveComponent* OverlappedComponent,
 		{
 			bTracePlayer=true;
 			ammoMesh->SetCollisionResponseToAllChannels(ECR_Overlap);
+			ammoMesh->SetCollisionResponseToChannel(ECC_Vehicle, ECR_Ignore);
+
 		}
 	}
 }

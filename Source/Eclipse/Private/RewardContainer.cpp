@@ -82,7 +82,6 @@ void ARewardContainer::DropReward()
 {
 	DropAmmo();
 	DropConsole();
-	DropMagazine();
 }
 
 void ARewardContainer::DropAmmo()

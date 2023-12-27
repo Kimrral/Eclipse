@@ -52,6 +52,8 @@ public:
 	void SetRotToPlayer(float Value);
 	UFUNCTION()
 	int32 StunDamageMultiplier();
+	UPROPERTY()
+	FTimerHandle stunHandle;
 
 	UPROPERTY(EditAnywhere)
 	class USoundBase* ShieldBreakSound;

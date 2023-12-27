@@ -3,15 +3,24 @@
 
 #include "Enemy.h"
 
+#include "ArmorActor.h"
 #include "EclipsePlayerController.h"
 #include "EnemyAnim.h"
 #include "EnemyFSM.h"
+#include "GoggleActor.h"
+#include "HeadsetActor.h"
+#include "HelmetActor.h"
 #include "M249AmmoActor.h"
+#include "M249MagActor.h"
+#include "MaskActor.h"
 #include "NavigationInvokerComponent.h"
 #include "PistolAmmoActor.h"
+#include "PistolMagActor.h"
 #include "PlayerCharacter.h"
 #include "RifleAmmoActor.h"
+#include "RifleMagActor.h"
 #include "SniperAmmoActor.h"
+#include "SniperMagActor.h"
 #include "Components/CapsuleComponent.h"
 #include "Eclipse/EclipseGameMode.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -69,6 +78,9 @@ void AEnemy::Move()
 void AEnemy::OnDie()
 {
 	FTimerHandle destroyHandle;
+	enemyFSM->Timeline.Stop();
+	GetWorld()->GetTimerManager().ClearTimer(enemyFSM->stunHandle);
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 	GetCharacterMovement()->Deactivate();
 	StopAnimMontage();
 	auto capsule = GetCapsuleComponent();
@@ -105,6 +117,11 @@ void AEnemy::OnDestroy()
 }
 
 void AEnemy::DropReward()
+{
+
+}
+
+void AEnemy::DropAmmo()
 {
 	auto randIndex = FMath::RandRange(0, 3);
 	if(randIndex==0)
@@ -149,10 +166,96 @@ void AEnemy::DropReward()
 	}
 }
 
-void AEnemy::SeePlayer()
+void AEnemy::DropMagazine()
 {
+	auto randIndex = FMath::RandRange(0, 3);
+	if(randIndex==0)
+	{
+		auto RifleMagActor = GetWorld()->SpawnActor<ARifleMagActor>(RifleMagActorFactory, GetActorLocation(), GetActorRotation());
+		if(RifleMagActor)
+		{
+			FVector loc = RifleMagActor->GetActorUpVector();
+			RifleMagActor->magMesh->AddImpulseAtLocation(DropForce, loc);
+		}
+	}
+	else if(randIndex==1)
+	{
+		auto SniperMagActor = GetWorld()->SpawnActor<ASniperMagActor>(SniperMagActorFactory, GetActorLocation(), GetActorRotation());
+		if(SniperMagActor)
+		{
+			FVector loc = SniperMagActor->GetActorUpVector();
+			SniperMagActor->magMesh->AddImpulseAtLocation(DropForce, loc);
+		}
+	}
+	else if(randIndex==2)
+	{
+		auto PistolMagActor = GetWorld()->SpawnActor<APistolMagActor>(PistolMagActorFactory, GetActorLocation(), GetActorRotation());
+		if(PistolMagActor)
+		{
+			FVector loc = PistolMagActor->GetActorUpVector();
+			PistolMagActor->magMesh->AddImpulseAtLocation(DropForce, loc);
+		}
+	}
+	else if(randIndex==3)
+	{
+		auto M249MagActor = GetWorld()->SpawnActor<AM249MagActor>(M249MagActorFactory, GetActorLocation(), GetActorRotation());
+		if(M249MagActor)
+		{
+			FVector loc = M249MagActor->GetActorUpVector();
+			M249MagActor->magMesh->AddImpulseAtLocation(DropForce, loc);
+		}
+	}
 }
 
+void AEnemy::DropGear()
+{
+	auto randIndex = FMath::RandRange(0, 4);
+	if(randIndex==0)
+	{
+		auto HelmetActor = GetWorld()->SpawnActor<AHelmetActor>(HelmetActorFactory, GetActorLocation(), GetActorRotation());
+		if(HelmetActor)
+		{
+			FVector loc = HelmetActor->GetActorUpVector();
+			HelmetActor->gearMesh->AddImpulseAtLocation(DropForce, loc);
+		}
+	}
+	else if(randIndex==1)
+	{
+		auto HeadsetActor = GetWorld()->SpawnActor<AHeadsetActor>(HeadsetActorFactory, GetActorLocation(), GetActorRotation());
+		if(HeadsetActor)
+		{
+			FVector loc = HeadsetActor->GetActorUpVector();
+			HeadsetActor->gearMesh->AddImpulseAtLocation(DropForce, loc);
+		}
+	}
+	else if(randIndex==2)
+	{
+		auto MaskActor = GetWorld()->SpawnActor<AMaskActor>(MaskActorFactory, GetActorLocation(), GetActorRotation());
+		if(MaskActor)
+		{
+			FVector loc = MaskActor->GetActorUpVector();
+			MaskActor->gearMesh->AddImpulseAtLocation(DropForce, loc);
+		}
+	}
+	else if(randIndex==3)
+	{
+		auto GoggleActor = GetWorld()->SpawnActor<AGoggleActor>(GoggleActorFactory, GetActorLocation(), GetActorRotation());
+		if(GoggleActor)
+		{
+			FVector loc = GoggleActor->GetActorUpVector();
+			GoggleActor->gearMesh->AddImpulseAtLocation(DropForce, loc);
+		}
+	}
+	else if(randIndex==4)
+	{
+		auto ArmorActor = GetWorld()->SpawnActor<AArmorActor>(ArmorActorFactory, GetActorLocation(), GetActorRotation());
+		if(ArmorActor)
+		{
+			FVector loc = ArmorActor->GetActorUpVector();
+			ArmorActor->gearMesh->AddImpulseAtLocation(DropForce, loc);
+		}
+	}
+}
 
 void AEnemy::EnemyAttackProcess()
 {

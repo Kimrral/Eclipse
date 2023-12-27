@@ -2355,13 +2355,52 @@ void APlayerCharacter::Fire()
 								crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
 								UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHeadHitSound, hitLoc);
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(3.0f));
-								// FSM에 있는 Damage Process 호출		
-								fsm->OnDamageProcess(randSniperHeadDamage);
-								SetDamageWidget(randSniperHeadDamage, hitLoc, false, FLinearColor::Yellow);
-
-								// 일반 적중 데미지 프로세스 호출
-								enemy->OnDamaged();
-								SetBossHPWidget(enemy);
+								// 적중 대상이 보스라면
+								if(bCrunch)
+								{
+									// 실드가 파괴된 상태라면
+									if(enemy->isShieldBroken)
+									{
+										// FSM에 있는 Damage Process 호출		
+										fsm->OnDamageProcess(randSniperHeadDamage);
+										if(enemy->isStunned)
+										{
+											// 데미지 위젯에 피해 값과 적 위치벡터 할당
+											SetDamageWidget(randSniperHeadDamage*2, hitLoc, false, FLinearColor::Red);
+										}
+										else
+										{
+											// 데미지 위젯에 피해 값과 적 위치벡터 할당
+											SetDamageWidget(randSniperHeadDamage, hitLoc, false, FLinearColor::Yellow);
+										}										
+										// 헤드 적중 데미지 프로세스 호출
+										enemy->OnHeadDamaged();
+									}
+									// 실드가 파괴되지 않은 상태라면
+									else
+									{
+										auto EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
+										EmitterTrans.SetScale3D(FVector(1.3));
+										UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldHitEmitter, EmitterTrans);
+										// FSM에 있는 Damage Process 호출		
+										fsm->OnShieldDamageProcess(randSniperHeadDamage);
+										// 데미지 위젯에 피해 값과 적 위치벡터 할당
+										SetDamageWidget(randSniperHeadDamage/20, hitLoc, true, FLinearColor::Yellow);
+										// 헤드 적중 데미지 프로세스 호출
+										enemy->OnHeadDamaged();
+									}
+									SetBossHPWidget(enemy);
+								}
+								// 보스가 아니라면
+								else
+								{
+									// FSM에 있는 Damage Process 호출		
+									fsm->OnDamageProcess(randSniperHeadDamage);
+									// 데미지 위젯에 피해 값과 적 위치벡터 할당
+									SetDamageWidget(randSniperHeadDamage, hitLoc, false, FLinearColor::Yellow);
+									// 헤드 적중 데미지 프로세스 호출
+									enemy->OnHeadDamaged();
+								}
 							}
 						}
 						else
@@ -2401,13 +2440,52 @@ void APlayerCharacter::Fire()
 								crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
 								UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(0.8f));
-								// FSM에 있는 Damage Process 호출		
-								fsm->OnDamageProcess(randSniperDamage);
-								SetDamageWidget(randSniperDamage, hitLoc, false, FLinearColor::White);
-
-								// 일반 적중 데미지 프로세스 호출
-								enemy->OnDamaged();
-								SetBossHPWidget(enemy);
+								// 적중 대상이 보스라면
+								if(bCrunch)
+								{
+									// 실드가 파괴된 상태라면
+									if(enemy->isShieldBroken)
+									{
+										// FSM에 있는 Damage Process 호출		
+										fsm->OnDamageProcess(randSniperDamage);
+										if(enemy->isStunned)
+										{
+											// 데미지 위젯에 피해 값과 적 위치벡터 할당
+											SetDamageWidget(randSniperDamage*2, hitLoc, false, FLinearColor::Red);
+										}
+										else
+										{
+											// 데미지 위젯에 피해 값과 적 위치벡터 할당
+											SetDamageWidget(randSniperDamage, hitLoc, false, FLinearColor::White);
+										}
+										// 일반 적중 데미지 프로세스 호출
+										enemy->OnDamaged();
+									}
+									// 실드가 있는 상태라면
+									else
+									{
+										auto EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
+										EmitterTrans.SetScale3D(FVector(1.3));
+										UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldHitEmitter, EmitterTrans);
+										// FSM에 있는 Damage Process 호출		
+										fsm->OnShieldDamageProcess(randSniperDamage);
+										// 데미지 위젯에 피해 값과 적 위치벡터 할당
+										SetDamageWidget(randSniperDamage/20, hitLoc, true, FLinearColor::White);
+										// 일반 적중 데미지 프로세스 호출
+										enemy->OnDamaged();
+									}
+									SetBossHPWidget(enemy);
+								}
+								// 보스가 아니라면
+								else
+								{
+									// FSM에 있는 Damage Process 호출		
+									fsm->OnDamageProcess(randSniperDamage);
+									// 데미지 위젯에 피해 값과 적 위치벡터 할당
+									SetDamageWidget(randSniperDamage, hitLoc, false, FLinearColor::White);
+									// 일반 적중 데미지 프로세스 호출
+									enemy->OnDamaged();
+								}
 							}
 						}
 					}
@@ -2617,15 +2695,51 @@ void APlayerCharacter::Fire()
 								crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
 								UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHeadHitSound, hitLoc);
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.5f));
-								// FSM에 있는 Damage Process 호출		
-								fsm->OnDamageProcess(randPistolHeadDamage);
-								SetDamageWidget(randPistolHeadDamage, hitLoc, false, FLinearColor::Yellow);
-
-								// 헤드 적중 데미지 프로세스 호출
-								enemy->OnHeadDamaged();
+								// 적중 대상이 보스라면
 								if(bCrunch)
 								{
+									// 실드가 파괴된 상태라면
+									if(enemy->isShieldBroken)
+									{
+										// FSM에 있는 Damage Process 호출		
+										fsm->OnDamageProcess(randPistolHeadDamage);
+										if(enemy->isStunned)
+										{
+											// 데미지 위젯에 피해 값과 적 위치벡터 할당
+											SetDamageWidget(randPistolHeadDamage*2, hitLoc, false, FLinearColor::Red);
+										}
+										else
+										{
+											// 데미지 위젯에 피해 값과 적 위치벡터 할당
+											SetDamageWidget(randPistolHeadDamage, hitLoc, false, FLinearColor::Yellow);
+										}										
+										// 헤드 적중 데미지 프로세스 호출
+										enemy->OnHeadDamaged();
+									}
+									// 실드가 파괴되지 않은 상태라면
+									else
+									{
+										auto EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
+										EmitterTrans.SetScale3D(FVector(1.3));
+										UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldHitEmitter, EmitterTrans);
+										// FSM에 있는 Damage Process 호출		
+										fsm->OnShieldDamageProcess(randPistolHeadDamage);
+										// 데미지 위젯에 피해 값과 적 위치벡터 할당
+										SetDamageWidget(randPistolHeadDamage/20, hitLoc, true, FLinearColor::Yellow);
+										// 헤드 적중 데미지 프로세스 호출
+										enemy->OnHeadDamaged();
+									}
 									SetBossHPWidget(enemy);
+								}
+								// 보스가 아니라면
+								else
+								{
+									// FSM에 있는 Damage Process 호출		
+									fsm->OnDamageProcess(randPistolHeadDamage);
+									// 데미지 위젯에 피해 값과 적 위치벡터 할당
+									SetDamageWidget(randPistolHeadDamage, hitLoc, false, FLinearColor::Yellow);
+									// 헤드 적중 데미지 프로세스 호출
+									enemy->OnHeadDamaged();
 								}
 							}
 						}
@@ -2668,15 +2782,51 @@ void APlayerCharacter::Fire()
 								crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
 								UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(0.7f));
-								// FSM에 있는 Damage Process 호출		
-								fsm->OnDamageProcess(randPistolDamage);
-								SetDamageWidget(randPistolDamage, hitLoc, false, FLinearColor::White);
-
-								// 일반 적중 데미지 프로세스 호출
-								enemy->OnDamaged();
+								// 적중 대상이 보스라면
 								if(bCrunch)
 								{
+									// 실드가 파괴된 상태라면
+									if(enemy->isShieldBroken)
+									{
+										// FSM에 있는 Damage Process 호출		
+										fsm->OnDamageProcess(randPistolDamage);
+										if(enemy->isStunned)
+										{
+											// 데미지 위젯에 피해 값과 적 위치벡터 할당
+											SetDamageWidget(randPistolDamage*2, hitLoc, false, FLinearColor::Red);
+										}
+										else
+										{
+											// 데미지 위젯에 피해 값과 적 위치벡터 할당
+											SetDamageWidget(randPistolDamage, hitLoc, false, FLinearColor::White);
+										}
+										// 일반 적중 데미지 프로세스 호출
+										enemy->OnDamaged();
+									}
+									// 실드가 있는 상태라면
+									else
+									{
+										auto EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
+										EmitterTrans.SetScale3D(FVector(1.3));
+										UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldHitEmitter, EmitterTrans);
+										// FSM에 있는 Damage Process 호출		
+										fsm->OnShieldDamageProcess(randPistolDamage);
+										// 데미지 위젯에 피해 값과 적 위치벡터 할당
+										SetDamageWidget(randPistolDamage/20, hitLoc, true, FLinearColor::White);
+										// 일반 적중 데미지 프로세스 호출
+										enemy->OnDamaged();
+									}
 									SetBossHPWidget(enemy);
+								}
+								// 보스가 아니라면
+								else
+								{
+									// FSM에 있는 Damage Process 호출		
+									fsm->OnDamageProcess(randPistolDamage);
+									// 데미지 위젯에 피해 값과 적 위치벡터 할당
+									SetDamageWidget(randPistolDamage, hitLoc, false, FLinearColor::White);
+									// 일반 적중 데미지 프로세스 호출
+									enemy->OnDamaged();
 								}
 							}
 						}
@@ -2864,15 +3014,51 @@ void APlayerCharacter::Fire()
 								crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
 								UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHeadHitSound, hitLoc);
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.0f));
-								// FSM에 있는 Damage Process 호출		
-								fsm->OnDamageProcess(randM249HeadDamage);
-								SetDamageWidget(randM249HeadDamage, hitLoc, false, FLinearColor::Yellow);
-
-								// 헤드 적중 데미지 프로세스 호출
-								enemy->OnHeadDamaged();
+								// 적중 대상이 보스라면
 								if(bCrunch)
 								{
+									// 실드가 파괴된 상태라면
+									if(enemy->isShieldBroken)
+									{
+										// FSM에 있는 Damage Process 호출		
+										fsm->OnDamageProcess(randM249HeadDamage);
+										if(enemy->isStunned)
+										{
+											// 데미지 위젯에 피해 값과 적 위치벡터 할당
+											SetDamageWidget(randM249HeadDamage*2, hitLoc, false, FLinearColor::Red);
+										}
+										else
+										{
+											// 데미지 위젯에 피해 값과 적 위치벡터 할당
+											SetDamageWidget(randM249HeadDamage, hitLoc, false, FLinearColor::Yellow);
+										}										
+										// 헤드 적중 데미지 프로세스 호출
+										enemy->OnHeadDamaged();
+									}
+									// 실드가 파괴되지 않은 상태라면
+									else
+									{
+										auto EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
+										EmitterTrans.SetScale3D(FVector(1.3));
+										UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldHitEmitter, EmitterTrans);
+										// FSM에 있는 Damage Process 호출		
+										fsm->OnShieldDamageProcess(randM249HeadDamage);
+										// 데미지 위젯에 피해 값과 적 위치벡터 할당
+										SetDamageWidget(randM249HeadDamage/20, hitLoc, true, FLinearColor::Yellow);
+										// 헤드 적중 데미지 프로세스 호출
+										enemy->OnHeadDamaged();
+									}
 									SetBossHPWidget(enemy);
+								}
+								// 보스가 아니라면
+								else
+								{
+									// FSM에 있는 Damage Process 호출		
+									fsm->OnDamageProcess(randM249HeadDamage);
+									// 데미지 위젯에 피해 값과 적 위치벡터 할당
+									SetDamageWidget(randM249HeadDamage, hitLoc, false, FLinearColor::Yellow);
+									// 헤드 적중 데미지 프로세스 호출
+									enemy->OnHeadDamaged();
 								}
 							}
 						}
@@ -2914,15 +3100,51 @@ void APlayerCharacter::Fire()
 								crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
 								UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(0.5f));
-								// FSM에 있는 Damage Process 호출		
-								fsm->OnDamageProcess(randM249Damage);
-								SetDamageWidget(randM249Damage, hitLoc, false, FLinearColor::White);
-
-								// 일반 적중 데미지 프로세스 호출
-								enemy->OnDamaged();
+								// 적중 대상이 보스라면
 								if(bCrunch)
 								{
+									// 실드가 파괴된 상태라면
+									if(enemy->isShieldBroken)
+									{
+										// FSM에 있는 Damage Process 호출		
+										fsm->OnDamageProcess(randM249Damage);
+										if(enemy->isStunned)
+										{
+											// 데미지 위젯에 피해 값과 적 위치벡터 할당
+											SetDamageWidget(randM249Damage*2, hitLoc, false, FLinearColor::Red);
+										}
+										else
+										{
+											// 데미지 위젯에 피해 값과 적 위치벡터 할당
+											SetDamageWidget(randM249Damage, hitLoc, false, FLinearColor::White);
+										}
+										// 일반 적중 데미지 프로세스 호출
+										enemy->OnDamaged();
+									}
+									// 실드가 있는 상태라면
+									else
+									{
+										auto EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
+										EmitterTrans.SetScale3D(FVector(1.3));
+										UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldHitEmitter, EmitterTrans);
+										// FSM에 있는 Damage Process 호출		
+										fsm->OnShieldDamageProcess(randM249Damage);
+										// 데미지 위젯에 피해 값과 적 위치벡터 할당
+										SetDamageWidget(randM249Damage/20, hitLoc, true, FLinearColor::White);
+										// 일반 적중 데미지 프로세스 호출
+										enemy->OnDamaged();
+									}
 									SetBossHPWidget(enemy);
+								}
+								// 보스가 아니라면
+								else
+								{
+									// FSM에 있는 Damage Process 호출		
+									fsm->OnDamageProcess(randM249Damage);
+									// 데미지 위젯에 피해 값과 적 위치벡터 할당
+									SetDamageWidget(randM249Damage, hitLoc, false, FLinearColor::White);
+									// 일반 적중 데미지 프로세스 호출
+									enemy->OnDamaged();
 								}
 							}
 						}

@@ -141,7 +141,10 @@ public:
 	class USoundBase* GuardianFireSound;
 
 	UPROPERTY()
-	FVector DropForce = FVector(10);
+	FVector DropForce = FVector(1000);
+
+	UPROPERTY()
+	FVector DropLoc = GetActorUpVector();
 
 	UPROPERTY()
 	bool bDeath = false;

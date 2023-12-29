@@ -18,23 +18,20 @@ class ECLIPSE_API UEnemyAnim : public UAnimInstance
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EEnemyState state;
-
+	
 	virtual void NativeBeginPlay() override;
 
 	UFUNCTION()
-	void AnimNotify_AttackStart();
+	virtual void AnimNotify_AttackStart();
 
 	UFUNCTION()
-	void AnimNotify_AttackEnd();
+	virtual void AnimNotify_AttackEnd();
 
 	UFUNCTION()
-	void AnimNotify_DamageEnd();
+	virtual void AnimNotify_DamageEnd();
 
 	UFUNCTION()
-	void AnimNotify_DieEnd();
-
-	UFUNCTION()
-	void AnimNotify_Fire();
+	virtual void AnimNotify_DieEnd();	
 
 	UFUNCTION()
 	bool IsAttackAnimationPlaying();

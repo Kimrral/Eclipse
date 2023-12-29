@@ -137,7 +137,6 @@ void UEnemyFSM::TickAttack()
 
 		if(player->bPlayerDeath)
 		{
-			// 이동상태로 전이한다
 			SetState(EEnemyState::IDLE);
 		}
 	}

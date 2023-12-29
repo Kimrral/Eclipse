@@ -53,12 +53,6 @@ void UEnemyAnim::AnimNotify_DieEnd()
 	me->GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 }
 
-void UEnemyAnim::AnimNotify_Fire()
-{
-	me->EnemyAttackProcess();
-
-}
-
 bool UEnemyAnim::IsAttackAnimationPlaying()
 {
 	if(bIsAttackingAnim)

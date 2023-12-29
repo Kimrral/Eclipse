@@ -67,7 +67,7 @@ public:
 	void DropGear();
 
 	UFUNCTION()
-	void EnemyAttackProcess();
+	void GuardianFireProcess();
 
 	UPROPERTY()
 	bool isStunned = false;
@@ -101,6 +101,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AHeadsetActor> HeadsetActorFactory;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AGuardianProjectile> GuardianProjectileFactory;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int curHP;
 	
@@ -141,7 +144,7 @@ public:
 	class USoundBase* GuardianFireSound;
 
 	UPROPERTY()
-	FVector DropForce = FVector(1000);
+	FVector DropForce = FVector(50);
 
 	UPROPERTY()
 	FVector DropLoc = GetActorUpVector();

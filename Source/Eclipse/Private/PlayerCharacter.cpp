@@ -1828,7 +1828,14 @@ void APlayerCharacter::ApplyCachingValues()
 
 void APlayerCharacter::Damaged(int damage)
 {
-	curHP = FMath::Clamp(curHP-damage, 0, maxHP);
+	if(curHP<=damage)
+	{
+		PlayerDeath();
+	}
+	else
+	{
+		curHP = FMath::Clamp(curHP-damage, 0, maxHP);
+	}
 }
 
 
@@ -3307,42 +3314,47 @@ float APlayerCharacter::RecoilRateMultiplier()
 
 void APlayerCharacter::PlayerDeath()
 {
-	// 사망지점 전역변수에 캐싱
-	DeathPosition=GetActorLocation();
-	auto playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
-	// 카메라 페이드 연출
-	playerCam->StartCameraFade(0, 1, 5.0, FLinearColor::Black, false, true);
-	// 몽타주 재생 중단
-	StopAnimMontage();
-	// 인풋 비활성화
-	DisableInput(GetWorld()->GetFirstPlayerController());
-	// 사망 몽타주 재생
-	PlayAnimMontage(zoomingMontage, 1, FName("Death"));
-	// 현재 주요 변수 값들을 게임모드의 변수에 캐싱
-	CachingValues();
-	FTimerHandle endHandle;
-	// 7초 뒤 호출되는 함수 타이머
-	GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()->void
+	if(isDead==false)
 	{
-		// 사망 변수 활성화
-		bPlayerDeath=true;
-		auto* PC = Cast<AEclipsePlayerController>(GetController());
-		// 자신 제거
-		this->Destroy();
-		// 컨트롤러의 리스폰 함수 호출
-		PC->Respawn(this);	
-	}), 7.0f, false);
-	FTimerHandle possesHandle;
-	// 0.4초 뒤 호출되는 함수 타이머
-	GetWorld()->GetTimerManager().SetTimer(possesHandle, FTimerDelegate::CreateLambda([this]()->void
+		// 사망지점 전역변수에 캐싱
+		DeathPosition=GetActorLocation();
+		auto playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+		// 카메라 페이드 연출
+		playerCam->StartCameraFade(0, 1, 5.0, FLinearColor::Black, false, true);
+		// 몽타주 재생 중단
+		StopAnimMontage();
+		// 인풋 비활성화
+		DisableInput(GetWorld()->GetFirstPlayerController());
+		// 사망 몽타주 재생
+		PlayAnimMontage(zoomingMontage, 1, FName("Death"));
+		// 현재 주요 변수 값들을 게임모드의 변수에 캐싱
+		CachingValues();
+		FTimerHandle endHandle;
+		// 7초 뒤 호출되는 함수 타이머
+		GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()->void
 		{
+			// 사망 변수 활성화
+			bPlayerDeath=true;
 			auto* PC = Cast<AEclipsePlayerController>(GetController());
-			if (PC != nullptr)
+			// 자신 제거
+			this->Destroy();
+			// 컨트롤러의 리스폰 함수 호출
+			PC->Respawn(this);	
+		}), 7.0f, false);
+		FTimerHandle possesHandle;
+		// 0.4초 뒤 호출되는 함수 타이머
+		GetWorld()->GetTimerManager().SetTimer(possesHandle, FTimerDelegate::CreateLambda([this]()->void
 			{
-				// 리스폰 된 플레이어에 새롭게 빙의
-				PC->Possess(this);
-			}
-		}), 0.4f, false);
+				auto* PC = Cast<AEclipsePlayerController>(GetController());
+				if (PC != nullptr)
+				{
+					// 리스폰 된 플레이어에 새롭게 빙의
+					PC->Possess(this);
+				}
+			}), 0.4f, false);
+		
+		isDead=true;
+	}
 }
 
 void APlayerCharacter::EquipHelmet()

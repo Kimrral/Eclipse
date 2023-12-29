@@ -8,12 +8,12 @@
 #include "EnemyAnim.h"
 #include "EnemyFSM.h"
 #include "GoggleActor.h"
+#include "GuardianProjectile.h"
 #include "HeadsetActor.h"
 #include "HelmetActor.h"
 #include "M249AmmoActor.h"
 #include "M249MagActor.h"
 #include "MaskActor.h"
-#include "NavigationInvokerComponent.h"
 #include "PistolAmmoActor.h"
 #include "PistolMagActor.h"
 #include "PlayerCharacter.h"
@@ -25,6 +25,7 @@
 #include "Eclipse/EclipseGameMode.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Perception/PawnSensingComponent.h"
 
 // Sets default values
@@ -79,6 +80,8 @@ void AEnemy::OnDie()
 {
 	FTimerHandle destroyHandle;
 	enemyFSM->Timeline.Stop();
+	isStunned=false;
+	StopAnimMontage();
 	GetWorld()->GetTimerManager().ClearTimer(enemyFSM->stunHandle);
 	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 	GetCharacterMovement()->Deactivate();
@@ -246,11 +249,16 @@ void AEnemy::DropGear()
 	}
 }
 
-void AEnemy::EnemyAttackProcess()
-{
-	auto particleTrans=GetMesh()->GetSocketTransform(FName("Muzzle"));
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), fireParticle, particleTrans);
-	UGameplayStatics::PlaySoundAtLocation(GetWorld(), GuardianFireSound, this->GetActorLocation());
-
+void AEnemy::GuardianFireProcess()
+{	
+	if(enemyFSM->player)
+	{
+		auto muzzleTrans=GetMesh()->GetSocketTransform(FName("Muzzle"));
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), fireParticle, muzzleTrans);
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), GuardianFireSound, this->GetActorLocation());
+		FVector playerLoc = (enemyFSM->player->GetActorLocation() - muzzleTrans.GetLocation());
+		auto projectileRot = UKismetMathLibrary::MakeRotFromXZ(playerLoc, this->GetActorUpVector());
+		GetWorld()->SpawnActor<AGuardianProjectile>(GuardianProjectileFactory, muzzleTrans.GetLocation(), projectileRot);
+	}
 }
 

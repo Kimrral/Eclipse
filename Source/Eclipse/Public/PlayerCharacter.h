@@ -612,6 +612,9 @@ public:
 	bool ArmorEquipped = false;
 
 	UPROPERTY()
+	bool isDead = false;
+
+	UPROPERTY()
 	int randRifleDamage;
 	UPROPERTY()
 	int randRifleHeadDamage;

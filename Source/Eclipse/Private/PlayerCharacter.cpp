@@ -2027,14 +2027,14 @@ void APlayerCharacter::Fire()
 									GuardianCount++;
 									informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
 									// 전리품 드롭
-									guardian->DropReward();
+									enemy->DropReward();
 								}
 								else if(bCrunch)
 								{									
 									BossCount++;
 									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
 									SetBossHPWidget(enemy);
-									crunch->DropReward();
+									enemy->DropReward();
 									FTimerHandle removeHandle;
 									GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
 								}
@@ -2127,7 +2127,7 @@ void APlayerCharacter::Fire()
 									GuardianCount++;
 									informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
 									// 전리품 드롭
-									guardian->DropReward();
+									enemy->DropReward();
 
 								}
 								else if(bCrunch)
@@ -2136,7 +2136,7 @@ void APlayerCharacter::Fire()
 									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
 									SetBossHPWidget(enemy);
 									// 전리품 드롭
-									crunch->DropReward();
+									enemy->DropReward();
 									FTimerHandle removeHandle;
 									GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
 								}
@@ -2343,14 +2343,14 @@ void APlayerCharacter::Fire()
 								{
 									GuardianCount++;
 									informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
-									guardian->DropReward();
+									enemy->DropReward();
 								}
 								else if(bCrunch)
 								{
 									BossCount++;
 									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
 									SetBossHPWidget(enemy);
-									crunch->DropReward();
+									enemy->DropReward();
 									FTimerHandle removeHandle;
 									GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
 								}
@@ -2429,14 +2429,14 @@ void APlayerCharacter::Fire()
 								{
 									GuardianCount++;
 									informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
-									guardian->DropReward();
+									enemy->DropReward();
 								}
 								else if(bCrunch)
 								{
 									BossCount++;
 									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
 									SetBossHPWidget(enemy);
-									crunch->DropReward();
+									enemy->DropReward();
 									FTimerHandle removeHandle;
 									GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
 								}
@@ -2685,14 +2685,14 @@ void APlayerCharacter::Fire()
 								{
 									GuardianCount++;
 									informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
-									guardian->DropReward();
+									enemy->DropReward();
 								}
 								else if(bCrunch)
 								{
 									BossCount++;
 									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
 									SetBossHPWidget(enemy);
-									crunch->DropReward();
+									enemy->DropReward();
 									FTimerHandle removeHandle;
 									GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
 								}
@@ -2772,7 +2772,7 @@ void APlayerCharacter::Fire()
 								{
 									GuardianCount++;
 									informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
-									guardian->DropReward();
+									enemy->DropReward();
 
 								}
 								else if(bCrunch)
@@ -2780,7 +2780,7 @@ void APlayerCharacter::Fire()
 									BossCount++;
 									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
 									SetBossHPWidget(enemy);
-									crunch->DropReward();
+									enemy->DropReward();
 									FTimerHandle removeHandle;
 									GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
 								}
@@ -3005,7 +3005,7 @@ void APlayerCharacter::Fire()
 								if(bGuardian)
 								{
 									GuardianCount++;
-									guardian->DropReward();
+									enemy->DropReward();
 									informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
 								}
 								else if(bCrunch)
@@ -3013,7 +3013,7 @@ void APlayerCharacter::Fire()
 									BossCount++;
 									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
 									SetBossHPWidget(enemy);
-									crunch->DropReward();
+									enemy->DropReward();
 									FTimerHandle removeHandle;
 									GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
 								}
@@ -3092,7 +3092,7 @@ void APlayerCharacter::Fire()
 								if(bGuardian)
 								{
 									GuardianCount++;
-									guardian->DropReward();
+									enemy->DropReward();
 									informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
 								}
 								else if(bCrunch)
@@ -3100,7 +3100,7 @@ void APlayerCharacter::Fire()
 									BossCount++;
 									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
 									SetBossHPWidget(enemy);
-									crunch->DropReward();
+									enemy->DropReward();
 									FTimerHandle removeHandle;
 									GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
 								}

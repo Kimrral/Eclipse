@@ -581,11 +581,20 @@ public:
 	UFUNCTION()
 	void CachingValues();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void CachingValuesBP();
+
 	UFUNCTION()
 	void ApplyCachingValues();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void ApplyCachingValuesBP();
+
 	UFUNCTION()
 	void Damaged(int damage);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void UpdateTabWidget();
 
 	UFUNCTION()
 	int32 SetRifleAdditionalMagazine();

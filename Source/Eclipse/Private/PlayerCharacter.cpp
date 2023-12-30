@@ -1558,6 +1558,7 @@ void APlayerCharacter::ChangeWeapon()
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), recallParticle, spawnTrans);
 					PlayAnimMontage(zoomingMontage, 1, FName("LevelEnd"));
 					bUseControllerRotationYaw=false;
+					infoWidgetUI->RemoveFromParent();
 					FTimerHandle endHandle;
 					GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()->void
 					{
@@ -2560,8 +2561,6 @@ void APlayerCharacter::Fire()
 				auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7*RecoilRateMultiplier(), 0.8*RecoilRateMultiplier());
 				AddControllerPitchInput(randF);
 				AddControllerYawInput(randF2);
-				FVector niagaraSpawnLoc = FollowCamera->K2_GetComponentLocation();
-				FVector ForwardLoc = niagaraSpawnLoc + FollowCamera->GetForwardVector()*10000.0f;
 				if(isZooming)
 				{
 					auto particleTrans = FollowCamera->GetComponentLocation()+FollowCamera->GetUpVector()*-70.0f;
@@ -3204,13 +3203,6 @@ void APlayerCharacter::Fire()
 				GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
 				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot+FRotator(-90, 0, 0), FVector(0.5f));
 				auto fireSocketLoc = m249Comp->GetSocketTransform(FName("M249FirePosition")).GetLocation();
-				// 탄 궤적 나이아가라 시스템 스폰
-				UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, M249HitResult.Location, FRotator::ZeroRotator,FVector(1), true, true, ENCPoolMethod::AutoRelease);
-				if(niagara)
-				{
-					// 나이아가라 파라미터 벡터 위치 변수 할당
-					niagara->SetVectorParameter(FName("EndPoint"), fireSocketLoc);
-				}
 				CanShoot=false;
 				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
 				{
@@ -3232,14 +3224,6 @@ void APlayerCharacter::Fire()
 					auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.5*RecoilRateMultiplier(), 0.5*RecoilRateMultiplier());
 					AddControllerPitchInput(randF);
 					AddControllerYawInput(randF2);					
-				}
-				FVector niagaraSpawnLoc = FollowCamera->K2_GetComponentLocation();
-				FVector ForwardLoc = niagaraSpawnLoc + FollowCamera->GetForwardVector()*10000.0f;
-				auto FireLoc = rifleComp->GetSocketTransform(FName("RifleFirePosition")).GetLocation();
-				UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, ForwardLoc, FRotator::ZeroRotator, FVector(1), true, true, ENCPoolMethod::AutoRelease);
-				if(niagara)
-				{
-					niagara->SetVectorParameter(FName("EndPoint"), FireLoc);
 				}
 				CanShoot=false;				
 				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void

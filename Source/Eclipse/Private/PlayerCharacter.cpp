@@ -36,8 +36,10 @@
 #include "RewardContainer.h"
 #include "RifleMagActor.h"
 #include "SniperMagActor.h"
+#include "StageBoard.h"
 #include "TabWidget.h"
 #include "WeaponInfoWidget.h"
+#include "XRLoadingScreenFunctionLibrary.h"
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
@@ -783,6 +785,8 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 		ArmorActor= Cast<AArmorActor>(actorHitResult.GetActor());
 
 		MedKitActor= Cast<AMedKitActor>(actorHitResult.GetActor());
+
+		StageBoard= Cast<AStageBoard>(actorHitResult.GetActor());
 		
 		// 라이플 탐지
 		if(rifleActor)
@@ -1053,6 +1057,22 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 				infoWidgetUI->AddToViewport();
 			}
 		}
+		else if(StageBoard)
+		{
+			// 1회 실행 불리언
+			if(TickOverlapBoolean==false)
+			{
+				TickOverlapBoolean=true;
+				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+				StageBoard->boardMesh->SetRenderCustomDepth(true);
+				// Widget Switcher 이용한 무기 정보 위젯 스위칭
+				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(16);
+				// Radial Slider Value 초기화
+				infoWidgetUI->weaponHoldPercent=0;
+				// Weapon Info Widget 뷰포트에 배치
+				infoWidgetUI->AddToViewport();
+			}
+		}
 		else
 		{
 			// 1회 실행 불리언
@@ -1092,6 +1112,7 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 						HeadsetActor= Cast<AHeadsetActor>(HitObj[i].GetActor());
 						ArmorActor= Cast<AArmorActor>(HitObj[i].GetActor());
 						MedKitActor= Cast<AMedKitActor>(HitObj[i].GetActor());
+						StageBoard= Cast<AStageBoard>(HitObj[i].GetActor());
 						if(rifleActor)
 						{
 							// Render Custom Depth 활용한 무기 액터 외곽선 해제
@@ -1171,6 +1192,11 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 						{
 							// Render Custom Depth 활용한 무기 액터 외곽선 해제
 							MedKitActor->consumeMesh->SetRenderCustomDepth(false);
+						}
+						else if(StageBoard)
+						{
+							// Render Custom Depth 활용한 무기 액터 외곽선 해제
+							StageBoard->boardMesh->SetRenderCustomDepth(false);
 						}
 					}
 				}
@@ -1289,6 +1315,7 @@ void APlayerCharacter::ChangeWeapon()
 		ArmorActor= Cast<AArmorActor>(actorHitResult.GetActor());
 
 		MedKitActor= Cast<AMedKitActor>(actorHitResult.GetActor());
+		StageBoard= Cast<AStageBoard>(actorHitResult.GetActor());
 		// 라이플로 교체
 		if(rifleActor)
 		{
@@ -1546,7 +1573,6 @@ void APlayerCharacter::ChangeWeapon()
 			{
 				if(GuardianCount>=7&&ConsoleCount>=5&&BossCount>=1)
 				{
-					UE_LOG(LogTemp, Warning, TEXT("Next Stage"))
 					infoWidgetUI->weaponHoldPercent=0;
 					bEnding=true;
 					auto playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
@@ -1562,9 +1588,11 @@ void APlayerCharacter::ChangeWeapon()
 					FTimerHandle endHandle;
 					GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()->void
 					{
-						auto pc = GetWorld()->GetFirstPlayerController();
-						TEnumAsByte<EQuitPreference::Type> types = EQuitPreference::Quit;
-						UKismetSystemLibrary::QuitGame(GetWorld(),pc, types, false);
+						UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"));
+
+						//auto pc = GetWorld()->GetFirstPlayerController();
+						//TEnumAsByte<EQuitPreference::Type> types = EQuitPreference::Quit;
+						//UKismetSystemLibrary::QuitGame(GetWorld(),pc, types, false);
 					}), 7.0f, false);
 				}
 				else
@@ -1692,6 +1720,30 @@ void APlayerCharacter::ChangeWeapon()
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
 				MedKitActor->AddInventory();
 				MedKitActor->Destroy();
+			}
+		}
+		else if(StageBoard)
+		{
+			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+			{
+				infoWidgetUI->weaponHoldPercent=0;
+				bEnding=true;
+				auto playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+				playerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
+				StopAnimMontage();
+				GetCharacterMovement()->StopActiveMovement();
+				GetCharacterMovement()->DisableMovement();
+				auto spawnTrans = this->GetTransform();
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), recallParticle, spawnTrans);
+				PlayAnimMontage(zoomingMontage, 1, FName("LevelEnd"));
+				bUseControllerRotationYaw=false;
+				infoWidgetUI->RemoveFromParent();
+				FTimerHandle endHandle;
+				GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()->void
+				{
+					UGameplayStatics::OpenLevel(GetWorld(), FName("Map_BigStarStation"));
+				}), 7.0f, false);				
 			}
 		}
 	}	

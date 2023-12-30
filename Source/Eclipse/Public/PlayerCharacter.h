@@ -299,6 +299,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	TArray<bool> weaponArray;
 
+	UPROPERTY(EditAnywhere, Category="Texture")
+	class UTexture* LoadingTexture;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<FString> equippedWeaponStringArray;
 
@@ -675,6 +678,9 @@ public:
 
 	UPROPERTY()
 	class AMissionChecker* MissionChecker;
+
+	UPROPERTY()
+	class AStageBoard* StageBoard;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	class ARifleMagActor* RifleMagActor;

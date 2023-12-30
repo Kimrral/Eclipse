@@ -159,6 +159,7 @@ void APlayerCharacter::BeginPlay()
 	gm=Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());
 
 	ApplyCachingValues();
+	ApplyCachingValuesBP();
 
 	bPlayerDeath=false;
 
@@ -207,12 +208,6 @@ void APlayerCharacter::BeginPlay()
 
 	damageWidgetUI = CreateWidget<UDamageWidget>(GetWorld(), damageWidgetUIFactory);
 
-	// tabWidgetUI=CreateWidget<UTabWidget>(GetWorld(), tabWidgetFactory);
-	// if(tabWidgetUI)
-	// {
-	// 	//tabWidgetUI->NativeConstruct();
-	// }
-
 	bossHPUI=CreateWidget<UBossHPWidget>(GetWorld(), bossHPWidgetFactory);
 
 	StopAnimMontage();
@@ -232,6 +227,8 @@ void APlayerCharacter::BeginPlay()
 	HeadSetSlot->SetVisibility(false);
 	MaskSlot->SetVisibility(false);
 	ArmorSlot->SetVisibility(false);
+
+	UpdateTabWidget();
 	
 }
 
@@ -291,10 +288,6 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(LookAroundAction, ETriggerEvent::Triggered, this, &APlayerCharacter::OnActionLookAroundPressed);
 		EnhancedInputComponent->BindAction(LookAroundAction, ETriggerEvent::Completed, this, &APlayerCharacter::OnActionLookAroundReleased);
 
-		//Scrolling
-		//EnhancedInputComponent->BindAction(ZoomInAction, ETriggerEvent::Started, this, &APlayerCharacter::OnZoomIn);
-		//EnhancedInputComponent->BindAction(ZoomOutAction, ETriggerEvent::Started, this, &APlayerCharacter::OnZoomOut);
-
 		//Weapon Swap
 		EnhancedInputComponent->BindAction(FirstWeaponSwapAction, ETriggerEvent::Started, this, &APlayerCharacter::SwapFirstWeapon);
 		EnhancedInputComponent->BindAction(SecondWeaponSwapAction, ETriggerEvent::Started, this, &APlayerCharacter::SwapSecondWeapon);
@@ -312,7 +305,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 void APlayerCharacter::Move(const FInputActionValue& Value)
 {
 	// input is a Vector2D
-	FVector2D MovementVector = Value.Get<FVector2D>();
+	const FVector2D MovementVector = Value.Get<FVector2D>();
 
 	if (Controller != nullptr)
 	{
@@ -339,7 +332,7 @@ void APlayerCharacter::Look(const FInputActionValue& Value)
 		return;
 	}
 	// input is a Vector2D
-	FVector2D LookAxisVector = Value.Get<FVector2D>();
+	const FVector2D LookAxisVector = Value.Get<FVector2D>();
 
 	if (Controller != nullptr)
 	{
@@ -378,10 +371,10 @@ void APlayerCharacter::Zoom()
 	{
 		isSniperZooming=true;
 		crosshairUI->CrosshairImage->SetVisibility(ESlateVisibility::Hidden);
-		auto cameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0));
+		const auto cameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0));
 		cameraManager->StartCameraFade(1.0, 0.1, 3.0, FColor::Black, false, true);
 		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-		auto controller = GetWorld()->GetFirstPlayerController();
+		const auto controller = GetWorld()->GetFirstPlayerController();
 		controller->PlayerCameraManager->StartCameraShake(sniperZoomingShake);
 		// 카메라 줌 러프 타임라인 재생
 		Timeline.PlayFromStart();
@@ -411,7 +404,7 @@ void APlayerCharacter::ZoomRelease()
 	// Zooming Boolean
 	isZooming = false;
 	GetCharacterMovement()->MaxWalkSpeed=360.f;
-	auto animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+	const auto animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 	if(animInst)
 	{
 		animInst->bZooming=false;
@@ -427,7 +420,7 @@ void APlayerCharacter::ZoomRelease()
 	else if(weaponArray[1]==true)
 	{
 		isSniperZooming=false;
-		auto controller = GetWorld()->GetFirstPlayerController();
+		const auto controller = GetWorld()->GetFirstPlayerController();
 		controller->PlayerCameraManager->StopAllCameraShakes();
 		if(GetMesh()->GetAnimInstance()->Montage_IsPlaying(zoomingMontage))
 		{
@@ -494,7 +487,6 @@ void APlayerCharacter::RunRelease()
 	{
 		return;
 	}
-	//isRunning=false;
 	GetCharacterMovement()->MaxWalkSpeed = 360.f;
 }
 
@@ -1835,6 +1827,7 @@ void APlayerCharacter::Damaged(int damage)
 	else
 	{
 		curHP = FMath::Clamp(curHP-damage, 0, maxHP);
+		UpdateTabWidget();
 	}
 }
 
@@ -3329,6 +3322,7 @@ void APlayerCharacter::PlayerDeath()
 		PlayAnimMontage(zoomingMontage, 1, FName("Death"));
 		// 현재 주요 변수 값들을 게임모드의 변수에 캐싱
 		CachingValues();
+		CachingValuesBP();
 		FTimerHandle endHandle;
 		// 7초 뒤 호출되는 함수 타이머
 		GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()->void

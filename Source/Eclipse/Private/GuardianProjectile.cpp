@@ -66,7 +66,6 @@ void AGuardianProjectile::OnOverlap(UPrimitiveComponent* OverlappedComponent, AA
 		// 충돌 무시 액터 리스트 추가
 		params.AddIgnoredActor(this);
 		// 집게를 든채로 컨테이너에서 Trigger 되었는지 판단하는 OverlapMulti
-		DrawDebugSphere(GetWorld(), Center, 100, 30, FColor::Red, false, 2);
 		bool bHitVat = GetWorld()->OverlapMultiByChannel(HitObj, Center, FQuat::Identity, ECC_Pawn, FCollisionShape::MakeSphere(100), params);
 		// OverlapMulti가 적중하지 않았다면
 		if (bHitVat == false)
@@ -79,7 +78,7 @@ void AGuardianProjectile::OnOverlap(UPrimitiveComponent* OverlappedComponent, AA
 			auto player=Cast<APlayerCharacter>(OtherActor);
 			if(player)
 			{
-				auto dist = GetDistanceTo(player);
+				int dist = FMath::RoundHalfFromZero(GetDistanceTo(player));
 				// 폭발 중심점부터의 거리에 따른 데미지 프로세스
 				player->Damaged(FMath::Clamp(guardianDamageValue-(dist*2), 0, 30));
 			}

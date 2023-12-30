@@ -71,7 +71,7 @@ public:
 	int curBoxHP;
 
 	UPROPERTY()
-	int maxBoxHP = 10;
+	int maxBoxHP = 5;
 
 	UPROPERTY()
 	bool bDestroyed = false;

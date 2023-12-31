@@ -218,7 +218,7 @@ void APlayerCharacter::BeginPlay()
 	{
 		PlayerController->EnableInput(PlayerController);		
 	}
-	PlayAnimMontage(zoomingMontage, 1, FName("Respawn"));
+	//PlayAnimMontage(zoomingMontage, 1, FName("Respawn"));
 
 	auto playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 	playerCam->StopCameraFade();

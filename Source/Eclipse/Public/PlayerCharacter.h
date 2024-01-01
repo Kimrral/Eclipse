@@ -7,6 +7,7 @@
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "RifleActor.h"
+#include "StashWidget.h"
 #include "Components/TimelineComponent.h"
 #include "PlayerCharacter.generated.h"
 
@@ -230,6 +231,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = widget)
 	class UBossHPWidget* bossHPUI;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
+	TSubclassOf<UStashWidget> stashWidgetFactory;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = widget)
+	class UStashWidget* stashWidgetUI;
+	
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* ShieldHitEmitter;
 

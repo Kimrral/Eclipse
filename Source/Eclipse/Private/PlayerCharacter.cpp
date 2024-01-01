@@ -37,6 +37,7 @@
 #include "RifleMagActor.h"
 #include "SniperMagActor.h"
 #include "StageBoard.h"
+#include "Stash.h"
 #include "TabWidget.h"
 #include "WeaponInfoWidget.h"
 #include "XRLoadingScreenFunctionLibrary.h"
@@ -787,6 +788,7 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 		MedKitActor= Cast<AMedKitActor>(actorHitResult.GetActor());
 
 		StageBoard= Cast<AStageBoard>(actorHitResult.GetActor());
+		Stash=Cast<AStash>(actorHitResult.GetActor());
 		
 		// 라이플 탐지
 		if(rifleActor)
@@ -1073,6 +1075,22 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 				infoWidgetUI->AddToViewport();
 			}
 		}
+		else if(Stash)
+		{
+			// 1회 실행 불리언
+			if(TickOverlapBoolean==false)
+			{
+				TickOverlapBoolean=true;
+				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+				Stash->stashMesh->SetRenderCustomDepth(true);
+				// Widget Switcher 이용한 무기 정보 위젯 스위칭
+				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(17);
+				// Radial Slider Value 초기화
+				infoWidgetUI->weaponHoldPercent=0;
+				// Weapon Info Widget 뷰포트에 배치
+				infoWidgetUI->AddToViewport();
+			}
+		}
 		else
 		{
 			// 1회 실행 불리언
@@ -1113,6 +1131,8 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 						ArmorActor= Cast<AArmorActor>(HitObj[i].GetActor());
 						MedKitActor= Cast<AMedKitActor>(HitObj[i].GetActor());
 						StageBoard= Cast<AStageBoard>(HitObj[i].GetActor());
+						Stash= Cast<AStash>(HitObj[i].GetActor());
+						
 						if(rifleActor)
 						{
 							// Render Custom Depth 활용한 무기 액터 외곽선 해제
@@ -1197,6 +1217,11 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 						{
 							// Render Custom Depth 활용한 무기 액터 외곽선 해제
 							StageBoard->boardMesh->SetRenderCustomDepth(false);
+						}
+						else if(Stash)
+						{
+							// Render Custom Depth 활용한 무기 액터 외곽선 해제
+							Stash->stashMesh->SetRenderCustomDepth(false);
 						}
 					}
 				}
@@ -1316,6 +1341,8 @@ void APlayerCharacter::ChangeWeapon()
 
 		MedKitActor= Cast<AMedKitActor>(actorHitResult.GetActor());
 		StageBoard= Cast<AStageBoard>(actorHitResult.GetActor());
+		Stash= Cast<AStash>(actorHitResult.GetActor());
+		
 		// 라이플로 교체
 		if(rifleActor)
 		{
@@ -1744,6 +1771,15 @@ void APlayerCharacter::ChangeWeapon()
 				{
 					UGameplayStatics::OpenLevel(GetWorld(), FName("Map_BigStarStation"));
 				}), 7.0f, false);				
+			}
+		}
+		else if(Stash)
+		{
+			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+			{
+				UGameplayStatics::PlaySound2D(GetWorld(), tabSound);
+				infoWidgetUI->RemoveFromParent();
 			}
 		}
 	}	

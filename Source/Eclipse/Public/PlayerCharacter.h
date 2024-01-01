@@ -208,6 +208,9 @@ public:
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* WeaponSwapSound;
 
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* tabSound;
+
 	UPROPERTY()
 	bool isSniperZoomed = false;
 
@@ -682,6 +685,9 @@ public:
 	UPROPERTY()
 	class AStageBoard* StageBoard;
 
+	UPROPERTY()
+	class AStash* Stash;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	class ARifleMagActor* RifleMagActor;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)

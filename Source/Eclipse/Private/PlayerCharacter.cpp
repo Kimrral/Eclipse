@@ -213,13 +213,14 @@ void APlayerCharacter::BeginPlay()
 
 	bossHPUI=CreateWidget<UBossHPWidget>(GetWorld(), bossHPWidgetFactory);
 
+	stashWidgetUI=CreateWidget<UStashWidget>(GetWorld(), stashWidgetFactory);
+
 	StopAnimMontage();
 	AEclipsePlayerController* PlayerController = Cast<AEclipsePlayerController>(GetWorld()->GetFirstPlayerController());
 	if(PlayerController)
 	{
 		PlayerController->EnableInput(PlayerController);		
 	}
-	//PlayAnimMontage(zoomingMontage, 1, FName("Respawn"));
 
 	auto playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 	playerCam->StopCameraFade();
@@ -1780,6 +1781,10 @@ void APlayerCharacter::ChangeWeapon()
 			{
 				UGameplayStatics::PlaySound2D(GetWorld(), tabSound);
 				infoWidgetUI->RemoveFromParent();
+				if(stashWidgetUI)
+				{
+					stashWidgetUI->AddToViewport();
+				}					
 			}
 		}
 	}	

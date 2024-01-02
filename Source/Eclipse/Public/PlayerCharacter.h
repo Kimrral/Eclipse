@@ -451,6 +451,9 @@ public:
 	float zoomTriggeredTime;
 
 	UPROPERTY()
+	bool bStashWidgetOn = false;
+
+	UPROPERTY()
 	bool bPlayerDeath;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)

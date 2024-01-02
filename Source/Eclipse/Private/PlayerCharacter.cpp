@@ -1312,7 +1312,7 @@ void APlayerCharacter::ChangeWeapon()
 	if(bEnding)
 	{
 		return;
-	}
+	}		
 	FHitResult actorHitResult;
 	FVector StartLoc = FollowCamera->GetComponentLocation();
 	FVector EndLoc = StartLoc+FollowCamera->GetForwardVector()*500.0f;
@@ -1778,11 +1778,14 @@ void APlayerCharacter::ChangeWeapon()
 		{
 			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
-			{
-				UGameplayStatics::PlaySound2D(GetWorld(), tabSound);
-				infoWidgetUI->RemoveFromParent();
-				if(stashWidgetUI)
+			{				
+				if(stashWidgetUI&&bStashWidgetOn==false&&pc)
 				{
+					bStashWidgetOn=true;
+					UGameplayStatics::PlaySound2D(GetWorld(), tabSound);
+					infoWidgetUI->RemoveFromParent();
+					UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(pc, stashWidgetUI);
+					pc->SetShowMouseCursor(true);
 					stashWidgetUI->AddToViewport();
 				}					
 			}

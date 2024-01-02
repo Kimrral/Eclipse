@@ -1784,9 +1784,7 @@ void APlayerCharacter::ChangeWeapon()
 					bStashWidgetOn=true;
 					UGameplayStatics::PlaySound2D(GetWorld(), tabSound);
 					infoWidgetUI->RemoveFromParent();
-					UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(pc, stashWidgetUI, EMouseLockMode::DoNotLock, true, false);
 					pc->SetShowMouseCursor(true);
-					stashWidgetUI->StashConstruct();
 					StashWidgetOnViewport();
 				}					
 			}

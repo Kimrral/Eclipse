@@ -13,5 +13,20 @@ UCLASS()
 class ECLIPSE_API UStashWidget : public UUserWidget
 {
 	GENERATED_BODY()
+
+public:
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UButton* ExitButton;
+
+	virtual void NativeConstruct() override;
+
+	UPROPERTY()
+	class AEclipsePlayerController* pc;
+
+	UPROPERTY()
+	class APlayerCharacter* playerCPP;
+
+	UFUNCTION()
+	void CloseStashWidget();
 	
 };

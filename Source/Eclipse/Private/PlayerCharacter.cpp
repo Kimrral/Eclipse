@@ -1786,6 +1786,7 @@ void APlayerCharacter::ChangeWeapon()
 					infoWidgetUI->RemoveFromParent();
 					UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(pc, stashWidgetUI);
 					pc->SetShowMouseCursor(true);
+					stashWidgetUI->StashConstruct();
 					stashWidgetUI->AddToViewport();
 				}					
 			}

@@ -28,5 +28,8 @@ public:
 
 	UFUNCTION()
 	void CloseStashWidget();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void StashConstruct();
 	
 };

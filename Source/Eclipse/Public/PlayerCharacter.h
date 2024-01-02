@@ -402,6 +402,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UnEquipArmor();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void StashWidgetOnViewport();
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bUsingRifle;
 	
@@ -450,7 +453,7 @@ public:
 	UPROPERTY()
 	float zoomTriggeredTime;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bStashWidgetOn = false;
 
 	UPROPERTY()

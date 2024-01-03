@@ -230,12 +230,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = widget)
 	class UBossHPWidget* bossHPUI;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
-	TSubclassOf<UStashWidget> stashWidgetFactory;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = widget)
-	class UStashWidget* stashWidgetUI;
 	
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* ShieldHitEmitter;

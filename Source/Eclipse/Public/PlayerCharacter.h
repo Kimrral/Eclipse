@@ -594,14 +594,27 @@ public:
 	UFUNCTION()
 	void CachingValues();
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void CachingValuesBP();
-
 	UFUNCTION()
 	void ApplyCachingValues();
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void ApplyCachingValuesBP();
+	void PouchCaching();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void StashCaching();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void InventoryCaching();
+	
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void ApplyStashCache();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void ApplyInventoryCache();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void ApplyPouchCache();
 
 	UFUNCTION()
 	void Damaged(int damage);

@@ -161,8 +161,7 @@ void APlayerCharacter::BeginPlay()
 	pc=Cast<AEclipsePlayerController>(GetWorld()->GetFirstPlayerController());
 	gm=Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());
 
-	ApplyCachingValues();
-	ApplyCachingValuesBP();
+	
 
 	bPlayerDeath=false;
 
@@ -230,6 +229,10 @@ void APlayerCharacter::BeginPlay()
 	MaskSlot->SetVisibility(false);
 	ArmorSlot->SetVisibility(false);
 
+	ApplyCachingValues();
+	ApplyPouchCache();
+	ApplyInventoryCache();
+	ApplyStashCache();
 	UpdateTabWidget();
 	
 }
@@ -1619,6 +1622,8 @@ void APlayerCharacter::ChangeWeapon()
 					FTimerHandle endHandle;
 					GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()->void
 					{
+						PouchCaching();
+						InventoryCaching();
 						UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"));
 
 						//auto pc = GetWorld()->GetFirstPlayerController();
@@ -1783,6 +1788,9 @@ void APlayerCharacter::ChangeWeapon()
 				FTimerHandle endHandle;
 				GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()->void
 				{
+					PouchCaching();
+					InventoryCaching();
+					StashCaching();
 					UGameplayStatics::OpenLevel(GetWorld(), FName("Map_BigStarStation"));
 				}), 7.0f, false);				
 			}
@@ -3412,10 +3420,7 @@ void APlayerCharacter::PlayerDeath()
 		// 인풋 비활성화
 		DisableInput(GetWorld()->GetFirstPlayerController());
 		// 사망 몽타주 재생
-		PlayAnimMontage(zoomingMontage, 1, FName("Death"));
-		// 현재 주요 변수 값들을 게임모드의 변수에 캐싱
-		CachingValues();
-		CachingValuesBP();
+		PlayAnimMontage(zoomingMontage, 1, FName("Death"));		
 		FTimerHandle endHandle;
 		// 7초 뒤 호출되는 함수 타이머
 		GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()->void
@@ -3423,6 +3428,9 @@ void APlayerCharacter::PlayerDeath()
 			// 사망 변수 활성화
 			bPlayerDeath=true;
 			auto* PC = Cast<AEclipsePlayerController>(GetController());
+			// 현재 주요 변수 값들을 게임모드의 변수에 캐싱
+			CachingValues();
+			PouchCaching();
 			// 자신 제거
 			this->Destroy();
 			// 컨트롤러의 리스폰 함수 호출

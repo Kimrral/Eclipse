@@ -213,8 +213,6 @@ void APlayerCharacter::BeginPlay()
 
 	bossHPUI=CreateWidget<UBossHPWidget>(GetWorld(), bossHPWidgetFactory);
 
-	stashWidgetUI=CreateWidget<UStashWidget>(GetWorld(), stashWidgetFactory);
-
 	StopAnimMontage();
 	AEclipsePlayerController* PlayerController = Cast<AEclipsePlayerController>(GetWorld()->GetFirstPlayerController());
 	if(PlayerController)
@@ -1355,6 +1353,7 @@ void APlayerCharacter::ChangeWeapon()
 				// 게이지가 모두 채워졌을 때
 				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 				{
+					infoWidgetUI->weaponHoldPercent=0;
 					UGameplayStatics::PlaySound2D(GetWorld(), WeaponSwapSound);
 					// 무기 정보 위젯 제거
 					infoWidgetUI->RemoveFromParent();
@@ -1425,6 +1424,7 @@ void APlayerCharacter::ChangeWeapon()
 				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 				{
+					infoWidgetUI->weaponHoldPercent=0;
 					UGameplayStatics::PlaySound2D(GetWorld(), WeaponSwapSound);
 					infoWidgetUI->RemoveFromParent();
 					PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
@@ -1481,6 +1481,7 @@ void APlayerCharacter::ChangeWeapon()
 				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 				{
+					infoWidgetUI->weaponHoldPercent=0;
 					UGameplayStatics::PlaySound2D(GetWorld(), WeaponSwapSound);
 					infoWidgetUI->RemoveFromParent();
 					PlayAnimMontage(zoomingMontage, 1 , FName("PistolEquip"));
@@ -1535,6 +1536,7 @@ void APlayerCharacter::ChangeWeapon()
 				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 				{
+					infoWidgetUI->weaponHoldPercent=0;
 					UGameplayStatics::PlaySound2D(GetWorld(), WeaponSwapSound);
 					infoWidgetUI->RemoveFromParent();
 					PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
@@ -1585,6 +1587,7 @@ void APlayerCharacter::ChangeWeapon()
 			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 			{
+				infoWidgetUI->weaponHoldPercent=0;
 				UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
 				infoWidgetUI->RemoveFromParent();
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
@@ -1635,6 +1638,7 @@ void APlayerCharacter::ChangeWeapon()
 			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 			{
+				infoWidgetUI->weaponHoldPercent=0;
 				UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
 				infoWidgetUI->RemoveFromParent();
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
@@ -1647,6 +1651,7 @@ void APlayerCharacter::ChangeWeapon()
 			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 			{
+				infoWidgetUI->weaponHoldPercent=0;
 				UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
 				infoWidgetUI->RemoveFromParent();
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
@@ -1659,6 +1664,7 @@ void APlayerCharacter::ChangeWeapon()
 			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 			{
+				infoWidgetUI->weaponHoldPercent=0;
 				UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
 				infoWidgetUI->RemoveFromParent();
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
@@ -1671,6 +1677,7 @@ void APlayerCharacter::ChangeWeapon()
 			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 			{
+				infoWidgetUI->weaponHoldPercent=0;
 				UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
 				infoWidgetUI->RemoveFromParent();
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
@@ -1683,6 +1690,7 @@ void APlayerCharacter::ChangeWeapon()
 			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 			{
+				infoWidgetUI->weaponHoldPercent=0;
 				UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
 				infoWidgetUI->RemoveFromParent();
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
@@ -1695,6 +1703,7 @@ void APlayerCharacter::ChangeWeapon()
 			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 			{
+				infoWidgetUI->weaponHoldPercent=0;
 				UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
 				infoWidgetUI->RemoveFromParent();
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
@@ -1707,6 +1716,7 @@ void APlayerCharacter::ChangeWeapon()
 			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 			{
+				infoWidgetUI->weaponHoldPercent=0;
 				UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
 				infoWidgetUI->RemoveFromParent();
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
@@ -1719,6 +1729,7 @@ void APlayerCharacter::ChangeWeapon()
 			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 			{
+				infoWidgetUI->weaponHoldPercent=0;
 				UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
 				infoWidgetUI->RemoveFromParent();
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
@@ -1731,6 +1742,7 @@ void APlayerCharacter::ChangeWeapon()
 			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 			{
+				infoWidgetUI->weaponHoldPercent=0;
 				UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
 				infoWidgetUI->RemoveFromParent();
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
@@ -1743,6 +1755,7 @@ void APlayerCharacter::ChangeWeapon()
 			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 			{
+				infoWidgetUI->weaponHoldPercent=0;
 				UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
 				infoWidgetUI->RemoveFromParent();
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
@@ -1778,8 +1791,9 @@ void APlayerCharacter::ChangeWeapon()
 		{
 			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
-			{				
-				if(stashWidgetUI&&bStashWidgetOn==false&&pc)
+			{
+				infoWidgetUI->weaponHoldPercent=0;
+				if(bStashWidgetOn==false&&pc)
 				{
 					bStashWidgetOn=true;
 					UGameplayStatics::PlaySound2D(GetWorld(), tabSound);

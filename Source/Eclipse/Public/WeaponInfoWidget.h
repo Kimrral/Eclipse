@@ -85,9 +85,6 @@ public:
 	
 	UPROPERTY(BlueprintReadWrite, Transient, meta = (BindWidgetAnim))
 	class UWidgetAnimation* LackMission;
-
-	UPROPERTY(VisibleAnywhere)
-	TArray<FString> missionArray;
 	
 	
 	UPROPERTY()

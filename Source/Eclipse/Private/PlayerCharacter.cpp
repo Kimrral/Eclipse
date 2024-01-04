@@ -332,10 +332,6 @@ void APlayerCharacter::Move(const FInputActionValue& Value)
 
 void APlayerCharacter::Look(const FInputActionValue& Value)
 {
-	if(TabOn)
-	{
-		return;
-	}
 	// input is a Vector2D
 	const FVector2D LookAxisVector = Value.Get<FVector2D>();
 
@@ -450,6 +446,7 @@ void APlayerCharacter::ZoomRelease()
 		Timeline.ReverseFromEnd();
 	}
 }
+
 
 void APlayerCharacter::Run()
 {
@@ -887,11 +884,11 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 				MissionChecker->checkerMesh->SetRenderCustomDepth(true);
 				if(BossCount>=1&&GuardianCount>=7)
 				{
-					infoWidgetUI->MissionCheck1->SetText(FText::FromString(infoWidgetUI->missionArray[0]));
+					infoWidgetUI->MissionCheck1->SetText(FText::FromString("Success"));
 				}
 				if(ConsoleCount>=5)
 				{
-					infoWidgetUI->MissionCheck2->SetText(FText::FromString(infoWidgetUI->missionArray[0]));
+					infoWidgetUI->MissionCheck2->SetText(FText::FromString("Success"));
 				}
 				// Widget Switcher 이용한 무기 정보 위젯 스위칭
 				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(5);
@@ -3431,6 +3428,7 @@ void APlayerCharacter::PlayerDeath()
 			// 현재 주요 변수 값들을 게임모드의 변수에 캐싱
 			CachingValues();
 			PouchCaching();
+			StashCaching();
 			// 자신 제거
 			this->Destroy();
 			// 컨트롤러의 리스폰 함수 호출

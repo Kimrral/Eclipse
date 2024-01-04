@@ -211,6 +211,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* tabSound;
+	
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* PortalSound;
 
 	UPROPERTY()
 	bool isSniperZoomed = false;

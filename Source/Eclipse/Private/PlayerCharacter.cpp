@@ -1614,6 +1614,7 @@ void APlayerCharacter::ChangeWeapon()
 					auto spawnTrans = this->GetTransform();
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), recallParticle, spawnTrans);
 					PlayAnimMontage(zoomingMontage, 1, FName("LevelEnd"));
+					UGameplayStatics::PlaySound2D(GetWorld(), PortalSound);
 					bUseControllerRotationYaw=false;
 					infoWidgetUI->RemoveFromParent();
 					FTimerHandle endHandle;
@@ -1626,7 +1627,7 @@ void APlayerCharacter::ChangeWeapon()
 						//auto pc = GetWorld()->GetFirstPlayerController();
 						//TEnumAsByte<EQuitPreference::Type> types = EQuitPreference::Quit;
 						//UKismetSystemLibrary::QuitGame(GetWorld(),pc, types, false);
-					}), 7.0f, false);
+					}), 9.f, false);
 				}
 				else
 				{
@@ -1780,6 +1781,7 @@ void APlayerCharacter::ChangeWeapon()
 				auto spawnTrans = this->GetTransform();
 				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), recallParticle, spawnTrans);
 				PlayAnimMontage(zoomingMontage, 1, FName("LevelEnd"));
+				UGameplayStatics::PlaySound2D(GetWorld(), PortalSound);
 				bUseControllerRotationYaw=false;
 				infoWidgetUI->RemoveFromParent();
 				FTimerHandle endHandle;
@@ -1789,7 +1791,7 @@ void APlayerCharacter::ChangeWeapon()
 					InventoryCaching();
 					StashCaching();
 					UGameplayStatics::OpenLevel(GetWorld(), FName("Map_BigStarStation"));
-				}), 7.0f, false);				
+				}), 9.f, false);				
 			}
 		}
 		else if(Stash)

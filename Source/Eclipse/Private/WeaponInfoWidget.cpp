@@ -6,8 +6,7 @@
 void UWeaponInfoWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	missionArray.Emplace(FString::Printf(TEXT("완료"))); //0
+	
 }
 
 void UWeaponInfoWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)

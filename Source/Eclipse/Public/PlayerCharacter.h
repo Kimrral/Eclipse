@@ -608,7 +608,12 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void InventoryCaching();
-	
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void GearCaching();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void MagCaching();
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void ApplyStashCache();
@@ -618,6 +623,12 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void ApplyPouchCache();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void ApplyGearCache();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void ApplyMagCache();
 
 	UFUNCTION()
 	void Damaged(int damage);

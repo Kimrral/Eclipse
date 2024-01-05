@@ -233,6 +233,8 @@ void APlayerCharacter::BeginPlay()
 	ApplyPouchCache();
 	ApplyInventoryCache();
 	ApplyStashCache();
+	ApplyGearCache();
+	ApplyMagCache();
 	UpdateTabWidget();
 	
 }
@@ -1622,6 +1624,8 @@ void APlayerCharacter::ChangeWeapon()
 					{
 						PouchCaching();
 						InventoryCaching();
+						GearCaching();
+						MagCaching();
 						UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"));
 
 						//auto pc = GetWorld()->GetFirstPlayerController();
@@ -1790,6 +1794,8 @@ void APlayerCharacter::ChangeWeapon()
 					PouchCaching();
 					InventoryCaching();
 					StashCaching();
+					GearCaching();
+					MagCaching();
 					UGameplayStatics::OpenLevel(GetWorld(), FName("Map_BigStarStation"));
 				}), 9.f, false);				
 			}
@@ -3427,10 +3433,12 @@ void APlayerCharacter::PlayerDeath()
 			// 사망 변수 활성화
 			bPlayerDeath=true;
 			auto* PC = Cast<AEclipsePlayerController>(GetController());
-			// 현재 주요 변수 값들을 게임모드의 변수에 캐싱
+			// 현재 주요 변수 값들을 GameInstance의 변수에 캐싱
 			CachingValues();
 			PouchCaching();
 			StashCaching();
+			GearCaching();
+			MagCaching();
 			// 자신 제거
 			this->Destroy();
 			// 컨트롤러의 리스폰 함수 호출

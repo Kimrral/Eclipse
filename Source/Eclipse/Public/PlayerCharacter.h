@@ -368,6 +368,9 @@ public:
 
 	UFUNCTION()
 	void PlayerDeath();
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void ClearInventoryCache();
 
 	UFUNCTION(BlueprintCallable)
 	void EquipHelmet();

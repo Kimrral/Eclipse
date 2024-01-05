@@ -334,6 +334,10 @@ void APlayerCharacter::Move(const FInputActionValue& Value)
 
 void APlayerCharacter::Look(const FInputActionValue& Value)
 {
+	if(TabOn)
+	{
+		return;
+	}
 	// input is a Vector2D
 	const FVector2D LookAxisVector = Value.Get<FVector2D>();
 
@@ -3439,6 +3443,7 @@ void APlayerCharacter::PlayerDeath()
 			StashCaching();
 			GearCaching();
 			MagCaching();
+			ClearInventoryCache();
 			// 자신 제거
 			this->Destroy();
 			// 컨트롤러의 리스폰 함수 호출

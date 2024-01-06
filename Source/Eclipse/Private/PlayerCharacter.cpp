@@ -1949,11 +1949,16 @@ void APlayerCharacter::Damaged(int damage)
 {
 	if(curHP<=damage)
 	{
+		curHP=0;
 		PlayerDeath();
 	}
 	else
 	{
 		curHP = FMath::Clamp(curHP-damage, 0, maxHP);
+		StopAnimMontage();
+		PlayAnimMontage(zoomingMontage, 1, FName("Damaged"));
+		const auto controller = GetWorld()->GetFirstPlayerController();
+		controller->PlayerCameraManager->StartCameraShake(PlayerDamagedShake);
 		UpdateTabWidget();
 	}
 }

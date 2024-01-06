@@ -559,6 +559,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category=CameraMotion)
 	TSubclassOf<class UCameraShakeBase> sniperFireShake;
 
+	UPROPERTY(EditDefaultsOnly, Category=CameraMotion)
+	TSubclassOf<class UCameraShakeBase> PlayerDamagedShake;
+
 	//Particles
 	UPROPERTY(EditAnywhere, Category="Factory")
 	TSubclassOf<class AActor> ShotDecalFactory;

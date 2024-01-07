@@ -219,9 +219,9 @@ void APlayerCharacter::BeginPlay()
 		PlayerController->EnableInput(PlayerController);		
 	}
 
-	auto playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
-	playerCam->StopCameraFade();
-	playerCam->StartCameraFade(1, 0, 7.0, FLinearColor::Black, false, false);
+	const auto cameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0));
+	cameraManager->StopCameraFade();
+	cameraManager->StartCameraFade(1.0, 0, 8.0, FColor::Black, false, true);
 
 	GoggleSlot->SetVisibility(false);
 	HelmetSlot->SetVisibility(false);

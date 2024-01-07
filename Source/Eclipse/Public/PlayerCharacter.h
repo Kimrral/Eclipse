@@ -755,10 +755,10 @@ public:
 	UPROPERTY()
 	bool bEnding;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int curHP;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int maxHP = 100.f;
 
 	UPROPERTY()

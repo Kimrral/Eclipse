@@ -1865,7 +1865,7 @@ void APlayerCharacter::SetZoomValue(float Value)
 	else if(weaponArray[1]==false)
 	{
 		// 타임라인 Float Curve 에 따른 Lerp
-		auto lerp=UKismetMathLibrary::Lerp(200,120,Value);
+		auto lerp=UKismetMathLibrary::Lerp(200,100,Value);
 		// 해당 Lerp값 Arm Length에 적용
 		CameraBoom->TargetArmLength=lerp;
 	}
@@ -2354,17 +2354,18 @@ void APlayerCharacter::Fire()
 						}
 					}
 				}
+				else
+				{
+					auto decalRot = UKismetMathLibrary::Conv_VectorToRotator(rifleHitResult.ImpactNormal);
+					auto decalLoc = rifleHitResult.Location;
+					auto decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
+					GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot+FRotator(-90, 0, 0), FVector(0.5f));
+				}
 				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.3*RecoilRateMultiplier(), -0.5*RecoilRateMultiplier());
 				auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.3*RecoilRateMultiplier(), 0.3*RecoilRateMultiplier());
 				AddControllerPitchInput(randF);
-				AddControllerYawInput(randF2);
-				FActorSpawnParameters params;
-				params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-				auto decalRot = UKismetMathLibrary::Conv_VectorToRotator(rifleHitResult.ImpactNormal);
-				auto decalLoc = rifleHitResult.Location;
-				auto decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
-				GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot+FRotator(-90, 0, 0), FVector(0.5f));
+				AddControllerYawInput(randF2);						
 				CanShoot=false;
 				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
 				{

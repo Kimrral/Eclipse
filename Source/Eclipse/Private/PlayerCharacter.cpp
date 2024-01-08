@@ -2651,17 +2651,18 @@ void APlayerCharacter::Fire()
 						}
 					}
 				}
+				else
+				{					
+					auto decalRot = UKismetMathLibrary::Conv_VectorToRotator(sniperHitResult.ImpactNormal);
+					auto decalLoc = sniperHitResult.Location;
+					auto decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
+					GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot+FRotator(-90, 0, 0), FVector(0.5f));
+				}					
 				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.7*RecoilRateMultiplier(), -1.2*RecoilRateMultiplier());
 				auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7*RecoilRateMultiplier(), 0.8*RecoilRateMultiplier());
 				AddControllerPitchInput(randF);
-				AddControllerYawInput(randF2);
-				FActorSpawnParameters params;
-				params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-				auto decalRot = UKismetMathLibrary::Conv_VectorToRotator(sniperHitResult.ImpactNormal);
-				auto decalLoc = sniperHitResult.Location;
-				auto decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
-				GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot+FRotator(-90, 0, 0), FVector(0.5f));
+				AddControllerYawInput(randF2);				
 				if(isSniperZooming)
 				{
 					auto particleTrans = FollowCamera->GetComponentLocation()+FollowCamera->GetUpVector()*-70.0f;
@@ -2993,25 +2994,28 @@ void APlayerCharacter::Fire()
 						}
 					}
 				}
+				else
+				{
+					FActorSpawnParameters params;
+					params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+					auto decalRot = UKismetMathLibrary::Conv_VectorToRotator(pistolHitResult.ImpactNormal);
+					auto decalLoc = pistolHitResult.Location;
+					auto decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
+					GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot+FRotator(-90, 0, 0), FVector(0.5f));
+				}
 				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.7*RecoilRateMultiplier(), -1.2*RecoilRateMultiplier());
 				auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7*RecoilRateMultiplier(), 0.8*RecoilRateMultiplier());
 				AddControllerPitchInput(randF);
-				AddControllerYawInput(randF2);
-				FActorSpawnParameters params;
-				params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-				auto decalRot = UKismetMathLibrary::Conv_VectorToRotator(pistolHitResult.ImpactNormal);
-				auto decalLoc = pistolHitResult.Location;
-				auto decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
-				GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot+FRotator(-90, 0, 0), FVector(0.5f));
+				AddControllerYawInput(randF2);				
 				auto fireSocketLoc = pistolComp->GetSocketTransform(FName("PistolFirePosition")).GetLocation();
 				// 탄 궤적 나이아가라 시스템 스폰
-				UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, pistolHitResult.Location, FRotator::ZeroRotator,FVector(1), true, true, ENCPoolMethod::AutoRelease);
-				if(niagara)
-				{
-					// 나이아가라 파라미터 벡터 위치 변수 할당
-					niagara->SetVectorParameter(FName("EndPoint"), fireSocketLoc);
-				}
+				// UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, pistolHitResult.Location, FRotator::ZeroRotator,FVector(1), true, true, ENCPoolMethod::AutoRelease);
+				// if(niagara)
+				// {
+				// 	// 나이아가라 파라미터 벡터 위치 변수 할당
+				// 	niagara->SetVectorParameter(FName("EndPoint"), fireSocketLoc);
+				// }
 				CanShoot=false;
 				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
 				{
@@ -3027,11 +3031,11 @@ void APlayerCharacter::Fire()
 				FVector niagaraSpawnLoc = FollowCamera->K2_GetComponentLocation();
 				FVector ForwardLoc = niagaraSpawnLoc + FollowCamera->GetForwardVector()*10000.0f;
 				auto FireLoc = pistolComp->GetSocketTransform(FName("PistolFirePosition")).GetLocation();
-				UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, ForwardLoc, FRotator::ZeroRotator, FVector(1), true, true, ENCPoolMethod::AutoRelease);
-				if(niagara)
-				{
-					niagara->SetVectorParameter(FName("EndPoint"), FireLoc);
-				}
+				// UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, ForwardLoc, FRotator::ZeroRotator, FVector(1), true, true, ENCPoolMethod::AutoRelease);
+				// if(niagara)
+				// {
+				// 	niagara->SetVectorParameter(FName("EndPoint"), FireLoc);
+				// }
 				CanShoot=false;				
 				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
 				{
@@ -3313,6 +3317,16 @@ void APlayerCharacter::Fire()
 						}
 					}
 				}
+				else
+				{
+					FActorSpawnParameters params;
+					params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+					auto decalRot = UKismetMathLibrary::Conv_VectorToRotator(M249HitResult.ImpactNormal);
+					auto decalLoc = M249HitResult.Location;
+					auto decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
+					GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot+FRotator(-90, 0, 0), FVector(0.5f));
+				}
 				if(isZooming)
 				{
 					auto randF = UKismetMathLibrary::RandomFloatInRange(-0.4*RecoilRateMultiplier(), -0.7*RecoilRateMultiplier());
@@ -3326,15 +3340,7 @@ void APlayerCharacter::Fire()
 					auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.5*RecoilRateMultiplier(), 0.5*RecoilRateMultiplier());
 					AddControllerPitchInput(randF);
 					AddControllerYawInput(randF2);					
-				}
-				FActorSpawnParameters params;
-				params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-				auto decalRot = UKismetMathLibrary::Conv_VectorToRotator(M249HitResult.ImpactNormal);
-				auto decalLoc = M249HitResult.Location;
-				auto decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
-				GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot+FRotator(-90, 0, 0), FVector(0.5f));
-				auto fireSocketLoc = m249Comp->GetSocketTransform(FName("M249FirePosition")).GetLocation();
+				}				
 				CanShoot=false;
 				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
 				{
@@ -3473,56 +3479,73 @@ void APlayerCharacter::PlayerDeath()
 
 void APlayerCharacter::EquipHelmet()
 {
+	UGameplayStatics::PlaySound2D(GetWorld(), gearEquipSound);
 	HelmetSlot->SetVisibility(true);
 	HelmetEquipped=true;
 }
 
 void APlayerCharacter::EquipHeadset()
 {
+	UGameplayStatics::PlaySound2D(GetWorld(), gearEquipSound);
 	HeadSetSlot->SetVisibility(true);
 	HeadsetEquipped=true;
 }
 
 void APlayerCharacter::EquipMask()
 {
+	UGameplayStatics::PlaySound2D(GetWorld(), gearEquipSound);
 	MaskSlot->SetVisibility(true);
 	MaskEquipped=true;
 }
 
 void APlayerCharacter::EquipGoggle()
 {
+	UGameplayStatics::PlaySound2D(GetWorld(), gearEquipSound);
 	GoggleSlot->SetVisibility(true);
 	GoggleEquipped=true;
 }
 
-void APlayerCharacter::UnEquipHelmet()
-{
-	HelmetSlot->SetVisibility(false);
-}
-
-void APlayerCharacter::UnEquipHeadset()
-{
-	HeadSetSlot->SetVisibility(false);
-}
-
-void APlayerCharacter::UnEquipMask()
-{
-	MaskSlot->SetVisibility(false);
-}
-
-void APlayerCharacter::UnEquipGoggle()
-{
-	GoggleSlot->SetVisibility(false);
-}
-
 void APlayerCharacter::EquipArmor()
 {
+	UGameplayStatics::PlaySound2D(GetWorld(), gearEquipSound);
 	ArmorSlot->SetVisibility(true);
+	ArmorEquipped=true;
 	curHP=FMath::Clamp(curHP+35, 0, 135);
 	maxHP=FMath::Clamp(maxHP+35, 0, 135);
 }
 
+void APlayerCharacter::UnEquipHelmet()
+{
+	UGameplayStatics::PlaySound2D(GetWorld(), gearUnequipSound);
+	HelmetSlot->SetVisibility(false);
+	HelmetEquipped=false;
+}
+
+void APlayerCharacter::UnEquipHeadset()
+{
+	UGameplayStatics::PlaySound2D(GetWorld(), gearUnequipSound);
+	HeadSetSlot->SetVisibility(false);
+	HeadsetEquipped=false;
+}
+
+void APlayerCharacter::UnEquipMask()
+{
+	UGameplayStatics::PlaySound2D(GetWorld(), gearUnequipSound);
+	MaskSlot->SetVisibility(false);
+	MaskEquipped=false;
+}
+
+void APlayerCharacter::UnEquipGoggle()
+{
+	UGameplayStatics::PlaySound2D(GetWorld(), gearUnequipSound);
+	GoggleSlot->SetVisibility(false);
+	GoggleEquipped=false;
+}
+
+
 void APlayerCharacter::UnEquipArmor()
 {
+	UGameplayStatics::PlaySound2D(GetWorld(), gearUnequipSound);
 	ArmorSlot->SetVisibility(false);
+	ArmorEquipped=false;
 }

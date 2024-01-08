@@ -541,6 +541,12 @@ public:
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* zoomSound;
 	
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* gearEquipSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* gearUnequipSound;
+	
 	UPROPERTY()
 	FTimerHandle shootEnableHandle;
 

@@ -159,9 +159,7 @@ void APlayerCharacter::BeginPlay()
 	}
 
 	pc=Cast<AEclipsePlayerController>(GetWorld()->GetFirstPlayerController());
-	gm=Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());
-
-	
+	gm=Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());	
 
 	bPlayerDeath=false;
 
@@ -213,6 +211,8 @@ void APlayerCharacter::BeginPlay()
 	bossHPUI=CreateWidget<UBossHPWidget>(GetWorld(), bossHPWidgetFactory);
 
 	StopAnimMontage();
+	PlayAnimMontage(zoomingMontage, 1, FName("LevelStart"));
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
 	AEclipsePlayerController* PlayerController = Cast<AEclipsePlayerController>(GetWorld()->GetFirstPlayerController());
 	if(PlayerController)
 	{
@@ -1623,9 +1623,11 @@ void APlayerCharacter::ChangeWeapon()
 					UGameplayStatics::PlaySound2D(GetWorld(), PortalSound);
 					bUseControllerRotationYaw=false;
 					infoWidgetUI->RemoveFromParent();
+					informationUI->RemoveFromParent();
+					crosshairUI->RemoveFromParent();
 					FTimerHandle endHandle;
 					GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()->void
-					{
+					{						
 						PouchCaching();
 						InventoryCaching();
 						GearCaching();
@@ -1792,9 +1794,11 @@ void APlayerCharacter::ChangeWeapon()
 				UGameplayStatics::PlaySound2D(GetWorld(), PortalSound);
 				bUseControllerRotationYaw=false;
 				infoWidgetUI->RemoveFromParent();
+				informationUI->RemoveFromParent();
+				crosshairUI->RemoveFromParent();
 				FTimerHandle endHandle;
 				GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()->void
-				{
+				{					
 					PouchCaching();
 					InventoryCaching();
 					StashCaching();
@@ -3477,75 +3481,101 @@ void APlayerCharacter::PlayerDeath()
 	}
 }
 
-void APlayerCharacter::EquipHelmet()
+void APlayerCharacter::EquipHelmet(bool SoundBool)
 {
-	UGameplayStatics::PlaySound2D(GetWorld(), gearEquipSound);
+	if(SoundBool)
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), gearEquipSound);
+	}
 	HelmetSlot->SetVisibility(true);
 	HelmetEquipped=true;
 }
 
-void APlayerCharacter::EquipHeadset()
+void APlayerCharacter::EquipHeadset(bool SoundBool)
 {
-	UGameplayStatics::PlaySound2D(GetWorld(), gearEquipSound);
+	if(SoundBool)
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), gearEquipSound);
+	}
 	HeadSetSlot->SetVisibility(true);
 	HeadsetEquipped=true;
 }
 
-void APlayerCharacter::EquipMask()
+void APlayerCharacter::EquipMask(bool SoundBool)
 {
-	UGameplayStatics::PlaySound2D(GetWorld(), gearEquipSound);
+	if(SoundBool)
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), gearEquipSound);
+	}
 	MaskSlot->SetVisibility(true);
 	MaskEquipped=true;
 }
 
-void APlayerCharacter::EquipGoggle()
+void APlayerCharacter::EquipGoggle(bool SoundBool)
 {
-	UGameplayStatics::PlaySound2D(GetWorld(), gearEquipSound);
+	if(SoundBool)
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), gearEquipSound);
+	}
 	GoggleSlot->SetVisibility(true);
 	GoggleEquipped=true;
 }
 
-void APlayerCharacter::EquipArmor()
+void APlayerCharacter::EquipArmor(bool SoundBool)
 {
-	UGameplayStatics::PlaySound2D(GetWorld(), gearEquipSound);
+	if(SoundBool)
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), gearEquipSound);
+	}
 	ArmorSlot->SetVisibility(true);
 	ArmorEquipped=true;
 	curHP=FMath::Clamp(curHP+35, 0, 135);
 	maxHP=FMath::Clamp(maxHP+35, 0, 135);
 }
 
-void APlayerCharacter::UnEquipHelmet()
+void APlayerCharacter::UnEquipHelmet(bool SoundBool)
 {
-	UGameplayStatics::PlaySound2D(GetWorld(), gearUnequipSound);
+	if(SoundBool)
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), gearUnequipSound);
+	}
 	HelmetSlot->SetVisibility(false);
 	HelmetEquipped=false;
 }
 
-void APlayerCharacter::UnEquipHeadset()
+void APlayerCharacter::UnEquipHeadset(bool SoundBool)
 {
-	UGameplayStatics::PlaySound2D(GetWorld(), gearUnequipSound);
-	HeadSetSlot->SetVisibility(false);
+	if(SoundBool)
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), gearUnequipSound);
+	}	HeadSetSlot->SetVisibility(false);
 	HeadsetEquipped=false;
 }
 
-void APlayerCharacter::UnEquipMask()
+void APlayerCharacter::UnEquipMask(bool SoundBool)
 {
-	UGameplayStatics::PlaySound2D(GetWorld(), gearUnequipSound);
-	MaskSlot->SetVisibility(false);
+	if(SoundBool)
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), gearUnequipSound);
+	}	MaskSlot->SetVisibility(false);
 	MaskEquipped=false;
 }
 
-void APlayerCharacter::UnEquipGoggle()
+void APlayerCharacter::UnEquipGoggle(bool SoundBool)
 {
-	UGameplayStatics::PlaySound2D(GetWorld(), gearUnequipSound);
-	GoggleSlot->SetVisibility(false);
+	if(SoundBool)
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), gearUnequipSound);
+	}	GoggleSlot->SetVisibility(false);
 	GoggleEquipped=false;
 }
 
 
-void APlayerCharacter::UnEquipArmor()
+void APlayerCharacter::UnEquipArmor(bool SoundBool)
 {
-	UGameplayStatics::PlaySound2D(GetWorld(), gearUnequipSound);
-	ArmorSlot->SetVisibility(false);
+	if(SoundBool)
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), gearUnequipSound);
+	}	ArmorSlot->SetVisibility(false);
 	ArmorEquipped=false;
 }

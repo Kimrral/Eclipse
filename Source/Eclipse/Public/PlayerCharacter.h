@@ -237,6 +237,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* ShieldHitEmitter;
 
+	UPROPERTY(EditAnywhere)
+	class UParticleSystem* PlayerSpawnEmitter;
+	
 	UPROPERTY()
 	class AMaskActor* MaskActor;
 
@@ -373,34 +376,34 @@ public:
 	void ClearInventoryCache();
 
 	UFUNCTION(BlueprintCallable)
-	void EquipHelmet();
+	void EquipHelmet(bool SoundBool);
 
 	UFUNCTION(BlueprintCallable)
-	void EquipHeadset();
+	void EquipHeadset(bool SoundBool);
 
 	UFUNCTION(BlueprintCallable)
-	void EquipMask();
+	void EquipMask(bool SoundBool);
 
 	UFUNCTION(BlueprintCallable)
-	void EquipGoggle();
+	void EquipGoggle(bool SoundBool);
 
 	UFUNCTION(BlueprintCallable)
-	void UnEquipHelmet();
+	void UnEquipHelmet(bool SoundBool);
 
 	UFUNCTION(BlueprintCallable)
-	void UnEquipHeadset();
+	void UnEquipHeadset(bool SoundBool);
 
 	UFUNCTION(BlueprintCallable)
-	void UnEquipMask();
+	void UnEquipMask(bool SoundBool);
 
 	UFUNCTION(BlueprintCallable)
-	void UnEquipGoggle();
+	void UnEquipGoggle(bool SoundBool);
 
 	UFUNCTION(BlueprintCallable)
-	void EquipArmor();
+	void EquipArmor(bool SoundBool);
 
 	UFUNCTION(BlueprintCallable)
-	void UnEquipArmor();
+	void UnEquipArmor(bool SoundBool);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void StashWidgetOnViewport();

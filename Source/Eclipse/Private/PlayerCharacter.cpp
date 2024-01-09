@@ -3445,7 +3445,10 @@ void APlayerCharacter::PlayerDeath()
 		// 인풋 비활성화
 		DisableInput(GetWorld()->GetFirstPlayerController());
 		// 사망 몽타주 재생
-		PlayAnimMontage(zoomingMontage, 1, FName("Death"));		
+		PlayAnimMontage(zoomingMontage, 1, FName("Death"));
+		infoWidgetUI->RemoveFromParent();
+		informationUI->RemoveFromParent();
+		crosshairUI->RemoveFromParent();
 		FTimerHandle endHandle;
 		// 7초 뒤 호출되는 함수 타이머
 		GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()->void

@@ -425,6 +425,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
 	class UAnimMontage* zoomingMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
+	class UAnimMontage* reloadMontage;
 	
 	UPROPERTY()
 	int curRifleAmmo = 40;
@@ -537,6 +540,15 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* RifleReloadSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* SniperReloadSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* PistolReloadSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* M249ReloadSound;
 
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* SwapSound;

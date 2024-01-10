@@ -1836,22 +1836,25 @@ void APlayerCharacter::Reload()
 		{
 			crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
 			UGameplayStatics::PlaySound2D(GetWorld(), RifleReloadSound);
-			PlayAnimMontage(zoomingMontage, 1, FName("Reload"));
+			PlayAnimMontage(reloadMontage, 1, FName("Reload"));
 		}
 		else if(weaponArray[1]==true&&curSniperAmmo<5+SetSniperAdditionalMagazine()&&maxSniperAmmo>0)
 		{
 			crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
-			PlayAnimMontage(zoomingMontage, 1, FName("Reload"));
+			UGameplayStatics::PlaySound2D(GetWorld(), SniperReloadSound);
+			PlayAnimMontage(reloadMontage, 1, FName("Reload"));
 		}
 		else if(weaponArray[2]==true&&curPistolAmmo<8+SetPistolAdditionalMagazine()&&maxPistolAmmo>0)
 		{
 			crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
-			PlayAnimMontage(zoomingMontage, 1, FName("Reload"));
+			UGameplayStatics::PlaySound2D(GetWorld(), PistolReloadSound);
+			PlayAnimMontage(reloadMontage, 1, FName("PistolReload"));
 		}
 		else if(weaponArray[3]==true&&curM249Ammo<100+SetM249AdditionalMagazine()&&maxM249Ammo>0)
 		{
 			crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
-			PlayAnimMontage(zoomingMontage, 1, FName("Reload"));
+			UGameplayStatics::PlaySound2D(GetWorld(), M249ReloadSound);
+			PlayAnimMontage(reloadMontage, 1, FName("Reload"));
 		}
 	}
 }

@@ -1854,12 +1854,12 @@ void APlayerCharacter::Reload()
 		{
 			crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
 			UGameplayStatics::PlaySound2D(GetWorld(), M249ReloadSound);
-			PlayAnimMontage(reloadMontage, 1, FName("Reload"));
+			PlayAnimMontage(reloadMontage, 1, FName("M249Reload"));
 		}
 	}
 }
 
-void APlayerCharacter::SetZoomValue(float Value)
+void APlayerCharacter::SetZoomValue(float Value) 
 {
 
 	if(weaponArray[1]==true&&!SniperZoomBool&&!SniperZoomOutBool)

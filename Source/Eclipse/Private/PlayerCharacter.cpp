@@ -173,11 +173,12 @@ void APlayerCharacter::BeginPlay()
 	// Widget Settings
 	crosshairUI = CreateWidget<UCrosshairWidget>(GetWorld(), crosshairFactory);
 	infoWidgetUI = CreateWidget<UWeaponInfoWidget>(GetWorld(), infoWidgetFactory);
+	quitWidgetUI=CreateWidget<UQuitWidget>(GetWorld(), quitWidgetFactory);
 	sniperScopeUI=CreateWidget<UUserWidget>(GetWorld(), sniperScopeFactory);
 	damageWidgetUI = CreateWidget<UDamageWidget>(GetWorld(), damageWidgetUIFactory);
 	bossHPUI=CreateWidget<UBossHPWidget>(GetWorld(), bossHPWidgetFactory);
 	informationUI = CreateWidget<UInformationWidget>(GetWorld(), informationWidgetFactory);
-	quitWidgetUI=CreateWidget<UQuitWidget>(GetWorld(), quitWidgetFactory);
+	
 	
 	if(!crosshairUI->IsInViewport())
 	{
@@ -1799,33 +1800,15 @@ void APlayerCharacter::ChangeWeapon()
 		else if(StageBoard)
 		{
 			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+			if(quitWidgetUI&&infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 			{
 				infoWidgetUI->weaponHoldPercent=0;
-				bEnding=true;
-				auto playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
-				playerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
-				StopAnimMontage();
-				GetCharacterMovement()->StopActiveMovement();
-				GetCharacterMovement()->DisableMovement();
-				auto spawnTrans = this->GetTransform();
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), recallParticle, spawnTrans);
-				PlayAnimMontage(zoomingMontage, 1, FName("LevelEnd"));
-				UGameplayStatics::PlaySound2D(GetWorld(), PortalSound);
-				bUseControllerRotationYaw=false;
+				UGameplayStatics::PlaySound2D(GetWorld(), quitGameSound);
 				infoWidgetUI->RemoveFromParent();
-				informationUI->RemoveFromParent();
-				crosshairUI->RemoveFromParent();
-				FTimerHandle endHandle;
-				GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()->void
-				{					
-					PouchCaching();
-					InventoryCaching();
-					StashCaching();
-					GearCaching();
-					MagCaching();
-					UGameplayStatics::OpenLevel(GetWorld(), FName("Map_BigStarStation"));
-				}), 9.f, false);				
+				UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(pc, quitWidgetUI);
+				pc->SetShowMouseCursor(true);
+				quitWidgetUI->WidgetSwitcher->SetActiveWidgetIndex(1);
+				quitWidgetUI->AddToViewport();						
 			}
 		}
 		else if(Stash)
@@ -1854,6 +1837,7 @@ void APlayerCharacter::ChangeWeapon()
 				infoWidgetUI->RemoveFromParent();
 				UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(pc, quitWidgetUI);
 				pc->SetShowMouseCursor(true);
+				quitWidgetUI->WidgetSwitcher->SetActiveWidgetIndex(0);
 				quitWidgetUI->AddToViewport();				
 			}
 		}
@@ -1890,6 +1874,34 @@ void APlayerCharacter::Reload()
 			PlayAnimMontage(reloadMontage, 1, FName("M249Reload"));
 		}
 	}
+}
+
+void APlayerCharacter::MoveToIsolatedShip()
+{
+	bEnding=true;
+	auto playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+	playerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
+	StopAnimMontage();
+	GetCharacterMovement()->StopActiveMovement();
+	GetCharacterMovement()->DisableMovement();
+	auto spawnTrans = this->GetTransform();
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), recallParticle, spawnTrans);
+	PlayAnimMontage(zoomingMontage, 1, FName("LevelEnd"));
+	UGameplayStatics::PlaySound2D(GetWorld(), PortalSound);
+	bUseControllerRotationYaw=false;
+	infoWidgetUI->RemoveFromParent();
+	informationUI->RemoveFromParent();
+	crosshairUI->RemoveFromParent();
+	FTimerHandle endHandle;
+	GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()->void
+	{					
+		PouchCaching();
+		InventoryCaching();
+		StashCaching();
+		GearCaching();
+		MagCaching();
+		UGameplayStatics::OpenLevel(GetWorld(), FName("Map_BigStarStation"));
+	}), 9.f, false);			
 }
 
 void APlayerCharacter::SetZoomValue(float Value) 

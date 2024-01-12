@@ -23,10 +23,37 @@ public:
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UButton* QuitNo;
 
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UButton* LevelYes;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UButton* LevelNo;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UWidgetSwitcher* WidgetSwitcher;
+
+	UPROPERTY()
+	class APlayerCharacter* player;
+
+	UPROPERTY()
+	class AEclipsePlayerController* pc;
+
+	UPROPERTY()
+	bool quitBool = false;
+
+	
 	UFUNCTION()
 	void QuitY();
 
 	UFUNCTION()
 	void QuitN();
+
+	UFUNCTION()
+	void LevelY();
+
+	UFUNCTION()
+	void LevelN();
+	
 
 };

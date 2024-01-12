@@ -570,6 +570,12 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* gearUnequipSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* damagedSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* deathSound;
 	
 	UPROPERTY()
 	FTimerHandle shootEnableHandle;

@@ -1994,6 +1994,10 @@ void APlayerCharacter::Damaged(int damage)
 	}
 	else
 	{
+		auto playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+		// 카메라 페이드 연출
+		playerCam->StartCameraFade(0.5, 0, 3.0, FLinearColor::White, false, true);
+		UGameplayStatics::PlaySound2D(GetWorld(), damagedSound);
 		curHP = FMath::Clamp(curHP-damage, 0, maxHP);
 		StopAnimMontage();
 		PlayAnimMontage(zoomingMontage, 1, FName("Damaged"));
@@ -3473,6 +3477,7 @@ void APlayerCharacter::PlayerDeath()
 {
 	if(isDead==false)
 	{
+		UGameplayStatics::PlaySound2D(GetWorld(), deathSound);
 		// 사망지점 전역변수에 캐싱
 		DeathPosition=GetActorLocation();
 		auto playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);

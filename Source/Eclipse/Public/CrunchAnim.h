@@ -15,9 +15,7 @@ class ECLIPSE_API UCrunchAnim : public UEnemyAnim
 	GENERATED_BODY()
 
 public:
-    virtual void AnimNotify_AttackStart() override;
-
-	UPROPERTY(EditAnywhere)
-	class USoundBase* punchSoundNoHit;
 	
+	UFUNCTION()
+	void AnimNotify_HitPoint();	
 };

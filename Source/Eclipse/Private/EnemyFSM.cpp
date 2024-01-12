@@ -7,6 +7,7 @@
 #include "EnemyAnim.h"
 #include "EnemyHPWidget.h"
 #include "PlayerCharacter.h"
+#include "Components/ProgressBar.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -200,7 +201,9 @@ void UEnemyFSM::OnShieldDamageProcess(int damageValue)
 		auto EmitterTrans = me->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
 		EmitterTrans.SetScale3D(FVector(4));
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldBreakEmitter, EmitterTrans);
+		// 움직임 즉시 중단
 		me->GetCharacterMovement()->StopMovementImmediately();
+		// Movement Mode = None [움직임 차단]
 		me->GetCharacterMovement()->SetMovementMode(MOVE_None);
 		me->StopAnimMontage();
 		me->PlayAnimMontage(me->stunMontage, 1, FName("StunStart"));		
@@ -208,7 +211,12 @@ void UEnemyFSM::OnShieldDamageProcess(int damageValue)
 		{
 			me->isStunned=false;
 			me->StopAnimMontage();
+			// Movement Mode = Walking [움직임 재개]
 			me->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+			// Shield 회복
+			me->curShield=me->maxShield;
+			me->isShieldBroken=false;
+			player->bossHPUI->shieldProgressBar->SetPercent(1);
 			SetState(EEnemyState::MOVE);
 		}), 7.0f, false);
 	}

@@ -632,6 +632,9 @@ public:
 	FTimerHandle SniperZoomHandle;
 	UPROPERTY()
 	FTimerHandle SniperZoomOutHandle;
+
+	UFUNCTION()
+	void MoveToIsolatedShip();
 	
 	UFUNCTION()  // Bind function
 	void SetZoomValue(float Value);

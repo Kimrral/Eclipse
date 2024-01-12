@@ -28,19 +28,17 @@
 #include "RifleActor.h"
 #include "SniperActor.h"
 #include "Camera/CameraComponent.h"
-#include "NiagaraComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "NiagaraFunctionLibrary.h"
 #include "PistolActor.h"
 #include "PistolMagActor.h"
+#include "QuitGameActor.h"
+#include "QuitWidget.h"
 #include "RewardContainer.h"
 #include "RifleMagActor.h"
 #include "SniperMagActor.h"
 #include "StageBoard.h"
 #include "Stash.h"
-#include "TabWidget.h"
 #include "WeaponInfoWidget.h"
-#include "XRLoadingScreenFunctionLibrary.h"
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
@@ -137,11 +135,6 @@ APlayerCharacter::APlayerCharacter()
 	equippedWeaponStringArray.Add(FString("Rifle")); //0
 	equippedWeaponStringArray.Add(FString("Pistol")); //1
 
-	rifleComp->SetVisibility(true);
-	sniperComp->SetVisibility(false);
-	pistolComp->SetVisibility(false);
-	m249Comp->SetVisibility(false);
-
 }
 
 // Called when the game starts or when spawned
@@ -158,12 +151,12 @@ void APlayerCharacter::BeginPlay()
 		}
 	}
 
+	// Casting
 	pc=Cast<AEclipsePlayerController>(GetWorld()->GetFirstPlayerController());
 	gm=Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());	
+	animInstance=Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 
 	bPlayerDeath=false;
-
-	animInstance=Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 
 	curHP=maxHP;
 
@@ -176,18 +169,20 @@ void APlayerCharacter::BeginPlay()
 	}
 
 	UWidgetLayoutLibrary::RemoveAllWidgets(GetWorld());
-	
+
+	// Widget Settings
 	crosshairUI = CreateWidget<UCrosshairWidget>(GetWorld(), crosshairFactory);
+	infoWidgetUI = CreateWidget<UWeaponInfoWidget>(GetWorld(), infoWidgetFactory);
+	sniperScopeUI=CreateWidget<UUserWidget>(GetWorld(), sniperScopeFactory);
+	damageWidgetUI = CreateWidget<UDamageWidget>(GetWorld(), damageWidgetUIFactory);
+	bossHPUI=CreateWidget<UBossHPWidget>(GetWorld(), bossHPWidgetFactory);
+	informationUI = CreateWidget<UInformationWidget>(GetWorld(), informationWidgetFactory);
+	quitWidgetUI=CreateWidget<UQuitWidget>(GetWorld(), quitWidgetFactory);
+	
 	if(!crosshairUI->IsInViewport())
 	{
 		crosshairUI->AddToViewport();
 	}
-
-	infoWidgetUI = CreateWidget<UWeaponInfoWidget>(GetWorld(), infoWidgetFactory);
-
-	sniperScopeUI=CreateWidget<UUserWidget>(GetWorld(), sniperScopeFactory);
-
-	informationUI = CreateWidget<UInformationWidget>(GetWorld(), informationWidgetFactory);
 	if(informationUI)
 	{
 		FTimerHandle respawnTimer;
@@ -206,10 +201,7 @@ void APlayerCharacter::BeginPlay()
 		}), 0.5, false);
 	}
 
-	damageWidgetUI = CreateWidget<UDamageWidget>(GetWorld(), damageWidgetUIFactory);
-
-	bossHPUI=CreateWidget<UBossHPWidget>(GetWorld(), bossHPWidgetFactory);
-
+	// Set Anim Montage
 	StopAnimMontage();
 	PlayAnimMontage(zoomingMontage, 1, FName("LevelStart"));
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
@@ -223,18 +215,27 @@ void APlayerCharacter::BeginPlay()
 	cameraManager->StopCameraFade();
 	cameraManager->StartCameraFade(1.0, 0, 8.0, FColor::Black, false, true);
 
+	// Weapon Visibility Settings
+	rifleComp->SetVisibility(true);
+	sniperComp->SetVisibility(false);
+	pistolComp->SetVisibility(false);
+	m249Comp->SetVisibility(false);
+	
+	// Gear Visibility Settings
 	GoggleSlot->SetVisibility(false);
 	HelmetSlot->SetVisibility(false);
 	HeadSetSlot->SetVisibility(false);
 	MaskSlot->SetVisibility(false);
 	ArmorSlot->SetVisibility(false);
 
+	// Apply Inventory Cache [GameInstance]
 	ApplyCachingValues();
 	ApplyPouchCache();
 	ApplyInventoryCache();
 	ApplyStashCache();
 	ApplyGearCache();
 	ApplyMagCache();
+	// Update Tab Widget Before Widget Constructor
 	UpdateTabWidget();
 	
 }
@@ -302,7 +303,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		//Tab
 		EnhancedInputComponent->BindAction(TabAction, ETriggerEvent::Started, this, &APlayerCharacter::Tab);
 
-		//Q
+		//Q [Test]
 		EnhancedInputComponent->BindAction(QAction, ETriggerEvent::Started, this, &APlayerCharacter::Q);
 
 	}
@@ -359,7 +360,7 @@ void APlayerCharacter::Zoom()
 	isZooming=true;
 	UGameplayStatics::PlaySound2D(GetWorld(), zoomSound);
 	GetCharacterMovement()->MaxWalkSpeed=240.f;
-	auto animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+	const auto animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 	if(animInst)
 	{
 		animInst->bZooming=true;
@@ -380,7 +381,6 @@ void APlayerCharacter::Zoom()
 		crosshairUI->CrosshairImage->SetVisibility(ESlateVisibility::Hidden);
 		const auto cameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0));
 		cameraManager->StartCameraFade(1.0, 0.1, 3.0, FColor::Black, false, true);
-		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 		const auto controller = GetWorld()->GetFirstPlayerController();
 		controller->PlayerCameraManager->StartCameraShake(sniperZoomingShake);
 		// 카메라 줌 러프 타임라인 재생
@@ -794,6 +794,7 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 
 		StageBoard= Cast<AStageBoard>(actorHitResult.GetActor());
 		Stash=Cast<AStash>(actorHitResult.GetActor());
+		QuitGameActor=Cast<AQuitGameActor>(actorHitResult.GetActor());
 		
 		// 라이플 탐지
 		if(rifleActor)
@@ -1096,6 +1097,22 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 				infoWidgetUI->AddToViewport();
 			}
 		}
+		else if(QuitGameActor)
+		{
+			// 1회 실행 불리언
+			if(TickOverlapBoolean==false)
+			{
+				TickOverlapBoolean=true;
+				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+				QuitGameActor->quitGameMesh->SetRenderCustomDepth(true);
+				// Widget Switcher 이용한 무기 정보 위젯 스위칭
+				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(18);
+				// Radial Slider Value 초기화
+				infoWidgetUI->weaponHoldPercent=0;
+				// Weapon Info Widget 뷰포트에 배치
+				infoWidgetUI->AddToViewport();
+			}
+		}
 		else
 		{
 			// 1회 실행 불리언
@@ -1137,6 +1154,7 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 						MedKitActor= Cast<AMedKitActor>(HitObj[i].GetActor());
 						StageBoard= Cast<AStageBoard>(HitObj[i].GetActor());
 						Stash= Cast<AStash>(HitObj[i].GetActor());
+						QuitGameActor= Cast<AQuitGameActor>(HitObj[i].GetActor());
 						
 						if(rifleActor)
 						{
@@ -1227,6 +1245,11 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 						{
 							// Render Custom Depth 활용한 무기 액터 외곽선 해제
 							Stash->stashMesh->SetRenderCustomDepth(false);
+						}
+						else if(QuitGameActor)
+						{
+							// Render Custom Depth 활용한 무기 액터 외곽선 해제
+							QuitGameActor->quitGameMesh->SetRenderCustomDepth(false);
 						}
 					}
 				}
@@ -1347,6 +1370,7 @@ void APlayerCharacter::ChangeWeapon()
 		MedKitActor= Cast<AMedKitActor>(actorHitResult.GetActor());
 		StageBoard= Cast<AStageBoard>(actorHitResult.GetActor());
 		Stash= Cast<AStash>(actorHitResult.GetActor());
+		QuitGameActor= Cast<AQuitGameActor>(actorHitResult.GetActor());
 		
 		// 라이플로 교체
 		if(rifleActor)
@@ -1633,10 +1657,6 @@ void APlayerCharacter::ChangeWeapon()
 						GearCaching();
 						MagCaching();
 						UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"));
-
-						//auto pc = GetWorld()->GetFirstPlayerController();
-						//TEnumAsByte<EQuitPreference::Type> types = EQuitPreference::Quit;
-						//UKismetSystemLibrary::QuitGame(GetWorld(),pc, types, false);
 					}), 9.f, false);
 				}
 				else
@@ -1824,6 +1844,19 @@ void APlayerCharacter::ChangeWeapon()
 				}					
 			}
 		}
+		else if(QuitGameActor)
+		{
+			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+			if(quitWidgetUI&&infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+			{
+				infoWidgetUI->weaponHoldPercent=0;
+				UGameplayStatics::PlaySound2D(GetWorld(), quitGameSound);
+				infoWidgetUI->RemoveFromParent();
+				UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(pc, quitWidgetUI);
+				pc->SetShowMouseCursor(true);
+				quitWidgetUI->AddToViewport();				
+			}
+		}
 	}	
 }
 
@@ -1890,9 +1923,9 @@ void APlayerCharacter::SetZoomValue(float Value)
 		auto lerp = FollowCamera->FieldOfView = UKismetMathLibrary::Lerp(20,40,Value);
 		FollowCamera->SetFieldOfView(lerp);
 		GetWorldTimerManager().SetTimer(SniperZoomOutHandle, FTimerDelegate::CreateLambda([this]()->void
-	{
+		{
 		SniperZoomOutBool=false;
-	}), 1.0f, false);
+		}), 1.0f, false);
 	}
 }
 
@@ -2033,16 +2066,16 @@ void APlayerCharacter::SetM249AdditionalMagazineSlot()
 void APlayerCharacter::UnSetRifleAdditionalMagazineSlot()
 {
 	bRifleAdditionalMag=false;
-	// if(curRifleAmmo>=15)
-	// {
-	// 	curRifleAmmo-=15;
-	// 	maxRifleAmmo+=15;
-	// }
-	// else
-	// {
-	// 	curRifleAmmo=0;
-	// 	maxRifleAmmo+=curRifleAmmo;
-	// }
+	 if(curRifleAmmo>=15)
+	 {
+	 	curRifleAmmo-=15;
+	 	maxRifleAmmo+=15;
+	 }
+	 else
+	 {
+	 	curRifleAmmo=0;
+	 	maxRifleAmmo+=curRifleAmmo;
+	 }
 }
 
 void APlayerCharacter::UnSetSniperAdditionalMagazineSlot()
@@ -2161,6 +2194,7 @@ void APlayerCharacter::Fire()
 								enemy->OnHeadDamaged();								
 								// 사망 불리언 활성화
 								enemy->bDeath=true;
+								// if Guardian Kill
 								if(bGuardian)
 								{
 									GuardianCount++;
@@ -2168,6 +2202,7 @@ void APlayerCharacter::Fire()
 									// 전리품 드롭
 									enemy->DropReward();
 								}
+								// if Crunch Kill
 								else if(bCrunch)
 								{									
 									BossCount++;

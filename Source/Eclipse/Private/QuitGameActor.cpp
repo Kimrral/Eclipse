@@ -1,29 +1,29 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "StageBoard.h"
+#include "QuitGameActor.h"
 
 // Sets default values
-AStageBoard::AStageBoard()
+AQuitGameActor::AQuitGameActor()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
-	boardMesh=CreateDefaultSubobject<UStaticMeshComponent>(TEXT("checkerMesh"));
-	SetRootComponent(boardMesh);
-	boardMesh->SetGenerateOverlapEvents(true);
+	quitGameMesh=CreateDefaultSubobject<UStaticMeshComponent>(TEXT("quitGameMesh"));
+	SetRootComponent(quitGameMesh);
+	quitGameMesh->SetGenerateOverlapEvents(true);
 
 }
 
 // Called when the game starts or when spawned
-void AStageBoard::BeginPlay()
+void AQuitGameActor::BeginPlay()
 {
 	Super::BeginPlay();
 	
 }
 
 // Called every frame
-void AStageBoard::Tick(float DeltaTime)
+void AQuitGameActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 

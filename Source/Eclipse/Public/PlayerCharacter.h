@@ -215,6 +215,9 @@ public:
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* PortalSound;
 
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* quitGameSound;
+
 	UPROPERTY()
 	bool isSniperZoomed = false;
 
@@ -226,13 +229,19 @@ public:
 	TSubclassOf<class UDamageWidget> damageWidgetUIFactory;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
-	TSubclassOf<UBossHPWidget> bossHPWidgetFactory;
+	TSubclassOf<class UBossHPWidget> bossHPWidgetFactory;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = widget)
 	class UDamageWidget* damageWidgetUI;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = widget)
 	class UBossHPWidget* bossHPUI;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
+	TSubclassOf<class UQuitWidget> quitWidgetFactory;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = widget)
+	class UQuitWidget* quitWidgetUI;
 	
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* ShieldHitEmitter;
@@ -745,6 +754,9 @@ public:
 
 	UPROPERTY()
 	class AStageBoard* StageBoard;
+
+	UPROPERTY()
+	class AQuitGameActor* QuitGameActor;
 
 	UPROPERTY()
 	class AStash* Stash;

@@ -2008,7 +2008,7 @@ void APlayerCharacter::Damaged(int damage)
 	{
 		auto playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 		// 카메라 페이드 연출
-		playerCam->StartCameraFade(0.5, 0, 3.0, FLinearColor::White, false, true);
+		playerCam->StartCameraFade(0.3, 0, 2.0, FLinearColor::Red, false, true);
 		UGameplayStatics::PlaySound2D(GetWorld(), damagedSound);
 		curHP = FMath::Clamp(curHP-damage, 0, maxHP);
 		StopAnimMontage();
@@ -3504,6 +3504,7 @@ void APlayerCharacter::PlayerDeath()
 		infoWidgetUI->RemoveFromParent();
 		informationUI->RemoveFromParent();
 		crosshairUI->RemoveFromParent();
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerDeathEmitter, GetActorLocation());
 		FTimerHandle endHandle;
 		// 7초 뒤 호출되는 함수 타이머
 		GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()->void

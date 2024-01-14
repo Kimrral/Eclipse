@@ -248,6 +248,9 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* PlayerSpawnEmitter;
+
+	UPROPERTY(EditAnywhere)
+	class UParticleSystem* PlayerDeathEmitter;
 	
 	UPROPERTY()
 	class AMaskActor* MaskActor;

@@ -17,7 +17,7 @@ void UCrunchAnim::AnimNotify_HitPoint()
 	FCollisionQueryParams params;
 	params.AddIgnoredActor(me);
 	// End Overlap 시점에 호출되는 Overlap Multi
-	DrawDebugSphere(GetWorld(), Center, 80, 30, FColor::Red, false, 3);
+	//DrawDebugSphere(GetWorld(), Center, 80, 30, FColor::Red, false, 3);
 	bool bOverlapHit = GetWorld()->OverlapMultiByChannel(HitObj, Center, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(80), params);
 	if(bOverlapHit)
 	{

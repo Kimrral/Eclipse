@@ -2157,7 +2157,9 @@ void APlayerCharacter::Fire()
 			UGameplayStatics::SpawnSoundAtLocation(GetWorld(), RifleBulletShellDropSound, bulSoundLoc, FRotator::ZeroRotator, 0.4, 1, 0);
 			UGameplayStatics::PlaySound2D(GetWorld(), RifleFireSound);
 			auto controller = GetWorld()->GetFirstPlayerController();
+			// 사격 카메라 셰이크 실행
 			controller->PlayerCameraManager->StartCameraShake(rifleFireShake);
+			// Perform Linetrace
 			bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),startLoc, EndLoc, ObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, rifleHitResult, true);
 			if(bHit)
 			{
@@ -2169,6 +2171,7 @@ void APlayerCharacter::Fire()
 				ARewardContainer* rewardContainer=Cast<ARewardContainer>(rifleHitResult.GetActor());
 				if(fsm&&enemy)
 				{
+					// Check Enemy Type
 					auto guardian=Cast<AGuardian>(enemy);
 					auto crunch = Cast<ACrunch>(enemy);
 					if(guardian)

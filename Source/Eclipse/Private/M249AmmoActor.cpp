@@ -56,6 +56,7 @@ void AM249AmmoActor::SphereOnOverlap(UPrimitiveComponent* OverlappedComponent, A
 		auto player=Cast<APlayerCharacter>(OtherActor);
 		if(player)
 		{
+			SetActorTickEnabled(true);
 			bTracePlayer=true;
 			ammoMesh->SetCollisionResponseToAllChannels(ECR_Overlap);
 			ammoMesh->SetCollisionResponseToChannel(ECC_Vehicle, ECR_Ignore);

@@ -33,5 +33,5 @@ void AAmmoActor::BeginPlay()
 void AAmmoActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	
 }

@@ -2141,22 +2141,22 @@ void APlayerCharacter::Fire()
 			TArray<AActor*> ActorsToIgnore;
 			ActorsToIgnore.Add(this); // LineTrace에서 제외할 대상
 			FHitResult rifleHitResult;
-			auto particleTrans = rifleComp->GetSocketTransform(FName("RifleFirePosition"));
+			FTransform particleTrans = rifleComp->GetSocketTransform(FName("RifleFirePosition"));
 			particleTrans.SetScale3D(FVector(0.7));
-			auto particleLoc2 = rifleComp->GetSocketLocation(FName("RifleFirePosition"));
-			auto particleRot2 = rifleComp->GetSocketRotation(FName("RifleFirePosition"))+FRotator(0, 0, 90);
-			auto particleTrans2=UKismetMathLibrary::MakeTransform(particleLoc2, particleRot2, FVector(0.4));
+			FVector particleLoc2 = rifleComp->GetSocketLocation(FName("RifleFirePosition"));
+			UE::Math::TRotator<double> particleRot2 = rifleComp->GetSocketRotation(FName("RifleFirePosition"))+FRotator(0, 0, 90);
+			FTransform particleTrans2=UKismetMathLibrary::MakeTransform(particleLoc2, particleRot2, FVector(0.4));
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle, particleTrans);
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle2, particleTrans2);
 			FActorSpawnParameters param;
 			param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-			auto spawnTrans = rifleComp->GetSocketTransform(FName("BulletShell"));
-			auto bulletShell = GetWorld()->SpawnActor<AActor>(BulletShellFactory, spawnTrans);
+			FTransform spawnTrans = rifleComp->GetSocketTransform(FName("BulletShell"));
+			AActor* bulletShell = GetWorld()->SpawnActor<AActor>(BulletShellFactory, spawnTrans);
 			bulletShell->SetLifeSpan(5.0f);
-			auto bulSoundLoc = GetActorLocation()*FVector(0, 0, -80);
+			UE::Math::TVector<double> bulSoundLoc = GetActorLocation()*FVector(0, 0, -80);
 			UGameplayStatics::SpawnSoundAtLocation(GetWorld(), RifleBulletShellDropSound, bulSoundLoc, FRotator::ZeroRotator, 0.4, 1, 0);
 			UGameplayStatics::PlaySound2D(GetWorld(), RifleFireSound);
-			auto controller = GetWorld()->GetFirstPlayerController();
+			APlayerController* controller = GetWorld()->GetFirstPlayerController();
 			// 사격 카메라 셰이크 실행
 			controller->PlayerCameraManager->StartCameraShake(rifleFireShake);
 			// Perform Linetrace
@@ -2172,8 +2172,8 @@ void APlayerCharacter::Fire()
 				if(fsm&&enemy)
 				{
 					// Check Enemy Type
-					auto guardian=Cast<AGuardian>(enemy);
-					auto crunch = Cast<ACrunch>(enemy);
+					AGuardian* guardian=Cast<AGuardian>(enemy);
+					ACrunch* crunch = Cast<ACrunch>(enemy);
 					if(guardian)
 					{
 						bGuardian=true;
@@ -2186,7 +2186,7 @@ void APlayerCharacter::Fire()
 					if(enemy->bDeath==false)
 					{
 						hitActors = rifleHitResult.GetActor();
-						auto hitBone = rifleHitResult.BoneName;
+						FName hitBone = rifleHitResult.BoneName;
 						auto hitLoc = rifleHitResult.Location;
 						auto hitRot = UKismetMathLibrary::Conv_VectorToRotator(rifleHitResult.ImpactNormal);
 						// 헤드샷 적중

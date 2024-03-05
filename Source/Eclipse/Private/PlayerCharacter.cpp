@@ -212,7 +212,7 @@ void APlayerCharacter::BeginPlay()
 		PlayerController->EnableInput(PlayerController);		
 	}
 
-	const auto cameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0));
+	APlayerCameraManager* const cameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0));
 	cameraManager->StopCameraFade();
 	cameraManager->StartCameraFade(1.0, 0, 8.0, FColor::Black, false, true);
 
@@ -361,7 +361,7 @@ void APlayerCharacter::Zoom()
 	isZooming=true;
 	UGameplayStatics::PlaySound2D(GetWorld(), zoomSound);
 	GetCharacterMovement()->MaxWalkSpeed=240.f;
-	const auto animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+	UPlayerAnim* const animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 	if(animInst)
 	{
 		animInst->bZooming=true;
@@ -380,9 +380,9 @@ void APlayerCharacter::Zoom()
 	{
 		isSniperZooming=true;
 		crosshairUI->CrosshairImage->SetVisibility(ESlateVisibility::Hidden);
-		const auto cameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0));
+		APlayerCameraManager* const cameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0));
 		cameraManager->StartCameraFade(1.0, 0.1, 3.0, FColor::Black, false, true);
-		const auto controller = GetWorld()->GetFirstPlayerController();
+		const APlayerController* controller = GetWorld()->GetFirstPlayerController();
 		controller->PlayerCameraManager->StartCameraShake(sniperZoomingShake);
 		// 카메라 줌 러프 타임라인 재생
 		Timeline.PlayFromStart();
@@ -412,7 +412,7 @@ void APlayerCharacter::ZoomRelease()
 	// Zooming Boolean
 	isZooming = false;
 	GetCharacterMovement()->MaxWalkSpeed=360.f;
-	const auto animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+	UPlayerAnim* const animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 	if(animInst)
 	{
 		animInst->bZooming=false;
@@ -428,7 +428,7 @@ void APlayerCharacter::ZoomRelease()
 	else if(weaponArray[1]==true)
 	{
 		isSniperZooming=false;
-		const auto controller = GetWorld()->GetFirstPlayerController();
+		const APlayerController* controller = GetWorld()->GetFirstPlayerController();
 		controller->PlayerCameraManager->StopAllCameraShakes();
 		if(GetMesh()->GetAnimInstance()->Montage_IsPlaying(zoomingMontage))
 		{
@@ -516,7 +516,7 @@ void APlayerCharacter::SwapFirstWeapon()
 	{
 		return;
 	}
-	auto animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+	UPlayerAnim* animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 	if(animInst)
 	{
 		bool montagePlaying = animInst->IsAnyMontagePlaying();
@@ -633,7 +633,7 @@ void APlayerCharacter::SwapSecondWeapon()
 	{
 		return;
 	}
-	auto animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+	UPlayerAnim* animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 	if(animInst)
 	{
 		bool montagePlaying = animInst->IsAnyMontagePlaying();
@@ -1278,10 +1278,10 @@ void APlayerCharacter::SetBossHPWidget(AEnemy* enemy)
 void APlayerCharacter::SetDamageWidget(int damage, FVector spawnLoc, bool isShieldIconEnable, FLinearColor DamageTextColor)
 {
 
-	auto damWidget = GetWorld()->SpawnActor<ADamageWidgetActor>(damageWidgetFactory, spawnLoc+FVector(0, 0, 50), FRotator::ZeroRotator);
+	ADamageWidgetActor* damWidget = GetWorld()->SpawnActor<ADamageWidgetActor>(damageWidgetFactory, spawnLoc+FVector(0, 0, 50), FRotator::ZeroRotator);
 	if(damWidget)
 	{
-		auto widui = damWidget->DamageWidgetComponent->GetUserWidgetObject();
+		UUserWidget* widui = damWidget->DamageWidgetComponent->GetUserWidgetObject();
 		if(widui)
 		{
 			damageWidgetUI=Cast<UDamageWidget>(widui);
@@ -1407,7 +1407,7 @@ void APlayerCharacter::ChangeWeapon()
 					else if(weaponArray[2]==true)
 					{
 						// 애니메이션 인스턴스 캐스팅
-						auto animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+						UPlayerAnim* animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 						if(animInst)
 						{
 							// 애니메이션 블루프린트에 상태 전환 불리언 전달
@@ -1471,7 +1471,7 @@ void APlayerCharacter::ChangeWeapon()
 					}
 					else if(weaponArray[2]==true)
 					{
-						auto animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+						UPlayerAnim* animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 						if(animInst)
 						{
 							animInst->bPistol=false;
@@ -1516,7 +1516,7 @@ void APlayerCharacter::ChangeWeapon()
 					UGameplayStatics::PlaySound2D(GetWorld(), WeaponSwapSound);
 					infoWidgetUI->RemoveFromParent();
 					PlayAnimMontage(zoomingMontage, 1 , FName("PistolEquip"));
-					auto animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+					UPlayerAnim* animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 					if(animInst)
 					{
 						animInst->bPistol=true;
@@ -1586,7 +1586,7 @@ void APlayerCharacter::ChangeWeapon()
 					}
 					else if(weaponArray[2]==true)
 					{
-						auto animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+						UPlayerAnim* animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 						if(animInst)
 						{
 							animInst->bPistol=false;
@@ -1637,12 +1637,12 @@ void APlayerCharacter::ChangeWeapon()
 				{
 					infoWidgetUI->weaponHoldPercent=0;
 					bEnding=true;
-					auto playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+					APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 					playerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
 					StopAnimMontage();
 					GetCharacterMovement()->StopActiveMovement();
 					GetCharacterMovement()->DisableMovement();
-					auto spawnTrans = this->GetTransform();
+					FTransform spawnTrans = this->GetTransform();
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), recallParticle, spawnTrans);
 					PlayAnimMontage(zoomingMontage, 1, FName("LevelEnd"));
 					UGameplayStatics::PlaySound2D(GetWorld(), PortalSound);
@@ -1879,12 +1879,12 @@ void APlayerCharacter::Reload()
 void APlayerCharacter::MoveToIsolatedShip()
 {
 	bEnding=true;
-	auto playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+	APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 	playerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
 	StopAnimMontage();
 	GetCharacterMovement()->StopActiveMovement();
 	GetCharacterMovement()->DisableMovement();
-	auto spawnTrans = this->GetTransform();
+	FTransform spawnTrans = this->GetTransform();
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), recallParticle, spawnTrans);
 	PlayAnimMontage(zoomingMontage, 1, FName("LevelEnd"));
 	UGameplayStatics::PlaySound2D(GetWorld(), PortalSound);
@@ -1910,20 +1910,20 @@ void APlayerCharacter::SetZoomValue(float Value)
 	if(weaponArray[1]==true&&!SniperZoomBool&&!SniperZoomOutBool)
 	{
 		// 타임라인 Float Curve 에 따른 Lerp
-		auto lerp=UKismetMathLibrary::Lerp(90,40,Value);
+		double lerp = UKismetMathLibrary::Lerp(90, 40, Value);
 		// 해당 Lerp값 Arm Length에 적용
 		FollowCamera->SetFieldOfView(lerp);
 	}
 	else if(weaponArray[1]==false)
 	{
 		// 타임라인 Float Curve 에 따른 Lerp
-		auto lerp=UKismetMathLibrary::Lerp(200,100,Value);
+		double lerp = UKismetMathLibrary::Lerp(200, 100, Value);
 		// 해당 Lerp값 Arm Length에 적용
 		CameraBoom->TargetArmLength=lerp;
 	}
 	else if(SniperZoomBool)
 	{
-		auto lerp = UKismetMathLibrary::Lerp(40,20,Value);
+		double lerp = UKismetMathLibrary::Lerp(40, 20, Value);
 		FollowCamera->SetFieldOfView(lerp);
 		GetWorldTimerManager().SetTimer(SniperZoomHandle, FTimerDelegate::CreateLambda([this]()->void
 		{
@@ -1932,7 +1932,7 @@ void APlayerCharacter::SetZoomValue(float Value)
 	}
 	else if(SniperZoomOutBool)
 	{
-		auto lerp = FollowCamera->FieldOfView = UKismetMathLibrary::Lerp(20,40,Value);
+		float lerp = FollowCamera->FieldOfView = UKismetMathLibrary::Lerp(20, 40, Value);
 		FollowCamera->SetFieldOfView(lerp);
 		GetWorldTimerManager().SetTimer(SniperZoomOutHandle, FTimerDelegate::CreateLambda([this]()->void
 		{
@@ -2006,14 +2006,14 @@ void APlayerCharacter::Damaged(int damage)
 	}
 	else
 	{
-		auto playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+		APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 		// 카메라 페이드 연출
 		playerCam->StartCameraFade(0.3, 0, 2.0, FLinearColor::Red, false, true);
 		UGameplayStatics::PlaySound2D(GetWorld(), damagedSound);
 		curHP = FMath::Clamp(curHP-damage, 0, maxHP);
 		StopAnimMontage();
 		PlayAnimMontage(zoomingMontage, 1, FName("Damaged"));
-		const auto controller = GetWorld()->GetFirstPlayerController();
+		const APlayerController* controller = GetWorld()->GetFirstPlayerController();
 		controller->PlayerCameraManager->StartCameraShake(PlayerDamagedShake);
 		UpdateTabWidget();
 	}
@@ -2187,14 +2187,14 @@ void APlayerCharacter::Fire()
 					{
 						hitActors = rifleHitResult.GetActor();
 						FName hitBone = rifleHitResult.BoneName;
-						auto hitLoc = rifleHitResult.Location;
-						auto hitRot = UKismetMathLibrary::Conv_VectorToRotator(rifleHitResult.ImpactNormal);
+						FVector_NetQuantize hitLoc = rifleHitResult.Location;
+						FRotator hitRot = UKismetMathLibrary::Conv_VectorToRotator(rifleHitResult.ImpactNormal);
 						// 헤드샷 적중
 						if(hitBone==FName("head"))
 						{
 							// 반환값 float의 데미지 증가 처리 함수와 곱연산
-							auto min = FMath::RoundFromZero(120*DamageMultiplier());
-							auto max = FMath::RoundFromZero(180*DamageMultiplier());
+							float min = FMath::RoundFromZero(120 * DamageMultiplier());
+							float max = FMath::RoundFromZero(180 * DamageMultiplier());
 							// 헤드 데미지 랜덤 산출
 							randRifleHeadDamage = FMath::RandRange(min, max);
 							// 이번 공격에 적이 죽는다면
@@ -2265,7 +2265,7 @@ void APlayerCharacter::Fire()
 									// 실드가 파괴되지 않은 상태라면
 									else
 									{
-										auto EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
+										FTransform EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
 										EmitterTrans.SetScale3D(FVector(1.3));
 										UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldHitEmitter, EmitterTrans);
 										// FSM에 있는 Damage Process 호출		
@@ -2293,8 +2293,8 @@ void APlayerCharacter::Fire()
 						else
 						{
 							// 반환값 float의 데미지 증가 처리 함수와 곱연산
-							auto min = FMath::RoundFromZero(60*DamageMultiplier());
-							auto max = FMath::RoundFromZero(90*DamageMultiplier());
+							float min = FMath::RoundFromZero(60 * DamageMultiplier());
+							float max = FMath::RoundFromZero(90 * DamageMultiplier());
 							// 일반 데미지 랜덤 산출
 							randRifleDamage = FMath::RandRange(min, max);
 							// 이번 공격에 적이 죽는다면
@@ -2367,7 +2367,7 @@ void APlayerCharacter::Fire()
 									// 실드가 있는 상태라면
 									else
 									{
-										auto EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
+										FTransform EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
 										EmitterTrans.SetScale3D(FVector(1.3));
 										UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldHitEmitter, EmitterTrans);
 										// FSM에 있는 Damage Process 호출		
@@ -2399,7 +2399,7 @@ void APlayerCharacter::Fire()
 				{
 					if(!rewardContainer->bDestroyed)
 					{
-						auto hitLoc = rifleHitResult.Location;
+						FVector_NetQuantize hitLoc = rifleHitResult.Location;
 						crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
 						UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
 						if(rewardContainer->curBoxHP<=1)
@@ -2417,14 +2417,14 @@ void APlayerCharacter::Fire()
 				}
 				else
 				{
-					auto decalRot = UKismetMathLibrary::Conv_VectorToRotator(rifleHitResult.ImpactNormal);
-					auto decalLoc = rifleHitResult.Location;
-					auto decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
+					FRotator decalRot = UKismetMathLibrary::Conv_VectorToRotator(rifleHitResult.ImpactNormal);
+					FVector_NetQuantize decalLoc = rifleHitResult.Location;
+					FTransform decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
 					GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot+FRotator(-90, 0, 0), FVector(0.5f));
 				}
-				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.3*RecoilRateMultiplier(), -0.5*RecoilRateMultiplier());
-				auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.3*RecoilRateMultiplier(), 0.3*RecoilRateMultiplier());
+				double randF = UKismetMathLibrary::RandomFloatInRange(-0.3 * RecoilRateMultiplier(), -0.5 * RecoilRateMultiplier());
+				double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.3 * RecoilRateMultiplier(), 0.3 * RecoilRateMultiplier());
 				AddControllerPitchInput(randF);
 				AddControllerYawInput(randF2);						
 				CanShoot=false;
@@ -2435,8 +2435,8 @@ void APlayerCharacter::Fire()
 			}
 			else
 			{
-				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.3*RecoilRateMultiplier(), -0.5*RecoilRateMultiplier());
-				auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.3*RecoilRateMultiplier(), 0.3*RecoilRateMultiplier());
+				double randF = UKismetMathLibrary::RandomFloatInRange(-0.3 * RecoilRateMultiplier(), -0.5 * RecoilRateMultiplier());
+				double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.3 * RecoilRateMultiplier(), 0.3 * RecoilRateMultiplier());
 				AddControllerPitchInput(randF);
 				AddControllerYawInput(randF2);
 				CanShoot=false;				
@@ -2482,10 +2482,10 @@ void APlayerCharacter::Fire()
 			FHitResult sniperHitResult;
 			FActorSpawnParameters param;
 			param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-			auto spawnTrans = sniperComp->GetSocketTransform(FName("BulletShell"));
-			auto bulletShell = GetWorld()->SpawnActor<AActor>(BulletShellFactory, spawnTrans);
+			FTransform spawnTrans = sniperComp->GetSocketTransform(FName("BulletShell"));
+			AActor* bulletShell = GetWorld()->SpawnActor<AActor>(BulletShellFactory, spawnTrans);
 			bulletShell->SetLifeSpan(5.0f);
-			auto bulSoundLoc = GetActorLocation()*FVector(0, 0, -80);
+			UE::Math::TVector<double> bulSoundLoc = GetActorLocation() * FVector(0, 0, -80);
 			UGameplayStatics::SpawnSoundAtLocation(GetWorld(), RifleBulletShellDropSound, bulSoundLoc, FRotator::ZeroRotator, 0.4, 1, 0);
 			UGameplayStatics::PlaySound2D(GetWorld(), SniperFireSound);
 			bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),startLoc, EndLoc, ObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, sniperHitResult, true);
@@ -2500,8 +2500,8 @@ void APlayerCharacter::Fire()
 				ARewardContainer* rewardContainer=Cast<ARewardContainer>(sniperHitResult.GetActor());
 				if(fsm&&enemy)
 				{
-					auto guardian=Cast<AGuardian>(enemy);
-					auto crunch = Cast<ACrunch>(enemy);
+					AGuardian* guardian = Cast<AGuardian>(enemy);
+					ACrunch* crunch = Cast<ACrunch>(enemy);
 					if(guardian)
 					{
 						bGuardian=true;
@@ -2514,13 +2514,13 @@ void APlayerCharacter::Fire()
 					if(enemy->bDeath==false)
 					{
 						hitActors = sniperHitResult.GetActor();
-						auto hitBone = sniperHitResult.BoneName;
-						auto hitLoc = sniperHitResult.Location;
-						auto hitRot = UKismetMathLibrary::Conv_VectorToRotator(sniperHitResult.ImpactNormal);
+						FName hitBone = sniperHitResult.BoneName;
+						FVector_NetQuantize hitLoc = sniperHitResult.Location;
+						FRotator hitRot = UKismetMathLibrary::Conv_VectorToRotator(sniperHitResult.ImpactNormal);
 						if(hitBone==FName("head"))
 						{
-							auto min = FMath::RoundFromZero(1000*DamageMultiplier());
-							auto max = FMath::RoundFromZero(1200*DamageMultiplier());
+							float min = FMath::RoundFromZero(1000 * DamageMultiplier());
+							float max = FMath::RoundFromZero(1200 * DamageMultiplier());
 							randSniperHeadDamage = FMath::RandRange(min, max);
 							if(enemy->curHP<=randSniperHeadDamage)
 							{
@@ -2578,7 +2578,7 @@ void APlayerCharacter::Fire()
 									// 실드가 파괴되지 않은 상태라면
 									else
 									{
-										auto EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
+										FTransform EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
 										EmitterTrans.SetScale3D(FVector(1.3));
 										UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldHitEmitter, EmitterTrans);
 										// FSM에 있는 Damage Process 호출		
@@ -2604,8 +2604,8 @@ void APlayerCharacter::Fire()
 						}
 						else
 						{
-							auto min = FMath::RoundFromZero(650*DamageMultiplier());
-							auto max = FMath::RoundFromZero(850*DamageMultiplier());
+							float min = FMath::RoundFromZero(650 * DamageMultiplier());
+							float max = FMath::RoundFromZero(850 * DamageMultiplier());
 							randSniperDamage = FMath::RandRange(min, max);
 							if(enemy->curHP<=randSniperDamage)
 							{
@@ -2664,7 +2664,7 @@ void APlayerCharacter::Fire()
 									// 실드가 있는 상태라면
 									else
 									{
-										auto EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
+										FTransform EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
 										EmitterTrans.SetScale3D(FVector(1.3));
 										UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldHitEmitter, EmitterTrans);
 										// FSM에 있는 Damage Process 호출		
@@ -2696,7 +2696,7 @@ void APlayerCharacter::Fire()
 				{
 					if(!rewardContainer->bDestroyed)
 					{
-						auto hitLoc = sniperHitResult.Location;
+						FVector_NetQuantize hitLoc = sniperHitResult.Location;
 						crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
 						UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
 						if(rewardContainer->curBoxHP<=5)
@@ -2713,31 +2713,31 @@ void APlayerCharacter::Fire()
 					}
 				}
 				else
-				{					
-					auto decalRot = UKismetMathLibrary::Conv_VectorToRotator(sniperHitResult.ImpactNormal);
-					auto decalLoc = sniperHitResult.Location;
-					auto decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
+				{
+					FRotator decalRot = UKismetMathLibrary::Conv_VectorToRotator(sniperHitResult.ImpactNormal);
+					FVector_NetQuantize decalLoc = sniperHitResult.Location;
+					FTransform decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
 					GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot+FRotator(-90, 0, 0), FVector(0.5f));
-				}					
-				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.7*RecoilRateMultiplier(), -1.2*RecoilRateMultiplier());
-				auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7*RecoilRateMultiplier(), 0.8*RecoilRateMultiplier());
+				}
+				double randF = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), -1.2 * RecoilRateMultiplier());
+				double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), 0.8 * RecoilRateMultiplier());
 				AddControllerPitchInput(randF);
 				AddControllerYawInput(randF2);				
 				if(isSniperZooming)
 				{
-					auto particleTrans = FollowCamera->GetComponentLocation()+FollowCamera->GetUpVector()*-70.0f;
+					UE::Math::TVector<double> particleTrans = FollowCamera->GetComponentLocation() + FollowCamera->GetUpVector() * -70.0f;
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperFireParticle, particleTrans);
-					auto controller = GetWorld()->GetFirstPlayerController();
+					APlayerController* controller = GetWorld()->GetFirstPlayerController();
 					controller->PlayerCameraManager->StartCameraShake(sniperCameraShake);
-					auto fireSocketLoc = FollowCamera->GetComponentLocation()+FollowCamera->GetUpVector()*-70.0f;
+					UE::Math::TVector<double> fireSocketLoc = FollowCamera->GetComponentLocation() + FollowCamera->GetUpVector() * -70.0f;
 				}
 				else
 				{
 					PlayAnimMontage(zoomingMontage, 1, FName("RifleFire"));
-					auto controller = GetWorld()->GetFirstPlayerController();
+					APlayerController* controller = GetWorld()->GetFirstPlayerController();
 					controller->PlayerCameraManager->StartCameraShake(sniperFireShake);
-					auto particleTrans = sniperComp->GetSocketTransform(FName("SniperFirePosition"));
+					FTransform particleTrans = sniperComp->GetSocketTransform(FName("SniperFirePosition"));
 					particleTrans.SetScale3D(FVector(0.7));
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperFireParticle, particleTrans);
 				}
@@ -2751,18 +2751,18 @@ void APlayerCharacter::Fire()
 			// 라인 트레이스가 적중하지 않았다면
 			else
 			{
-				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.7*RecoilRateMultiplier(), -1.2*RecoilRateMultiplier());
-				auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7*RecoilRateMultiplier(), 0.8*RecoilRateMultiplier());
+				double randF = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), -1.2 * RecoilRateMultiplier());
+				double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), 0.8 * RecoilRateMultiplier());
 				AddControllerPitchInput(randF);
 				AddControllerYawInput(randF2);
 				if(isZooming)
 				{
-					auto particleTrans = FollowCamera->GetComponentLocation()+FollowCamera->GetUpVector()*-70.0f;
+					UE::Math::TVector<double> particleTrans = FollowCamera->GetComponentLocation() + FollowCamera->GetUpVector() * -70.0f;
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperFireParticle, particleTrans);
 				}
 				else
 				{
-					auto particleTrans = sniperComp->GetSocketTransform(FName("SniperFirePosition"));
+					FTransform particleTrans = sniperComp->GetSocketTransform(FName("SniperFirePosition"));
 					particleTrans.SetScale3D(FVector(0.7));
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperFireParticle, particleTrans);
 				}
@@ -2791,7 +2791,7 @@ void APlayerCharacter::Fire()
 			// Clamp를 통한 탄약 수 차감
 			curPistolAmmo = FMath::Clamp(curPistolAmmo-1, 0, 8+SetPistolAdditionalMagazine());
 			UE_LOG(LogTemp, Warning, TEXT("Cur Pistol Bullet : %d"), curPistolAmmo)
-			auto controller = GetWorld()->GetFirstPlayerController();
+			APlayerController* controller = GetWorld()->GetFirstPlayerController();
 			controller->PlayerCameraManager->StartCameraShake(pistolFireShake);
 			if(isZooming)
 			{
@@ -2817,15 +2817,15 @@ void APlayerCharacter::Fire()
 			TArray<AActor*> ActorsToIgnore;
 			ActorsToIgnore.Add(this); // LineTrace에서 제외할 대상
 			FHitResult pistolHitResult;
-			auto particleTrans = pistolComp->GetSocketTransform(FName("PistolFirePosition"));
+			FTransform particleTrans = pistolComp->GetSocketTransform(FName("PistolFirePosition"));
 			particleTrans.SetScale3D(FVector(0.7));
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PistolfireParticle, particleTrans);
 			FActorSpawnParameters param;
 			param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-			auto spawnTrans = pistolComp->GetSocketTransform(FName("BulletShell"));
-			auto bulletShell = GetWorld()->SpawnActor<AActor>(BulletShellFactory, spawnTrans);
+			FTransform spawnTrans = pistolComp->GetSocketTransform(FName("BulletShell"));
+			AActor* bulletShell = GetWorld()->SpawnActor<AActor>(BulletShellFactory, spawnTrans);
 			bulletShell->SetLifeSpan(5.0f);
-			auto bulSoundLoc = GetActorLocation()*FVector(0, 0, -80);
+			UE::Math::TVector<double> bulSoundLoc = GetActorLocation() * FVector(0, 0, -80);
 			UGameplayStatics::SpawnSoundAtLocation(GetWorld(), RifleBulletShellDropSound, bulSoundLoc, FRotator::ZeroRotator, 0.4, 1, 0);
 			UGameplayStatics::PlaySound2D(GetWorld(), PistolFireSound);
 			bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),startLoc, EndLoc, ObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, pistolHitResult, true);
@@ -2839,8 +2839,8 @@ void APlayerCharacter::Fire()
 				ARewardContainer* rewardContainer=Cast<ARewardContainer>(pistolHitResult.GetActor());
 				if(fsm&&enemy)
 				{
-					auto guardian=Cast<AGuardian>(enemy);
-					auto crunch = Cast<ACrunch>(enemy);
+					AGuardian* guardian = Cast<AGuardian>(enemy);
+					ACrunch* crunch = Cast<ACrunch>(enemy);
 					if(guardian)
 					{
 						bGuardian=true;
@@ -2853,13 +2853,13 @@ void APlayerCharacter::Fire()
 					if(enemy->bDeath==false)
 					{
 						hitActors = pistolHitResult.GetActor();
-						auto hitBone = pistolHitResult.BoneName;
-						auto hitLoc = pistolHitResult.Location;
-						auto hitRot = UKismetMathLibrary::Conv_VectorToRotator(pistolHitResult.ImpactNormal);
+						FName hitBone = pistolHitResult.BoneName;
+						FVector_NetQuantize hitLoc = pistolHitResult.Location;
+						FRotator hitRot = UKismetMathLibrary::Conv_VectorToRotator(pistolHitResult.ImpactNormal);
 						if(hitBone==FName("head"))
 						{
-							auto min = FMath::RoundFromZero(450*DamageMultiplier());
-							auto max = FMath::RoundFromZero(550*DamageMultiplier());
+							float min = FMath::RoundFromZero(450 * DamageMultiplier());
+							float max = FMath::RoundFromZero(550 * DamageMultiplier());
 							randPistolHeadDamage = FMath::RandRange(min, max);
 							// 이번 공격에 Enemy가 죽는다면
 							if(enemy->curHP<=randPistolHeadDamage)
@@ -2919,7 +2919,7 @@ void APlayerCharacter::Fire()
 									// 실드가 파괴되지 않은 상태라면
 									else
 									{
-										auto EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
+										FTransform EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
 										EmitterTrans.SetScale3D(FVector(1.3));
 										UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldHitEmitter, EmitterTrans);
 										// FSM에 있는 Damage Process 호출		
@@ -2945,8 +2945,8 @@ void APlayerCharacter::Fire()
 						}
 						else
 						{
-							auto min = FMath::RoundFromZero(220*DamageMultiplier());
-							auto max = FMath::RoundFromZero(300*DamageMultiplier());
+							float min = FMath::RoundFromZero(220 * DamageMultiplier());
+							float max = FMath::RoundFromZero(300 * DamageMultiplier());
 							randPistolDamage = FMath::RandRange(min, max);
 							// 이번 공격에 Enemy가 죽는다면
 							if(enemy->curHP<=randPistolDamage)
@@ -3007,7 +3007,7 @@ void APlayerCharacter::Fire()
 									// 실드가 있는 상태라면
 									else
 									{
-										auto EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
+										FTransform EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
 										EmitterTrans.SetScale3D(FVector(1.3));
 										UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldHitEmitter, EmitterTrans);
 										// FSM에 있는 Damage Process 호출		
@@ -3039,7 +3039,7 @@ void APlayerCharacter::Fire()
 				{
 					if(!rewardContainer->bDestroyed)
 					{
-						auto hitLoc = pistolHitResult.Location;
+						FVector_NetQuantize hitLoc = pistolHitResult.Location;
 						crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
 						UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
 						if(rewardContainer->curBoxHP<=2)
@@ -3059,17 +3059,17 @@ void APlayerCharacter::Fire()
 				{
 					FActorSpawnParameters params;
 					params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-					auto decalRot = UKismetMathLibrary::Conv_VectorToRotator(pistolHitResult.ImpactNormal);
-					auto decalLoc = pistolHitResult.Location;
-					auto decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
+					FRotator decalRot = UKismetMathLibrary::Conv_VectorToRotator(pistolHitResult.ImpactNormal);
+					FVector_NetQuantize decalLoc = pistolHitResult.Location;
+					FTransform decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
 					GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot+FRotator(-90, 0, 0), FVector(0.5f));
 				}
-				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.7*RecoilRateMultiplier(), -1.2*RecoilRateMultiplier());
-				auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7*RecoilRateMultiplier(), 0.8*RecoilRateMultiplier());
+				double randF = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), -1.2 * RecoilRateMultiplier());
+				double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), 0.8 * RecoilRateMultiplier());
 				AddControllerPitchInput(randF);
-				AddControllerYawInput(randF2);				
-				auto fireSocketLoc = pistolComp->GetSocketTransform(FName("PistolFirePosition")).GetLocation();
+				AddControllerYawInput(randF2);
+				UE::Math::TVector<double> fireSocketLoc = pistolComp->GetSocketTransform(FName("PistolFirePosition")).GetLocation();
 				// 탄 궤적 나이아가라 시스템 스폰
 				// UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, pistolHitResult.Location, FRotator::ZeroRotator,FVector(1), true, true, ENCPoolMethod::AutoRelease);
 				// if(niagara)
@@ -3085,13 +3085,13 @@ void APlayerCharacter::Fire()
 			}
 			else
 			{
-				auto randF = UKismetMathLibrary::RandomFloatInRange(-0.7*RecoilRateMultiplier(), -1.2*RecoilRateMultiplier());
-				auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7*RecoilRateMultiplier(), 0.8*RecoilRateMultiplier());
+				double randF = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), -1.2 * RecoilRateMultiplier());
+				double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), 0.8 * RecoilRateMultiplier());
 				AddControllerPitchInput(randF);
 				AddControllerYawInput(randF2);
 				FVector niagaraSpawnLoc = FollowCamera->K2_GetComponentLocation();
 				FVector ForwardLoc = niagaraSpawnLoc + FollowCamera->GetForwardVector()*10000.0f;
-				auto FireLoc = pistolComp->GetSocketTransform(FName("PistolFirePosition")).GetLocation();
+				UE::Math::TVector<double> FireLoc = pistolComp->GetSocketTransform(FName("PistolFirePosition")).GetLocation();
 				// UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, ForwardLoc, FRotator::ZeroRotator, FVector(1), true, true, ENCPoolMethod::AutoRelease);
 				// if(niagara)
 				// {
@@ -3138,18 +3138,18 @@ void APlayerCharacter::Fire()
 			TArray<AActor*> ActorsToIgnore;
 			ActorsToIgnore.Add(this); // LineTrace에서 제외할 대상
 			FHitResult M249HitResult;
-			auto particleTrans = m249Comp->GetSocketTransform(FName("M249FirePosition"));
+			FTransform particleTrans = m249Comp->GetSocketTransform(FName("M249FirePosition"));
 			particleTrans.SetScale3D(FVector(0.7));
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PistolfireParticle, particleTrans);
 			FActorSpawnParameters param;
 			param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-			auto spawnTrans = m249Comp->GetSocketTransform(FName("BulletShell"));
-			auto bulletShell = GetWorld()->SpawnActor<AActor>(BulletShellFactory, spawnTrans);
+			FTransform spawnTrans = m249Comp->GetSocketTransform(FName("BulletShell"));
+			AActor* bulletShell = GetWorld()->SpawnActor<AActor>(BulletShellFactory, spawnTrans);
 			bulletShell->SetLifeSpan(5.0f);
-			auto bulSoundLoc = GetActorLocation()*FVector(0, 0, -80);
+			UE::Math::TVector<double> bulSoundLoc = GetActorLocation() * FVector(0, 0, -80);
 			UGameplayStatics::SpawnSoundAtLocation(GetWorld(), RifleBulletShellDropSound, bulSoundLoc, FRotator::ZeroRotator, 0.4, 1, 0);
 			UGameplayStatics::PlaySound2D(GetWorld(), M249FireSound);
-			auto controller = GetWorld()->GetFirstPlayerController();
+			APlayerController* controller = GetWorld()->GetFirstPlayerController();
 			controller->PlayerCameraManager->StartCameraShake(rifleFireShake);
 			PlayAnimMontage(zoomingMontage, 1, FName("RifleFire"));
 			bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),startLoc, EndLoc, ObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, M249HitResult, true);
@@ -3163,8 +3163,8 @@ void APlayerCharacter::Fire()
 				ARewardContainer* rewardContainer=Cast<ARewardContainer>(M249HitResult.GetActor());
 				if(fsm&&enemy)
 				{
-					auto guardian=Cast<AGuardian>(enemy);
-					auto crunch = Cast<ACrunch>(enemy);
+					AGuardian* guardian = Cast<AGuardian>(enemy);
+					ACrunch* crunch = Cast<ACrunch>(enemy);
 					if(guardian)
 					{
 						bGuardian=true;
@@ -3177,13 +3177,13 @@ void APlayerCharacter::Fire()
 					if(enemy->bDeath==false)
 					{
 						hitActors = M249HitResult.GetActor();
-						auto hitBone = M249HitResult.BoneName;
-						auto hitLoc = M249HitResult.Location;
-						auto hitRot = UKismetMathLibrary::Conv_VectorToRotator(M249HitResult.ImpactNormal);
+						FName hitBone = M249HitResult.BoneName;
+						FVector_NetQuantize hitLoc = M249HitResult.Location;
+						FRotator hitRot = UKismetMathLibrary::Conv_VectorToRotator(M249HitResult.ImpactNormal);
 						if(hitBone==FName("head"))
 						{
-							auto min = FMath::RoundFromZero(180*DamageMultiplier());
-							auto max = FMath::RoundFromZero(220*DamageMultiplier());
+							float min = FMath::RoundFromZero(180 * DamageMultiplier());
+							float max = FMath::RoundFromZero(220 * DamageMultiplier());
 							randM249HeadDamage = FMath::RandRange(min, max);
 							// 이번 공격에 Enemy가 죽는다면
 							if(enemy->curHP<=randM249HeadDamage)
@@ -3243,7 +3243,7 @@ void APlayerCharacter::Fire()
 									// 실드가 파괴되지 않은 상태라면
 									else
 									{
-										auto EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
+										FTransform EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
 										EmitterTrans.SetScale3D(FVector(1.3));
 										UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldHitEmitter, EmitterTrans);
 										// FSM에 있는 Damage Process 호출		
@@ -3269,8 +3269,8 @@ void APlayerCharacter::Fire()
 						}
 						else
 						{
-							auto min = FMath::RoundFromZero(90*DamageMultiplier());
-							auto max = FMath::RoundFromZero(110*DamageMultiplier());
+							float min = FMath::RoundFromZero(90 * DamageMultiplier());
+							float max = FMath::RoundFromZero(110 * DamageMultiplier());
 							randM249Damage = FMath::RandRange(min, max);
 							// 이번 공격에 Enemy가 죽는다면
 							if(enemy->curHP<=randM249Damage)
@@ -3330,7 +3330,7 @@ void APlayerCharacter::Fire()
 									// 실드가 있는 상태라면
 									else
 									{
-										auto EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
+										FTransform EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
 										EmitterTrans.SetScale3D(FVector(1.3));
 										UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldHitEmitter, EmitterTrans);
 										// FSM에 있는 Damage Process 호출		
@@ -3362,7 +3362,7 @@ void APlayerCharacter::Fire()
 				{
 					if(!rewardContainer->bDestroyed)
 					{
-						auto hitLoc = M249HitResult.Location;
+						FVector_NetQuantize hitLoc = M249HitResult.Location;
 						crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
 						UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
 						if(rewardContainer->curBoxHP<=1)
@@ -3382,23 +3382,23 @@ void APlayerCharacter::Fire()
 				{
 					FActorSpawnParameters params;
 					params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-					auto decalRot = UKismetMathLibrary::Conv_VectorToRotator(M249HitResult.ImpactNormal);
-					auto decalLoc = M249HitResult.Location;
-					auto decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
+					FRotator decalRot = UKismetMathLibrary::Conv_VectorToRotator(M249HitResult.ImpactNormal);
+					FVector_NetQuantize decalLoc = M249HitResult.Location;
+					FTransform decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
 					GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot+FRotator(-90, 0, 0), FVector(0.5f));
 				}
 				if(isZooming)
 				{
-					auto randF = UKismetMathLibrary::RandomFloatInRange(-0.4*RecoilRateMultiplier(), -0.7*RecoilRateMultiplier());
-					auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.4*RecoilRateMultiplier(), 0.4*RecoilRateMultiplier());
+					double randF = UKismetMathLibrary::RandomFloatInRange(-0.4 * RecoilRateMultiplier(), -0.7 * RecoilRateMultiplier());
+					double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.4 * RecoilRateMultiplier(), 0.4 * RecoilRateMultiplier());
 					AddControllerPitchInput(randF);
 					AddControllerYawInput(randF2);			
 				}
 				else
 				{
-					auto randF = UKismetMathLibrary::RandomFloatInRange(-0.6*RecoilRateMultiplier(), -1.1*RecoilRateMultiplier());
-					auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.5*RecoilRateMultiplier(), 0.5*RecoilRateMultiplier());
+					double randF = UKismetMathLibrary::RandomFloatInRange(-0.6 * RecoilRateMultiplier(), -1.1 * RecoilRateMultiplier());
+					double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.5 * RecoilRateMultiplier(), 0.5 * RecoilRateMultiplier());
 					AddControllerPitchInput(randF);
 					AddControllerYawInput(randF2);					
 				}				
@@ -3412,15 +3412,15 @@ void APlayerCharacter::Fire()
 			{
 				if(isZooming)
 				{
-					auto randF = UKismetMathLibrary::RandomFloatInRange(-0.4*RecoilRateMultiplier(), -0.7*RecoilRateMultiplier());
-					auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.4*RecoilRateMultiplier(), 0.4*RecoilRateMultiplier());
+					double randF = UKismetMathLibrary::RandomFloatInRange(-0.4 * RecoilRateMultiplier(), -0.7 * RecoilRateMultiplier());
+					double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.4 * RecoilRateMultiplier(), 0.4 * RecoilRateMultiplier());
 					AddControllerPitchInput(randF);
 					AddControllerYawInput(randF2);			
 				}
 				else
 				{
-					auto randF = UKismetMathLibrary::RandomFloatInRange(-0.6*RecoilRateMultiplier(), -1.1*RecoilRateMultiplier());
-					auto randF2 = UKismetMathLibrary::RandomFloatInRange(-0.5*RecoilRateMultiplier(), 0.5*RecoilRateMultiplier());
+					double randF = UKismetMathLibrary::RandomFloatInRange(-0.6 * RecoilRateMultiplier(), -1.1 * RecoilRateMultiplier());
+					double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.5 * RecoilRateMultiplier(), 0.5 * RecoilRateMultiplier());
 					AddControllerPitchInput(randF);
 					AddControllerYawInput(randF2);					
 				}
@@ -3495,7 +3495,7 @@ void APlayerCharacter::PlayerDeath()
 		UGameplayStatics::PlaySound2D(GetWorld(), deathSound);
 		// 사망지점 전역변수에 캐싱
 		DeathPosition=GetActorLocation();
-		auto playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+		APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 		// 카메라 페이드 연출
 		playerCam->StartCameraFade(0, 1, 5.0, FLinearColor::Black, false, true);
 		// 몽타주 재생 중단
@@ -3514,7 +3514,7 @@ void APlayerCharacter::PlayerDeath()
 		{
 			// 사망 변수 활성화
 			bPlayerDeath=true;
-			auto* PC = Cast<AEclipsePlayerController>(GetController());
+			AEclipsePlayerController* PC = Cast<AEclipsePlayerController>(GetController());
 			// 현재 주요 변수 값들을 GameInstance의 변수에 캐싱
 			CachingValues();
 			PouchCaching();
@@ -3531,7 +3531,7 @@ void APlayerCharacter::PlayerDeath()
 		// 0.4초 뒤 호출되는 함수 타이머
 		GetWorld()->GetTimerManager().SetTimer(possesHandle, FTimerDelegate::CreateLambda([this]()->void
 			{
-				auto* PC = Cast<AEclipsePlayerController>(GetController());
+				AEclipsePlayerController* PC = Cast<AEclipsePlayerController>(GetController());
 				if (PC != nullptr)
 				{
 					// 리스폰 된 플레이어에 새롭게 빙의

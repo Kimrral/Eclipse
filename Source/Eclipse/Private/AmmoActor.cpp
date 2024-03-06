@@ -27,6 +27,9 @@ AAmmoActor::AAmmoActor()
 void AAmmoActor::BeginPlay()
 {
 	Super::BeginPlay();
+
+	
+
 }
 
 // Called every frame
@@ -35,3 +38,4 @@ void AAmmoActor::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	
 }
+

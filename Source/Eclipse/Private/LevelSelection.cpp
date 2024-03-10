@@ -16,18 +16,20 @@ void ULevelSelection::NativeConstruct()
 	player=Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	pc=Cast<AEclipsePlayerController>(GetWorld()->GetFirstPlayerController());
 
-	Level1Yes->OnClicked.AddDynamic(this, &ULevelSelection::Level1Y);
-	Level1No->OnClicked.AddDynamic(this, &ULevelSelection::Level1N);
+	//Level1Yes->OnClicked.AddDynamic(this, &ULevelSelection::Level1Y);
+	//Level1No->OnClicked.AddDynamic(this, &ULevelSelection::Level1N);
 
-	Level2Yes->OnClicked.AddDynamic(this, &ULevelSelection::Level2Y);
-	Level2No->OnClicked.AddDynamic(this, &ULevelSelection::Level2N);
+	//Level2Yes->OnClicked.AddDynamic(this, &ULevelSelection::Level2Y);
+	//Level2No->OnClicked.AddDynamic(this, &ULevelSelection::Level2N);
 	
-	ExitButton->OnClicked.AddDynamic(this, &ULevelSelection::Exit);
+	//ExitButton->OnClicked.AddDynamic(this, &ULevelSelection::Exit);
 
-	IsolatedShipButton->OnClicked.AddDynamic(this, &ULevelSelection::OpenMoveIsolatedShipSelection);
+	//IsolatedShipButton->OnClicked.AddDynamic(this, &ULevelSelection::OpenMoveIsolatedShipSelection);
 
 	WidgetSwitcher_Level->SetActiveWidgetIndex(0);
 
+	PlayAnimation(LevelSelectionStartAnim);
+	
 	quitBool=false;
 }
 
@@ -48,6 +50,7 @@ void ULevelSelection::Level1N()
 {
 	//Cancel Level Selection
 	WidgetSwitcher_Level->SetActiveWidgetIndex(0);
+	PlayAnimation(LevelSelectionStartAnim);
 }
 
 void ULevelSelection::Level2Y()
@@ -59,6 +62,7 @@ void ULevelSelection::Level2N()
 {
 	//Cancel Level Selection
 	WidgetSwitcher_Level->SetActiveWidgetIndex(0);
+	PlayAnimation(LevelSelectionStartAnim);
 }
 
 void ULevelSelection::Exit()
@@ -72,4 +76,5 @@ void ULevelSelection::Exit()
 void ULevelSelection::OpenMoveIsolatedShipSelection()
 {
 	WidgetSwitcher_Level->SetActiveWidgetIndex(1);
+	PlayAnimation(LevelSelectionStartAnim);
 }

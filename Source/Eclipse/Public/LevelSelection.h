@@ -35,8 +35,11 @@ public:
 	class UButton* IsolatedShipButton;
 
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
-	class UButton* ExitButton;	
-
+	class UButton* ExitButton;
+	
+	UPROPERTY(BlueprintReadWrite, Transient, meta = (BindWidgetAnim))
+	class UWidgetAnimation* LevelSelectionStartAnim;
+	
 	UPROPERTY()
 	class AEclipsePlayerController* pc;
 

@@ -173,8 +173,8 @@ void APlayerCharacter::BeginPlay()
 
 	// Widget Settings
 	crosshairUI = CreateWidget<UCrosshairWidget>(GetWorld(), crosshairFactory);
-	infoWidgetUI = CreateWidget<UWeaponInfoWidget>(GetWorld(), infoWidgetFactory);
 	quitWidgetUI=CreateWidget<UQuitWidget>(GetWorld(), quitWidgetFactory);
+	infoWidgetUI = CreateWidget<UWeaponInfoWidget>(GetWorld(), infoWidgetFactory);	
 	sniperScopeUI=CreateWidget<UUserWidget>(GetWorld(), sniperScopeFactory);
 	damageWidgetUI = CreateWidget<UDamageWidget>(GetWorld(), damageWidgetUIFactory);
 	bossHPUI=CreateWidget<UBossHPWidget>(GetWorld(), bossHPWidgetFactory);
@@ -1833,11 +1833,14 @@ void APlayerCharacter::ChangeWeapon()
 			if(quitWidgetUI&&infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 			{
 				infoWidgetUI->weaponHoldPercent=0;
-				UGameplayStatics::PlaySound2D(GetWorld(), quitGameSound);
-				infoWidgetUI->RemoveFromParent();
-				UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(pc, quitWidgetUI);
-				pc->SetShowMouseCursor(true);
-				quitWidgetUI->AddToViewport();				
+				if(!quitWidgetUI->IsInViewport()&&pc)
+				{
+					UGameplayStatics::PlaySound2D(GetWorld(), quitGameSound);
+					infoWidgetUI->RemoveFromParent();
+					UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(pc, quitWidgetUI);
+					pc->SetShowMouseCursor(true);
+					quitWidgetUI->AddToViewport();
+				}
 			}
 		}
 	}	

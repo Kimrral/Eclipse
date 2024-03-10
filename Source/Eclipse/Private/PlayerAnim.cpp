@@ -83,10 +83,10 @@ void UPlayerAnim::AnimNotify_ReloadEnd()
 
 void UPlayerAnim::AnimNotify_LeftPlant()
 {
-	UGameplayStatics::PlaySound2D(GetWorld(), walkSound);
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), walkSound, me->GetActorLocation());
 }
 
 void UPlayerAnim::AnimNotify_RightPlant()
 {
-	UGameplayStatics::PlaySound2D(GetWorld(), walkSound);
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), walkSound, me->GetActorLocation());
 }

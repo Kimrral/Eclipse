@@ -242,6 +242,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = widget)
 	class UQuitWidget* quitWidgetUI;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
+	TSubclassOf<class ULevelSelection> levelSelectionWidgetFactory;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = widget)
+	class ULevelSelection* levelSelectionUI;
 	
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* ShieldHitEmitter;

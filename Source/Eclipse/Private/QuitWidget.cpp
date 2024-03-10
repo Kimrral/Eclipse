@@ -14,20 +14,22 @@ void UQuitWidget::NativeConstruct()
 
 	pc=Cast<AEclipsePlayerController>(GetWorld()->GetFirstPlayerController());
 
-	QuitYes->OnClicked.AddDynamic(this, &UQuitWidget::QuitY);
-	QuitNo->OnClicked.AddDynamic(this, &UQuitWidget::QuitN);
-
-
+	//QuitYes->OnClicked.AddDynamic(this, &UQuitWidget::QuitSelectYes);
+	//QuitNo->OnClicked.AddDynamic(this, &UQuitWidget::QuitSelectNo);
+	
 	quitBool=false;
+
+	PlayAnimation(QuitWidgetStartAnim);
+
 }
 
-void UQuitWidget::QuitY()
+void UQuitWidget::QuitSelectYes()
 {
 	TEnumAsByte<EQuitPreference::Type> types = EQuitPreference::Quit;
 	UKismetSystemLibrary::QuitGame(GetWorld(),pc, types, false);
 }
 
-void UQuitWidget::QuitN()
+void UQuitWidget::QuitSelectNo()
 {
 	UWidgetBlueprintLibrary::SetInputMode_GameOnly(pc);
 	pc->SetShowMouseCursor(false);

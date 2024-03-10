@@ -26,13 +26,16 @@ public:
 	UPROPERTY()
 	class AEclipsePlayerController* pc;
 
+	UPROPERTY(BlueprintReadWrite, Transient, meta = (BindWidgetAnim))
+	class UWidgetAnimation* QuitWidgetStartAnim;
+
 	UPROPERTY()
 	bool quitBool = false;
 	
 	UFUNCTION()
-	void QuitY();
+	void QuitSelectYes();
 
 	UFUNCTION()
-	void QuitN();
+	void QuitSelectNo();
 
 };

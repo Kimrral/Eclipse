@@ -19,6 +19,7 @@
 #include "HeadsetActor.h"
 #include "HelmetActor.h"
 #include "InformationWidget.h"
+#include "LevelSelection.h"
 #include "M249Actor.h"
 #include "M249MagActor.h"
 #include "MaskActor.h"
@@ -178,7 +179,7 @@ void APlayerCharacter::BeginPlay()
 	damageWidgetUI = CreateWidget<UDamageWidget>(GetWorld(), damageWidgetUIFactory);
 	bossHPUI=CreateWidget<UBossHPWidget>(GetWorld(), bossHPWidgetFactory);
 	informationUI = CreateWidget<UInformationWidget>(GetWorld(), informationWidgetFactory);
-	
+	levelSelectionUI = CreateWidget<ULevelSelection>(GetWorld(), levelSelectionWidgetFactory);
 	
 	if(!crosshairUI->IsInViewport())
 	{
@@ -1800,15 +1801,14 @@ void APlayerCharacter::ChangeWeapon()
 		else if(StageBoard)
 		{
 			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-			if(quitWidgetUI&&infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+			if(levelSelectionUI&&infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 			{
 				infoWidgetUI->weaponHoldPercent=0;
 				UGameplayStatics::PlaySound2D(GetWorld(), quitGameSound);
 				infoWidgetUI->RemoveFromParent();
-				UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(pc, quitWidgetUI);
+				UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(pc, levelSelectionUI);
 				pc->SetShowMouseCursor(true);
-				quitWidgetUI->WidgetSwitcher->SetActiveWidgetIndex(1);
-				quitWidgetUI->AddToViewport();						
+				levelSelectionUI->AddToViewport();						
 			}
 		}
 		else if(Stash)
@@ -1837,7 +1837,6 @@ void APlayerCharacter::ChangeWeapon()
 				infoWidgetUI->RemoveFromParent();
 				UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(pc, quitWidgetUI);
 				pc->SetShowMouseCursor(true);
-				quitWidgetUI->WidgetSwitcher->SetActiveWidgetIndex(0);
 				quitWidgetUI->AddToViewport();				
 			}
 		}

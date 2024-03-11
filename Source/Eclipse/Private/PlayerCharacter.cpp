@@ -157,6 +157,8 @@ void APlayerCharacter::BeginPlay()
 	gm=Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());	
 	animInstance=Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 
+	pc->SetAudioListenerOverride(GetMesh(), FVector::ZeroVector, FRotator::ZeroRotator);
+
 	bPlayerDeath=false;
 
 	curHP=maxHP;
@@ -1804,7 +1806,7 @@ void APlayerCharacter::ChangeWeapon()
 			if(levelSelectionUI&&infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 			{
 				infoWidgetUI->weaponHoldPercent=0;
-				UGameplayStatics::PlaySound2D(GetWorld(), quitGameSound);
+				UGameplayStatics::PlaySound2D(GetWorld(), levelSelectionSound);
 				infoWidgetUI->RemoveFromParent();
 				UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(pc, levelSelectionUI);
 				pc->SetShowMouseCursor(true);

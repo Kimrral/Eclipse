@@ -18,6 +18,8 @@ public:
 	UFUNCTION()
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
 
+	
+
 	UPROPERTY()
 	TArray<class AActor*> outActors;
 

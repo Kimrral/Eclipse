@@ -26,3 +26,4 @@ AActor* AEclipseGameMode::ChoosePlayerStart_Implementation(AController* Player)
 	// outActors 배열의 0번째 액터 리턴
 	return outActors[0];
 }
+

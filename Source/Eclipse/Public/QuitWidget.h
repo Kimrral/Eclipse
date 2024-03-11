@@ -18,10 +18,10 @@ public:
 	virtual void NativeConstruct() override;
 	
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
-	class UButton* QuitYes;
+	class UButton* SelectQuitYes;
 
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
-	class UButton* QuitNo;
+	class UButton* SelectQuitNo;
 
 	UPROPERTY()
 	class AEclipsePlayerController* pc;

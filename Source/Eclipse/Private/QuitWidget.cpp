@@ -12,15 +12,14 @@ void UQuitWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	pc=Cast<AEclipsePlayerController>(GetWorld()->GetFirstPlayerController());
-
-	//QuitYes->OnClicked.AddDynamic(this, &UQuitWidget::QuitSelectYes);
-	//QuitNo->OnClicked.AddDynamic(this, &UQuitWidget::QuitSelectNo);
-	
-	quitBool=false;
-
 	PlayAnimation(QuitWidgetStartAnim);
 
+	pc=Cast<AEclipsePlayerController>(GetWorld()->GetFirstPlayerController());
+
+	SelectQuitYes->OnClicked.AddDynamic(this, &UQuitWidget::QuitSelectYes);
+	SelectQuitNo->OnClicked.AddDynamic(this, &UQuitWidget::QuitSelectNo);
+	
+	quitBool=false;
 }
 
 void UQuitWidget::QuitSelectYes()

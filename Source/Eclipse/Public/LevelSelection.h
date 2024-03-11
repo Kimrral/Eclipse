@@ -20,16 +20,16 @@ public:
 	class UWidgetSwitcher* WidgetSwitcher_Level;
 	
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
-	class UButton* Level1Yes;
+	class UButton* SelectLevel1Yes;
 
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
-	class UButton* Level1No;
+	class UButton* SelectLevel1No;
 
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
-	class UButton* Level2Yes;
+	class UButton* SelectLevel2Yes;
 
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
-	class UButton* Level2No;
+	class UButton* SelectLevel2No;
 
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UButton* IsolatedShipButton;

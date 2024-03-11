@@ -587,6 +587,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* quitGameSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* levelSelectionSound;
 	
 	UPROPERTY()
 	FTimerHandle shootEnableHandle;

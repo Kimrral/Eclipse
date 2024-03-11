@@ -360,7 +360,7 @@ void APlayerCharacter::Zoom()
 	}
 	// Zooming Boolean
 	isZooming=true;
-	UGameplayStatics::PlaySound2D(GetWorld(), zoomSound);
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), zoomSound, GetActorLocation());
 	GetCharacterMovement()->MaxWalkSpeed=240.f;
 	UPlayerAnim* const animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 	if(animInst)
@@ -468,7 +468,7 @@ void APlayerCharacter::Run()
 			Timeline.Stop();
 			FollowCamera->SetFieldOfView(40);
 			Timeline.PlayFromStart();
-			UGameplayStatics::PlaySound2D(GetWorld(), SniperZoomInSound);
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), SniperZoomInSound, GetActorLocation());
 			isSniperZoomed=true;
 		}
 		else if(isSniperZoomed)
@@ -479,7 +479,7 @@ void APlayerCharacter::Run()
 			Timeline.Stop();
 			FollowCamera->SetFieldOfView(20);
 			Timeline.PlayFromStart();
-			UGameplayStatics::PlaySound2D(GetWorld(), SniperZoomOutSound);
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), SniperZoomOutSound, GetActorLocation());
 			isSniperZoomed=false;
 		}
 		return;
@@ -527,8 +527,8 @@ void APlayerCharacter::SwapFirstWeapon()
 		}
 	}
 	curWeaponSlotNumber=1;
-	UGameplayStatics::PlaySound2D(GetWorld(), SwapSound);
-	UGameplayStatics::PlaySound2D(GetWorld(), WeaponSwapSound);
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), SwapSound, GetActorLocation());
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
 	if(equippedWeaponStringArray[0]==FString("Rifle"))
 	{
 		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
@@ -644,8 +644,8 @@ void APlayerCharacter::SwapSecondWeapon()
 		}
 	}
 	curWeaponSlotNumber=2;
-	UGameplayStatics::PlaySound2D(GetWorld(), SwapSound);
-	UGameplayStatics::PlaySound2D(GetWorld(), WeaponSwapSound);
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), SwapSound, GetActorLocation());
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
 	if(equippedWeaponStringArray[1]==FString("Rifle"))
 	{
 		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
@@ -1386,7 +1386,7 @@ void APlayerCharacter::ChangeWeapon()
 				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 				{
 					infoWidgetUI->weaponHoldPercent=0;
-					UGameplayStatics::PlaySound2D(GetWorld(), WeaponSwapSound);
+					UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
 					// 무기 정보 위젯 제거
 					infoWidgetUI->RemoveFromParent();
 					// 무기 교체 Montage 재생
@@ -1457,7 +1457,7 @@ void APlayerCharacter::ChangeWeapon()
 				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 				{
 					infoWidgetUI->weaponHoldPercent=0;
-					UGameplayStatics::PlaySound2D(GetWorld(), WeaponSwapSound);
+					UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
 					infoWidgetUI->RemoveFromParent();
 					PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
 					sniperActor->Destroy();
@@ -1514,7 +1514,7 @@ void APlayerCharacter::ChangeWeapon()
 				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 				{
 					infoWidgetUI->weaponHoldPercent=0;
-					UGameplayStatics::PlaySound2D(GetWorld(), WeaponSwapSound);
+					UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
 					infoWidgetUI->RemoveFromParent();
 					PlayAnimMontage(zoomingMontage, 1 , FName("PistolEquip"));
 					UPlayerAnim* animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
@@ -1569,7 +1569,7 @@ void APlayerCharacter::ChangeWeapon()
 				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 				{
 					infoWidgetUI->weaponHoldPercent=0;
-					UGameplayStatics::PlaySound2D(GetWorld(), WeaponSwapSound);
+					UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
 					infoWidgetUI->RemoveFromParent();
 					PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
 					m249Actor->Destroy();
@@ -1620,7 +1620,7 @@ void APlayerCharacter::ChangeWeapon()
 			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 			{
 				infoWidgetUI->weaponHoldPercent=0;
-				UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
 				infoWidgetUI->RemoveFromParent();
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
 				HackingConsole->AddInventory();
@@ -1646,7 +1646,7 @@ void APlayerCharacter::ChangeWeapon()
 					FTransform spawnTrans = this->GetTransform();
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), recallParticle, spawnTrans);
 					PlayAnimMontage(zoomingMontage, 1, FName("LevelEnd"));
-					UGameplayStatics::PlaySound2D(GetWorld(), PortalSound);
+					UGameplayStatics::PlaySoundAtLocation(GetWorld(), PortalSound, GetActorLocation());
 					bUseControllerRotationYaw=false;
 					infoWidgetUI->RemoveFromParent();
 					informationUI->RemoveFromParent();
@@ -1674,7 +1674,7 @@ void APlayerCharacter::ChangeWeapon()
 			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 			{
 				infoWidgetUI->weaponHoldPercent=0;
-				UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
 				infoWidgetUI->RemoveFromParent();
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
 				RifleMagActor->AddInventory();
@@ -1687,7 +1687,7 @@ void APlayerCharacter::ChangeWeapon()
 			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 			{
 				infoWidgetUI->weaponHoldPercent=0;
-				UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
 				infoWidgetUI->RemoveFromParent();
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
 				SniperMagActor->AddInventory();
@@ -1700,7 +1700,7 @@ void APlayerCharacter::ChangeWeapon()
 			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 			{
 				infoWidgetUI->weaponHoldPercent=0;
-				UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
 				infoWidgetUI->RemoveFromParent();
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
 				PistolMagActor->AddInventory();
@@ -1713,7 +1713,7 @@ void APlayerCharacter::ChangeWeapon()
 			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 			{
 				infoWidgetUI->weaponHoldPercent=0;
-				UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
 				infoWidgetUI->RemoveFromParent();
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
 				M249MagActor->AddInventory();
@@ -1726,7 +1726,7 @@ void APlayerCharacter::ChangeWeapon()
 			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 			{
 				infoWidgetUI->weaponHoldPercent=0;
-				UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
 				infoWidgetUI->RemoveFromParent();
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
 				GoggleActor->AddInventory();
@@ -1739,7 +1739,7 @@ void APlayerCharacter::ChangeWeapon()
 			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 			{
 				infoWidgetUI->weaponHoldPercent=0;
-				UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
 				infoWidgetUI->RemoveFromParent();
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
 				HelmetActor->AddInventory();
@@ -1752,7 +1752,7 @@ void APlayerCharacter::ChangeWeapon()
 			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 			{
 				infoWidgetUI->weaponHoldPercent=0;
-				UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
 				infoWidgetUI->RemoveFromParent();
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
 				HeadsetActor->AddInventory();
@@ -1765,7 +1765,7 @@ void APlayerCharacter::ChangeWeapon()
 			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 			{
 				infoWidgetUI->weaponHoldPercent=0;
-				UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
 				infoWidgetUI->RemoveFromParent();
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
 				MaskActor->AddInventory();
@@ -1778,7 +1778,7 @@ void APlayerCharacter::ChangeWeapon()
 			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 			{
 				infoWidgetUI->weaponHoldPercent=0;
-				UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
 				infoWidgetUI->RemoveFromParent();
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
 				ArmorActor->AddInventory();
@@ -1791,7 +1791,7 @@ void APlayerCharacter::ChangeWeapon()
 			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 			{
 				infoWidgetUI->weaponHoldPercent=0;
-				UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
 				infoWidgetUI->RemoveFromParent();
 				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
 				MedKitActor->AddInventory();
@@ -1854,25 +1854,25 @@ void APlayerCharacter::Reload()
 		if(weaponArray[0]==true&&curRifleAmmo<40+SetRifleAdditionalMagazine()&&maxRifleAmmo>0)
 		{
 			crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
-			UGameplayStatics::PlaySound2D(GetWorld(), RifleReloadSound);
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleReloadSound, GetActorLocation());
 			PlayAnimMontage(reloadMontage, 1, FName("Reload"));
 		}
 		else if(weaponArray[1]==true&&curSniperAmmo<5+SetSniperAdditionalMagazine()&&maxSniperAmmo>0)
 		{
 			crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
-			UGameplayStatics::PlaySound2D(GetWorld(), SniperReloadSound);
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), SniperReloadSound, GetActorLocation());
 			PlayAnimMontage(reloadMontage, 1, FName("Reload"));
 		}
 		else if(weaponArray[2]==true&&curPistolAmmo<8+SetPistolAdditionalMagazine()&&maxPistolAmmo>0)
 		{
 			crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
-			UGameplayStatics::PlaySound2D(GetWorld(), PistolReloadSound);
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), PistolReloadSound, GetActorLocation());
 			PlayAnimMontage(reloadMontage, 1, FName("PistolReload"));
 		}
 		else if(weaponArray[3]==true&&curM249Ammo<100+SetM249AdditionalMagazine()&&maxM249Ammo>0)
 		{
 			crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
-			UGameplayStatics::PlaySound2D(GetWorld(), M249ReloadSound);
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), M249ReloadSound, GetActorLocation());
 			PlayAnimMontage(reloadMontage, 1, FName("M249Reload"));
 		}
 	}
@@ -1889,7 +1889,7 @@ void APlayerCharacter::MoveToIsolatedShip()
 	FTransform spawnTrans = this->GetTransform();
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), recallParticle, spawnTrans);
 	PlayAnimMontage(zoomingMontage, 1, FName("LevelEnd"));
-	UGameplayStatics::PlaySound2D(GetWorld(), PortalSound);
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), PortalSound, GetActorLocation());
 	bUseControllerRotationYaw=false;
 	infoWidgetUI->RemoveFromParent();
 	informationUI->RemoveFromParent();
@@ -2011,7 +2011,7 @@ void APlayerCharacter::Damaged(int damage)
 		APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 		// 카메라 페이드 연출
 		playerCam->StartCameraFade(0.3, 0, 2.0, FLinearColor::Red, false, true);
-		UGameplayStatics::PlaySound2D(GetWorld(), damagedSound);
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), damagedSound, GetActorLocation());
 		curHP = FMath::Clamp(curHP-damage, 0, maxHP);
 		StopAnimMontage();
 		PlayAnimMontage(zoomingMontage, 1, FName("Damaged"));
@@ -2157,7 +2157,7 @@ void APlayerCharacter::Fire()
 			bulletShell->SetLifeSpan(5.0f);
 			UE::Math::TVector<double> bulSoundLoc = GetActorLocation()*FVector(0, 0, -80);
 			UGameplayStatics::SpawnSoundAtLocation(GetWorld(), RifleBulletShellDropSound, bulSoundLoc, FRotator::ZeroRotator, 0.4, 1, 0);
-			UGameplayStatics::PlaySound2D(GetWorld(), RifleFireSound);
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleFireSound, GetActorLocation());
 			APlayerController* controller = GetWorld()->GetFirstPlayerController();
 			// 사격 카메라 셰이크 실행
 			controller->PlayerCameraManager->StartCameraShake(rifleFireShake);
@@ -2454,7 +2454,7 @@ void APlayerCharacter::Fire()
 			{
 				EmptySoundBoolean=true;
 				// 탄약 고갈 사운드 재생
-				UGameplayStatics::PlaySound2D(GetWorld(), BulletEmptySound);
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletEmptySound, GetActorLocation());
 			}
 		}
 	}
@@ -2489,7 +2489,7 @@ void APlayerCharacter::Fire()
 			bulletShell->SetLifeSpan(5.0f);
 			UE::Math::TVector<double> bulSoundLoc = GetActorLocation() * FVector(0, 0, -80);
 			UGameplayStatics::SpawnSoundAtLocation(GetWorld(), RifleBulletShellDropSound, bulSoundLoc, FRotator::ZeroRotator, 0.4, 1, 0);
-			UGameplayStatics::PlaySound2D(GetWorld(), SniperFireSound);
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), SniperFireSound, GetActorLocation());
 			bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),startLoc, EndLoc, ObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, sniperHitResult, true);
 			// 라인 트레이스가 적중했다면
 			if(bHit)
@@ -2781,7 +2781,7 @@ void APlayerCharacter::Fire()
 			{
 				EmptySoundBoolean=true;
 				// 탄약 고갈 사운드 재생
-				UGameplayStatics::PlaySound2D(GetWorld(), BulletEmptySound);
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletEmptySound, GetActorLocation());
 			}
 		}		
 	}
@@ -2829,7 +2829,7 @@ void APlayerCharacter::Fire()
 			bulletShell->SetLifeSpan(5.0f);
 			UE::Math::TVector<double> bulSoundLoc = GetActorLocation() * FVector(0, 0, -80);
 			UGameplayStatics::SpawnSoundAtLocation(GetWorld(), RifleBulletShellDropSound, bulSoundLoc, FRotator::ZeroRotator, 0.4, 1, 0);
-			UGameplayStatics::PlaySound2D(GetWorld(), PistolFireSound);
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), PistolFireSound, GetActorLocation());
 			bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),startLoc, EndLoc, ObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, pistolHitResult, true);
 			if(bHit)
 			{
@@ -3112,7 +3112,7 @@ void APlayerCharacter::Fire()
 			{
 				EmptySoundBoolean=true;
 				// 탄약 고갈 사운드 재생
-				UGameplayStatics::PlaySound2D(GetWorld(), BulletEmptySound);
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletEmptySound, GetActorLocation());
 			}
 		}
 	}
@@ -3150,7 +3150,7 @@ void APlayerCharacter::Fire()
 			bulletShell->SetLifeSpan(5.0f);
 			UE::Math::TVector<double> bulSoundLoc = GetActorLocation() * FVector(0, 0, -80);
 			UGameplayStatics::SpawnSoundAtLocation(GetWorld(), RifleBulletShellDropSound, bulSoundLoc, FRotator::ZeroRotator, 0.4, 1, 0);
-			UGameplayStatics::PlaySound2D(GetWorld(), M249FireSound);
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), M249FireSound, GetActorLocation());
 			APlayerController* controller = GetWorld()->GetFirstPlayerController();
 			controller->PlayerCameraManager->StartCameraShake(rifleFireShake);
 			PlayAnimMontage(zoomingMontage, 1, FName("RifleFire"));
@@ -3439,7 +3439,7 @@ void APlayerCharacter::Fire()
 			{
 				EmptySoundBoolean=true;
 				// 탄약 고갈 사운드 재생
-				UGameplayStatics::PlaySound2D(GetWorld(), BulletEmptySound);
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletEmptySound, GetActorLocation());
 			}
 		}
 	}
@@ -3494,7 +3494,7 @@ void APlayerCharacter::PlayerDeath()
 {
 	if(isDead==false)
 	{
-		UGameplayStatics::PlaySound2D(GetWorld(), deathSound);
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), deathSound, GetActorLocation());
 		// 사망지점 전역변수에 캐싱
 		DeathPosition=GetActorLocation();
 		APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
@@ -3549,7 +3549,7 @@ void APlayerCharacter::EquipHelmet(bool SoundBool)
 {
 	if(SoundBool)
 	{
-		UGameplayStatics::PlaySound2D(GetWorld(), gearEquipSound);
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), gearEquipSound, GetActorLocation());
 	}
 	HelmetSlot->SetVisibility(true);
 	HelmetEquipped=true;
@@ -3559,7 +3559,7 @@ void APlayerCharacter::EquipHeadset(bool SoundBool)
 {
 	if(SoundBool)
 	{
-		UGameplayStatics::PlaySound2D(GetWorld(), gearEquipSound);
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), gearEquipSound, GetActorLocation());
 	}
 	HeadSetSlot->SetVisibility(true);
 	HeadsetEquipped=true;
@@ -3569,7 +3569,7 @@ void APlayerCharacter::EquipMask(bool SoundBool)
 {
 	if(SoundBool)
 	{
-		UGameplayStatics::PlaySound2D(GetWorld(), gearEquipSound);
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), gearEquipSound, GetActorLocation());
 	}
 	MaskSlot->SetVisibility(true);
 	MaskEquipped=true;
@@ -3579,7 +3579,7 @@ void APlayerCharacter::EquipGoggle(bool SoundBool)
 {
 	if(SoundBool)
 	{
-		UGameplayStatics::PlaySound2D(GetWorld(), gearEquipSound);
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), gearEquipSound, GetActorLocation());
 	}
 	GoggleSlot->SetVisibility(true);
 	GoggleEquipped=true;
@@ -3589,7 +3589,7 @@ void APlayerCharacter::EquipArmor(bool SoundBool)
 {
 	if(SoundBool)
 	{
-		UGameplayStatics::PlaySound2D(GetWorld(), gearEquipSound);
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), gearEquipSound, GetActorLocation());
 	}
 	ArmorSlot->SetVisibility(true);
 	ArmorEquipped=true;
@@ -3601,7 +3601,7 @@ void APlayerCharacter::UnEquipHelmet(bool SoundBool)
 {
 	if(SoundBool)
 	{
-		UGameplayStatics::PlaySound2D(GetWorld(), gearUnequipSound);
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), gearUnequipSound, GetActorLocation());
 	}
 	HelmetSlot->SetVisibility(false);
 	HelmetEquipped=false;
@@ -3611,7 +3611,7 @@ void APlayerCharacter::UnEquipHeadset(bool SoundBool)
 {
 	if(SoundBool)
 	{
-		UGameplayStatics::PlaySound2D(GetWorld(), gearUnequipSound);
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), gearUnequipSound, GetActorLocation());
 	}	HeadSetSlot->SetVisibility(false);
 	HeadsetEquipped=false;
 }
@@ -3620,7 +3620,7 @@ void APlayerCharacter::UnEquipMask(bool SoundBool)
 {
 	if(SoundBool)
 	{
-		UGameplayStatics::PlaySound2D(GetWorld(), gearUnequipSound);
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), gearUnequipSound, GetActorLocation());
 	}	MaskSlot->SetVisibility(false);
 	MaskEquipped=false;
 }
@@ -3629,7 +3629,7 @@ void APlayerCharacter::UnEquipGoggle(bool SoundBool)
 {
 	if(SoundBool)
 	{
-		UGameplayStatics::PlaySound2D(GetWorld(), gearUnequipSound);
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), gearUnequipSound, GetActorLocation());
 	}	GoggleSlot->SetVisibility(false);
 	GoggleEquipped=false;
 }
@@ -3639,7 +3639,7 @@ void APlayerCharacter::UnEquipArmor(bool SoundBool)
 {
 	if(SoundBool)
 	{
-		UGameplayStatics::PlaySound2D(GetWorld(), gearUnequipSound);
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), gearUnequipSound, GetActorLocation());
 	}	ArmorSlot->SetVisibility(false);
 	ArmorEquipped=false;
 }

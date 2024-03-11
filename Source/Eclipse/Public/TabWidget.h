@@ -26,8 +26,7 @@ public:
 	class AEclipsePlayerController* pc;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	class UTabHoveredInfoWidget* TabHoveredInfoWidget;
-
+	class UTabHoveredInfoWidget* TabHoveredInfoWidget;	
 	
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UTextBlock* WeaponText1;

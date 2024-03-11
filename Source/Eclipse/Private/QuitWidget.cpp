@@ -5,7 +5,7 @@
 
 #include "EclipsePlayerController.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
-#include "Components/Button.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 void UQuitWidget::NativeConstruct()
@@ -16,10 +16,9 @@ void UQuitWidget::NativeConstruct()
 
 	pc=Cast<AEclipsePlayerController>(GetWorld()->GetFirstPlayerController());
 
-	SelectQuitYes->OnClicked.AddDynamic(this, &UQuitWidget::QuitSelectYes);
-	SelectQuitNo->OnClicked.AddDynamic(this, &UQuitWidget::QuitSelectNo);
+	//SelectQuitYes->OnClicked.AddDynamic(this, &UQuitWidget::QuitSelectYes);
+	//SelectQuitNo->OnClicked.AddDynamic(this, &UQuitWidget::QuitSelectNo);
 	
-	quitBool=false;
 }
 
 void UQuitWidget::QuitSelectYes()
@@ -30,6 +29,7 @@ void UQuitWidget::QuitSelectYes()
 
 void UQuitWidget::QuitSelectNo()
 {
+	UGameplayStatics::PlaySound2D(GetWorld(), CloseSound);
 	UWidgetBlueprintLibrary::SetInputMode_GameOnly(pc);
 	pc->SetShowMouseCursor(false);
 	this->RemoveFromParent();

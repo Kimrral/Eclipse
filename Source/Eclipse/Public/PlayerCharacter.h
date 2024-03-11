@@ -194,29 +194,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
 	TSubclassOf<class AM249Actor> M249Factory;
 	
-	UPROPERTY(EditAnywhere, Category="Sounds")
-	class USoundBase* RifleBulletShellDropSound;
 
-	UPROPERTY(EditAnywhere, Category="Sounds")
-	class USoundBase* SniperZoomInSound;
-
-	UPROPERTY(EditAnywhere, Category="Sounds")
-	class USoundBase* SniperZoomOutSound;
-
-	UPROPERTY(EditAnywhere, Category="Sounds")
-	class USoundBase* PickUpSound;
-
-	UPROPERTY(EditAnywhere, Category="Sounds")
-	class USoundBase* WeaponSwapSound;
-
-	UPROPERTY(EditAnywhere, Category="Sounds")
-	class USoundBase* tabSound;
-	
-	UPROPERTY(EditAnywhere, Category="Sounds")
-	class USoundBase* PortalSound;
-
-	UPROPERTY(EditAnywhere, Category="Sounds")
-	class USoundBase* quitGameSound;
 
 	UPROPERTY()
 	bool isSniperZoomed = false;
@@ -585,6 +563,30 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* deathSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* RifleBulletShellDropSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* SniperZoomInSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* SniperZoomOutSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* PickUpSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* WeaponSwapSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* tabSound;
+	
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* PortalSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* quitGameSound;
 	
 	UPROPERTY()
 	FTimerHandle shootEnableHandle;

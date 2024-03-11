@@ -39,6 +39,9 @@ public:
 	
 	UPROPERTY(BlueprintReadWrite, Transient, meta = (BindWidgetAnim))
 	class UWidgetAnimation* LevelSelectionStartAnim;
+
+	UPROPERTY(BlueprintReadWrite, Transient, meta = (BindWidgetAnim))
+	class UWidgetAnimation* LevelSelectionEndAnim;
 	
 	UPROPERTY()
 	class AEclipsePlayerController* pc;
@@ -49,23 +52,32 @@ public:
 	UPROPERTY()
 	bool quitBool = false;
 	
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void Level1Y();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void Level1N();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void Level2Y();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void Level2N();
 
-	UFUNCTION()
-	void Exit();
+	UFUNCTION(BlueprintCallable)
+	void SelectExitGame();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void OpenMoveIsolatedShipSelection();
+
+	UPROPERTY(EditAnywhere, Category=Sound)
+	class USoundBase* QuitSound;
+
+	UPROPERTY(EditAnywhere, Category=Sound)
+	class USoundBase* CloseSound;
+
+	UPROPERTY(EditAnywhere, Category=Sound)
+	class USoundBase* AskSound;
 
 private:
 };

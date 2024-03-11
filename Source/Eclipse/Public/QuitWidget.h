@@ -29,13 +29,13 @@ public:
 	UPROPERTY(BlueprintReadWrite, Transient, meta = (BindWidgetAnim))
 	class UWidgetAnimation* QuitWidgetStartAnim;
 
-	UPROPERTY()
-	bool quitBool = false;
+	UPROPERTY(EditAnywhere, Category=Sound)
+	class USoundBase* CloseSound;
 	
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void QuitSelectYes();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void QuitSelectNo();
 
 };

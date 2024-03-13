@@ -15,10 +15,13 @@ class AEclipseGameMode : public AGameModeBase
 public:
 	AEclipseGameMode();
 
-	UFUNCTION()
-	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
-
+	virtual void PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;
+	virtual APlayerController* Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal, const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;
+	virtual void PostLogin(APlayerController* NewPlayer) override;
+	virtual void StartPlay() override;
 	
+	UFUNCTION()
+	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;	
 
 	UPROPERTY()
 	TArray<class AActor*> outActors;
@@ -26,40 +29,8 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<APlayerStart> playerStartFactory;
 
-	UPROPERTY()
-	int ConsoleCount;
 
-	UPROPERTY()
-	int GuardianCount;
 
-	UPROPERTY()
-	int BossCount;
-
-	UPROPERTY()
-	int curRifleAmmo;
-
-	UPROPERTY()
-	int curSniperAmmo;
-
-	UPROPERTY()
-	int curPistolAmmo;
-
-	UPROPERTY()
-	int curM249Ammo;
-
-	UPROPERTY()
-	int maxRifleAmmo;
-
-	UPROPERTY()
-	int maxSniperAmmo;
-
-	UPROPERTY()
-	int maxPistolAmmo;
-
-	UPROPERTY()
-	int maxM249Ammo;
-
-	
 };
 
 

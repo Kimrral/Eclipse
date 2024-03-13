@@ -1,21 +1,14 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "EclipseGameMode.h"
-#include "EclipseCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Eclipse.h"
+#include "EclipseGameState.h"
 
 AEclipseGameMode::AEclipseGameMode()
-{
-	curRifleAmmo=40;
-	curSniperAmmo=5;
-	curPistolAmmo=8;
-	curM249Ammo=100;
-	maxRifleAmmo=80;
-	maxSniperAmmo=10;
-	maxPistolAmmo=16;
-	maxM249Ammo=200;
-	
+{		
+	GameStateClass = AEclipseGameState::StaticClass();
 }
 
 // 첫 실행 시 스폰될 플레이어 스타트 지점 오버라이딩
@@ -25,5 +18,34 @@ AActor* AEclipseGameMode::ChoosePlayerStart_Implementation(AController* Player)
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), playerStartFactory, outActors);
 	// outActors 배열의 0번째 액터 리턴
 	return outActors[0];
+}
+
+void AEclipseGameMode::PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
+{
+	EC_LOG(LogECNetwork, Log, TEXT("%s"), TEXT("Begin"))
+	Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
+	EC_LOG(LogECNetwork, Log, TEXT("%s"), TEXT("End"))
+}
+
+APlayerController* AEclipseGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal, const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
+{
+	EC_LOG(LogECNetwork, Log, TEXT("%s"), TEXT("Begin"))
+	APlayerController* NewPlayerController= Super::Login(NewPlayer, InRemoteRole, Portal, Options, UniqueId, ErrorMessage);
+	EC_LOG(LogECNetwork, Log, TEXT("%s"), TEXT("End"))
+	return NewPlayerController;
+}
+
+void AEclipseGameMode::PostLogin(APlayerController* NewPlayer)
+{
+	EC_LOG(LogECNetwork, Log, TEXT("%s"), TEXT("Begin"))
+	Super::PostLogin(NewPlayer);
+	EC_LOG(LogECNetwork, Log, TEXT("%s"), TEXT("End"))
+}
+
+void AEclipseGameMode::StartPlay()
+{
+	EC_LOG(LogECNetwork, Log, TEXT("%s"), TEXT("Begin"))
+	Super::StartPlay();
+	EC_LOG(LogECNetwork, Log, TEXT("%s"), TEXT("End"))
 }
 

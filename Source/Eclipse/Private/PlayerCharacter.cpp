@@ -8,6 +8,7 @@
 #include "Crunch.h"
 #include "DamageWidget.h"
 #include "DamageWidgetActor.h"
+#include "EclipseGameInstance.h"
 #include "EclipsePlayerController.h"
 #include "Enemy.h"
 #include "EnemyFSM.h"
@@ -154,7 +155,8 @@ void APlayerCharacter::BeginPlay()
 
 	// Casting
 	pc=Cast<AEclipsePlayerController>(GetWorld()->GetFirstPlayerController());
-	gm=Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());	
+	gm=Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());
+	gi=Cast<UEclipseGameInstance>(GetWorld()->GetGameInstance());
 	animInstance=Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 
 	pc->SetAudioListenerOverride(GetMesh(), FVector::ZeroVector, FRotator::ZeroRotator);
@@ -1947,57 +1949,57 @@ void APlayerCharacter::SetZoomValue(float Value)
 
 void APlayerCharacter::CachingValues()
 {
-	if(gm)
+	if(gi)
 	{
-		 gm->ConsoleCount = ConsoleCount;
+		 gi->ConsoleCount = ConsoleCount;
 
-		 gm->GuardianCount = GuardianCount;
+		 gi->GuardianCount = GuardianCount;
 
-		 gm->BossCount = BossCount;
+		 gi->BossCount = BossCount;
 
-		 gm->curRifleAmmo = curRifleAmmo;
+		 gi->curRifleAmmo = curRifleAmmo;
 
-		 gm->curSniperAmmo = curSniperAmmo;
+		 gi->curSniperAmmo = curSniperAmmo;
 
-		 gm->curPistolAmmo = curPistolAmmo;
+		 gi->curPistolAmmo = curPistolAmmo;
 
-		 gm->curM249Ammo = curM249Ammo;
+		 gi->curM249Ammo = curM249Ammo;
 
-		 gm->maxRifleAmmo = maxRifleAmmo;
+		 gi->maxRifleAmmo = maxRifleAmmo;
 
-		 gm->maxSniperAmmo = maxSniperAmmo;
+		 gi->maxSniperAmmo = maxSniperAmmo;
 
-		 gm->maxPistolAmmo = maxPistolAmmo;
+		 gi->maxPistolAmmo = maxPistolAmmo;
 
-		 gm->maxM249Ammo = maxM249Ammo;
+		 gi->maxM249Ammo = maxM249Ammo;
 	}
 }
 
 void APlayerCharacter::ApplyCachingValues()
 {
-	if(gm)
+	if(gi)
 	{
-		ConsoleCount = gm->ConsoleCount;
+		ConsoleCount = gi->ConsoleCount;
 
-		GuardianCount = gm->GuardianCount;
+		GuardianCount = gi->GuardianCount;
 
-		BossCount = gm->BossCount;
+		BossCount = gi->BossCount;
 
-		curRifleAmmo = gm->curRifleAmmo;
+		curRifleAmmo = gi->curRifleAmmo;
 
-		curSniperAmmo = gm->curSniperAmmo;
+		curSniperAmmo = gi->curSniperAmmo;
 
-		curPistolAmmo = gm->curPistolAmmo;
+		curPistolAmmo = gi->curPistolAmmo;
 
-		curM249Ammo = gm->curM249Ammo;
+		curM249Ammo = gi->curM249Ammo;
 
-		maxRifleAmmo = gm->maxRifleAmmo;
+		maxRifleAmmo = gi->maxRifleAmmo;
 
-		maxSniperAmmo = gm->maxSniperAmmo;
+		maxSniperAmmo = gi->maxSniperAmmo;
 
-		maxPistolAmmo = gm->maxPistolAmmo;
+		maxPistolAmmo = gi->maxPistolAmmo;
 
-		maxM249Ammo = gm->maxM249Ammo;
+		maxM249Ammo = gi->maxM249Ammo;
 	}
 }
 

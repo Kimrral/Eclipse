@@ -643,6 +643,9 @@ public:
 	class AEclipseGameMode* gm;
 
 	UPROPERTY()
+	class UEclipseGameInstance* gi;
+
+	UPROPERTY()
 	FTimerHandle SniperZoomHandle;
 	UPROPERTY()
 	FTimerHandle SniperZoomOutHandle;

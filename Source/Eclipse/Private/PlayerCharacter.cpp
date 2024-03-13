@@ -341,7 +341,7 @@ void APlayerCharacter::Move(const FInputActionValue& Value)
 
 void APlayerCharacter::Look(const FInputActionValue& Value)
 {
-	if(TabOn)
+	if(gi->IsWidgetOn)
 	{
 		return;
 	}
@@ -358,7 +358,7 @@ void APlayerCharacter::Look(const FInputActionValue& Value)
 
 void APlayerCharacter::Zoom()
 {
-	if(TabOn)
+	if(gi->IsWidgetOn)
 	{
 		return;
 	}
@@ -410,7 +410,7 @@ void APlayerCharacter::Zoom()
 
 void APlayerCharacter::ZoomRelease()
 {
-	if(TabOn)
+	if(gi->IsWidgetOn)
 	{
 		return;
 	}
@@ -2119,7 +2119,7 @@ void APlayerCharacter::UnSetM249AdditionalMagazineSlot()
 
 void APlayerCharacter::Fire()
 {	
-	if(!CanShoot||isRunning||TabOn||bEnding)
+	if(!CanShoot||isRunning||gi->IsWidgetOn||bEnding)
 	{
 		return;
 	}

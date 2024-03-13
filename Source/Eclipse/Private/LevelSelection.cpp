@@ -3,9 +3,9 @@
 
 #include "LevelSelection.h"
 
+#include "EclipseGameInstance.h"
 #include "EclipsePlayerController.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
-#include "Components/Button.h"
 #include "Components/WidgetSwitcher.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -17,6 +17,8 @@ void ULevelSelection::NativeConstruct()
 
 	player=Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	pc=Cast<AEclipsePlayerController>(GetWorld()->GetFirstPlayerController());
+	gi=Cast<UEclipseGameInstance>(GetWorld()->GetGameInstance());
+	gi->IsWidgetOn=true;
 
 	//SelectLevel1Yes->OnClicked.AddDynamic(this, &ULevelSelection::Level1Y);
 	//SelectLevel1No->OnClicked.AddDynamic(this, &ULevelSelection::Level1N);
@@ -32,6 +34,7 @@ void ULevelSelection::NativeConstruct()
 
 	
 	quitBool=false;
+	
 }
 
 void ULevelSelection::Level1Y()
@@ -75,6 +78,7 @@ void ULevelSelection::SelectExitGame()
 	//Exit Level Selection
 	UWidgetBlueprintLibrary::SetInputMode_GameOnly(pc);
 	pc->SetShowMouseCursor(false);
+	gi->IsWidgetOn=false;
 	this->RemoveFromParent();
 }
 

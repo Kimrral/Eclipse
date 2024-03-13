@@ -6,6 +6,14 @@
 #include "Eclipse/EclipseGameMode.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
+#include "Eclipse/Eclipse.h"
+
+void AEclipsePlayerController::BeginPlay()
+{
+	EC_LOG(LogECNetwork, Log, TEXT("%s"), TEXT("Begin"))
+	Super::BeginPlay();
+	EC_LOG(LogECNetwork, Log, TEXT("%s"), TEXT("End"))
+}
 
 // 사망지점에서 가장 가까운 플레이어 스타트 지점에서 리스폰
 void AEclipsePlayerController::Respawn(APlayerCharacter* me)

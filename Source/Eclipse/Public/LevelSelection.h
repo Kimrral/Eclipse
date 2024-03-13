@@ -50,6 +50,9 @@ public:
 	class APlayerCharacter* player;
 
 	UPROPERTY()
+	class UEclipseGameInstance* gi;
+
+	UPROPERTY()
 	bool quitBool = false;
 	
 	UFUNCTION(BlueprintCallable)

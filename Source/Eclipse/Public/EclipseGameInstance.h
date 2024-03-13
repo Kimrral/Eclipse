@@ -49,5 +49,8 @@ public:
 
 	UPROPERTY()
 	int maxM249Ammo;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsWidgetOn = false;
 	
 };

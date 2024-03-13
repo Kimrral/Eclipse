@@ -26,6 +26,9 @@ public:
 	UPROPERTY()
 	class AEclipsePlayerController* pc;
 
+	UPROPERTY()
+	class UEclipseGameInstance* gi;
+
 	UPROPERTY(BlueprintReadWrite, Transient, meta = (BindWidgetAnim))
 	class UWidgetAnimation* QuitWidgetStartAnim;
 

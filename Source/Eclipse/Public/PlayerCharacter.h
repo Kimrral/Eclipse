@@ -335,12 +335,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	int curWeaponSlotNumber = 1;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool TabBool = false;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool TabOn = false;
-
 	UFUNCTION()
 	void WeaponDetectionLineTrace();
 
@@ -642,7 +636,7 @@ public:
 	UPROPERTY()
 	class AEclipseGameMode* gm;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	class UEclipseGameInstance* gi;
 
 	UPROPERTY()

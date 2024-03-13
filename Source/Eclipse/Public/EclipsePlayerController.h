@@ -17,6 +17,8 @@ class ECLIPSE_API AEclipsePlayerController : public APlayerController
 	GENERATED_BODY()
 
 public:
+	virtual void BeginPlay() override;
+	
 	UPROPERTY()
 	TArray<class AActor*> outActors;
 

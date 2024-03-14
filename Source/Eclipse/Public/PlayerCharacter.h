@@ -121,6 +121,12 @@ public:
 	void Run();
 	/** Called for running input */
 	void RunRelease();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRPCFire();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPCFire();
 	
 	/** Called for fire input */
 	void Fire();
@@ -493,8 +499,11 @@ public:
 	UPROPERTY()
 	bool isRifleShootable;
 
-	UPROPERTY()
+	UPROPERTY(ReplicatedUsing=OnRep_CanShoot)
 	bool CanShoot = true;
+
+	UFUNCTION()
+	void OnRep_CanShoot();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float BulletsPerSecRifle = 11.0f;
@@ -813,8 +822,11 @@ public:
 	UPROPERTY()
 	bool bEnding;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(ReplicatedUsing=OnRep_CurHP, EditAnywhere, BlueprintReadWrite)
 	int curHP;
+
+	UFUNCTION()
+	void OnRep_CurHP();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int maxHP = 100.f;
@@ -824,4 +836,8 @@ public:
 
 	UPROPERTY()
 	bool SniperZoomOutBool;
+	
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	
+	
 };

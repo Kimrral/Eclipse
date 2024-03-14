@@ -2118,15 +2118,42 @@ void APlayerCharacter::UnSetM249AdditionalMagazineSlot()
 
 
 void APlayerCharacter::Fire()
-{	
+{
+	// 사격 가능 상태가 아니거나, 뛰고 있거나, 위젯이 켜져 있거나, 엔딩 연출 중이라면 리턴
 	if(!CanShoot||isRunning||gi->IsWidgetOn||bEnding)
 	{
 		return;
 	}
-	// 라이플을 들고 있으면서 사격 가능한 상태라면
+	// 라이플을 들고 있는 상태라면
 	if(weaponArray[0]==true)
 	{
-		if(curRifleAmmo>0)
+		ProcessRifleFire();
+	}
+	//  스나이퍼를 들고 있는 상태라면
+	else if(weaponArray[1]==true)
+	{
+		ProcessSniperFire();
+	}
+	// 권총을 들고 있는 상태라면
+	else if(weaponArray[2]==true)
+	{
+		ProcessPistolFire();
+	}
+	// M249를 들고 있는 상태라면
+	if(weaponArray[3]==true)
+	{
+		ProcessM249Fire();
+	}
+}
+
+void APlayerCharacter::FireRelease()
+{
+	EmptySoundBoolean=false;
+}
+
+void APlayerCharacter::ProcessRifleFire()
+{
+	if(curRifleAmmo>0)
 		{
 			// Clamp를 통한 탄약 수 차감
 			curRifleAmmo = FMath::Clamp(curRifleAmmo-1, 0, 40+SetRifleAdditionalMagazine());
@@ -2461,11 +2488,11 @@ void APlayerCharacter::Fire()
 				UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletEmptySound, GetActorLocation());
 			}
 		}
-	}
-	//  스나이퍼를 들고 있는 상태라면
-	else if(weaponArray[1]==true)
-	{
-		if(curSniperAmmo>0)
+}
+
+void APlayerCharacter::ProcessSniperFire()
+{
+	if(curSniperAmmo>0)
 		{
 			// Clamp를 통한 탄약 수 차감
 			curSniperAmmo = FMath::Clamp(curSniperAmmo-1, 0, 5+SetSniperAdditionalMagazine());
@@ -2787,12 +2814,12 @@ void APlayerCharacter::Fire()
 				// 탄약 고갈 사운드 재생
 				UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletEmptySound, GetActorLocation());
 			}
-		}		
-	}
-	// 권총을 들고 있는 상태라면
-	else if(weaponArray[2]==true)
-	{
-		if(curPistolAmmo>0)
+		}
+}
+
+void APlayerCharacter::ProcessPistolFire()
+{
+	if(curPistolAmmo>0)
 		{
 			// Clamp를 통한 탄약 수 차감
 			curPistolAmmo = FMath::Clamp(curPistolAmmo-1, 0, 8+SetPistolAdditionalMagazine());
@@ -3119,11 +3146,11 @@ void APlayerCharacter::Fire()
 				UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletEmptySound, GetActorLocation());
 			}
 		}
-	}
-	// M249를 들고 있으면서 사격 가능한 상태라면
-	if(weaponArray[3]==true)
-	{
-		if(curM249Ammo>0)
+}
+
+void APlayerCharacter::ProcessM249Fire()
+{
+	if(curM249Ammo>0)
 		{
 			// Clamp를 통한 탄약 수 차감
 			curM249Ammo = FMath::Clamp(curM249Ammo-1, 0, 100+SetM249AdditionalMagazine());
@@ -3446,12 +3473,6 @@ void APlayerCharacter::Fire()
 				UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletEmptySound, GetActorLocation());
 			}
 		}
-	}
-}
-
-void APlayerCharacter::FireRelease()
-{
-	EmptySoundBoolean=false;
 }
 
 

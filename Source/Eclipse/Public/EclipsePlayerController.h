@@ -18,6 +18,7 @@ class ECLIPSE_API AEclipsePlayerController : public APlayerController
 
 public:
 	virtual void BeginPlay() override;
+	virtual void PostNetInit() override;
 	
 	UPROPERTY()
 	TArray<class AActor*> outActors;

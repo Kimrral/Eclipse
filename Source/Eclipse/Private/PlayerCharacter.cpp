@@ -55,6 +55,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -136,6 +137,8 @@ APlayerCharacter::APlayerCharacter()
 
 	equippedWeaponStringArray.Add(FString("Rifle")); //0
 	equippedWeaponStringArray.Add(FString("Pistol")); //1
+
+	bReplicates=true;
 
 }
 
@@ -503,6 +506,7 @@ void APlayerCharacter::RunRelease()
 	}
 	GetCharacterMovement()->MaxWalkSpeed = 360.f;
 }
+
 
 void APlayerCharacter::OnActionLookAroundPressed()
 {
@@ -2005,23 +2009,26 @@ void APlayerCharacter::ApplyCachingValues()
 
 void APlayerCharacter::Damaged(int damage)
 {
-	if(curHP<=damage)
+	if(HasAuthority())
 	{
-		curHP=0;
-		PlayerDeath();
-	}
-	else
-	{
-		APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
-		// 카메라 페이드 연출
-		playerCam->StartCameraFade(0.3, 0, 2.0, FLinearColor::Red, false, true);
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), damagedSound, GetActorLocation());
-		curHP = FMath::Clamp(curHP-damage, 0, maxHP);
-		StopAnimMontage();
-		PlayAnimMontage(zoomingMontage, 1, FName("Damaged"));
-		const APlayerController* controller = GetWorld()->GetFirstPlayerController();
-		controller->PlayerCameraManager->StartCameraShake(PlayerDamagedShake);
-		UpdateTabWidget();
+		if(curHP<=damage)
+		{
+			curHP=0;
+			PlayerDeath();
+		}
+		else
+		{
+			APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+			// 카메라 페이드 연출
+			playerCam->StartCameraFade(0.3, 0, 2.0, FLinearColor::Red, false, true);
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), damagedSound, GetActorLocation());
+			curHP = FMath::Clamp(curHP-damage, 0, maxHP);
+			StopAnimMontage();
+			PlayAnimMontage(zoomingMontage, 1, FName("Damaged"));
+			const APlayerController* controller = GetWorld()->GetFirstPlayerController();
+			controller->PlayerCameraManager->StartCameraShake(PlayerDamagedShake);
+			UpdateTabWidget();
+		}
 	}
 }
 
@@ -2115,6 +2122,16 @@ void APlayerCharacter::UnSetM249AdditionalMagazineSlot()
 	bM249AdditionalMag=false;
 }
 
+void APlayerCharacter::OnRep_CurHP()
+{
+}
+
+void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(APlayerCharacter, CanShoot);
+}
 
 
 void APlayerCharacter::Fire()
@@ -2124,25 +2141,50 @@ void APlayerCharacter::Fire()
 	{
 		return;
 	}
-	// 라이플을 들고 있는 상태라면
-	if(weaponArray[0]==true)
+	ServerRPCFire();
+	OnRep_CanShoot();
+}
+
+bool APlayerCharacter::ServerRPCFire_Validate()
+{
+	return true;
+}
+
+void APlayerCharacter::ServerRPCFire_Implementation()
+{
+	MulticastRPCFire();
+}
+
+void APlayerCharacter::MulticastRPCFire_Implementation()
+{
+	//Server
+	if(HasAuthority())
 	{
-		ProcessRifleFire();
+		// 라이플을 들고 있는 상태라면
+		if(weaponArray[0]==true)
+		{
+			ProcessRifleFire();
+		}
+		//  스나이퍼를 들고 있는 상태라면
+		else if(weaponArray[1]==true)
+		{
+			ProcessSniperFire();
+		}
+		// 권총을 들고 있는 상태라면
+		else if(weaponArray[2]==true)
+		{
+			ProcessPistolFire();
+		}
+		// M249를 들고 있는 상태라면
+		if(weaponArray[3]==true)
+		{
+			ProcessM249Fire();
+		}
 	}
-	//  스나이퍼를 들고 있는 상태라면
-	else if(weaponArray[1]==true)
+	//Client
+	else
 	{
-		ProcessSniperFire();
-	}
-	// 권총을 들고 있는 상태라면
-	else if(weaponArray[2]==true)
-	{
-		ProcessPistolFire();
-	}
-	// M249를 들고 있는 상태라면
-	if(weaponArray[3]==true)
-	{
-		ProcessM249Fire();
+		
 	}
 }
 
@@ -2202,6 +2244,8 @@ void APlayerCharacter::ProcessRifleFire()
 				UEnemyFSM* fsm = Cast<UEnemyFSM>(enemy->GetDefaultSubobjectByName(FName("enemyFSM")));
 				// Reward Container Casting
 				ARewardContainer* rewardContainer=Cast<ARewardContainer>(rifleHitResult.GetActor());
+				// Enemy Character Casting
+				APlayerCharacter* player = Cast<APlayerCharacter>(rifleHitResult.GetActor());
 				if(fsm&&enemy)
 				{
 					// Check Enemy Type
@@ -2447,6 +2491,11 @@ void APlayerCharacter::ProcessRifleFire()
 							rewardContainer->curBoxHP=FMath::Clamp(rewardContainer->curBoxHP-1, 0, 10);
 						}
 					}
+				}
+				else if(player)
+				{
+					player->Damaged(30);
+					UE_LOG(LogTemp, Warning, TEXT("Player Hit"))
 				}
 				else
 				{
@@ -2763,7 +2812,6 @@ void APlayerCharacter::ProcessSniperFire()
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperFireParticle, particleTrans);
 					APlayerController* controller = GetWorld()->GetFirstPlayerController();
 					controller->PlayerCameraManager->StartCameraShake(sniperCameraShake);
-					UE::Math::TVector<double> fireSocketLoc = FollowCamera->GetComponentLocation() + FollowCamera->GetUpVector() * -70.0f;
 				}
 				else
 				{
@@ -3667,4 +3715,8 @@ void APlayerCharacter::UnEquipArmor(bool SoundBool)
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), gearUnequipSound, GetActorLocation());
 	}	ArmorSlot->SetVisibility(false);
 	ArmorEquipped=false;
+}
+
+void APlayerCharacter::OnRep_CanShoot()
+{
 }

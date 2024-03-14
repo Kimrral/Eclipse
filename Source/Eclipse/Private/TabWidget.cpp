@@ -4,6 +4,7 @@
 #include "TabWidget.h"
 
 #include "PlayerCharacter.h"
+#include "PlayerCharacterStatComponent.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 
@@ -12,8 +13,8 @@ void UTabWidget::SetTabWidget()
 {
 	if(player)
 	{
-		CurHPText->SetText(FText::AsNumber(player->curHP));
-		MaxHPText->SetText(FText::AsNumber(player->maxHP));
+		CurHPText->SetText(FText::AsNumber(player->Stat->GetCurrentHp()));
+		MaxHPText->SetText(FText::AsNumber(player->Stat->GetMaxHp()));
 		MaxBulletText1->SetText(FText::AsNumber(player->maxRifleAmmo));
 		MaxBulletText2->SetText(FText::AsNumber(player->maxSniperAmmo));
 		MaxBulletText3->SetText(FText::AsNumber(player->maxPistolAmmo));

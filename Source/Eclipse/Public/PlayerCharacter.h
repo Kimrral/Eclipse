@@ -30,17 +30,20 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
+	
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	// Stat Section
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UPlayerCharacterStatComponent> Stat;
 
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -821,15 +824,6 @@ public:
 
 	UPROPERTY()
 	bool bEnding;
-
-	UPROPERTY(ReplicatedUsing=OnRep_CurHP, EditAnywhere, BlueprintReadWrite)
-	int curHP;
-
-	UFUNCTION()
-	void OnRep_CurHP();
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int maxHP = 100.f;
 
 	UPROPERTY()
 	bool SniperZoomBool;

@@ -52,6 +52,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GeometryCollection/GeometryCollectionComponent.h"
+#include "PlayerCharacterStatComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -123,7 +124,9 @@ APlayerCharacter::APlayerCharacter()
 
 	ArmorSlot= CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ArmorSlot"));
 	ArmorSlot->SetupAttachment(GetMesh(), FName("spine_03"));
-	
+
+	// Stat Component 
+	Stat = CreateDefaultSubobject<UPlayerCharacterStatComponent>(TEXT("Stat"));	
 
 	bUsingRifle=true;
 	bUsingSniper=false;
@@ -165,8 +168,6 @@ void APlayerCharacter::BeginPlay()
 	pc->SetAudioListenerOverride(GetMesh(), FVector::ZeroVector, FRotator::ZeroRotator);
 
 	bPlayerDeath=false;
-
-	curHP=maxHP;
 
 	// Timeline Binding
 	if (CurveFloat)
@@ -2011,9 +2012,9 @@ void APlayerCharacter::Damaged(int damage)
 {
 	if(HasAuthority())
 	{
-		if(curHP<=damage)
+		if(Stat->GetCurrentHp()<=damage)
 		{
-			curHP=0;
+			Stat->SetHp(0);
 			PlayerDeath();
 		}
 		else
@@ -2022,12 +2023,22 @@ void APlayerCharacter::Damaged(int damage)
 			// 카메라 페이드 연출
 			playerCam->StartCameraFade(0.3, 0, 2.0, FLinearColor::Red, false, true);
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), damagedSound, GetActorLocation());
-			curHP = FMath::Clamp(curHP-damage, 0, maxHP);
-			StopAnimMontage();
-			PlayAnimMontage(zoomingMontage, 1, FName("Damaged"));
+			Stat->ApplyDamage(damage);
 			const APlayerController* controller = GetWorld()->GetFirstPlayerController();
 			controller->PlayerCameraManager->StartCameraShake(PlayerDamagedShake);
 			UpdateTabWidget();
+		}
+	}
+	else
+	{
+		if(Stat->GetCurrentHp()<=damage)
+		{
+			
+		}
+		else
+		{
+			StopAnimMontage();
+			PlayAnimMontage(zoomingMontage, 1, FName("Damaged"));
 		}
 	}
 }
@@ -2122,15 +2133,12 @@ void APlayerCharacter::UnSetM249AdditionalMagazineSlot()
 	bM249AdditionalMag=false;
 }
 
-void APlayerCharacter::OnRep_CurHP()
-{
-}
-
 void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(APlayerCharacter, CanShoot);
+	
 }
 
 
@@ -3666,8 +3674,8 @@ void APlayerCharacter::EquipArmor(bool SoundBool)
 	}
 	ArmorSlot->SetVisibility(true);
 	ArmorEquipped=true;
-	curHP=FMath::Clamp(curHP+35, 0, 135);
-	maxHP=FMath::Clamp(maxHP+35, 0, 135);
+	//curHP=FMath::Clamp(curHP+35, 0, 135);
+	//maxHP=FMath::Clamp(maxHP+35, 0, 135);
 }
 
 void APlayerCharacter::UnEquipHelmet(bool SoundBool)

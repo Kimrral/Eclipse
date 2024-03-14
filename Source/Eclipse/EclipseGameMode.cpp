@@ -39,6 +39,26 @@ void AEclipseGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	EC_LOG(LogECNetwork, Log, TEXT("%s"), TEXT("Begin"))
 	Super::PostLogin(NewPlayer);
+	UNetDriver* NetDriver = GetNetDriver();
+	if(NetDriver)
+	{
+		if(NetDriver->ClientConnections.Num()==0)
+		{
+			EC_LOG(LogECNetwork, Log, TEXT("%s"), TEXT("No Client Connections"));
+		}
+		else
+		{
+			for(const auto& Connection : NetDriver->ClientConnections)
+			{
+				EC_LOG(LogECNetwork, Log, TEXT("Client Connections : %s"), *Connection.GetName());
+			}
+		}
+	}
+	else
+	{
+		EC_LOG(LogECNetwork, Log, TEXT("%s"), TEXT("No Net Driver"));
+	}
+	
 	EC_LOG(LogECNetwork, Log, TEXT("%s"), TEXT("End"))
 }
 

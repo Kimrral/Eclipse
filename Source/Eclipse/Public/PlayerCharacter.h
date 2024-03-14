@@ -125,6 +125,11 @@ public:
 	/** Called for fire input */
 	void Fire();
 	void FireRelease();
+
+	void ProcessRifleFire();
+	void ProcessSniperFire();
+	void ProcessPistolFire();
+	void ProcessM249Fire();
 	
 	/** Called for zooming input */
 	void Crouching();

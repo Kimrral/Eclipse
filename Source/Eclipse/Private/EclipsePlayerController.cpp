@@ -15,6 +15,24 @@ void AEclipsePlayerController::BeginPlay()
 	EC_LOG(LogECNetwork, Log, TEXT("%s"), TEXT("End"))
 }
 
+void AEclipsePlayerController::PostNetInit()
+{
+	EC_LOG(LogECNetwork, Log, TEXT("%s"), TEXT("Begin"))
+	Super::PostNetInit();
+
+	UNetDriver* NetDriver = GetNetDriver();
+	if(NetDriver&&NetDriver->ServerConnection)
+	{
+		EC_LOG(LogECNetwork, Log, TEXT("Client Connections : %s"), *NetDriver->ServerConnection.GetName());
+	}
+	else
+	{
+		EC_LOG(LogECNetwork, Log, TEXT("%s"), TEXT("No Net Driver"));
+	}
+
+	EC_LOG(LogECNetwork, Log, TEXT("%s"), TEXT("End"))
+}
+
 // 사망지점에서 가장 가까운 플레이어 스타트 지점에서 리스폰
 void AEclipsePlayerController::Respawn(APlayerCharacter* me)
 {

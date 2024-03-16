@@ -83,10 +83,24 @@ void UPlayerAnim::AnimNotify_ReloadEnd()
 
 void UPlayerAnim::AnimNotify_LeftPlant()
 {
-	UGameplayStatics::PlaySoundAtLocation(GetWorld(), walkSound, me->GetActorLocation());
+	if(me->HasAuthority())
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), walkSound);
+	}
+	else
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), walkSound, me->GetActorLocation());
+	}
 }
 
 void UPlayerAnim::AnimNotify_RightPlant()
 {
-	UGameplayStatics::PlaySoundAtLocation(GetWorld(), walkSound, me->GetActorLocation());
+	if(me->HasAuthority())
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), walkSound);
+	}
+	else
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), walkSound, me->GetActorLocation());
+	}
 }

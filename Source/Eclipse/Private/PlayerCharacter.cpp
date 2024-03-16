@@ -12,6 +12,7 @@
 #include "EclipsePlayerController.h"
 #include "Enemy.h"
 #include "EnemyFSM.h"
+#include "EngineUtils.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GoggleActor.h"
@@ -53,6 +54,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "GeometryCollection/GeometryCollectionComponent.h"
 #include "PlayerCharacterStatComponent.h"
+#include "Eclipse/Eclipse.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -247,7 +249,6 @@ void APlayerCharacter::BeginPlay()
 	ApplyMagCache();
 	// Update Tab Widget Before Widget Constructor
 	UpdateTabWidget();
-	
 }
 
 // Called every frame
@@ -507,6 +508,8 @@ void APlayerCharacter::RunRelease()
 	}
 	GetCharacterMovement()->MaxWalkSpeed = 360.f;
 }
+
+
 
 
 void APlayerCharacter::OnActionLookAroundPressed()
@@ -1856,35 +1859,135 @@ void APlayerCharacter::ChangeWeapon()
 }
 
 void APlayerCharacter::Reload()
+{	
+	ServerRPCReload();
+}
+
+
+void APlayerCharacter::ServerRPCReload_Implementation()
+{
+	MulticastRPCReload();
+	/*for (APlayerController* PlayerController : TActorRange<APlayerController>(GetWorld()))
+	{
+		if (PlayerController && GetController() != PlayerController)
+		{
+			if(!PlayerController->IsLocalController())
+			{
+				APlayerCharacter* OtherPlayer = Cast<APlayerCharacter>(PlayerController->GetPawn());
+				if (OtherPlayer)
+				{
+					OtherPlayer->ClientRPCReloadAnimation(this);
+				}
+			}
+		}
+	}*/
+}
+
+/*
+void APlayerCharacter::ClientRPCReloadAnimation_Implementation(APlayerCharacter* CharacterToPlay)
+{
+	if (CharacterToPlay)
+	{
+		EC_LOG(LogTemp, Warning, TEXT("%s"), TEXT("Begin"))
+		CharacterToPlay->PlayReloadAnimation();
+	}
+}
+*/
+
+/*void APlayerCharacter::PlayReloadAnimation()
 {
 	bool animPlay = animInstance->IsAnyMontagePlaying();
 	if(animPlay==false)
 	{
 		if(weaponArray[0]==true&&curRifleAmmo<40+SetRifleAdditionalMagazine()&&maxRifleAmmo>0)
 		{
-			crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleReloadSound, GetActorLocation());
 			PlayAnimMontage(reloadMontage, 1, FName("Reload"));
 		}
 		else if(weaponArray[1]==true&&curSniperAmmo<5+SetSniperAdditionalMagazine()&&maxSniperAmmo>0)
 		{
-			crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), SniperReloadSound, GetActorLocation());
 			PlayAnimMontage(reloadMontage, 1, FName("Reload"));
 		}
 		else if(weaponArray[2]==true&&curPistolAmmo<8+SetPistolAdditionalMagazine()&&maxPistolAmmo>0)
 		{
-			crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), PistolReloadSound, GetActorLocation());
 			PlayAnimMontage(reloadMontage, 1, FName("PistolReload"));
 		}
 		else if(weaponArray[3]==true&&curM249Ammo<100+SetM249AdditionalMagazine()&&maxM249Ammo>0)
 		{
-			crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), M249ReloadSound, GetActorLocation());
 			PlayAnimMontage(reloadMontage, 1, FName("M249Reload"));
 		}
 	}
+}*/
+
+
+void APlayerCharacter::MulticastRPCReload_Implementation()
+{
+	if(HasAuthority())
+	{		
+		bool animPlay = animInstance->IsAnyMontagePlaying();
+		if(animPlay==false)
+		{
+			EC_LOG(LogTemp, Warning, TEXT("%s"), TEXT("Hasauthority"))
+			if(weaponArray[0]==true&&curRifleAmmo<40+SetRifleAdditionalMagazine()&&maxRifleAmmo>0)
+			{
+				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
+				UGameplayStatics::PlaySound2D(GetWorld(), RifleReloadSound);
+				PlayAnimMontage(reloadMontage, 1, FName("Reload"));
+			}
+			else if(weaponArray[1]==true&&curSniperAmmo<5+SetSniperAdditionalMagazine()&&maxSniperAmmo>0)
+			{
+				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
+				UGameplayStatics::PlaySound2D(GetWorld(), SniperReloadSound);
+				PlayAnimMontage(reloadMontage, 1, FName("Reload"));
+			}
+			else if(weaponArray[2]==true&&curPistolAmmo<8+SetPistolAdditionalMagazine()&&maxPistolAmmo>0)
+			{
+				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
+				UGameplayStatics::PlaySound2D(GetWorld(), PistolReloadSound);
+				PlayAnimMontage(reloadMontage, 1, FName("PistolReload"));
+			}
+			else if(weaponArray[3]==true&&curM249Ammo<100+SetM249AdditionalMagazine()&&maxM249Ammo>0)
+			{
+				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
+				UGameplayStatics::PlaySound2D(GetWorld(), M249ReloadSound);
+				PlayAnimMontage(reloadMontage, 1, FName("M249Reload"));
+			}
+		}
+	}	
+	else
+	{		
+		bool animPlay = animInstance->IsAnyMontagePlaying();
+		if(animPlay==false)
+		{
+			EC_LOG(LogTemp, Warning, TEXT("%s"), TEXT("else"))
+			if(weaponArray[0]==true&&curRifleAmmo<40+SetRifleAdditionalMagazine()&&maxRifleAmmo>0)
+			{
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleReloadSound, GetActorLocation());
+				PlayAnimMontage(reloadMontage, 1, FName("Reload"));
+			}
+			else if(weaponArray[1]==true&&curSniperAmmo<5+SetSniperAdditionalMagazine()&&maxSniperAmmo>0)
+			{
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), SniperReloadSound, GetActorLocation());
+				PlayAnimMontage(reloadMontage, 1, FName("Reload"));
+			}
+			else if(weaponArray[2]==true&&curPistolAmmo<8+SetPistolAdditionalMagazine()&&maxPistolAmmo>0)
+			{
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PistolReloadSound, GetActorLocation());
+				PlayAnimMontage(reloadMontage, 1, FName("PistolReload"));
+			}
+			else if(weaponArray[3]==true&&curM249Ammo<100+SetM249AdditionalMagazine()&&maxM249Ammo>0)
+			{
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), M249ReloadSound, GetActorLocation());
+				PlayAnimMontage(reloadMontage, 1, FName("M249Reload"));
+			}
+		}
+	}
+}
+	
+
+
+bool APlayerCharacter::ServerRPCReload_Validate()
+{
+	return true;
 }
 
 void APlayerCharacter::MoveToIsolatedShip()
@@ -2191,8 +2294,30 @@ void APlayerCharacter::MulticastRPCFire_Implementation()
 	}
 	//Client
 	else
-	{
-		
+	{		
+		if(IsLocallyControlled())
+		{			
+			// 라이플을 들고 있는 상태라면
+			if(weaponArray[0]==true)
+			{
+				ProcessRifleFire();
+			}
+			//  스나이퍼를 들고 있는 상태라면
+			else if(weaponArray[1]==true)
+			{
+				ProcessSniperFire();
+			}
+			// 권총을 들고 있는 상태라면
+			else if(weaponArray[2]==true)
+			{
+				ProcessPistolFire();
+			}
+			// M249를 들고 있는 상태라면
+			if(weaponArray[3]==true)
+			{
+				ProcessM249Fire();
+			}
+		}		
 	}
 }
 
@@ -2231,13 +2356,13 @@ void APlayerCharacter::ProcessRifleFire()
 			FTransform particleTrans2=UKismetMathLibrary::MakeTransform(particleLoc2, particleRot2, FVector(0.4));
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle, particleTrans);
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle2, particleTrans2);
-			FActorSpawnParameters param;
-			param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-			FTransform spawnTrans = rifleComp->GetSocketTransform(FName("BulletShell"));
-			AActor* bulletShell = GetWorld()->SpawnActor<AActor>(BulletShellFactory, spawnTrans);
-			bulletShell->SetLifeSpan(5.0f);
-			UE::Math::TVector<double> bulSoundLoc = GetActorLocation()*FVector(0, 0, -80);
-			UGameplayStatics::SpawnSoundAtLocation(GetWorld(), RifleBulletShellDropSound, bulSoundLoc, FRotator::ZeroRotator, 0.4, 1, 0);
+			//FActorSpawnParameters param;
+			//param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+			//FTransform spawnTrans = rifleComp->GetSocketTransform(FName("BulletShell"));
+			//AActor* bulletShell = GetWorld()->SpawnActor<AActor>(BulletShellFactory, spawnTrans);
+			//bulletShell->SetLifeSpan(5.0f);
+			//UE::Math::TVector<double> bulSoundLoc = GetActorLocation()*FVector(0, 0, -80);
+			//UGameplayStatics::SpawnSoundAtLocation(GetWorld(), RifleBulletShellDropSound, bulSoundLoc, FRotator::ZeroRotator, 0.4, 1, 0);
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleFireSound, GetActorLocation());
 			APlayerController* controller = GetWorld()->GetFirstPlayerController();
 			// 사격 카메라 셰이크 실행
@@ -3727,4 +3852,5 @@ void APlayerCharacter::UnEquipArmor(bool SoundBool)
 
 void APlayerCharacter::OnRep_CanShoot()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Can Shoot"))
 }

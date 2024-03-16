@@ -125,14 +125,17 @@ public:
 	/** Called for running input */
 	void RunRelease();
 
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerRPCFire();
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastRPCFire();
+	
 	
 	/** Called for fire input */
 	void Fire();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRPCFire();
+
+	UFUNCTION(NetMulticast, UnReliable)
+	void MulticastRPCFire();
+	
 	void FireRelease();
 
 	void ProcessRifleFire();
@@ -147,6 +150,18 @@ public:
 	void ChangeWeapon();
 
 	void Reload();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRPCReload();
+
+	UFUNCTION(NetMulticast, UnReliable)
+	void MulticastRPCReload();
+
+	//UFUNCTION(Client, Unreliable)
+	//void ClientRPCReloadAnimation(APlayerCharacter* CharacterToPlay);
+
+	//UFUNCTION()
+	//void PlayReloadAnimation();
 
 	void OnActionLookAroundPressed();
 	void OnActionLookAroundReleased();

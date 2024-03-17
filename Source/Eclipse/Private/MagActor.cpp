@@ -12,6 +12,8 @@ AMagActor::AMagActor()
 	magMesh=CreateDefaultSubobject<UStaticMeshComponent>(TEXT("magMesh"));
 	SetRootComponent(magMesh);
 	magMesh->SetGenerateOverlapEvents(true);
+
+	bReplicates=true;
 }
 
 // Called when the game starts or when spawned

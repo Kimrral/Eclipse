@@ -18,6 +18,8 @@ AGearActor::AGearActor()
 	gearMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 	gearMesh->SetCollisionResponseToChannel(ECC_Destructible, ECR_Ignore);
 	gearMesh->SetSimulatePhysics(true);
+
+	bReplicates=true;
 }
 
 // Called when the game starts or when spawned

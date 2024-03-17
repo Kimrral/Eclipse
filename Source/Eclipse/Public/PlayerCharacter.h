@@ -176,8 +176,18 @@ public:
 	/** Called for zooming input */
 	void Crouching();
 
+	//=======================================//
+
 	/** Called for change weapon input */
 	void ChangeWeapon();
+
+	UFUNCTION(Reliable, Server, WithValidation)
+	void ChangeWeaponRPCServer();
+
+	UFUNCTION(Unreliable, NetMulticast)
+	void ChangeWeaponRPCMulticast();
+
+	//=======================================//
 
 	void Reload();
 
@@ -185,7 +195,9 @@ public:
 	void ServerRPCReload();
 
 	UFUNCTION(NetMulticast, UnReliable)
-	void MulticastRPCReload();	
+	void MulticastRPCReload();
+
+	//=======================================//
 
 	void OnActionLookAroundPressed();
 	void OnActionLookAroundReleased();
@@ -207,6 +219,31 @@ public:
 
 	UFUNCTION(Unreliable, NetMulticast)
 	void SwapSecondWeaponRPCMulticast();
+
+	//=======================================//
+
+	UFUNCTION()
+	void PlayerDeath();
+
+	UFUNCTION(Reliable, Server, WithValidation)
+	void PlayerDeathRPCServer();
+
+	UFUNCTION(Unreliable, NetMulticast)
+	void PlayerDeathRPCMulticast();
+
+	
+	//=======================================//
+	
+	UFUNCTION()
+	void Damaged(int damage);
+
+	UFUNCTION(Reliable, Server, WithValidation)
+	void DamagedRPCServer(int damage);
+
+	UFUNCTION(Unreliable, NetMulticast)
+	void DamagedRPCMulticast(int damage);
+	
+
 
 	//=======================================//
 
@@ -241,10 +278,7 @@ public:
 	float FireRateMultiplier();
 
 	UFUNCTION()
-	float RecoilRateMultiplier();
-
-	UFUNCTION()
-	void PlayerDeath();
+	float RecoilRateMultiplier();	
 	
 	UFUNCTION(BlueprintImplementableEvent)
 	void ClearInventoryCache();
@@ -326,10 +360,7 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void ApplyMagCache();
-
-	UFUNCTION()
-	void Damaged(int damage);
-
+	
 	UFUNCTION(BlueprintImplementableEvent)
 	void UpdateTabWidget();
 
@@ -574,31 +605,31 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
 	class UAnimMontage* reloadMontage;
 	
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	int curRifleAmmo = 40;
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	int curSniperAmmo = 5;
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	int curPistolAmmo = 8;
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	int curM249Ammo = 100;
 
 	UPROPERTY()
 	bool EmptySoundBoolean = false;
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	int maxRifleAmmo = 80;
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	int maxSniperAmmo = 10;
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	int maxPistolAmmo = 16;
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	int maxM249Ammo = 200;
 
 	UPROPERTY()
@@ -819,9 +850,9 @@ public:
 	UPROPERTY()
 	bool ArmorEquipped = false;
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	bool isDead = false;
-
+	
 	UPROPERTY()
 	int randRifleDamage;
 	UPROPERTY()

@@ -21,6 +21,9 @@ AAmmoActor::AAmmoActor()
 	playerTraceSphereCollision=CreateDefaultSubobject<USphereComponent>(TEXT("playerTraceSphereCollision"));
 	playerTraceSphereCollision->SetupAttachment(RootComponent);
 	playerTraceSphereCollision->SetGenerateOverlapEvents(true);
+
+	bReplicates=true;
+	SetReplicatingMovement(true);
 }
 
 // Called when the game starts or when spawned

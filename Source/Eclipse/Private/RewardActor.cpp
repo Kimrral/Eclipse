@@ -15,6 +15,8 @@ ARewardActor::ARewardActor()
 	rewardMesh=CreateDefaultSubobject<UStaticMeshComponent>(TEXT("rewardMesh"));
 	SetRootComponent(rewardMesh);
 	rewardMesh->SetGenerateOverlapEvents(true);
+
+	bReplicates=true;
 }
 
 // Called when the game starts or when spawned

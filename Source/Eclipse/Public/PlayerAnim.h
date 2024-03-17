@@ -20,6 +20,8 @@ public:
 	UPROPERTY()
 	class APlayerCharacter* me;
 
+	//virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 	UFUNCTION()
 	void AnimNotify_ReloadStart();
 

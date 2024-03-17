@@ -28,7 +28,7 @@ float UPlayerCharacterStatComponent::ApplyDamage(float InDamage)
 	SetHp(PrevHp - ActualDamage);
 	if (CurrentHp <= KINDA_SMALL_NUMBER)
 	{
-		//OnHpZero.Broadcast();
+		OnHpZero.Broadcast();
 	}
 	return ActualDamage;
 }
@@ -54,8 +54,14 @@ void UPlayerCharacterStatComponent::SetHp(float NewHp)
 
 void UPlayerCharacterStatComponent::OnRep_CurrentHp()
 {
+	OnHpChanged.Broadcast();
+	if (CurrentHp <= 0.0f)
+	{
+		OnHpZero.Broadcast();
+	}
 }
 
 void UPlayerCharacterStatComponent::OnRep_MaxHp()
 {
+	OnHpChanged.Broadcast();
 }

@@ -38,6 +38,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void PostInitializeComponents() override;
+
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -115,17 +117,25 @@ public:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
+	//=======================================//
+
 	/** Called for zooming input */
 	void Zoom();
-	/** Called for zooming input */
 	void ZoomRelease();
 
-	/** Called for running input */
-	void Run();
-	/** Called for running input */
-	void RunRelease();
+	UFUNCTION(Reliable, Server, WithValidation)
+	void ZoomRPCServer();
 
+	UFUNCTION(Unreliable, NetMulticast)
+	void ZoomRPCMulticast();
 	
+	UFUNCTION(Reliable, Server, WithValidation)
+	void ZoomRPCReleaseServer();
+
+	UFUNCTION(Unreliable, NetMulticast)
+	void ZoomRPCReleaseMulticast();
+
+	//=======================================//
 	
 	/** Called for fire input */
 	void Fire();
@@ -134,7 +144,7 @@ public:
 	void ServerRPCFire();
 
 	UFUNCTION(NetMulticast, UnReliable)
-	void MulticastRPCFire();
+	void MulticastRPCFire();	
 	
 	void FireRelease();
 
@@ -142,6 +152,26 @@ public:
 	void ProcessSniperFire();
 	void ProcessPistolFire();
 	void ProcessM249Fire();
+	
+	//=======================================//
+	
+	/** Called for running input */
+	void Run();
+	void RunRelease();
+	
+	UFUNCTION(Reliable, Server, WithValidation)
+	void RunRPCServer();
+
+	UFUNCTION(Unreliable, NetMulticast)
+	void RunRPCMulticast();
+	
+	UFUNCTION(Reliable, Server, WithValidation)
+	void RunRPCReleaseServer();
+
+	UFUNCTION(Unreliable, NetMulticast)
+	void RunRPCReleaseMulticast();
+
+	//=======================================//
 	
 	/** Called for zooming input */
 	void Crouching();
@@ -155,23 +185,182 @@ public:
 	void ServerRPCReload();
 
 	UFUNCTION(NetMulticast, UnReliable)
-	void MulticastRPCReload();
-
-	//UFUNCTION(Client, Unreliable)
-	//void ClientRPCReloadAnimation(APlayerCharacter* CharacterToPlay);
-
-	//UFUNCTION()
-	//void PlayReloadAnimation();
+	void MulticastRPCReload();	
 
 	void OnActionLookAroundPressed();
 	void OnActionLookAroundReleased();
 
+	//=======================================//
+
 	void SwapFirstWeapon();
+
+	UFUNCTION(Reliable, Server, WithValidation)
+	void SwapFirstWeaponRPCServer();
+
+	UFUNCTION(Unreliable, NetMulticast)
+	void SwapFirstWeaponRPCMulticast();
+	
 	void SwapSecondWeapon();
+
+	UFUNCTION(Reliable, Server, WithValidation)
+	void SwapSecondWeaponRPCServer();
+
+	UFUNCTION(Unreliable, NetMulticast)
+	void SwapSecondWeaponRPCMulticast();
+
+	//=======================================//
 
 	void Tab();
 
 	void Q();
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRPCQ();
+
+	UFUNCTION(NetMulticast, UnReliable)
+	void MulticastRPCQ();
+
+	UFUNCTION()
+	void WeaponDetectionLineTrace();
+
+	UFUNCTION()
+	void SetBossHPWidget(AEnemy* enemy);
+	
+	UFUNCTION()
+	void SetDamageWidget(int damage, FVector spawnLoc, bool isShieldIconEnable, FLinearColor DamageTextColor);
+
+	UFUNCTION()
+	void RemoveBossHPWidget();
+	
+	UFUNCTION()
+	void InfoWidgetUpdate();
+
+	UFUNCTION()
+	float DamageMultiplier();
+
+	UFUNCTION()
+	float FireRateMultiplier();
+
+	UFUNCTION()
+	float RecoilRateMultiplier();
+
+	UFUNCTION()
+	void PlayerDeath();
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void ClearInventoryCache();
+
+	UFUNCTION(BlueprintCallable)
+	void EquipHelmet(bool SoundBool);
+
+	UFUNCTION(BlueprintCallable)
+	void EquipHeadset(bool SoundBool);
+
+	UFUNCTION(BlueprintCallable)
+	void EquipMask(bool SoundBool);
+
+	UFUNCTION(BlueprintCallable)
+	void EquipGoggle(bool SoundBool);
+
+	UFUNCTION(BlueprintCallable)
+	void UnEquipHelmet(bool SoundBool);
+
+	UFUNCTION(BlueprintCallable)
+	void UnEquipHeadset(bool SoundBool);
+
+	UFUNCTION(BlueprintCallable)
+	void UnEquipMask(bool SoundBool);
+
+	UFUNCTION(BlueprintCallable)
+	void UnEquipGoggle(bool SoundBool);
+
+	UFUNCTION(BlueprintCallable)
+	void EquipArmor(bool SoundBool);
+
+	UFUNCTION(BlueprintCallable)
+	void UnEquipArmor(bool SoundBool);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void StashWidgetOnViewport();
+
+	UFUNCTION()
+	void OnRep_CanShoot();
+
+	UFUNCTION()
+	void MoveToIsolatedShip();
+	
+	UFUNCTION()  // Bind function
+	void SetZoomValue(float Value);
+
+	UFUNCTION()
+	void CachingValues();
+
+	UFUNCTION()
+	void ApplyCachingValues();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void PouchCaching();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void StashCaching();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void InventoryCaching();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void GearCaching();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void MagCaching();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void ApplyStashCache();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void ApplyInventoryCache();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void ApplyPouchCache();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void ApplyGearCache();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void ApplyMagCache();
+
+	UFUNCTION()
+	void Damaged(int damage);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void UpdateTabWidget();
+
+	UFUNCTION()
+	int32 SetRifleAdditionalMagazine();
+	UFUNCTION()
+	int32 SetSniperAdditionalMagazine();
+	UFUNCTION()
+	int32 SetPistolAdditionalMagazine();
+	UFUNCTION()
+	int32 SetM249AdditionalMagazine();
+
+	UFUNCTION(BlueprintCallable)
+	void SetRifleAdditionalMagazineSlot();
+	UFUNCTION(BlueprintCallable)
+	void SetSniperAdditionalMagazineSlot();
+	UFUNCTION(BlueprintCallable)
+	void SetPistolAdditionalMagazineSlot();
+	UFUNCTION(BlueprintCallable)
+	void SetM249AdditionalMagazineSlot();
+
+	UFUNCTION(BlueprintCallable)
+	void UnSetRifleAdditionalMagazineSlot();
+	UFUNCTION(BlueprintCallable)
+	void UnSetSniperAdditionalMagazineSlot();
+	UFUNCTION(BlueprintCallable)
+	void UnSetPistolAdditionalMagazineSlot();
+	UFUNCTION(BlueprintCallable)
+	void UnSetM249AdditionalMagazineSlot();
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
@@ -363,69 +552,6 @@ public:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	int curWeaponSlotNumber = 1;
-
-	UFUNCTION()
-	void WeaponDetectionLineTrace();
-
-	UFUNCTION()
-	void SetBossHPWidget(AEnemy* enemy);
-	
-	UFUNCTION()
-	void SetDamageWidget(int damage, FVector spawnLoc, bool isShieldIconEnable, FLinearColor DamageTextColor);
-
-	UFUNCTION()
-	void RemoveBossHPWidget();
-	
-	UFUNCTION()
-	void InfoWidgetUpdate();
-
-	UFUNCTION()
-	float DamageMultiplier();
-
-	UFUNCTION()
-	float FireRateMultiplier();
-
-	UFUNCTION()
-	float RecoilRateMultiplier();
-
-	UFUNCTION()
-	void PlayerDeath();
-	
-	UFUNCTION(BlueprintImplementableEvent)
-	void ClearInventoryCache();
-
-	UFUNCTION(BlueprintCallable)
-	void EquipHelmet(bool SoundBool);
-
-	UFUNCTION(BlueprintCallable)
-	void EquipHeadset(bool SoundBool);
-
-	UFUNCTION(BlueprintCallable)
-	void EquipMask(bool SoundBool);
-
-	UFUNCTION(BlueprintCallable)
-	void EquipGoggle(bool SoundBool);
-
-	UFUNCTION(BlueprintCallable)
-	void UnEquipHelmet(bool SoundBool);
-
-	UFUNCTION(BlueprintCallable)
-	void UnEquipHeadset(bool SoundBool);
-
-	UFUNCTION(BlueprintCallable)
-	void UnEquipMask(bool SoundBool);
-
-	UFUNCTION(BlueprintCallable)
-	void UnEquipGoggle(bool SoundBool);
-
-	UFUNCTION(BlueprintCallable)
-	void EquipArmor(bool SoundBool);
-
-	UFUNCTION(BlueprintCallable)
-	void UnEquipArmor(bool SoundBool);
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void StashWidgetOnViewport();
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bUsingRifle;
@@ -517,11 +643,11 @@ public:
 	UPROPERTY()
 	bool isRifleShootable;
 
-	UPROPERTY(ReplicatedUsing=OnRep_CanShoot)
-	bool CanShoot = true;
+	UPROPERTY()
+	FHitResult rifleHitResult;
 
-	UFUNCTION()
-	void OnRep_CanShoot();
+	UPROPERTY(ReplicatedUsing=OnRep_CanShoot)
+	bool CanShoot = true;	
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float BulletsPerSecRifle = 11.0f;
@@ -676,62 +802,7 @@ public:
 	UPROPERTY()
 	FTimerHandle SniperZoomOutHandle;
 
-	UFUNCTION()
-	void MoveToIsolatedShip();
-	
-	UFUNCTION()  // Bind function
-	void SetZoomValue(float Value);
 
-	UFUNCTION()
-	void CachingValues();
-
-	UFUNCTION()
-	void ApplyCachingValues();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void PouchCaching();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void StashCaching();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void InventoryCaching();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void GearCaching();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void MagCaching();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void ApplyStashCache();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void ApplyInventoryCache();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void ApplyPouchCache();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void ApplyGearCache();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void ApplyMagCache();
-
-	UFUNCTION()
-	void Damaged(int damage);
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void UpdateTabWidget();
-
-	UFUNCTION()
-	int32 SetRifleAdditionalMagazine();
-	UFUNCTION()
-	int32 SetSniperAdditionalMagazine();
-	UFUNCTION()
-	int32 SetPistolAdditionalMagazine();
-	UFUNCTION()
-	int32 SetM249AdditionalMagazine();
 
 	UPROPERTY()
 	bool HelmetEquipped = false;
@@ -768,23 +839,6 @@ public:
 	UPROPERTY()
 	int randM249HeadDamage;
 
-	UFUNCTION(BlueprintCallable)
-	void SetRifleAdditionalMagazineSlot();
-	UFUNCTION(BlueprintCallable)
-	void SetSniperAdditionalMagazineSlot();
-	UFUNCTION(BlueprintCallable)
-	void SetPistolAdditionalMagazineSlot();
-	UFUNCTION(BlueprintCallable)
-	void SetM249AdditionalMagazineSlot();
-
-	UFUNCTION(BlueprintCallable)
-	void UnSetRifleAdditionalMagazineSlot();
-	UFUNCTION(BlueprintCallable)
-	void UnSetSniperAdditionalMagazineSlot();
-	UFUNCTION(BlueprintCallable)
-	void UnSetPistolAdditionalMagazineSlot();
-	UFUNCTION(BlueprintCallable)
-	void UnSetM249AdditionalMagazineSlot();
 
 	UPROPERTY()
 	bool bRifleAdditionalMag;
@@ -796,7 +850,7 @@ public:
 	bool bM249AdditionalMag;
 
 	UPROPERTY()
-	class AEclipsePlayerController* pc;
+	class AEclipsePlayerController* PC;
 	
 	UPROPERTY()
 	class AHackingConsole* HackingConsole;
@@ -821,6 +875,9 @@ public:
 	class APistolMagActor* PistolMagActor;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	class AM249MagActor* M249MagActor;
+
+	UPROPERTY()
+	float CharacterWalkSpeed = 360.f;
 	
 	UPROPERTY()
 	int ConsoleCount;
@@ -846,7 +903,7 @@ public:
 	UPROPERTY()
 	bool SniperZoomOutBool;
 	
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	
 	
 	
 };

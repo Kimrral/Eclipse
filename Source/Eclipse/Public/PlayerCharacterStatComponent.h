@@ -6,13 +6,17 @@
 #include "Components/ActorComponent.h"
 #include "PlayerCharacterStatComponent.generated.h"
 
+DECLARE_MULTICAST_DELEGATE(FOnHpZeroDelegate);
+DECLARE_MULTICAST_DELEGATE(FOnHpChangedDelegate);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class ECLIPSE_API UPlayerCharacterStatComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
+public:
+	FOnHpZeroDelegate OnHpZero;
+	FOnHpChangedDelegate OnHpChanged;
 	// Sets default values for this component's properties
 	UPlayerCharacterStatComponent();
 	UFUNCTION(BlueprintCallable)

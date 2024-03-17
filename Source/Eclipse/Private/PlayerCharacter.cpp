@@ -12,7 +12,6 @@
 #include "EclipsePlayerController.h"
 #include "Enemy.h"
 #include "EnemyFSM.h"
-#include "EngineUtils.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GoggleActor.h"
@@ -82,7 +81,7 @@ APlayerCharacter::APlayerCharacter()
 	// instead of recompiling to adjust them
 	GetCharacterMovement()->JumpZVelocity = 1000.f;
 	GetCharacterMovement()->AirControl = 0.35f;
-	GetCharacterMovement()->MaxWalkSpeed = 360.f;
+	GetCharacterMovement()->MaxWalkSpeed = CharacterWalkSpeed;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 
@@ -162,12 +161,13 @@ void APlayerCharacter::BeginPlay()
 	}
 
 	// Casting
-	pc=Cast<AEclipsePlayerController>(GetWorld()->GetFirstPlayerController());
+	UGameInstance* GI = GetGameInstance();
+	PC = Cast<AEclipsePlayerController>(GI->GetFirstLocalPlayerController());
 	gm=Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());
 	gi=Cast<UEclipseGameInstance>(GetWorld()->GetGameInstance());
 	animInstance=Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 
-	pc->SetAudioListenerOverride(GetMesh(), FVector::ZeroVector, FRotator::ZeroRotator);
+	//pc->SetAudioListenerOverride(GetMesh(), FVector::ZeroVector, FRotator::ZeroRotator);
 
 	bPlayerDeath=false;
 
@@ -217,7 +217,7 @@ void APlayerCharacter::BeginPlay()
 	StopAnimMontage();
 	PlayAnimMontage(zoomingMontage, 1, FName("LevelStart"));
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
-	AEclipsePlayerController* PlayerController = Cast<AEclipsePlayerController>(GetWorld()->GetFirstPlayerController());
+	AEclipsePlayerController* PlayerController = Cast<AEclipsePlayerController>(GetController());
 	if(PlayerController)
 	{
 		PlayerController->EnableInput(PlayerController);		
@@ -260,6 +260,14 @@ void APlayerCharacter::Tick(float DeltaTime)
 	
 	WeaponDetectionLineTrace();	
 
+}
+
+void APlayerCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	Stat->OnHpZero.AddUObject(this, &APlayerCharacter::PlayerDeath);
+	Stat->OnHpChanged.AddUObject(this, &APlayerCharacter::UpdateTabWidget);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -363,6 +371,16 @@ void APlayerCharacter::Look(const FInputActionValue& Value)
 
 void APlayerCharacter::Zoom()
 {
+	ZoomRPCServer();
+}
+
+void APlayerCharacter::ZoomRelease()
+{
+	ZoomRPCReleaseServer();
+}
+
+void APlayerCharacter::ZoomRPCMulticast_Implementation()
+{
 	if(gi->IsWidgetOn)
 	{
 		return;
@@ -392,7 +410,7 @@ void APlayerCharacter::Zoom()
 		crosshairUI->CrosshairImage->SetVisibility(ESlateVisibility::Hidden);
 		APlayerCameraManager* const cameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0));
 		cameraManager->StartCameraFade(1.0, 0.1, 3.0, FColor::Black, false, true);
-		const APlayerController* controller = GetWorld()->GetFirstPlayerController();
+		const AEclipsePlayerController* controller = Cast<AEclipsePlayerController>(GetController());
 		controller->PlayerCameraManager->StartCameraShake(sniperZoomingShake);
 		// 카메라 줌 러프 타임라인 재생
 		Timeline.PlayFromStart();
@@ -413,7 +431,28 @@ void APlayerCharacter::Zoom()
 	}
 }
 
-void APlayerCharacter::ZoomRelease()
+void APlayerCharacter::ZoomRPCServer_Implementation()
+{
+	ZoomRPCMulticast();
+}
+
+bool APlayerCharacter::ZoomRPCServer_Validate()
+{
+	return true;
+}
+
+
+void APlayerCharacter::ZoomRPCReleaseServer_Implementation()
+{
+	ZoomRPCReleaseMulticast();
+}
+
+bool APlayerCharacter::ZoomRPCReleaseServer_Validate()
+{
+	return true;
+}
+
+void APlayerCharacter::ZoomRPCReleaseMulticast_Implementation()
 {
 	if(gi->IsWidgetOn)
 	{
@@ -438,7 +477,7 @@ void APlayerCharacter::ZoomRelease()
 	else if(weaponArray[1]==true)
 	{
 		isSniperZooming=false;
-		const APlayerController* controller = GetWorld()->GetFirstPlayerController();
+		const AEclipsePlayerController* controller = Cast<AEclipsePlayerController>(GetController());
 		controller->PlayerCameraManager->StopAllCameraShakes();
 		if(GetMesh()->GetAnimInstance()->Montage_IsPlaying(zoomingMontage))
 		{
@@ -465,7 +504,18 @@ void APlayerCharacter::ZoomRelease()
 }
 
 
+
 void APlayerCharacter::Run()
+{
+	RunRPCServer();
+}
+
+void APlayerCharacter::RunRelease()
+{
+	RunRPCReleaseServer();
+}
+
+void APlayerCharacter::RunRPCMulticast_Implementation()
 {
 	if (isSniperZooming)
 	{
@@ -497,18 +547,40 @@ void APlayerCharacter::Run()
 	{
 		return;
 	}
-	GetCharacterMovement()->MaxWalkSpeed=520.f;
+	CharacterWalkSpeed=520.f;
+	GetCharacterMovement()->MaxWalkSpeed=CharacterWalkSpeed;
 }
 
-void APlayerCharacter::RunRelease()
+void APlayerCharacter::RunRPCServer_Implementation()
+{
+	RunRPCMulticast();
+}
+
+bool APlayerCharacter::RunRPCServer_Validate()
+{
+	return true;
+}
+
+
+void APlayerCharacter::RunRPCReleaseServer_Implementation()
+{
+	RunRPCReleaseMulticast();
+}
+
+bool APlayerCharacter::RunRPCReleaseServer_Validate()
+{
+	return true;
+}
+
+void APlayerCharacter::RunRPCReleaseMulticast_Implementation()
 {
 	if(isZooming)
 	{
 		return;
 	}
-	GetCharacterMovement()->MaxWalkSpeed = 360.f;
+	CharacterWalkSpeed=360.f;
+	GetCharacterMovement()->MaxWalkSpeed = CharacterWalkSpeed;
 }
-
 
 
 
@@ -525,7 +597,22 @@ void APlayerCharacter::OnActionLookAroundReleased()
 
 void APlayerCharacter::SwapFirstWeapon()
 {
-	if(curWeaponSlotNumber==1||isSniperZooming)
+	SwapFirstWeaponRPCServer();
+}
+
+void APlayerCharacter::SwapFirstWeaponRPCServer_Implementation()
+{
+	SwapFirstWeaponRPCMulticast();
+}
+
+bool APlayerCharacter::SwapFirstWeaponRPCServer_Validate()
+{
+	return true;
+}
+
+void APlayerCharacter::SwapFirstWeaponRPCMulticast_Implementation()
+{
+		if(curWeaponSlotNumber==1||isSniperZooming)
 	{
 		return;
 	}
@@ -642,7 +729,22 @@ void APlayerCharacter::SwapFirstWeapon()
 
 void APlayerCharacter::SwapSecondWeapon()
 {
-	if(curWeaponSlotNumber==2||isSniperZooming)
+	SwapSecondWeaponRPCServer();
+}
+
+void APlayerCharacter::SwapSecondWeaponRPCServer_Implementation()
+{
+	SwapSecondWeaponRPCMulticast();
+}
+
+bool APlayerCharacter::SwapSecondWeaponRPCServer_Validate()
+{
+	return true;
+}
+
+void APlayerCharacter::SwapSecondWeaponRPCMulticast_Implementation()
+{
+		if(curWeaponSlotNumber==2||isSniperZooming)
 	{
 		return;
 	}
@@ -766,515 +868,543 @@ void APlayerCharacter::Tab()
 
 void APlayerCharacter::Q()
 {
-	PlayerDeath();
+	ServerRPCQ();	
+}
+
+void APlayerCharacter::MulticastRPCQ_Implementation()
+{
+	if(HasAuthority())
+	{
+		EC_LOG(LogTemp,Warning,TEXT("%s"), TEXT("HasAuthority"))
+	}
+	else if(IsLocallyControlled())
+	{
+		EC_LOG(LogTemp,Warning,TEXT("%s"), TEXT("LocallyControlled"))
+	}
+	else
+	{
+		EC_LOG(LogTemp,Warning,TEXT("%s"), TEXT("NotLocallyControlled"))
+	}
+}
+
+void APlayerCharacter::ServerRPCQ_Implementation()
+{
+	MulticastRPCQ();
+}
+
+bool APlayerCharacter::ServerRPCQ_Validate()
+{
+	return true;
 }
 
 
 void APlayerCharacter::WeaponDetectionLineTrace()
 {
-	// 스나이퍼 줌 도중 교체 불가
-	if(isSniperZooming||bEnding)
+	if(IsLocallyControlled())
 	{
-		return;
-	}
-	FHitResult actorHitResult;
-	FVector StartLoc = FollowCamera->GetComponentLocation();
-	FVector EndLoc = StartLoc+FollowCamera->GetForwardVector()*500.0f;
-	// 무기 액터 탐지 라인 트레이스
-	bool bHit = GetWorld()->LineTraceSingleByChannel(actorHitResult, StartLoc, EndLoc, ECC_Visibility);
-	if(bHit)
-	{
-		// 무기 액터 캐스팅
-		rifleActor = Cast<ARifleActor>(actorHitResult.GetActor());
-		sniperActor=Cast<ASniperActor>(actorHitResult.GetActor());
-		pistolActor=Cast<APistolActor>(actorHitResult.GetActor());
-		m249Actor=Cast<AM249Actor>(actorHitResult.GetActor());
+		// 스나이퍼 줌 도중 교체 불가
+		if(isSniperZooming||bEnding)
+		{
+			return;
+		}
+		FHitResult actorHitResult;
+		FVector StartLoc = FollowCamera->GetComponentLocation();
+		FVector EndLoc = StartLoc+FollowCamera->GetForwardVector()*500.0f;
+		// 무기 액터 탐지 라인 트레이스
+		bool bHit = GetWorld()->LineTraceSingleByChannel(actorHitResult, StartLoc, EndLoc, ECC_Visibility);
+		if(bHit)
+		{
+			// 무기 액터 캐스팅
+			rifleActor = Cast<ARifleActor>(actorHitResult.GetActor());
+			sniperActor=Cast<ASniperActor>(actorHitResult.GetActor());
+			pistolActor=Cast<APistolActor>(actorHitResult.GetActor());
+			m249Actor=Cast<AM249Actor>(actorHitResult.GetActor());
 		
-		HackingConsole=Cast<AHackingConsole>(actorHitResult.GetActor());
-		MissionChecker=Cast<AMissionChecker>(actorHitResult.GetActor());
+			HackingConsole=Cast<AHackingConsole>(actorHitResult.GetActor());
+			MissionChecker=Cast<AMissionChecker>(actorHitResult.GetActor());
 
-		RifleMagActor = Cast<ARifleMagActor>(actorHitResult.GetActor());
-		SniperMagActor = Cast<ASniperMagActor>(actorHitResult.GetActor());
-		PistolMagActor = Cast<APistolMagActor>(actorHitResult.GetActor());
-		M249MagActor = Cast<AM249MagActor>(actorHitResult.GetActor());
+			RifleMagActor = Cast<ARifleMagActor>(actorHitResult.GetActor());
+			SniperMagActor = Cast<ASniperMagActor>(actorHitResult.GetActor());
+			PistolMagActor = Cast<APistolMagActor>(actorHitResult.GetActor());
+			M249MagActor = Cast<AM249MagActor>(actorHitResult.GetActor());
 
-		GoggleActor= Cast<AGoggleActor>(actorHitResult.GetActor());
-		MaskActor= Cast<AMaskActor>(actorHitResult.GetActor());
-		HelmetActor= Cast<AHelmetActor>(actorHitResult.GetActor());
-		HeadsetActor= Cast<AHeadsetActor>(actorHitResult.GetActor());
-		ArmorActor= Cast<AArmorActor>(actorHitResult.GetActor());
+			GoggleActor= Cast<AGoggleActor>(actorHitResult.GetActor());
+			MaskActor= Cast<AMaskActor>(actorHitResult.GetActor());
+			HelmetActor= Cast<AHelmetActor>(actorHitResult.GetActor());
+			HeadsetActor= Cast<AHeadsetActor>(actorHitResult.GetActor());
+			ArmorActor= Cast<AArmorActor>(actorHitResult.GetActor());
 
-		MedKitActor= Cast<AMedKitActor>(actorHitResult.GetActor());
+			MedKitActor= Cast<AMedKitActor>(actorHitResult.GetActor());
 
-		StageBoard= Cast<AStageBoard>(actorHitResult.GetActor());
-		Stash=Cast<AStash>(actorHitResult.GetActor());
-		QuitGameActor=Cast<AQuitGameActor>(actorHitResult.GetActor());
+			StageBoard= Cast<AStageBoard>(actorHitResult.GetActor());
+			Stash=Cast<AStash>(actorHitResult.GetActor());
+			QuitGameActor=Cast<AQuitGameActor>(actorHitResult.GetActor());
 		
-		// 라이플 탐지
-		if(rifleActor)
-		{
-			// 1회 실행 불리언
-			if(TickOverlapBoolean==false)
+			// 라이플 탐지
+			if(rifleActor)
 			{
-				TickOverlapBoolean=true;
-				isCursorOnRifle=true;
-				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-				rifleActor->weaponMesh->SetRenderCustomDepth(true);
-				// Widget Switcher 이용한 무기 정보 위젯 스위칭
-				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(0);
-				// Radial Slider Value 초기화
-				infoWidgetUI->weaponHoldPercent=0;
-				// Weapon Info Widget 뷰포트에 배치
-				infoWidgetUI->AddToViewport();
-			}
-		}
-		else if(sniperActor)
-		{
-			// 1회 실행 불리언
-			if(TickOverlapBoolean==false)
-			{
-				TickOverlapBoolean=true;
-				isCursorOnSniper=true;
-				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-				sniperActor->weaponMesh->SetRenderCustomDepth(true);
-				// Widget Switcher 이용한 무기 정보 위젯 스위칭
-				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(1);
-				// Radial Slider Value 초기화
-				infoWidgetUI->weaponHoldPercent=0;
-				// Weapon Info Widget 뷰포트에 배치
-				infoWidgetUI->AddToViewport();
-			}
-		}
-		else if(pistolActor)
-		{
-			// 1회 실행 불리언
-			if(TickOverlapBoolean==false)
-			{
-				TickOverlapBoolean=true;
-				isCursorOnPistol=true;
-				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-				pistolActor->weaponMesh->SetRenderCustomDepth(true);
-				// Widget Switcher 이용한 무기 정보 위젯 스위칭
-				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(2);
-				// Radial Slider Value 초기화
-				infoWidgetUI->weaponHoldPercent=0;
-				// Weapon Info Widget 뷰포트에 배치
-				infoWidgetUI->AddToViewport();
-			}
-		}
-		else if(m249Actor)
-		{
-			// 1회 실행 불리언
-			if(TickOverlapBoolean==false)
-			{
-				TickOverlapBoolean=true;
-				isCursorOnM249=true;
-				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-				m249Actor->weaponMesh->SetRenderCustomDepth(true);
-				// Widget Switcher 이용한 무기 정보 위젯 스위칭
-				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(3);
-				// Radial Slider Value 초기화
-				infoWidgetUI->weaponHoldPercent=0;
-				// Weapon Info Widget 뷰포트에 배치
-				infoWidgetUI->AddToViewport();
-			}
-		}
-		else if(HackingConsole)
-		{
-			// 1회 실행 불리언
-			if(TickOverlapBoolean==false)
-			{
-				TickOverlapBoolean=true;
-				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-				HackingConsole->rewardMesh->SetRenderCustomDepth(true);
-				// Widget Switcher 이용한 무기 정보 위젯 스위칭
-				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(4);
-				// Radial Slider Value 초기화
-				infoWidgetUI->weaponHoldPercent=0;
-				// Weapon Info Widget 뷰포트에 배치
-				infoWidgetUI->AddToViewport();
-			}
-		}
-		else if(MissionChecker)
-		{
-			// 1회 실행 불리언
-			if(TickOverlapBoolean==false)
-			{
-				TickOverlapBoolean=true;
-				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-				MissionChecker->checkerMesh->SetRenderCustomDepth(true);
-				if(BossCount>=1&&GuardianCount>=7)
+				// 1회 실행 불리언
+				if(TickOverlapBoolean==false)
 				{
-					infoWidgetUI->MissionCheck1->SetText(FText::FromString("Success"));
+					TickOverlapBoolean=true;
+					isCursorOnRifle=true;
+					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+					rifleActor->weaponMesh->SetRenderCustomDepth(true);
+					// Widget Switcher 이용한 무기 정보 위젯 스위칭
+					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(0);
+					// Radial Slider Value 초기화
+					infoWidgetUI->weaponHoldPercent=0;
+					// Weapon Info Widget 뷰포트에 배치
+					infoWidgetUI->AddToViewport();
 				}
-				if(ConsoleCount>=5)
+			}
+			else if(sniperActor)
+			{
+				// 1회 실행 불리언
+				if(TickOverlapBoolean==false)
 				{
-					infoWidgetUI->MissionCheck2->SetText(FText::FromString("Success"));
+					TickOverlapBoolean=true;
+					isCursorOnSniper=true;
+					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+					sniperActor->weaponMesh->SetRenderCustomDepth(true);
+					// Widget Switcher 이용한 무기 정보 위젯 스위칭
+					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(1);
+					// Radial Slider Value 초기화
+					infoWidgetUI->weaponHoldPercent=0;
+					// Weapon Info Widget 뷰포트에 배치
+					infoWidgetUI->AddToViewport();
 				}
-				// Widget Switcher 이용한 무기 정보 위젯 스위칭
-				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(5);
-				// Radial Slider Value 초기화
-				infoWidgetUI->weaponHoldPercent=0;
-				// Weapon Info Widget 뷰포트에 배치
-				infoWidgetUI->AddToViewport();
 			}
-		}
-		else if(RifleMagActor)
-		{
-			// 1회 실행 불리언
-			if(TickOverlapBoolean==false)
+			else if(pistolActor)
 			{
-				TickOverlapBoolean=true;
-				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-				RifleMagActor->magMesh->SetRenderCustomDepth(true);
-				// Widget Switcher 이용한 무기 정보 위젯 스위칭
-				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(6);
-				// Radial Slider Value 초기화
-				infoWidgetUI->weaponHoldPercent=0;
-				// Weapon Info Widget 뷰포트에 배치
-				infoWidgetUI->AddToViewport();
-			}
-		}
-		else if(SniperMagActor)
-		{
-			// 1회 실행 불리언
-			if(TickOverlapBoolean==false)
-			{
-				TickOverlapBoolean=true;
-				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-				SniperMagActor->magMesh->SetRenderCustomDepth(true);
-				// Widget Switcher 이용한 무기 정보 위젯 스위칭
-				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(7);
-				// Radial Slider Value 초기화
-				infoWidgetUI->weaponHoldPercent=0;
-				// Weapon Info Widget 뷰포트에 배치
-				infoWidgetUI->AddToViewport();
-			}
-		}
-		else if(PistolMagActor)
-		{
-			// 1회 실행 불리언
-			if(TickOverlapBoolean==false)
-			{
-				TickOverlapBoolean=true;
-				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-				PistolMagActor->magMesh->SetRenderCustomDepth(true);
-				// Widget Switcher 이용한 무기 정보 위젯 스위칭
-				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(8);
-				// Radial Slider Value 초기화
-				infoWidgetUI->weaponHoldPercent=0;
-				// Weapon Info Widget 뷰포트에 배치
-				infoWidgetUI->AddToViewport();
-			}
-		}
-		else if(M249MagActor)
-		{
-			// 1회 실행 불리언
-			if(TickOverlapBoolean==false)
-			{
-				TickOverlapBoolean=true;
-				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-				M249MagActor->magMesh->SetRenderCustomDepth(true);
-				// Widget Switcher 이용한 무기 정보 위젯 스위칭
-				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(9);
-				// Radial Slider Value 초기화
-				infoWidgetUI->weaponHoldPercent=0;
-				// Weapon Info Widget 뷰포트에 배치
-				infoWidgetUI->AddToViewport();
-			}
-		}
-		else if(GoggleActor)
-		{
-			// 1회 실행 불리언
-			if(TickOverlapBoolean==false)
-			{
-				TickOverlapBoolean=true;
-				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-				GoggleActor->gearMesh->SetRenderCustomDepth(true);
-				// Widget Switcher 이용한 무기 정보 위젯 스위칭
-				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(10);
-				// Radial Slider Value 초기화
-				infoWidgetUI->weaponHoldPercent=0;
-				// Weapon Info Widget 뷰포트에 배치
-				infoWidgetUI->AddToViewport();
-			}
-		}
-		else if(HelmetActor)
-		{
-			// 1회 실행 불리언
-			if(TickOverlapBoolean==false)
-			{
-				TickOverlapBoolean=true;
-				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-				HelmetActor->gearMesh->SetRenderCustomDepth(true);
-				// Widget Switcher 이용한 무기 정보 위젯 스위칭
-				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(11);
-				// Radial Slider Value 초기화
-				infoWidgetUI->weaponHoldPercent=0;
-				// Weapon Info Widget 뷰포트에 배치
-				infoWidgetUI->AddToViewport();
-			}
-		}
-		else if(HeadsetActor)
-		{
-			// 1회 실행 불리언
-			if(TickOverlapBoolean==false)
-			{
-				TickOverlapBoolean=true;
-				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-				HeadsetActor->gearMesh->SetRenderCustomDepth(true);
-				// Widget Switcher 이용한 무기 정보 위젯 스위칭
-				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(12);
-				// Radial Slider Value 초기화
-				infoWidgetUI->weaponHoldPercent=0;
-				// Weapon Info Widget 뷰포트에 배치
-				infoWidgetUI->AddToViewport();
-			}
-		}
-		else if(MaskActor)
-		{
-			// 1회 실행 불리언
-			if(TickOverlapBoolean==false)
-			{
-				TickOverlapBoolean=true;
-				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-				MaskActor->gearMesh->SetRenderCustomDepth(true);
-				// Widget Switcher 이용한 무기 정보 위젯 스위칭
-				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(13);
-				// Radial Slider Value 초기화
-				infoWidgetUI->weaponHoldPercent=0;
-				// Weapon Info Widget 뷰포트에 배치
-				infoWidgetUI->AddToViewport();
-			}
-		}
-		else if(ArmorActor)
-		{
-			// 1회 실행 불리언
-			if(TickOverlapBoolean==false)
-			{
-				TickOverlapBoolean=true;
-				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-				ArmorActor->gearMesh->SetRenderCustomDepth(true);
-				// Widget Switcher 이용한 무기 정보 위젯 스위칭
-				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(14);
-				// Radial Slider Value 초기화
-				infoWidgetUI->weaponHoldPercent=0;
-				// Weapon Info Widget 뷰포트에 배치
-				infoWidgetUI->AddToViewport();
-			}
-		}
-		else if(MedKitActor)
-		{
-			// 1회 실행 불리언
-			if(TickOverlapBoolean==false)
-			{
-				TickOverlapBoolean=true;
-				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-				MedKitActor->consumeMesh->SetRenderCustomDepth(true);
-				// Widget Switcher 이용한 무기 정보 위젯 스위칭
-				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(15);
-				// Radial Slider Value 초기화
-				infoWidgetUI->weaponHoldPercent=0;
-				// Weapon Info Widget 뷰포트에 배치
-				infoWidgetUI->AddToViewport();
-			}
-		}
-		else if(StageBoard)
-		{
-			// 1회 실행 불리언
-			if(TickOverlapBoolean==false)
-			{
-				TickOverlapBoolean=true;
-				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-				StageBoard->boardMesh->SetRenderCustomDepth(true);
-				// Widget Switcher 이용한 무기 정보 위젯 스위칭
-				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(16);
-				// Radial Slider Value 초기화
-				infoWidgetUI->weaponHoldPercent=0;
-				// Weapon Info Widget 뷰포트에 배치
-				infoWidgetUI->AddToViewport();
-			}
-		}
-		else if(Stash)
-		{
-			// 1회 실행 불리언
-			if(TickOverlapBoolean==false)
-			{
-				TickOverlapBoolean=true;
-				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-				Stash->stashMesh->SetRenderCustomDepth(true);
-				// Widget Switcher 이용한 무기 정보 위젯 스위칭
-				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(17);
-				// Radial Slider Value 초기화
-				infoWidgetUI->weaponHoldPercent=0;
-				// Weapon Info Widget 뷰포트에 배치
-				infoWidgetUI->AddToViewport();
-			}
-		}
-		else if(QuitGameActor)
-		{
-			// 1회 실행 불리언
-			if(TickOverlapBoolean==false)
-			{
-				TickOverlapBoolean=true;
-				// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-				QuitGameActor->quitGameMesh->SetRenderCustomDepth(true);
-				// Widget Switcher 이용한 무기 정보 위젯 스위칭
-				infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(18);
-				// Radial Slider Value 초기화
-				infoWidgetUI->weaponHoldPercent=0;
-				// Weapon Info Widget 뷰포트에 배치
-				infoWidgetUI->AddToViewport();
-			}
-		}
-		else
-		{
-			// 1회 실행 불리언
-			if(TickOverlapBoolean==true)
-			{
-				TickOverlapBoolean=false;
-				// 무기 액터 정보 위젯 파괴
-				infoWidgetUI->RemoveFromParent();
-				// 중심점
-				FVector Center = this->GetActorLocation();
-				// 충돌체크(구충돌)
-				// 충돌한 물체를 기억할 배열
-				TArray<FOverlapResult> HitObj;;
-				FCollisionQueryParams params;
-				params.AddIgnoredActor(this);
-				// End Overlap 시점에 호출되는 Overlap Multi
-				bool bEndOverlapHit = GetWorld()->OverlapMultiByChannel(HitObj, Center, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(500), params);
-				if(bEndOverlapHit)
+				// 1회 실행 불리언
+				if(TickOverlapBoolean==false)
 				{
-					// 충돌 배열 순회
-					for (int i = 0; i < HitObj.Num(); ++i)
+					TickOverlapBoolean=true;
+					isCursorOnPistol=true;
+					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+					pistolActor->weaponMesh->SetRenderCustomDepth(true);
+					// Widget Switcher 이용한 무기 정보 위젯 스위칭
+					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(2);
+					// Radial Slider Value 초기화
+					infoWidgetUI->weaponHoldPercent=0;
+					// Weapon Info Widget 뷰포트에 배치
+					infoWidgetUI->AddToViewport();
+				}
+			}
+			else if(m249Actor)
+			{
+				// 1회 실행 불리언
+				if(TickOverlapBoolean==false)
+				{
+					TickOverlapBoolean=true;
+					isCursorOnM249=true;
+					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+					m249Actor->weaponMesh->SetRenderCustomDepth(true);
+					// Widget Switcher 이용한 무기 정보 위젯 스위칭
+					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(3);
+					// Radial Slider Value 초기화
+					infoWidgetUI->weaponHoldPercent=0;
+					// Weapon Info Widget 뷰포트에 배치
+					infoWidgetUI->AddToViewport();
+				}
+			}
+			else if(HackingConsole)
+			{
+				// 1회 실행 불리언
+				if(TickOverlapBoolean==false)
+				{
+					TickOverlapBoolean=true;
+					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+					HackingConsole->rewardMesh->SetRenderCustomDepth(true);
+					// Widget Switcher 이용한 무기 정보 위젯 스위칭
+					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(4);
+					// Radial Slider Value 초기화
+					infoWidgetUI->weaponHoldPercent=0;
+					// Weapon Info Widget 뷰포트에 배치
+					infoWidgetUI->AddToViewport();
+				}
+			}
+			else if(MissionChecker)
+			{
+				// 1회 실행 불리언
+				if(TickOverlapBoolean==false)
+				{
+					TickOverlapBoolean=true;
+					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+					MissionChecker->checkerMesh->SetRenderCustomDepth(true);
+					if(BossCount>=1&&GuardianCount>=7)
 					{
-						// 무기 액터 캐스팅
-						rifleActor = Cast<ARifleActor>(HitObj[i].GetActor());
-						sniperActor=Cast<ASniperActor>(HitObj[i].GetActor());
-						pistolActor=Cast<APistolActor>(HitObj[i].GetActor());
-						m249Actor=Cast<AM249Actor>(HitObj[i].GetActor());
-						HackingConsole=Cast<AHackingConsole>(HitObj[i].GetActor());
-						MissionChecker=Cast<AMissionChecker>(HitObj[i].GetActor());
-						RifleMagActor = Cast<ARifleMagActor>(HitObj[i].GetActor());
-						SniperMagActor = Cast<ASniperMagActor>(HitObj[i].GetActor());
-						PistolMagActor = Cast<APistolMagActor>(HitObj[i].GetActor());
-						M249MagActor = Cast<AM249MagActor>(HitObj[i].GetActor());
-						GoggleActor= Cast<AGoggleActor>(HitObj[i].GetActor());
-						MaskActor= Cast<AMaskActor>(HitObj[i].GetActor());
-						HelmetActor= Cast<AHelmetActor>(HitObj[i].GetActor());
-						HeadsetActor= Cast<AHeadsetActor>(HitObj[i].GetActor());
-						ArmorActor= Cast<AArmorActor>(HitObj[i].GetActor());
-						MedKitActor= Cast<AMedKitActor>(HitObj[i].GetActor());
-						StageBoard= Cast<AStageBoard>(HitObj[i].GetActor());
-						Stash= Cast<AStash>(HitObj[i].GetActor());
-						QuitGameActor= Cast<AQuitGameActor>(HitObj[i].GetActor());
+						infoWidgetUI->MissionCheck1->SetText(FText::FromString("Success"));
+					}
+					if(ConsoleCount>=5)
+					{
+						infoWidgetUI->MissionCheck2->SetText(FText::FromString("Success"));
+					}
+					// Widget Switcher 이용한 무기 정보 위젯 스위칭
+					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(5);
+					// Radial Slider Value 초기화
+					infoWidgetUI->weaponHoldPercent=0;
+					// Weapon Info Widget 뷰포트에 배치
+					infoWidgetUI->AddToViewport();
+				}
+			}
+			else if(RifleMagActor)
+			{
+				// 1회 실행 불리언
+				if(TickOverlapBoolean==false)
+				{
+					TickOverlapBoolean=true;
+					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+					RifleMagActor->magMesh->SetRenderCustomDepth(true);
+					// Widget Switcher 이용한 무기 정보 위젯 스위칭
+					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(6);
+					// Radial Slider Value 초기화
+					infoWidgetUI->weaponHoldPercent=0;
+					// Weapon Info Widget 뷰포트에 배치
+					infoWidgetUI->AddToViewport();
+				}
+			}
+			else if(SniperMagActor)
+			{
+				// 1회 실행 불리언
+				if(TickOverlapBoolean==false)
+				{
+					TickOverlapBoolean=true;
+					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+					SniperMagActor->magMesh->SetRenderCustomDepth(true);
+					// Widget Switcher 이용한 무기 정보 위젯 스위칭
+					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(7);
+					// Radial Slider Value 초기화
+					infoWidgetUI->weaponHoldPercent=0;
+					// Weapon Info Widget 뷰포트에 배치
+					infoWidgetUI->AddToViewport();
+				}
+			}
+			else if(PistolMagActor)
+			{
+				// 1회 실행 불리언
+				if(TickOverlapBoolean==false)
+				{
+					TickOverlapBoolean=true;
+					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+					PistolMagActor->magMesh->SetRenderCustomDepth(true);
+					// Widget Switcher 이용한 무기 정보 위젯 스위칭
+					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(8);
+					// Radial Slider Value 초기화
+					infoWidgetUI->weaponHoldPercent=0;
+					// Weapon Info Widget 뷰포트에 배치
+					infoWidgetUI->AddToViewport();
+				}
+			}
+			else if(M249MagActor)
+			{
+				// 1회 실행 불리언
+				if(TickOverlapBoolean==false)
+				{
+					TickOverlapBoolean=true;
+					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+					M249MagActor->magMesh->SetRenderCustomDepth(true);
+					// Widget Switcher 이용한 무기 정보 위젯 스위칭
+					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(9);
+					// Radial Slider Value 초기화
+					infoWidgetUI->weaponHoldPercent=0;
+					// Weapon Info Widget 뷰포트에 배치
+					infoWidgetUI->AddToViewport();
+				}
+			}
+			else if(GoggleActor)
+			{
+				// 1회 실행 불리언
+				if(TickOverlapBoolean==false)
+				{
+					TickOverlapBoolean=true;
+					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+					GoggleActor->gearMesh->SetRenderCustomDepth(true);
+					// Widget Switcher 이용한 무기 정보 위젯 스위칭
+					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(10);
+					// Radial Slider Value 초기화
+					infoWidgetUI->weaponHoldPercent=0;
+					// Weapon Info Widget 뷰포트에 배치
+					infoWidgetUI->AddToViewport();
+				}
+			}
+			else if(HelmetActor)
+			{
+				// 1회 실행 불리언
+				if(TickOverlapBoolean==false)
+				{
+					TickOverlapBoolean=true;
+					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+					HelmetActor->gearMesh->SetRenderCustomDepth(true);
+					// Widget Switcher 이용한 무기 정보 위젯 스위칭
+					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(11);
+					// Radial Slider Value 초기화
+					infoWidgetUI->weaponHoldPercent=0;
+					// Weapon Info Widget 뷰포트에 배치
+					infoWidgetUI->AddToViewport();
+				}
+			}
+			else if(HeadsetActor)
+			{
+				// 1회 실행 불리언
+				if(TickOverlapBoolean==false)
+				{
+					TickOverlapBoolean=true;
+					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+					HeadsetActor->gearMesh->SetRenderCustomDepth(true);
+					// Widget Switcher 이용한 무기 정보 위젯 스위칭
+					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(12);
+					// Radial Slider Value 초기화
+					infoWidgetUI->weaponHoldPercent=0;
+					// Weapon Info Widget 뷰포트에 배치
+					infoWidgetUI->AddToViewport();
+				}
+			}
+			else if(MaskActor)
+			{
+				// 1회 실행 불리언
+				if(TickOverlapBoolean==false)
+				{
+					TickOverlapBoolean=true;
+					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+					MaskActor->gearMesh->SetRenderCustomDepth(true);
+					// Widget Switcher 이용한 무기 정보 위젯 스위칭
+					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(13);
+					// Radial Slider Value 초기화
+					infoWidgetUI->weaponHoldPercent=0;
+					// Weapon Info Widget 뷰포트에 배치
+					infoWidgetUI->AddToViewport();
+				}
+			}
+			else if(ArmorActor)
+			{
+				// 1회 실행 불리언
+				if(TickOverlapBoolean==false)
+				{
+					TickOverlapBoolean=true;
+					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+					ArmorActor->gearMesh->SetRenderCustomDepth(true);
+					// Widget Switcher 이용한 무기 정보 위젯 스위칭
+					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(14);
+					// Radial Slider Value 초기화
+					infoWidgetUI->weaponHoldPercent=0;
+					// Weapon Info Widget 뷰포트에 배치
+					infoWidgetUI->AddToViewport();
+				}
+			}
+			else if(MedKitActor)
+			{
+				// 1회 실행 불리언
+				if(TickOverlapBoolean==false)
+				{
+					TickOverlapBoolean=true;
+					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+					MedKitActor->consumeMesh->SetRenderCustomDepth(true);
+					// Widget Switcher 이용한 무기 정보 위젯 스위칭
+					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(15);
+					// Radial Slider Value 초기화
+					infoWidgetUI->weaponHoldPercent=0;
+					// Weapon Info Widget 뷰포트에 배치
+					infoWidgetUI->AddToViewport();
+				}
+			}
+			else if(StageBoard)
+			{
+				// 1회 실행 불리언
+				if(TickOverlapBoolean==false)
+				{
+					TickOverlapBoolean=true;
+					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+					StageBoard->boardMesh->SetRenderCustomDepth(true);
+					// Widget Switcher 이용한 무기 정보 위젯 스위칭
+					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(16);
+					// Radial Slider Value 초기화
+					infoWidgetUI->weaponHoldPercent=0;
+					// Weapon Info Widget 뷰포트에 배치
+					infoWidgetUI->AddToViewport();
+				}
+			}
+			else if(Stash)
+			{
+				// 1회 실행 불리언
+				if(TickOverlapBoolean==false)
+				{
+					TickOverlapBoolean=true;
+					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+					Stash->stashMesh->SetRenderCustomDepth(true);
+					// Widget Switcher 이용한 무기 정보 위젯 스위칭
+					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(17);
+					// Radial Slider Value 초기화
+					infoWidgetUI->weaponHoldPercent=0;
+					// Weapon Info Widget 뷰포트에 배치
+					infoWidgetUI->AddToViewport();
+				}
+			}
+			else if(QuitGameActor)
+			{
+				// 1회 실행 불리언
+				if(TickOverlapBoolean==false)
+				{
+					TickOverlapBoolean=true;
+					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+					QuitGameActor->quitGameMesh->SetRenderCustomDepth(true);
+					// Widget Switcher 이용한 무기 정보 위젯 스위칭
+					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(18);
+					// Radial Slider Value 초기화
+					infoWidgetUI->weaponHoldPercent=0;
+					// Weapon Info Widget 뷰포트에 배치
+					infoWidgetUI->AddToViewport();
+				}
+			}
+			else
+			{
+				// 1회 실행 불리언
+				if(TickOverlapBoolean==true)
+				{
+					TickOverlapBoolean=false;
+					// 무기 액터 정보 위젯 파괴
+					infoWidgetUI->RemoveFromParent();
+					// 중심점
+					FVector Center = this->GetActorLocation();
+					// 충돌체크(구충돌)
+					// 충돌한 물체를 기억할 배열
+					TArray<FOverlapResult> HitObj;;
+					FCollisionQueryParams params;
+					params.AddIgnoredActor(this);
+					// End Overlap 시점에 호출되는 Overlap Multi
+					bool bEndOverlapHit = GetWorld()->OverlapMultiByChannel(HitObj, Center, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(500), params);
+					if(bEndOverlapHit)
+					{
+						// 충돌 배열 순회
+						for (int i = 0; i < HitObj.Num(); ++i)
+						{
+							// 무기 액터 캐스팅
+							rifleActor = Cast<ARifleActor>(HitObj[i].GetActor());
+							sniperActor=Cast<ASniperActor>(HitObj[i].GetActor());
+							pistolActor=Cast<APistolActor>(HitObj[i].GetActor());
+							m249Actor=Cast<AM249Actor>(HitObj[i].GetActor());
+							HackingConsole=Cast<AHackingConsole>(HitObj[i].GetActor());
+							MissionChecker=Cast<AMissionChecker>(HitObj[i].GetActor());
+							RifleMagActor = Cast<ARifleMagActor>(HitObj[i].GetActor());
+							SniperMagActor = Cast<ASniperMagActor>(HitObj[i].GetActor());
+							PistolMagActor = Cast<APistolMagActor>(HitObj[i].GetActor());
+							M249MagActor = Cast<AM249MagActor>(HitObj[i].GetActor());
+							GoggleActor= Cast<AGoggleActor>(HitObj[i].GetActor());
+							MaskActor= Cast<AMaskActor>(HitObj[i].GetActor());
+							HelmetActor= Cast<AHelmetActor>(HitObj[i].GetActor());
+							HeadsetActor= Cast<AHeadsetActor>(HitObj[i].GetActor());
+							ArmorActor= Cast<AArmorActor>(HitObj[i].GetActor());
+							MedKitActor= Cast<AMedKitActor>(HitObj[i].GetActor());
+							StageBoard= Cast<AStageBoard>(HitObj[i].GetActor());
+							Stash= Cast<AStash>(HitObj[i].GetActor());
+							QuitGameActor= Cast<AQuitGameActor>(HitObj[i].GetActor());
 						
-						if(rifleActor)
-						{
-							// Render Custom Depth 활용한 무기 액터 외곽선 해제
-							rifleActor->weaponMesh->SetRenderCustomDepth(false);
-						}
-						else if(sniperActor)
-						{
-							// Render Custom Depth 활용한 무기 액터 외곽선 해제
-							sniperActor->weaponMesh->SetRenderCustomDepth(false);
-						}
-						else if(pistolActor)
-						{
-							// Render Custom Depth 활용한 무기 액터 외곽선 해제
-							pistolActor->weaponMesh->SetRenderCustomDepth(false);
-						}
-						else if(m249Actor)
-						{
-							// Render Custom Depth 활용한 무기 액터 외곽선 해제
-							m249Actor->weaponMesh->SetRenderCustomDepth(false);
-						}
-						else if(HackingConsole)
-						{
-							// Render Custom Depth 활용한 무기 액터 외곽선 해제
-							HackingConsole->rewardMesh->SetRenderCustomDepth(false);
-						}
-						else if(MissionChecker)
-						{
-							// Render Custom Depth 활용한 무기 액터 외곽선 해제
-							MissionChecker->checkerMesh->SetRenderCustomDepth(false);
-						}
-						else if(RifleMagActor)
-						{
-							// Render Custom Depth 활용한 무기 액터 외곽선 해제
-							RifleMagActor->magMesh->SetRenderCustomDepth(false);
-						}
-						else if(SniperMagActor)
-						{
-							// Render Custom Depth 활용한 무기 액터 외곽선 해제
-							SniperMagActor->magMesh->SetRenderCustomDepth(false);
-						}
-						else if(PistolMagActor)
-						{
-							// Render Custom Depth 활용한 무기 액터 외곽선 해제
-							PistolMagActor->magMesh->SetRenderCustomDepth(false);
-						}
-						else if(M249MagActor)
-						{
-							// Render Custom Depth 활용한 무기 액터 외곽선 해제
-							M249MagActor->magMesh->SetRenderCustomDepth(false);
-						}
-						else if(GoggleActor)
-						{
-							// Render Custom Depth 활용한 무기 액터 외곽선 해제
-							GoggleActor->gearMesh->SetRenderCustomDepth(false);
-						}
-						else if(HelmetActor)
-						{
-							// Render Custom Depth 활용한 무기 액터 외곽선 해제
-							HelmetActor->gearMesh->SetRenderCustomDepth(false);
-						}
-						else if(HeadsetActor)
-						{
-							// Render Custom Depth 활용한 무기 액터 외곽선 해제
-							HeadsetActor->gearMesh->SetRenderCustomDepth(false);
-						}
-						else if(MaskActor)
-						{
-							// Render Custom Depth 활용한 무기 액터 외곽선 해제
-							MaskActor->gearMesh->SetRenderCustomDepth(false);
-						}
-						else if(ArmorActor)
-						{
-							// Render Custom Depth 활용한 무기 액터 외곽선 해제
-							ArmorActor->gearMesh->SetRenderCustomDepth(false);
-						}
-						else if(MedKitActor)
-						{
-							// Render Custom Depth 활용한 무기 액터 외곽선 해제
-							MedKitActor->consumeMesh->SetRenderCustomDepth(false);
-						}
-						else if(StageBoard)
-						{
-							// Render Custom Depth 활용한 무기 액터 외곽선 해제
-							StageBoard->boardMesh->SetRenderCustomDepth(false);
-						}
-						else if(Stash)
-						{
-							// Render Custom Depth 활용한 무기 액터 외곽선 해제
-							Stash->stashMesh->SetRenderCustomDepth(false);
-						}
-						else if(QuitGameActor)
-						{
-							// Render Custom Depth 활용한 무기 액터 외곽선 해제
-							QuitGameActor->quitGameMesh->SetRenderCustomDepth(false);
+							if(rifleActor)
+							{
+								// Render Custom Depth 활용한 무기 액터 외곽선 해제
+								rifleActor->weaponMesh->SetRenderCustomDepth(false);
+							}
+							else if(sniperActor)
+							{
+								// Render Custom Depth 활용한 무기 액터 외곽선 해제
+								sniperActor->weaponMesh->SetRenderCustomDepth(false);
+							}
+							else if(pistolActor)
+							{
+								// Render Custom Depth 활용한 무기 액터 외곽선 해제
+								pistolActor->weaponMesh->SetRenderCustomDepth(false);
+							}
+							else if(m249Actor)
+							{
+								// Render Custom Depth 활용한 무기 액터 외곽선 해제
+								m249Actor->weaponMesh->SetRenderCustomDepth(false);
+							}
+							else if(HackingConsole)
+							{
+								// Render Custom Depth 활용한 무기 액터 외곽선 해제
+								HackingConsole->rewardMesh->SetRenderCustomDepth(false);
+							}
+							else if(MissionChecker)
+							{
+								// Render Custom Depth 활용한 무기 액터 외곽선 해제
+								MissionChecker->checkerMesh->SetRenderCustomDepth(false);
+							}
+							else if(RifleMagActor)
+							{
+								// Render Custom Depth 활용한 무기 액터 외곽선 해제
+								RifleMagActor->magMesh->SetRenderCustomDepth(false);
+							}
+							else if(SniperMagActor)
+							{
+								// Render Custom Depth 활용한 무기 액터 외곽선 해제
+								SniperMagActor->magMesh->SetRenderCustomDepth(false);
+							}
+							else if(PistolMagActor)
+							{
+								// Render Custom Depth 활용한 무기 액터 외곽선 해제
+								PistolMagActor->magMesh->SetRenderCustomDepth(false);
+							}
+							else if(M249MagActor)
+							{
+								// Render Custom Depth 활용한 무기 액터 외곽선 해제
+								M249MagActor->magMesh->SetRenderCustomDepth(false);
+							}
+							else if(GoggleActor)
+							{
+								// Render Custom Depth 활용한 무기 액터 외곽선 해제
+								GoggleActor->gearMesh->SetRenderCustomDepth(false);
+							}
+							else if(HelmetActor)
+							{
+								// Render Custom Depth 활용한 무기 액터 외곽선 해제
+								HelmetActor->gearMesh->SetRenderCustomDepth(false);
+							}
+							else if(HeadsetActor)
+							{
+								// Render Custom Depth 활용한 무기 액터 외곽선 해제
+								HeadsetActor->gearMesh->SetRenderCustomDepth(false);
+							}
+							else if(MaskActor)
+							{
+								// Render Custom Depth 활용한 무기 액터 외곽선 해제
+								MaskActor->gearMesh->SetRenderCustomDepth(false);
+							}
+							else if(ArmorActor)
+							{
+								// Render Custom Depth 활용한 무기 액터 외곽선 해제
+								ArmorActor->gearMesh->SetRenderCustomDepth(false);
+							}
+							else if(MedKitActor)
+							{
+								// Render Custom Depth 활용한 무기 액터 외곽선 해제
+								MedKitActor->consumeMesh->SetRenderCustomDepth(false);
+							}
+							else if(StageBoard)
+							{
+								// Render Custom Depth 활용한 무기 액터 외곽선 해제
+								StageBoard->boardMesh->SetRenderCustomDepth(false);
+							}
+							else if(Stash)
+							{
+								// Render Custom Depth 활용한 무기 액터 외곽선 해제
+								Stash->stashMesh->SetRenderCustomDepth(false);
+							}
+							else if(QuitGameActor)
+							{
+								// Render Custom Depth 활용한 무기 액터 외곽선 해제
+								QuitGameActor->quitGameMesh->SetRenderCustomDepth(false);
+							}
 						}
 					}
 				}
 			}
 		}
-	}
-	else
-	{
+		else
+		{
 
+		}
 	}
-
 }
 
 void APlayerCharacter::SetBossHPWidget(AEnemy* enemy)
@@ -1818,8 +1948,8 @@ void APlayerCharacter::ChangeWeapon()
 				infoWidgetUI->weaponHoldPercent=0;
 				UGameplayStatics::PlaySound2D(GetWorld(), levelSelectionSound);
 				infoWidgetUI->RemoveFromParent();
-				UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(pc, levelSelectionUI);
-				pc->SetShowMouseCursor(true);
+				UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(PC, levelSelectionUI);
+				PC->SetShowMouseCursor(true);
 				levelSelectionUI->AddToViewport();						
 			}
 		}
@@ -1829,12 +1959,12 @@ void APlayerCharacter::ChangeWeapon()
 			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 			{
 				infoWidgetUI->weaponHoldPercent=0;
-				if(bStashWidgetOn==false&&pc)
+				if(bStashWidgetOn==false&&PC)
 				{
 					bStashWidgetOn=true;
 					UGameplayStatics::PlaySound2D(GetWorld(), tabSound);
 					infoWidgetUI->RemoveFromParent();
-					pc->SetShowMouseCursor(true);
+					PC->SetShowMouseCursor(true);
 					StashWidgetOnViewport();
 				}					
 			}
@@ -1845,12 +1975,12 @@ void APlayerCharacter::ChangeWeapon()
 			if(quitWidgetUI&&infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 			{
 				infoWidgetUI->weaponHoldPercent=0;
-				if(!quitWidgetUI->IsInViewport()&&pc)
+				if(!quitWidgetUI->IsInViewport()&&PC)
 				{
 					UGameplayStatics::PlaySound2D(GetWorld(), quitGameSound);
 					infoWidgetUI->RemoveFromParent();
-					UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(pc, quitWidgetUI);
-					pc->SetShowMouseCursor(true);
+					UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(PC, quitWidgetUI);
+					PC->SetShowMouseCursor(true);
 					quitWidgetUI->AddToViewport();
 				}
 			}
@@ -1867,120 +1997,40 @@ void APlayerCharacter::Reload()
 void APlayerCharacter::ServerRPCReload_Implementation()
 {
 	MulticastRPCReload();
-	/*for (APlayerController* PlayerController : TActorRange<APlayerController>(GetWorld()))
-	{
-		if (PlayerController && GetController() != PlayerController)
-		{
-			if(!PlayerController->IsLocalController())
-			{
-				APlayerCharacter* OtherPlayer = Cast<APlayerCharacter>(PlayerController->GetPawn());
-				if (OtherPlayer)
-				{
-					OtherPlayer->ClientRPCReloadAnimation(this);
-				}
-			}
-		}
-	}*/
 }
+	
 
-/*
-void APlayerCharacter::ClientRPCReloadAnimation_Implementation(APlayerCharacter* CharacterToPlay)
-{
-	if (CharacterToPlay)
-	{
-		EC_LOG(LogTemp, Warning, TEXT("%s"), TEXT("Begin"))
-		CharacterToPlay->PlayReloadAnimation();
-	}
-}
-*/
 
-/*void APlayerCharacter::PlayReloadAnimation()
-{
+void APlayerCharacter::MulticastRPCReload_Implementation()
+{			
 	bool animPlay = animInstance->IsAnyMontagePlaying();
 	if(animPlay==false)
 	{
 		if(weaponArray[0]==true&&curRifleAmmo<40+SetRifleAdditionalMagazine()&&maxRifleAmmo>0)
 		{
+			crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
+			UGameplayStatics::PlaySound2D(GetWorld(), RifleReloadSound);
 			PlayAnimMontage(reloadMontage, 1, FName("Reload"));
 		}
 		else if(weaponArray[1]==true&&curSniperAmmo<5+SetSniperAdditionalMagazine()&&maxSniperAmmo>0)
 		{
+			crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
+			UGameplayStatics::PlaySound2D(GetWorld(), SniperReloadSound);
 			PlayAnimMontage(reloadMontage, 1, FName("Reload"));
 		}
 		else if(weaponArray[2]==true&&curPistolAmmo<8+SetPistolAdditionalMagazine()&&maxPistolAmmo>0)
 		{
+			crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
+			UGameplayStatics::PlaySound2D(GetWorld(), PistolReloadSound);
 			PlayAnimMontage(reloadMontage, 1, FName("PistolReload"));
 		}
 		else if(weaponArray[3]==true&&curM249Ammo<100+SetM249AdditionalMagazine()&&maxM249Ammo>0)
 		{
+			crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
+			UGameplayStatics::PlaySound2D(GetWorld(), M249ReloadSound);
 			PlayAnimMontage(reloadMontage, 1, FName("M249Reload"));
-		}
-	}
-}*/
-
-
-void APlayerCharacter::MulticastRPCReload_Implementation()
-{
-	if(HasAuthority())
-	{		
-		bool animPlay = animInstance->IsAnyMontagePlaying();
-		if(animPlay==false)
-		{
-			EC_LOG(LogTemp, Warning, TEXT("%s"), TEXT("Hasauthority"))
-			if(weaponArray[0]==true&&curRifleAmmo<40+SetRifleAdditionalMagazine()&&maxRifleAmmo>0)
-			{
-				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
-				UGameplayStatics::PlaySound2D(GetWorld(), RifleReloadSound);
-				PlayAnimMontage(reloadMontage, 1, FName("Reload"));
-			}
-			else if(weaponArray[1]==true&&curSniperAmmo<5+SetSniperAdditionalMagazine()&&maxSniperAmmo>0)
-			{
-				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
-				UGameplayStatics::PlaySound2D(GetWorld(), SniperReloadSound);
-				PlayAnimMontage(reloadMontage, 1, FName("Reload"));
-			}
-			else if(weaponArray[2]==true&&curPistolAmmo<8+SetPistolAdditionalMagazine()&&maxPistolAmmo>0)
-			{
-				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
-				UGameplayStatics::PlaySound2D(GetWorld(), PistolReloadSound);
-				PlayAnimMontage(reloadMontage, 1, FName("PistolReload"));
-			}
-			else if(weaponArray[3]==true&&curM249Ammo<100+SetM249AdditionalMagazine()&&maxM249Ammo>0)
-			{
-				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
-				UGameplayStatics::PlaySound2D(GetWorld(), M249ReloadSound);
-				PlayAnimMontage(reloadMontage, 1, FName("M249Reload"));
-			}
-		}
+		}		
 	}	
-	else
-	{		
-		bool animPlay = animInstance->IsAnyMontagePlaying();
-		if(animPlay==false)
-		{
-			EC_LOG(LogTemp, Warning, TEXT("%s"), TEXT("else"))
-			if(weaponArray[0]==true&&curRifleAmmo<40+SetRifleAdditionalMagazine()&&maxRifleAmmo>0)
-			{
-				UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleReloadSound, GetActorLocation());
-				PlayAnimMontage(reloadMontage, 1, FName("Reload"));
-			}
-			else if(weaponArray[1]==true&&curSniperAmmo<5+SetSniperAdditionalMagazine()&&maxSniperAmmo>0)
-			{
-				UGameplayStatics::PlaySoundAtLocation(GetWorld(), SniperReloadSound, GetActorLocation());
-				PlayAnimMontage(reloadMontage, 1, FName("Reload"));
-			}
-			else if(weaponArray[2]==true&&curPistolAmmo<8+SetPistolAdditionalMagazine()&&maxPistolAmmo>0)
-			{
-				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PistolReloadSound, GetActorLocation());
-				PlayAnimMontage(reloadMontage, 1, FName("PistolReload"));
-			}
-			else if(weaponArray[3]==true&&curM249Ammo<100+SetM249AdditionalMagazine()&&maxM249Ammo>0)
-			{
-				UGameplayStatics::PlaySoundAtLocation(GetWorld(), M249ReloadSound, GetActorLocation());
-				PlayAnimMontage(reloadMontage, 1, FName("M249Reload"));
-			}
-		}
-	}
 }
 	
 
@@ -2115,35 +2165,16 @@ void APlayerCharacter::Damaged(int damage)
 {
 	if(HasAuthority())
 	{
-		if(Stat->GetCurrentHp()<=damage)
-		{
-			Stat->SetHp(0);
-			PlayerDeath();
-		}
-		else
-		{
-			APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
-			// 카메라 페이드 연출
-			playerCam->StartCameraFade(0.3, 0, 2.0, FLinearColor::Red, false, true);
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), damagedSound, GetActorLocation());
-			Stat->ApplyDamage(damage);
-			const APlayerController* controller = GetWorld()->GetFirstPlayerController();
-			controller->PlayerCameraManager->StartCameraShake(PlayerDamagedShake);
-			UpdateTabWidget();
-		}
+		Stat->ApplyDamage(damage);			
 	}
-	else
-	{
-		if(Stat->GetCurrentHp()<=damage)
-		{
-			
-		}
-		else
-		{
-			StopAnimMontage();
-			PlayAnimMontage(zoomingMontage, 1, FName("Damaged"));
-		}
-	}
+	APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+	// 카메라 페이드 연출
+	playerCam->StartCameraFade(0.3, 0, 2.0, FLinearColor::Red, false, true);
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), damagedSound, GetActorLocation());
+	PC->PlayerCameraManager->StartCameraShake(PlayerDamagedShake);
+	UpdateTabWidget();
+	StopAnimMontage();
+	PlayAnimMontage(zoomingMontage, 1, FName("Damaged"));
 }
 
 
@@ -2246,14 +2277,8 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 
 void APlayerCharacter::Fire()
-{
-	// 사격 가능 상태가 아니거나, 뛰고 있거나, 위젯이 켜져 있거나, 엔딩 연출 중이라면 리턴
-	if(!CanShoot||isRunning||gi->IsWidgetOn||bEnding)
-	{
-		return;
-	}
+{	
 	ServerRPCFire();
-	OnRep_CanShoot();
 }
 
 bool APlayerCharacter::ServerRPCFire_Validate()
@@ -2262,62 +2287,26 @@ bool APlayerCharacter::ServerRPCFire_Validate()
 }
 
 void APlayerCharacter::ServerRPCFire_Implementation()
-{
-	MulticastRPCFire();
+{	
+	MulticastRPCFire();	
 }
 
 void APlayerCharacter::MulticastRPCFire_Implementation()
 {
-	//Server
-	if(HasAuthority())
+	// 사격 가능 상태가 아니거나, 뛰고 있거나, 위젯이 켜져 있거나, 엔딩 연출 중이라면 리턴
+	if(!CanShoot||isRunning||gi->IsWidgetOn||bEnding)
 	{
-		// 라이플을 들고 있는 상태라면
-		if(weaponArray[0]==true)
-		{
-			ProcessRifleFire();
-		}
-		//  스나이퍼를 들고 있는 상태라면
-		else if(weaponArray[1]==true)
-		{
-			ProcessSniperFire();
-		}
-		// 권총을 들고 있는 상태라면
-		else if(weaponArray[2]==true)
-		{
-			ProcessPistolFire();
-		}
-		// M249를 들고 있는 상태라면
-		if(weaponArray[3]==true)
-		{
-			ProcessM249Fire();
-		}
+		return;
 	}
-	//Client
-	else
-	{		
-		if(IsLocallyControlled())
-		{			
-			// 라이플을 들고 있는 상태라면
-			if(weaponArray[0]==true)
-			{
-				ProcessRifleFire();
-			}
-			//  스나이퍼를 들고 있는 상태라면
-			else if(weaponArray[1]==true)
-			{
-				ProcessSniperFire();
-			}
-			// 권총을 들고 있는 상태라면
-			else if(weaponArray[2]==true)
-			{
-				ProcessPistolFire();
-			}
-			// M249를 들고 있는 상태라면
-			if(weaponArray[3]==true)
-			{
-				ProcessM249Fire();
-			}
-		}		
+	
+	if(weaponArray[0]==true)
+	{
+		CanShoot=false;
+		ProcessRifleFire();		
+		GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
+		{
+			CanShoot=true;
+		}), 1/(BulletsPerSecRifle*FireRateMultiplier()), false);
 	}
 }
 
@@ -2327,9 +2316,9 @@ void APlayerCharacter::FireRelease()
 }
 
 void APlayerCharacter::ProcessRifleFire()
-{
+{	
 	if(curRifleAmmo>0)
-		{
+	{
 			// Clamp를 통한 탄약 수 차감
 			curRifleAmmo = FMath::Clamp(curRifleAmmo-1, 0, 40+SetRifleAdditionalMagazine());
 			UE_LOG(LogTemp, Warning, TEXT("Cur Rifle Bullet : %d"), curRifleAmmo)
@@ -2348,7 +2337,9 @@ void APlayerCharacter::ProcessRifleFire()
 			ObjectTypes.Add(Destructible);
 			TArray<AActor*> ActorsToIgnore;
 			ActorsToIgnore.Add(this); // LineTrace에서 제외할 대상
-			FHitResult rifleHitResult;
+			UGameplayStatics::PlaySound2D(GetWorld(), RifleFireSound);
+			// 사격 카메라 셰이크 실행
+			PC->PlayerCameraManager->StartCameraShake(rifleFireShake);
 			FTransform particleTrans = rifleComp->GetSocketTransform(FName("RifleFirePosition"));
 			particleTrans.SetScale3D(FVector(0.7));
 			FVector particleLoc2 = rifleComp->GetSocketLocation(FName("RifleFirePosition"));
@@ -2356,6 +2347,8 @@ void APlayerCharacter::ProcessRifleFire()
 			FTransform particleTrans2=UKismetMathLibrary::MakeTransform(particleLoc2, particleRot2, FVector(0.4));
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle, particleTrans);
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle2, particleTrans2);
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleFireSound, GetActorLocation());
+
 			//FActorSpawnParameters param;
 			//param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 			//FTransform spawnTrans = rifleComp->GetSocketTransform(FName("BulletShell"));
@@ -2363,10 +2356,7 @@ void APlayerCharacter::ProcessRifleFire()
 			//bulletShell->SetLifeSpan(5.0f);
 			//UE::Math::TVector<double> bulSoundLoc = GetActorLocation()*FVector(0, 0, -80);
 			//UGameplayStatics::SpawnSoundAtLocation(GetWorld(), RifleBulletShellDropSound, bulSoundLoc, FRotator::ZeroRotator, 0.4, 1, 0);
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleFireSound, GetActorLocation());
-			APlayerController* controller = GetWorld()->GetFirstPlayerController();
-			// 사격 카메라 셰이크 실행
-			controller->PlayerCameraManager->StartCameraShake(rifleFireShake);
+			
 			// Perform Linetrace
 			bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),startLoc, EndLoc, ObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, rifleHitResult, true);
 			if(bHit)
@@ -2642,24 +2632,14 @@ void APlayerCharacter::ProcessRifleFire()
 				double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.3 * RecoilRateMultiplier(), 0.3 * RecoilRateMultiplier());
 				AddControllerPitchInput(randF);
 				AddControllerYawInput(randF2);						
-				CanShoot=false;
-				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
-				{
-					CanShoot=true;
-				}), 1/(BulletsPerSecRifle*FireRateMultiplier()), false);
 			}
 			else
 			{
 				double randF = UKismetMathLibrary::RandomFloatInRange(-0.3 * RecoilRateMultiplier(), -0.5 * RecoilRateMultiplier());
 				double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.3 * RecoilRateMultiplier(), 0.3 * RecoilRateMultiplier());
 				AddControllerPitchInput(randF);
-				AddControllerYawInput(randF2);
-				CanShoot=false;				
-				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
-				{
-					CanShoot=true;
-				}), 1/(BulletsPerSecRifle*FireRateMultiplier()), false);
-			}
+				AddControllerYawInput(randF2);				
+			}		
 		}
 		else
 		{
@@ -2943,14 +2923,12 @@ void APlayerCharacter::ProcessSniperFire()
 				{
 					UE::Math::TVector<double> particleTrans = FollowCamera->GetComponentLocation() + FollowCamera->GetUpVector() * -70.0f;
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperFireParticle, particleTrans);
-					APlayerController* controller = GetWorld()->GetFirstPlayerController();
-					controller->PlayerCameraManager->StartCameraShake(sniperCameraShake);
+					PC->PlayerCameraManager->StartCameraShake(sniperCameraShake);
 				}
 				else
 				{
 					PlayAnimMontage(zoomingMontage, 1, FName("RifleFire"));
-					APlayerController* controller = GetWorld()->GetFirstPlayerController();
-					controller->PlayerCameraManager->StartCameraShake(sniperFireShake);
+					PC->PlayerCameraManager->StartCameraShake(sniperFireShake);
 					FTransform particleTrans = sniperComp->GetSocketTransform(FName("SniperFirePosition"));
 					particleTrans.SetScale3D(FVector(0.7));
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperFireParticle, particleTrans);
@@ -3005,8 +2983,7 @@ void APlayerCharacter::ProcessPistolFire()
 			// Clamp를 통한 탄약 수 차감
 			curPistolAmmo = FMath::Clamp(curPistolAmmo-1, 0, 8+SetPistolAdditionalMagazine());
 			UE_LOG(LogTemp, Warning, TEXT("Cur Pistol Bullet : %d"), curPistolAmmo)
-			APlayerController* controller = GetWorld()->GetFirstPlayerController();
-			controller->PlayerCameraManager->StartCameraShake(pistolFireShake);
+			PC->PlayerCameraManager->StartCameraShake(pistolFireShake);
 			if(isZooming)
 			{
 				PlayAnimMontage(zoomingMontage, 1, FName("PistolZoomFire"));
@@ -3363,8 +3340,7 @@ void APlayerCharacter::ProcessM249Fire()
 			UE::Math::TVector<double> bulSoundLoc = GetActorLocation() * FVector(0, 0, -80);
 			UGameplayStatics::SpawnSoundAtLocation(GetWorld(), RifleBulletShellDropSound, bulSoundLoc, FRotator::ZeroRotator, 0.4, 1, 0);
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), M249FireSound, GetActorLocation());
-			APlayerController* controller = GetWorld()->GetFirstPlayerController();
-			controller->PlayerCameraManager->StartCameraShake(rifleFireShake);
+			PC->PlayerCameraManager->StartCameraShake(rifleFireShake);
 			PlayAnimMontage(zoomingMontage, 1, FName("RifleFire"));
 			bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),startLoc, EndLoc, ObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, M249HitResult, true);
 			if(bHit)
@@ -3698,57 +3674,58 @@ float APlayerCharacter::RecoilRateMultiplier()
 
 void APlayerCharacter::PlayerDeath()
 {
-	if(isDead==false)
+	if(HasAuthority())
 	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), deathSound, GetActorLocation());
-		// 사망지점 전역변수에 캐싱
-		DeathPosition=GetActorLocation();
-		APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
-		// 카메라 페이드 연출
-		playerCam->StartCameraFade(0, 1, 5.0, FLinearColor::Black, false, true);
-		// 몽타주 재생 중단
-		StopAnimMontage();
-		// 인풋 비활성화
-		DisableInput(GetWorld()->GetFirstPlayerController());
-		// 사망 몽타주 재생
-		PlayAnimMontage(zoomingMontage, 1, FName("Death"));
-		infoWidgetUI->RemoveFromParent();
-		informationUI->RemoveFromParent();
-		crosshairUI->RemoveFromParent();
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerDeathEmitter, GetActorLocation());
-		FTimerHandle endHandle;
-		// 7초 뒤 호출되는 함수 타이머
-		GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()->void
-		{
-			// 사망 변수 활성화
-			bPlayerDeath=true;
-			AEclipsePlayerController* PC = Cast<AEclipsePlayerController>(GetController());
-			// 현재 주요 변수 값들을 GameInstance의 변수에 캐싱
-			CachingValues();
-			PouchCaching();
-			StashCaching();
-			GearCaching();
-			MagCaching();
-			ClearInventoryCache();
-			// 자신 제거
-			this->Destroy();
-			// 컨트롤러의 리스폰 함수 호출
-			PC->Respawn(this);	
-		}), 7.0f, false);
-		FTimerHandle possesHandle;
-		// 0.4초 뒤 호출되는 함수 타이머
-		GetWorld()->GetTimerManager().SetTimer(possesHandle, FTimerDelegate::CreateLambda([this]()->void
+		if(isDead==false)
+		{			
+			// 사망지점 전역변수에 캐싱
+			DeathPosition=GetActorLocation();				
+			// 인풋 비활성화
+			DisableInput(PC);
+			infoWidgetUI->RemoveFromParent();
+			informationUI->RemoveFromParent();
+			crosshairUI->RemoveFromParent();			
+			FTimerHandle endHandle;
+			// 7초 뒤 호출되는 함수 타이머
+			GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()->void
 			{
-				AEclipsePlayerController* PC = Cast<AEclipsePlayerController>(GetController());
-				if (PC != nullptr)
+				// 사망 변수 활성화
+				bPlayerDeath=true;
+				// 현재 주요 변수 값들을 GameInstance의 변수에 캐싱
+				CachingValues();
+				PouchCaching();
+				StashCaching();
+				GearCaching();
+				MagCaching();
+				ClearInventoryCache();
+				// 자신 제거
+				this->Destroy();
+				// 컨트롤러의 리스폰 함수 호출
+				PC->Respawn(this);	
+			}), 7.0f, false);
+			FTimerHandle possesHandle;
+			// 0.4초 뒤 호출되는 함수 타이머
+			GetWorld()->GetTimerManager().SetTimer(possesHandle, FTimerDelegate::CreateLambda([this]()->void
 				{
-					// 리스폰 된 플레이어에 새롭게 빙의
-					PC->Possess(this);
-				}
-			}), 0.4f, false);
+					if (PC != nullptr)
+					{
+						// 리스폰 된 플레이어에 새롭게 빙의
+						PC->Possess(this);
+					}
+				}), 0.4f, false);
 		
-		isDead=true;
+			isDead=true;
+		}
 	}
+	APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+	// 카메라 페이드 연출
+	playerCam->StartCameraFade(0, 1, 5.0, FLinearColor::Black, false, true);
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerDeathEmitter, GetActorLocation());
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), deathSound, GetActorLocation());
+	// 몽타주 재생 중단
+	StopAnimMontage();
+	// 사망 몽타주 재생
+	PlayAnimMontage(zoomingMontage, 1, FName("Death"));
 }
 
 void APlayerCharacter::EquipHelmet(bool SoundBool)
@@ -3852,5 +3829,6 @@ void APlayerCharacter::UnEquipArmor(bool SoundBool)
 
 void APlayerCharacter::OnRep_CanShoot()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Can Shoot"))
+	
 }
+

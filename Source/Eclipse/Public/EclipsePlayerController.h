@@ -17,8 +17,6 @@ class ECLIPSE_API AEclipsePlayerController : public APlayerController
 	GENERATED_BODY()
 
 public:
-	virtual void BeginPlay() override;
-	virtual void PostNetInit() override;
 	
 	UPROPERTY()
 	TArray<class AActor*> outActors;
@@ -26,7 +24,7 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<APlayerStart> playerStartFactory;
 	
-	UFUNCTION()
-	void Respawn(APlayerCharacter* me);
+	 UFUNCTION()
+	 void Respawn(APlayerCharacter* me);
 
 };

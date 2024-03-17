@@ -16,6 +16,9 @@ AGuardianProjectile::AGuardianProjectile()
 	rocketMesh=CreateDefaultSubobject<UStaticMeshComponent>(TEXT("rocketMesh"));
 	SetRootComponent(rocketMesh);
 	rocketMesh->SetGenerateOverlapEvents(true);
+
+	bReplicates=true;
+	SetReplicatingMovement(true);
 }
 
 

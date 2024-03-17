@@ -39,7 +39,8 @@ AEnemy::AEnemy()
 	enemyFSM=CreateDefaultSubobject<UEnemyFSM>(TEXT("enemyFSM"));
 
 	PawnSensingComponent=CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComponent"));
-	
+
+	bReplicates=true;
 }
 
 // Called when the game starts or when spawned

@@ -151,24 +151,28 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//Add Input Mapping Context
-	if (AEclipsePlayerController* PlayerController = Cast<AEclipsePlayerController>(Controller))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
-		}
-	}
-
+	this->SetActorEnableCollision(true);
+	
 	// Casting
 	UGameInstance* GI = GetGameInstance();
 	PC = Cast<AEclipsePlayerController>(GI->GetFirstLocalPlayerController());
 	gm=Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());
 	gi=Cast<UEclipseGameInstance>(GetWorld()->GetGameInstance());
 	animInstance=Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+	
+	//Add Input Mapping Context
+	if (PC)
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(DefaultMappingContext, 0);
+		}
+	}
+
 
 	//pc->SetAudioListenerOverride(GetMesh(), FVector::ZeroVector, FRotator::ZeroRotator);
 
+	isDead=false;
 	bPlayerDeath=false;
 
 	// Timeline Binding
@@ -189,8 +193,9 @@ void APlayerCharacter::BeginPlay()
 	damageWidgetUI = CreateWidget<UDamageWidget>(GetWorld(), damageWidgetUIFactory);
 	bossHPUI=CreateWidget<UBossHPWidget>(GetWorld(), bossHPWidgetFactory);
 	informationUI = CreateWidget<UInformationWidget>(GetWorld(), informationWidgetFactory);
-	levelSelectionUI = CreateWidget<ULevelSelection>(GetWorld(), levelSelectionWidgetFactory);
-	
+	levelSelectionUI = CreateWidget<ULevelSelection>(GetWorld(), levelSelectionWidgetFactory);	
+
+
 	if(!crosshairUI->IsInViewport())
 	{
 		crosshairUI->AddToViewport();
@@ -211,6 +216,9 @@ void APlayerCharacter::BeginPlay()
 				informationUI->AddToViewport();
 			}
 		}), 0.5, false);
+		APlayerCameraManager* const cameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0));
+		cameraManager->StopCameraFade();
+		cameraManager->StartCameraFade(1.0, 0, 8.0, FColor::Black, false, true);
 	}
 
 	// Set Anim Montage
@@ -221,11 +229,7 @@ void APlayerCharacter::BeginPlay()
 	if(PlayerController)
 	{
 		PlayerController->EnableInput(PlayerController);		
-	}
-
-	APlayerCameraManager* const cameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0));
-	cameraManager->StopCameraFade();
-	cameraManager->StartCameraFade(1.0, 0, 8.0, FColor::Black, false, true);
+	}	
 
 	// Weapon Visibility Settings
 	rifleComp->SetVisibility(true);
@@ -249,6 +253,8 @@ void APlayerCharacter::BeginPlay()
 	ApplyMagCache();
 	// Update Tab Widget Before Widget Constructor
 	UpdateTabWidget();
+
+	SetActorEnableCollision(true);
 }
 
 // Called every frame
@@ -612,7 +618,7 @@ bool APlayerCharacter::SwapFirstWeaponRPCServer_Validate()
 
 void APlayerCharacter::SwapFirstWeaponRPCMulticast_Implementation()
 {
-		if(curWeaponSlotNumber==1||isSniperZooming)
+	if(curWeaponSlotNumber==1||isSniperZooming)
 	{
 		return;
 	}
@@ -648,7 +654,10 @@ void APlayerCharacter::SwapFirstWeaponRPCMulticast_Implementation()
 		weaponArray[2]=false;
 		weaponArray[3]=false;
 
-		informationUI->PlayAnimation(informationUI->WeaponSwap);
+		if(IsLocallyControlled())
+		{
+			informationUI->PlayAnimation(informationUI->WeaponSwap);
+		}
 		informationUI->UpdateAmmo_Secondary();
 
 
@@ -673,7 +682,10 @@ void APlayerCharacter::SwapFirstWeaponRPCMulticast_Implementation()
 		weaponArray[2]=false;
 		weaponArray[3]=false;
 
-		informationUI->PlayAnimation(informationUI->WeaponSwap);
+		if(IsLocallyControlled())
+		{
+			informationUI->PlayAnimation(informationUI->WeaponSwap);
+		}
 		informationUI->UpdateAmmo_Secondary();
 
 	}
@@ -697,7 +709,10 @@ void APlayerCharacter::SwapFirstWeaponRPCMulticast_Implementation()
 		weaponArray[2]=true;
 		weaponArray[3]=false;
 
-		informationUI->PlayAnimation(informationUI->WeaponSwap);
+		if(IsLocallyControlled())
+		{
+			informationUI->PlayAnimation(informationUI->WeaponSwap);
+		}
 		informationUI->UpdateAmmo_Secondary();
 
 	}
@@ -721,7 +736,10 @@ void APlayerCharacter::SwapFirstWeaponRPCMulticast_Implementation()
 		weaponArray[2]=false;
 		weaponArray[3]=true;
 
-		informationUI->PlayAnimation(informationUI->WeaponSwap);
+		if(IsLocallyControlled())
+		{
+			informationUI->PlayAnimation(informationUI->WeaponSwap);
+		}
 		informationUI->UpdateAmmo_Secondary();
 
 	}
@@ -744,7 +762,7 @@ bool APlayerCharacter::SwapSecondWeaponRPCServer_Validate()
 
 void APlayerCharacter::SwapSecondWeaponRPCMulticast_Implementation()
 {
-		if(curWeaponSlotNumber==2||isSniperZooming)
+	if(curWeaponSlotNumber==2||isSniperZooming)
 	{
 		return;
 	}
@@ -780,7 +798,10 @@ void APlayerCharacter::SwapSecondWeaponRPCMulticast_Implementation()
 		weaponArray[2]=false;
 		weaponArray[3]=false;
 
-		informationUI->PlayAnimation(informationUI->WeaponSwap);
+		if(IsLocallyControlled())
+		{
+			informationUI->PlayAnimation(informationUI->WeaponSwap);
+		}
 		informationUI->UpdateAmmo_Secondary();
 
 
@@ -805,7 +826,10 @@ void APlayerCharacter::SwapSecondWeaponRPCMulticast_Implementation()
 		weaponArray[2]=false;
 		weaponArray[3]=false;
 
-		informationUI->PlayAnimation(informationUI->WeaponSwap);
+		if(IsLocallyControlled())
+		{
+			informationUI->PlayAnimation(informationUI->WeaponSwap);
+		}
 		informationUI->UpdateAmmo_Secondary();
 
 
@@ -830,7 +854,10 @@ void APlayerCharacter::SwapSecondWeaponRPCMulticast_Implementation()
 		weaponArray[2]=true;
 		weaponArray[3]=false;
 
-		informationUI->PlayAnimation(informationUI->WeaponSwap);
+		if(IsLocallyControlled())
+		{
+			informationUI->PlayAnimation(informationUI->WeaponSwap);
+		}
 		informationUI->UpdateAmmo_Secondary();
 
 	}
@@ -854,16 +881,20 @@ void APlayerCharacter::SwapSecondWeaponRPCMulticast_Implementation()
 		weaponArray[2]=false;
 		weaponArray[3]=true;
 
-		informationUI->PlayAnimation(informationUI->WeaponSwap);
+		if(IsLocallyControlled())
+		{
+			informationUI->PlayAnimation(informationUI->WeaponSwap);
+		}
 		informationUI->UpdateAmmo_Secondary();
 
 	}
 
 }
 
+
 void APlayerCharacter::Tab()
 {
-
+	
 }
 
 void APlayerCharacter::Q()
@@ -1480,6 +1511,21 @@ void APlayerCharacter::Crouching()
 
 void APlayerCharacter::ChangeWeapon()
 {
+	ChangeWeaponRPCServer();
+}
+
+void APlayerCharacter::ChangeWeaponRPCServer_Implementation()
+{
+	ChangeWeaponRPCMulticast();
+}
+
+bool APlayerCharacter::ChangeWeaponRPCServer_Validate()
+{
+	return true;
+}
+
+void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
+{
 	if(bEnding)
 	{
 		return;
@@ -2008,25 +2054,37 @@ void APlayerCharacter::MulticastRPCReload_Implementation()
 	{
 		if(weaponArray[0]==true&&curRifleAmmo<40+SetRifleAdditionalMagazine()&&maxRifleAmmo>0)
 		{
-			crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
+			if(IsLocallyControlled())
+			{
+				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
+			}
 			UGameplayStatics::PlaySound2D(GetWorld(), RifleReloadSound);
 			PlayAnimMontage(reloadMontage, 1, FName("Reload"));
 		}
 		else if(weaponArray[1]==true&&curSniperAmmo<5+SetSniperAdditionalMagazine()&&maxSniperAmmo>0)
 		{
-			crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
+			if(IsLocallyControlled())
+			{
+				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
+			}
 			UGameplayStatics::PlaySound2D(GetWorld(), SniperReloadSound);
 			PlayAnimMontage(reloadMontage, 1, FName("Reload"));
 		}
 		else if(weaponArray[2]==true&&curPistolAmmo<8+SetPistolAdditionalMagazine()&&maxPistolAmmo>0)
 		{
-			crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
+			if(IsLocallyControlled())
+			{
+				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
+			}
 			UGameplayStatics::PlaySound2D(GetWorld(), PistolReloadSound);
 			PlayAnimMontage(reloadMontage, 1, FName("PistolReload"));
 		}
 		else if(weaponArray[3]==true&&curM249Ammo<100+SetM249AdditionalMagazine()&&maxM249Ammo>0)
 		{
-			crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
+			if(IsLocallyControlled())
+			{
+				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
+			}
 			UGameplayStatics::PlaySound2D(GetWorld(), M249ReloadSound);
 			PlayAnimMontage(reloadMontage, 1, FName("M249Reload"));
 		}		
@@ -2163,21 +2221,38 @@ void APlayerCharacter::ApplyCachingValues()
 
 void APlayerCharacter::Damaged(int damage)
 {
+	DamagedRPCServer(damage);
+
+}
+
+void APlayerCharacter::DamagedRPCServer_Implementation(int damage)
+{
+	DamagedRPCMulticast(damage);
+}
+
+bool APlayerCharacter::DamagedRPCServer_Validate(int damage)
+{
+	return true;
+}
+
+void APlayerCharacter::DamagedRPCMulticast_Implementation(int damage)
+{
+	if(IsLocallyControlled())
+	{
+		APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+		// 카메라 페이드 연출
+		playerCam->StartCameraFade(0.3, 0, 2.0, FLinearColor::Red, false, true);
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), damagedSound, GetActorLocation());
+		PC->PlayerCameraManager->StartCameraShake(PlayerDamagedShake);
+	}
 	if(HasAuthority())
 	{
-		Stat->ApplyDamage(damage);			
-	}
-	APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
-	// 카메라 페이드 연출
-	playerCam->StartCameraFade(0.3, 0, 2.0, FLinearColor::Red, false, true);
-	UGameplayStatics::PlaySoundAtLocation(GetWorld(), damagedSound, GetActorLocation());
-	PC->PlayerCameraManager->StartCameraShake(PlayerDamagedShake);
+		Stat->ApplyDamage(damage);
+	}	
 	UpdateTabWidget();
 	StopAnimMontage();
 	PlayAnimMontage(zoomingMontage, 1, FName("Damaged"));
 }
-
-
 
 int32 APlayerCharacter::SetRifleAdditionalMagazine()
 {
@@ -2272,6 +2347,15 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(APlayerCharacter, CanShoot);
+	DOREPLIFETIME(APlayerCharacter, isDead);
+	DOREPLIFETIME(APlayerCharacter, curRifleAmmo);
+	DOREPLIFETIME(APlayerCharacter, curSniperAmmo);
+	DOREPLIFETIME(APlayerCharacter, curPistolAmmo);
+	DOREPLIFETIME(APlayerCharacter, curM249Ammo);
+	DOREPLIFETIME(APlayerCharacter, maxRifleAmmo);
+	DOREPLIFETIME(APlayerCharacter, maxSniperAmmo);
+	DOREPLIFETIME(APlayerCharacter, maxPistolAmmo);
+	DOREPLIFETIME(APlayerCharacter, maxM249Ammo);
 	
 }
 
@@ -3674,58 +3758,71 @@ float APlayerCharacter::RecoilRateMultiplier()
 
 void APlayerCharacter::PlayerDeath()
 {
-	if(HasAuthority())
+	PlayerDeathRPCServer();
+}
+
+void APlayerCharacter::PlayerDeathRPCServer_Implementation()
+{
+	PlayerDeathRPCMulticast();
+}
+
+bool APlayerCharacter::PlayerDeathRPCServer_Validate()
+{
+	return true;
+}
+
+void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
+{
+	if(isDead==false)
 	{
-		if(isDead==false)
-		{			
-			// 사망지점 전역변수에 캐싱
-			DeathPosition=GetActorLocation();				
-			// 인풋 비활성화
-			DisableInput(PC);
+		// 몽타주 재생 중단
+		StopAnimMontage();
+		// 사망 몽타주 재생
+		PlayAnimMontage(zoomingMontage, 1, FName("Death"));
+		if(IsLocallyControlled())
+		{
 			infoWidgetUI->RemoveFromParent();
 			informationUI->RemoveFromParent();
-			crosshairUI->RemoveFromParent();			
-			FTimerHandle endHandle;
-			// 7초 뒤 호출되는 함수 타이머
-			GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()->void
-			{
-				// 사망 변수 활성화
-				bPlayerDeath=true;
-				// 현재 주요 변수 값들을 GameInstance의 변수에 캐싱
-				CachingValues();
-				PouchCaching();
-				StashCaching();
-				GearCaching();
-				MagCaching();
-				ClearInventoryCache();
-				// 자신 제거
-				this->Destroy();
-				// 컨트롤러의 리스폰 함수 호출
-				PC->Respawn(this);	
-			}), 7.0f, false);
-			FTimerHandle possesHandle;
-			// 0.4초 뒤 호출되는 함수 타이머
-			GetWorld()->GetTimerManager().SetTimer(possesHandle, FTimerDelegate::CreateLambda([this]()->void
-				{
-					if (PC != nullptr)
-					{
-						// 리스폰 된 플레이어에 새롭게 빙의
-						PC->Possess(this);
-					}
-				}), 0.4f, false);
-		
-			isDead=true;
+			crosshairUI->RemoveFromParent();		
+			APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+			// 카메라 페이드 연출
+			playerCam->StartCameraFade(0, 1, 5.0, FLinearColor::Black, false, true);		
+			// 사망지점 전역변수에 캐싱
+			DeathPosition=GetActorLocation();
+			// 인풋 비활성화
+			DisableInput(PC);	
 		}
+		isDead=true;
 	}
-	APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
-	// 카메라 페이드 연출
-	playerCam->StartCameraFade(0, 1, 5.0, FLinearColor::Black, false, true);
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerDeathEmitter, GetActorLocation());
-	UGameplayStatics::PlaySoundAtLocation(GetWorld(), deathSound, GetActorLocation());
-	// 몽타주 재생 중단
-	StopAnimMontage();
-	// 사망 몽타주 재생
-	PlayAnimMontage(zoomingMontage, 1, FName("Death"));
+	
+	// FTimerHandle endHandle;
+	// // 7초 뒤 호출되는 함수 타이머
+	// GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()->void
+	// {
+	// 	// 사망 변수 활성화
+	// 	bPlayerDeath=true;
+	// 	// 현재 주요 변수 값들을 GameInstance의 변수에 캐싱
+	// 	CachingValues();
+	// 	PouchCaching();
+	// 	StashCaching();
+	// 	GearCaching();
+	// 	MagCaching();
+	// 	ClearInventoryCache();
+	// 	// 자신 제거
+	// 	this->Destroy();
+	// 	// 컨트롤러의 리스폰 함수 호출
+	// 	PC->Respawn(this);	
+	// 	}), 7.0f, false);
+	// 	FTimerHandle possesHandle;
+	// 	// 0.4초 뒤 호출되는 함수 타이머
+	// 	GetWorld()->GetTimerManager().SetTimer(possesHandle, FTimerDelegate::CreateLambda([this]()->void
+	// 	{
+	// 		if (PC != nullptr)
+	// 		{
+	// 			// 리스폰 된 플레이어에 새롭게 빙의
+	// 			PC->Possess(this);
+	// 		}
+	// }), 0.4f, false);
 }
 
 void APlayerCharacter::EquipHelmet(bool SoundBool)

@@ -38,8 +38,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	virtual void PostInitializeComponents() override;
-
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -850,11 +848,11 @@ public:
 	UPROPERTY()
 	bool ArmorEquipped = false;
 
-	UPROPERTY(ReplicatedUsing=OnRep_IsDead)
-	bool isDead = false;
+	UPROPERTY(Replicated)
+	bool IsPlayerDead = false;
 
-	UFUNCTION()
-	void OnRep_IsDead();
+	//UFUNCTION()
+	//void OnRep_IsPlayerDead();
 	
 	UPROPERTY()
 	int randRifleDamage;

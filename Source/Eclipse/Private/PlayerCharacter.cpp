@@ -1347,6 +1347,7 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 							StageBoard= Cast<AStageBoard>(HitObj[i].GetActor());
 							Stash= Cast<AStash>(HitObj[i].GetActor());
 							QuitGameActor= Cast<AQuitGameActor>(HitObj[i].GetActor());
+							PlayerCharacter=Cast<APlayerCharacter>(HitObj[i].GetActor());
 						
 							if(rifleActor)
 							{
@@ -2778,7 +2779,7 @@ void APlayerCharacter::ProcessRifleFire()
 						// 적중 사운드 재생
 						UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
 						// 적중 파티클 스폰
-						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(0.5f));
+						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodParticle, hitLoc, hitRot, FVector(1.f));
 						// 데미지 위젯에 피해 값과 적 위치벡터 할당
 						SetDamageWidget(15, hitLoc, false, FLinearColor::White);
 						player->Damaged(15);
@@ -3854,8 +3855,7 @@ bool APlayerCharacter::PlayerDeathRPCServer_Validate()
 }
 
 void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
-{
-	IsPlayerDead=true;
+{	
 	// 몽타주 재생 중단
 	StopAnimMontage();
 	// 사망 몽타주 재생
@@ -3872,7 +3872,12 @@ void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 		playerCam->StartCameraFade(0, 1, 5.0, FLinearColor::Black, false, true);
 		// 사망지점 전역변수에 캐싱
 		DeathPosition=GetActorLocation();
-	}	
+	}
+	FTimerHandle PlayerDeadHandle;
+	GetWorld()->GetTimerManager().SetTimer(PlayerDeadHandle, FTimerDelegate::CreateLambda([this]()->void
+		{
+		IsPlayerDead=true;
+	}), 3.f, false);
 	
 	// FTimerHandle endHandle;
 	// // 7초 뒤 호출되는 함수 타이머

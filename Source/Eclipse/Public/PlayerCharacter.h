@@ -822,6 +822,9 @@ public:
 	class UNiagaraSystem* BulletTrailSystem;
 	UPROPERTY(EditAnywhere, Category="Niagara")
 	class UParticleSystem* SniperFireParticle;
+	UPROPERTY(EditAnywhere, Category="Niagara")
+	class UParticleSystem* BloodParticle;
+	
 	
 	
 	UPROPERTY(EditAnywhere)  // Timeline 생성

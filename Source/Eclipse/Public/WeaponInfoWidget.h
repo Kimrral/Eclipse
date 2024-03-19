@@ -18,7 +18,7 @@ class ECLIPSE_API UWeaponInfoWidget : public UUserWidget
 	
 public:
 	virtual void NativeConstruct() override;
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime);
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class URadialSlider* progressSlider;
@@ -76,6 +76,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class URadialSlider* progressSlider_18;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class URadialSlider* progressSlider_19;
 
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UWidgetSwitcher* WidgetSwitcher_Weapon;

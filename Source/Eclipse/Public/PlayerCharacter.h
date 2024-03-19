@@ -20,7 +20,8 @@ class ECLIPSE_API APlayerCharacter : public ACharacter
 
 public:
 	// Sets default values for this character's properties
-	APlayerCharacter();
+	APlayerCharacter(const FObjectInitializer& ObjectInitializer);
+	virtual void PostInitializeComponents() override;
 
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -314,6 +315,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void StashWidgetOnViewport();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void DeadBodyWidgetOnViewport();
+
 	UFUNCTION()
 	void OnRep_CanShoot();
 
@@ -482,6 +486,9 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* PlayerDeathEmitter;
+
+	UPROPERTY()
+	class APlayerCharacter* PlayerCharacter;
 	
 	UPROPERTY()
 	class AMaskActor* MaskActor;
@@ -635,6 +642,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bStashWidgetOn = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	bool bDeadBodyWidgetOn = false;
 
 	UPROPERTY()
 	bool bPlayerDeath;

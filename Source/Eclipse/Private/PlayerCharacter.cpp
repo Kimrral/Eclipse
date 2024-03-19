@@ -60,7 +60,8 @@
 #include "Net/UnrealNetwork.h"
 
 // Sets default values
-APlayerCharacter::APlayerCharacter()
+APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer)
+	:Super(ObjectInitializer)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -146,6 +147,14 @@ APlayerCharacter::APlayerCharacter()
 
 }
 
+void APlayerCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	
+	Stat->OnHpZero.AddUObject(this, &APlayerCharacter::PlayerDeath);
+	Stat->OnHpChanged.AddUObject(this, &APlayerCharacter::UpdateTabWidget);
+}
+
 // Called when the game starts or when spawned
 void APlayerCharacter::BeginPlay()
 {
@@ -176,9 +185,6 @@ void APlayerCharacter::BeginPlay()
 		TimelineProgress.BindDynamic(this, &APlayerCharacter::SetZoomValue);
 		Timeline.AddInterpFloat(CurveFloat, TimelineProgress);
 	}
-
-	Stat->OnHpZero.AddUObject(this, &APlayerCharacter::PlayerDeath);
-	Stat->OnHpChanged.AddUObject(this, &APlayerCharacter::UpdateTabWidget);
 
 	// Widget Settings
 	crosshairUI = CreateWidget<UCrosshairWidget>(GetWorld(), crosshairFactory);
@@ -960,6 +966,8 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 			StageBoard= Cast<AStageBoard>(actorHitResult.GetActor());
 			Stash=Cast<AStash>(actorHitResult.GetActor());
 			QuitGameActor=Cast<AQuitGameActor>(actorHitResult.GetActor());
+
+			PlayerCharacter=Cast<APlayerCharacter>(actorHitResult.GetActor());
 		
 			// 라이플 탐지
 			if(rifleActor)
@@ -1278,6 +1286,25 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 					infoWidgetUI->AddToViewport();
 				}
 			}
+			else if(PlayerCharacter)
+			{
+				if(PlayerCharacter->IsPlayerDead)
+				{
+					// 1회 실행 불리언
+					if(TickOverlapBoolean==false)
+					{
+						TickOverlapBoolean=true;
+						// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+						PlayerCharacter->GetMesh()->SetRenderCustomDepth(true);
+						// Widget Switcher 이용한 무기 정보 위젯 스위칭
+						infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(19);
+						// Radial Slider Value 초기화
+						infoWidgetUI->weaponHoldPercent=0;
+						// Weapon Info Widget 뷰포트에 배치
+						infoWidgetUI->AddToViewport();
+					}
+				}
+			}
 			else
 			{
 				// 1회 실행 불리언
@@ -1416,6 +1443,11 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								QuitGameActor->quitGameMesh->SetRenderCustomDepth(false);
 							}
+							else if(PlayerCharacter)
+							{
+								// Render Custom Depth 활용한 무기 액터 외곽선 해제
+								PlayerCharacter->GetMesh()->SetRenderCustomDepth(false);
+							}
 						}
 					}
 				}
@@ -1521,509 +1553,534 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 	if(bEnding)
 	{
 		return;
-	}		
-	FHitResult actorHitResult;
-	FVector StartLoc = FollowCamera->GetComponentLocation();
-	FVector EndLoc = StartLoc+FollowCamera->GetForwardVector()*500.0f;
-	// 무기 액터 탐지 라인 트레이스
-	bool bHit = GetWorld()->LineTraceSingleByChannel(actorHitResult, StartLoc, EndLoc, ECC_Visibility);
-	if(bHit)
+	}
+	if(IsLocallyControlled())
 	{
-		// 무기 액터 캐스팅
-		rifleActor = Cast<ARifleActor>(actorHitResult.GetActor());
-		sniperActor=Cast<ASniperActor>(actorHitResult.GetActor());
-		pistolActor=Cast<APistolActor>(actorHitResult.GetActor());
-		m249Actor=Cast<AM249Actor>(actorHitResult.GetActor());
-		
-		HackingConsole=Cast<AHackingConsole>(actorHitResult.GetActor());
-		MissionChecker=Cast<AMissionChecker>(actorHitResult.GetActor());
-
-		RifleMagActor = Cast<ARifleMagActor>(actorHitResult.GetActor());
-		SniperMagActor = Cast<ASniperMagActor>(actorHitResult.GetActor());
-		PistolMagActor = Cast<APistolMagActor>(actorHitResult.GetActor());
-		M249MagActor = Cast<AM249MagActor>(actorHitResult.GetActor());
-
-		GoggleActor= Cast<AGoggleActor>(actorHitResult.GetActor());
-		MaskActor= Cast<AMaskActor>(actorHitResult.GetActor());
-		HelmetActor= Cast<AHelmetActor>(actorHitResult.GetActor());
-		HeadsetActor= Cast<AHeadsetActor>(actorHitResult.GetActor());
-		ArmorActor= Cast<AArmorActor>(actorHitResult.GetActor());
-
-		MedKitActor= Cast<AMedKitActor>(actorHitResult.GetActor());
-		StageBoard= Cast<AStageBoard>(actorHitResult.GetActor());
-		Stash= Cast<AStash>(actorHitResult.GetActor());
-		QuitGameActor= Cast<AQuitGameActor>(actorHitResult.GetActor());
-		
-		// 라이플로 교체
-		if(rifleActor)
+		FHitResult actorHitResult;
+		FVector StartLoc = FollowCamera->GetComponentLocation();
+		FVector EndLoc = StartLoc+FollowCamera->GetForwardVector()*500.0f;
+		// 무기 액터 탐지 라인 트레이스
+		bool bHit = GetWorld()->LineTraceSingleByChannel(actorHitResult, StartLoc, EndLoc, ECC_Visibility);
+		if(bHit)
 		{
-			// 라이플을 사용하지 않을 때만 교체
-			if(weaponArray[0]==false)
+			// 무기 액터 캐스팅
+			rifleActor = Cast<ARifleActor>(actorHitResult.GetActor());
+			sniperActor=Cast<ASniperActor>(actorHitResult.GetActor());
+			pistolActor=Cast<APistolActor>(actorHitResult.GetActor());
+			m249Actor=Cast<AM249Actor>(actorHitResult.GetActor());
+		
+			HackingConsole=Cast<AHackingConsole>(actorHitResult.GetActor());
+			MissionChecker=Cast<AMissionChecker>(actorHitResult.GetActor());
+
+			RifleMagActor = Cast<ARifleMagActor>(actorHitResult.GetActor());
+			SniperMagActor = Cast<ASniperMagActor>(actorHitResult.GetActor());
+			PistolMagActor = Cast<APistolMagActor>(actorHitResult.GetActor());
+			M249MagActor = Cast<AM249MagActor>(actorHitResult.GetActor());
+
+			GoggleActor= Cast<AGoggleActor>(actorHitResult.GetActor());
+			MaskActor= Cast<AMaskActor>(actorHitResult.GetActor());
+			HelmetActor= Cast<AHelmetActor>(actorHitResult.GetActor());
+			HeadsetActor= Cast<AHeadsetActor>(actorHitResult.GetActor());
+			ArmorActor= Cast<AArmorActor>(actorHitResult.GetActor());
+
+			MedKitActor= Cast<AMedKitActor>(actorHitResult.GetActor());
+			StageBoard= Cast<AStageBoard>(actorHitResult.GetActor());
+			Stash= Cast<AStash>(actorHitResult.GetActor());
+			QuitGameActor= Cast<AQuitGameActor>(actorHitResult.GetActor());
+
+			PlayerCharacter=Cast<APlayerCharacter>(actorHitResult.GetActor());
+		
+		
+			// 라이플로 교체
+			if(rifleActor)
 			{
-				// 키다운 시간 동안 Radial Slider 게이지 상승
-				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-				// 게이지가 모두 채워졌을 때
-				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+				// 라이플을 사용하지 않을 때만 교체
+				if(weaponArray[0]==false)
 				{
-					infoWidgetUI->weaponHoldPercent=0;
-					UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
-					// 무기 정보 위젯 제거
-					infoWidgetUI->RemoveFromParent();
-					// 무기 교체 Montage 재생
-					PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
-					// 교체 대상 무기 액터 파괴
-					rifleActor->Destroy();
-					// 액터 스폰 지점 할당
-					FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
-					FRotator spawnRotation = FRotator::ZeroRotator;
-					FActorSpawnParameters param;
-					param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-					// 스나이퍼를 사용중일 때
-					if(weaponArray[1]==true)
+					// 키다운 시간 동안 Radial Slider 게이지 상승
+					infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+					// 게이지가 모두 채워졌을 때
+					if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 					{
-						// 사용중인 무기 액터 스폰
-						sniperActor = GetWorld()->SpawnActor<ASniperActor>(sniperFactory, spawnPosition, spawnRotation);
-					}
-					// 권총을 사용중일 때
-					else if(weaponArray[2]==true)
-					{
-						// 애니메이션 인스턴스 캐스팅
-						UPlayerAnim* animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-						if(animInst)
+						infoWidgetUI->weaponHoldPercent=0;
+						UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
+						// 무기 정보 위젯 제거
+						infoWidgetUI->RemoveFromParent();
+						// 무기 교체 Montage 재생
+						PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
+						// 교체 대상 무기 액터 파괴
+						rifleActor->Destroy();
+						// 액터 스폰 지점 할당
+						FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
+						FRotator spawnRotation = FRotator::ZeroRotator;
+						FActorSpawnParameters param;
+						param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+						// 스나이퍼를 사용중일 때
+						if(weaponArray[1]==true)
 						{
-							// 애니메이션 블루프린트에 상태 전환 불리언 전달
-							animInst->bPistol=false;
+							// 사용중인 무기 액터 스폰
+							sniperActor = GetWorld()->SpawnActor<ASniperActor>(sniperFactory, spawnPosition, spawnRotation);
 						}
-						// 사용중인 무기 액터 스폰
-						pistolActor = GetWorld()->SpawnActor<APistolActor>(pistolFactory, spawnPosition, spawnRotation);
+						// 권총을 사용중일 때
+						else if(weaponArray[2]==true)
+						{
+							// 애니메이션 인스턴스 캐스팅
+							UPlayerAnim* animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+							if(animInst)
+							{
+								// 애니메이션 블루프린트에 상태 전환 불리언 전달
+								animInst->bPistol=false;
+							}
+							// 사용중인 무기 액터 스폰
+							pistolActor = GetWorld()->SpawnActor<APistolActor>(pistolFactory, spawnPosition, spawnRotation);
+						}
+						else if(weaponArray[3]==true)
+						{
+							// 사용중인 무기 액터 스폰
+							m249Actor = GetWorld()->SpawnActor<AM249Actor>(M249Factory, spawnPosition, spawnRotation);
+						}
+						// 현재 활성화된 슬롯이 1번이라면
+						if(curWeaponSlotNumber==1)
+						{
+							// 장착 무기 이름 배열에 할당
+							equippedWeaponStringArray[0]=FString("Rifle");
+						}
+						// 현재 활성화된 슬롯이 2번이라면
+						else if(curWeaponSlotNumber==2)
+						{
+							// 장착 무기 이름 배열에 할당
+							equippedWeaponStringArray[1]=FString("Rifle");
+						}
+						// Visibility 설정
+						rifleComp->SetVisibility(true);
+						sniperComp->SetVisibility(false);
+						pistolComp->SetVisibility(false);
+						m249Comp->SetVisibility(false);
+						// 무기 배열 설정
+						weaponArray[0]=true;
+						weaponArray[1]=false;
+						weaponArray[2]=false;
+						weaponArray[3]=false;
 					}
-					else if(weaponArray[3]==true)
-					{
-						// 사용중인 무기 액터 스폰
-						m249Actor = GetWorld()->SpawnActor<AM249Actor>(M249Factory, spawnPosition, spawnRotation);
-					}
-					// 현재 활성화된 슬롯이 1번이라면
-					if(curWeaponSlotNumber==1)
-					{
-						// 장착 무기 이름 배열에 할당
-						equippedWeaponStringArray[0]=FString("Rifle");
-					}
-					// 현재 활성화된 슬롯이 2번이라면
-					else if(curWeaponSlotNumber==2)
-					{
-						// 장착 무기 이름 배열에 할당
-						equippedWeaponStringArray[1]=FString("Rifle");
-					}
-					// Visibility 설정
-					rifleComp->SetVisibility(true);
-					sniperComp->SetVisibility(false);
-					pistolComp->SetVisibility(false);
-					m249Comp->SetVisibility(false);
-					// 무기 배열 설정
-					weaponArray[0]=true;
-					weaponArray[1]=false;
-					weaponArray[2]=false;
-					weaponArray[3]=false;
 				}
 			}
-		}
-		// 스나이퍼로 교체
-		else if(sniperActor)
-		{
-			// 스나이퍼를 사용하지 않을 때만 교체
-			if(weaponArray[1]==false)
+			// 스나이퍼로 교체
+			else if(sniperActor)
 			{
-				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+				// 스나이퍼를 사용하지 않을 때만 교체
+				if(weaponArray[1]==false)
 				{
-					infoWidgetUI->weaponHoldPercent=0;
-					UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
-					infoWidgetUI->RemoveFromParent();
-					PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
-					sniperActor->Destroy();
-					FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
-					FRotator spawnRotation = FRotator::ZeroRotator;
-					FActorSpawnParameters param;
-					param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+					infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+					if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+					{
+						infoWidgetUI->weaponHoldPercent=0;
+						UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
+						infoWidgetUI->RemoveFromParent();
+						PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
+						sniperActor->Destroy();
+						FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
+						FRotator spawnRotation = FRotator::ZeroRotator;
+						FActorSpawnParameters param;
+						param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 			
-					if(weaponArray[0]==true)
-					{
-						rifleActor = GetWorld()->SpawnActor<ARifleActor>(rifleFactory, spawnPosition, spawnRotation);
+						if(weaponArray[0]==true)
+						{
+							rifleActor = GetWorld()->SpawnActor<ARifleActor>(rifleFactory, spawnPosition, spawnRotation);
+						}
+						else if(weaponArray[2]==true)
+						{
+							UPlayerAnim* animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+							if(animInst)
+							{
+								animInst->bPistol=false;
+							}
+							pistolActor = GetWorld()->SpawnActor<APistolActor>(pistolFactory, spawnPosition, spawnRotation);
+						}
+						else if(weaponArray[3]==true)
+						{
+							m249Actor = GetWorld()->SpawnActor<AM249Actor>(M249Factory, spawnPosition, spawnRotation);
+						}
+						if(curWeaponSlotNumber==1)
+						{
+							equippedWeaponStringArray[0]=FString("Sniper");
+						}
+						else if(curWeaponSlotNumber==2)
+						{
+							equippedWeaponStringArray[1]=FString("Sniper");
+						}			
+						rifleComp->SetVisibility(false);
+						sniperComp->SetVisibility(true);
+						pistolComp->SetVisibility(false);
+						m249Comp->SetVisibility(false);
+
+						weaponArray[0]=false;
+						weaponArray[1]=true;
+						weaponArray[2]=false;
+						weaponArray[3]=false;
+
 					}
-					else if(weaponArray[2]==true)
+				}
+			}
+			// 권총으로 교체
+			else if(pistolActor)
+			{
+				// 권총을 사용하지 않을 때만 교체
+				if(weaponArray[2]==false)
+				{
+					infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+					if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 					{
+						infoWidgetUI->weaponHoldPercent=0;
+						UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
+						infoWidgetUI->RemoveFromParent();
+						PlayAnimMontage(FullBodyMontage, 1 , FName("PistolEquip"));
 						UPlayerAnim* animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 						if(animInst)
 						{
-							animInst->bPistol=false;
+							animInst->bPistol=true;
 						}
-						pistolActor = GetWorld()->SpawnActor<APistolActor>(pistolFactory, spawnPosition, spawnRotation);
-					}
-					else if(weaponArray[3]==true)
-					{
-						m249Actor = GetWorld()->SpawnActor<AM249Actor>(M249Factory, spawnPosition, spawnRotation);
-					}
-					if(curWeaponSlotNumber==1)
-					{
-						equippedWeaponStringArray[0]=FString("Sniper");
-					}
-					else if(curWeaponSlotNumber==2)
-					{
-						equippedWeaponStringArray[1]=FString("Sniper");
-					}			
-					rifleComp->SetVisibility(false);
-					sniperComp->SetVisibility(true);
-					pistolComp->SetVisibility(false);
-					m249Comp->SetVisibility(false);
-
-					weaponArray[0]=false;
-					weaponArray[1]=true;
-					weaponArray[2]=false;
-					weaponArray[3]=false;
-
-				}
-			}
-		}
-		// 권총으로 교체
-		else if(pistolActor)
-		{
-			// 권총을 사용하지 않을 때만 교체
-			if(weaponArray[2]==false)
-			{
-				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
-				{
-					infoWidgetUI->weaponHoldPercent=0;
-					UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
-					infoWidgetUI->RemoveFromParent();
-					PlayAnimMontage(FullBodyMontage, 1 , FName("PistolEquip"));
-					UPlayerAnim* animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-					if(animInst)
-					{
-						animInst->bPistol=true;
-					}
-					pistolActor->Destroy();
-					FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
-					FRotator spawnRotation = FRotator::ZeroRotator;
-					FActorSpawnParameters param;
-					param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;		
-					if(weaponArray[0]==true)
-					{
-						rifleActor = GetWorld()->SpawnActor<ARifleActor>(rifleFactory, spawnPosition, spawnRotation);
-					}
-					else if(weaponArray[1]==true)
-					{
-						sniperActor = GetWorld()->SpawnActor<ASniperActor>(sniperFactory, spawnPosition, spawnRotation);
-					}
-					else if(weaponArray[3]==true)
-					{
-						m249Actor = GetWorld()->SpawnActor<AM249Actor>(M249Factory, spawnPosition, spawnRotation);
-					}
-					if(curWeaponSlotNumber==1)
-					{
-						equippedWeaponStringArray[0]=FString("Pistol");
-					}
-					else if(curWeaponSlotNumber==2)
-					{
-						equippedWeaponStringArray[1]=FString("Pistol");
-					}				
-					rifleComp->SetVisibility(false);
-					sniperComp->SetVisibility(false);
-					pistolComp->SetVisibility(true);
-					m249Comp->SetVisibility(false);
+						pistolActor->Destroy();
+						FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
+						FRotator spawnRotation = FRotator::ZeroRotator;
+						FActorSpawnParameters param;
+						param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;		
+						if(weaponArray[0]==true)
+						{
+							rifleActor = GetWorld()->SpawnActor<ARifleActor>(rifleFactory, spawnPosition, spawnRotation);
+						}
+						else if(weaponArray[1]==true)
+						{
+							sniperActor = GetWorld()->SpawnActor<ASniperActor>(sniperFactory, spawnPosition, spawnRotation);
+						}
+						else if(weaponArray[3]==true)
+						{
+							m249Actor = GetWorld()->SpawnActor<AM249Actor>(M249Factory, spawnPosition, spawnRotation);
+						}
+						if(curWeaponSlotNumber==1)
+						{
+							equippedWeaponStringArray[0]=FString("Pistol");
+						}
+						else if(curWeaponSlotNumber==2)
+						{
+							equippedWeaponStringArray[1]=FString("Pistol");
+						}				
+						rifleComp->SetVisibility(false);
+						sniperComp->SetVisibility(false);
+						pistolComp->SetVisibility(true);
+						m249Comp->SetVisibility(false);
 				
-					weaponArray[0]=false;
-					weaponArray[1]=false;
-					weaponArray[2]=true;
-					weaponArray[3]=false;
+						weaponArray[0]=false;
+						weaponArray[1]=false;
+						weaponArray[2]=true;
+						weaponArray[3]=false;
+					}
 				}
 			}
-		}
-		// M249로 교체
-		else if(m249Actor)
-		{
-			// M249을 사용하지 않을 때만 교체
-			if(weaponArray[3]==false)
+			// M249로 교체
+			else if(m249Actor)
+			{
+				// M249을 사용하지 않을 때만 교체
+				if(weaponArray[3]==false)
+				{
+					infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+					if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+					{
+						infoWidgetUI->weaponHoldPercent=0;
+						UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
+						infoWidgetUI->RemoveFromParent();
+						PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
+						m249Actor->Destroy();
+						FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
+						FRotator spawnRotation = FRotator::ZeroRotator;
+						FActorSpawnParameters param;
+						param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;		
+						if(weaponArray[0]==true)
+						{
+							rifleActor = GetWorld()->SpawnActor<ARifleActor>(rifleFactory, spawnPosition, spawnRotation);
+						}
+						else if(weaponArray[1]==true)
+						{
+							sniperActor = GetWorld()->SpawnActor<ASniperActor>(sniperFactory, spawnPosition, spawnRotation);
+						}
+						else if(weaponArray[2]==true)
+						{
+							UPlayerAnim* animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+							if(animInst)
+							{
+								animInst->bPistol=false;
+							}
+							pistolActor = GetWorld()->SpawnActor<APistolActor>(pistolFactory, spawnPosition, spawnRotation);
+						}
+						if(curWeaponSlotNumber==1)
+						{
+							equippedWeaponStringArray[0]=FString("M249");
+						}
+						else if(curWeaponSlotNumber==2)
+						{
+							equippedWeaponStringArray[1]=FString("M249");
+						}				
+						rifleComp->SetVisibility(false);
+						sniperComp->SetVisibility(false);
+						pistolComp->SetVisibility(false);
+						m249Comp->SetVisibility(true);
+				
+						weaponArray[0]=false;
+						weaponArray[1]=false;
+						weaponArray[2]=false;
+						weaponArray[3]=true;
+					}
+				}
+			}
+			else if(HackingConsole)
 			{
 				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 				{
 					infoWidgetUI->weaponHoldPercent=0;
-					UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
+					UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
 					infoWidgetUI->RemoveFromParent();
 					PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
-					m249Actor->Destroy();
-					FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
-					FRotator spawnRotation = FRotator::ZeroRotator;
-					FActorSpawnParameters param;
-					param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;		
-					if(weaponArray[0]==true)
+					HackingConsole->AddInventory();
+					HackingConsole->Destroy();
+					ConsoleCount++;
+					informationUI->ConsoleCount->SetText(FText::AsNumber(ConsoleCount));
+				}
+			}
+			else if(MissionChecker)
+			{
+				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+				{
+					if(GuardianCount>=7&&ConsoleCount>=5&&BossCount>=1)
 					{
-						rifleActor = GetWorld()->SpawnActor<ARifleActor>(rifleFactory, spawnPosition, spawnRotation);
+						infoWidgetUI->weaponHoldPercent=0;
+						bEnding=true;
+						APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+						playerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
+						StopAnimMontage();
+						GetCharacterMovement()->StopActiveMovement();
+						GetCharacterMovement()->DisableMovement();
+						FTransform spawnTrans = this->GetTransform();
+						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), recallParticle, spawnTrans);
+						PlayAnimMontage(FullBodyMontage, 1, FName("LevelEnd"));
+						UGameplayStatics::PlaySoundAtLocation(GetWorld(), PortalSound, GetActorLocation());
+						bUseControllerRotationYaw=false;
+						infoWidgetUI->RemoveFromParent();
+						informationUI->RemoveFromParent();
+						crosshairUI->RemoveFromParent();
+						FTimerHandle endHandle;
+						GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()->void
+						{						
+							PouchCaching();
+							InventoryCaching();
+							GearCaching();
+							MagCaching();
+							UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"));
+						}), 9.f, false);
 					}
-					else if(weaponArray[1]==true)
+					else
 					{
-						sniperActor = GetWorld()->SpawnActor<ASniperActor>(sniperFactory, spawnPosition, spawnRotation);
+						infoWidgetUI->PlayAnimation(infoWidgetUI->LackMission);
+						infoWidgetUI->weaponHoldPercent=0;
 					}
-					else if(weaponArray[2]==true)
+				}
+			}
+			else if(RifleMagActor)
+			{
+				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+				{
+					infoWidgetUI->weaponHoldPercent=0;
+					UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
+					infoWidgetUI->RemoveFromParent();
+					PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
+					RifleMagActor->AddInventory();
+					RifleMagActor->Destroy();
+				}
+			}
+			else if(SniperMagActor)
+			{
+				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+				{
+					infoWidgetUI->weaponHoldPercent=0;
+					UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
+					infoWidgetUI->RemoveFromParent();
+					PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
+					SniperMagActor->AddInventory();
+					SniperMagActor->Destroy();
+				}
+			}
+			else if(PistolMagActor)
+			{
+				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+				{
+					infoWidgetUI->weaponHoldPercent=0;
+					UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
+					infoWidgetUI->RemoveFromParent();
+					PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
+					PistolMagActor->AddInventory();
+					PistolMagActor->Destroy();
+				}
+			}
+			else if(M249MagActor)
+			{
+				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+				{
+					infoWidgetUI->weaponHoldPercent=0;
+					UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
+					infoWidgetUI->RemoveFromParent();
+					PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
+					M249MagActor->AddInventory();
+					M249MagActor->Destroy();
+				}
+			}
+			else if(GoggleActor)
+			{
+				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+				{
+					infoWidgetUI->weaponHoldPercent=0;
+					UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
+					infoWidgetUI->RemoveFromParent();
+					PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
+					GoggleActor->AddInventory();
+					GoggleActor->Destroy();
+				}
+			}
+			else if(HelmetActor)
+			{
+				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+				{
+					infoWidgetUI->weaponHoldPercent=0;
+					UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
+					infoWidgetUI->RemoveFromParent();
+					PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
+					HelmetActor->AddInventory();
+					HelmetActor->Destroy();
+				}
+			}
+			else if(HeadsetActor)
+			{
+				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+				{
+					infoWidgetUI->weaponHoldPercent=0;
+					UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
+					infoWidgetUI->RemoveFromParent();
+					PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
+					HeadsetActor->AddInventory();
+					HeadsetActor->Destroy();
+				}
+			}
+			else if(MaskActor)
+			{
+				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+				{
+					infoWidgetUI->weaponHoldPercent=0;
+					UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
+					infoWidgetUI->RemoveFromParent();
+					PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
+					MaskActor->AddInventory();
+					MaskActor->Destroy();
+				}
+			}
+			else if(ArmorActor)
+			{
+				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+				{
+					infoWidgetUI->weaponHoldPercent=0;
+					UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
+					infoWidgetUI->RemoveFromParent();
+					PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
+					ArmorActor->AddInventory();
+					ArmorActor->Destroy();
+				}
+			}
+			else if(MedKitActor)
+			{
+				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+				{
+					infoWidgetUI->weaponHoldPercent=0;
+					UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
+					infoWidgetUI->RemoveFromParent();
+					PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
+					MedKitActor->AddInventory();
+					MedKitActor->Destroy();
+				}
+			}
+			else if(StageBoard)
+			{
+				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+				if(levelSelectionUI&&infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+				{
+					infoWidgetUI->weaponHoldPercent=0;
+					UGameplayStatics::PlaySound2D(GetWorld(), levelSelectionSound);
+					infoWidgetUI->RemoveFromParent();
+					UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(PC, levelSelectionUI);
+					PC->SetShowMouseCursor(true);
+					levelSelectionUI->AddToViewport();						
+				}
+			}
+			else if(Stash)
+			{
+				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+				{
+					infoWidgetUI->weaponHoldPercent=0;
+					if(bStashWidgetOn==false&&PC)
 					{
-						UPlayerAnim* animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-						if(animInst)
+						bStashWidgetOn=true;
+						UGameplayStatics::PlaySound2D(GetWorld(), tabSound);
+						infoWidgetUI->RemoveFromParent();
+						PC->SetShowMouseCursor(true);
+						StashWidgetOnViewport();
+					}					
+				}
+			}
+			else if(QuitGameActor)
+			{
+				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+				if(quitWidgetUI&&infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+				{
+					infoWidgetUI->weaponHoldPercent=0;
+					if(!quitWidgetUI->IsInViewport()&&PC)
+					{
+						UGameplayStatics::PlaySound2D(GetWorld(), quitGameSound);
+						infoWidgetUI->RemoveFromParent();
+						UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(PC, quitWidgetUI);
+						PC->SetShowMouseCursor(true);
+						quitWidgetUI->AddToViewport();
+					}
+				}
+			}
+			else if(PlayerCharacter)
+			{
+				if(PlayerCharacter->IsPlayerDead)
+				{
+					infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
+					if(quitWidgetUI&&infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+					{
+						infoWidgetUI->weaponHoldPercent=0;
+						if(bDeadBodyWidgetOn==false&&PC)
 						{
-							animInst->bPistol=false;
-						}
-						pistolActor = GetWorld()->SpawnActor<APistolActor>(pistolFactory, spawnPosition, spawnRotation);
+							bDeadBodyWidgetOn=true;
+							UGameplayStatics::PlaySound2D(GetWorld(), tabSound);
+							infoWidgetUI->RemoveFromParent();
+							PC->SetShowMouseCursor(true);
+							DeadBodyWidgetOnViewport();
+						}		
 					}
-					if(curWeaponSlotNumber==1)
-					{
-						equippedWeaponStringArray[0]=FString("M249");
-					}
-					else if(curWeaponSlotNumber==2)
-					{
-						equippedWeaponStringArray[1]=FString("M249");
-					}				
-					rifleComp->SetVisibility(false);
-					sniperComp->SetVisibility(false);
-					pistolComp->SetVisibility(false);
-					m249Comp->SetVisibility(true);
-				
-					weaponArray[0]=false;
-					weaponArray[1]=false;
-					weaponArray[2]=false;
-					weaponArray[3]=true;
 				}
 			}
 		}
-		else if(HackingConsole)
-		{
-			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
-			{
-				infoWidgetUI->weaponHoldPercent=0;
-				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
-				infoWidgetUI->RemoveFromParent();
-				PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
-				HackingConsole->AddInventory();
-				HackingConsole->Destroy();
-				ConsoleCount++;
-				informationUI->ConsoleCount->SetText(FText::AsNumber(ConsoleCount));
-			}
-		}
-		else if(MissionChecker)
-		{
-			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
-			{
-				if(GuardianCount>=7&&ConsoleCount>=5&&BossCount>=1)
-				{
-					infoWidgetUI->weaponHoldPercent=0;
-					bEnding=true;
-					APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
-					playerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
-					StopAnimMontage();
-					GetCharacterMovement()->StopActiveMovement();
-					GetCharacterMovement()->DisableMovement();
-					FTransform spawnTrans = this->GetTransform();
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), recallParticle, spawnTrans);
-					PlayAnimMontage(FullBodyMontage, 1, FName("LevelEnd"));
-					UGameplayStatics::PlaySoundAtLocation(GetWorld(), PortalSound, GetActorLocation());
-					bUseControllerRotationYaw=false;
-					infoWidgetUI->RemoveFromParent();
-					informationUI->RemoveFromParent();
-					crosshairUI->RemoveFromParent();
-					FTimerHandle endHandle;
-					GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()->void
-					{						
-						PouchCaching();
-						InventoryCaching();
-						GearCaching();
-						MagCaching();
-						UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"));
-					}), 9.f, false);
-				}
-				else
-				{
-					infoWidgetUI->PlayAnimation(infoWidgetUI->LackMission);
-					infoWidgetUI->weaponHoldPercent=0;
-				}
-			}
-		}
-		else if(RifleMagActor)
-		{
-			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
-			{
-				infoWidgetUI->weaponHoldPercent=0;
-				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
-				infoWidgetUI->RemoveFromParent();
-				PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
-				RifleMagActor->AddInventory();
-				RifleMagActor->Destroy();
-			}
-		}
-		else if(SniperMagActor)
-		{
-			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
-			{
-				infoWidgetUI->weaponHoldPercent=0;
-				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
-				infoWidgetUI->RemoveFromParent();
-				PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
-				SniperMagActor->AddInventory();
-				SniperMagActor->Destroy();
-			}
-		}
-		else if(PistolMagActor)
-		{
-			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
-			{
-				infoWidgetUI->weaponHoldPercent=0;
-				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
-				infoWidgetUI->RemoveFromParent();
-				PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
-				PistolMagActor->AddInventory();
-				PistolMagActor->Destroy();
-			}
-		}
-		else if(M249MagActor)
-		{
-			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
-			{
-				infoWidgetUI->weaponHoldPercent=0;
-				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
-				infoWidgetUI->RemoveFromParent();
-				PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
-				M249MagActor->AddInventory();
-				M249MagActor->Destroy();
-			}
-		}
-		else if(GoggleActor)
-		{
-			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
-			{
-				infoWidgetUI->weaponHoldPercent=0;
-				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
-				infoWidgetUI->RemoveFromParent();
-				PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
-				GoggleActor->AddInventory();
-				GoggleActor->Destroy();
-			}
-		}
-		else if(HelmetActor)
-		{
-			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
-			{
-				infoWidgetUI->weaponHoldPercent=0;
-				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
-				infoWidgetUI->RemoveFromParent();
-				PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
-				HelmetActor->AddInventory();
-				HelmetActor->Destroy();
-			}
-		}
-		else if(HeadsetActor)
-		{
-			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
-			{
-				infoWidgetUI->weaponHoldPercent=0;
-				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
-				infoWidgetUI->RemoveFromParent();
-				PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
-				HeadsetActor->AddInventory();
-				HeadsetActor->Destroy();
-			}
-		}
-		else if(MaskActor)
-		{
-			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
-			{
-				infoWidgetUI->weaponHoldPercent=0;
-				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
-				infoWidgetUI->RemoveFromParent();
-				PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
-				MaskActor->AddInventory();
-				MaskActor->Destroy();
-			}
-		}
-		else if(ArmorActor)
-		{
-			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
-			{
-				infoWidgetUI->weaponHoldPercent=0;
-				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
-				infoWidgetUI->RemoveFromParent();
-				PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
-				ArmorActor->AddInventory();
-				ArmorActor->Destroy();
-			}
-		}
-		else if(MedKitActor)
-		{
-			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
-			{
-				infoWidgetUI->weaponHoldPercent=0;
-				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
-				infoWidgetUI->RemoveFromParent();
-				PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
-				MedKitActor->AddInventory();
-				MedKitActor->Destroy();
-			}
-		}
-		else if(StageBoard)
-		{
-			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-			if(levelSelectionUI&&infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
-			{
-				infoWidgetUI->weaponHoldPercent=0;
-				UGameplayStatics::PlaySound2D(GetWorld(), levelSelectionSound);
-				infoWidgetUI->RemoveFromParent();
-				UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(PC, levelSelectionUI);
-				PC->SetShowMouseCursor(true);
-				levelSelectionUI->AddToViewport();						
-			}
-		}
-		else if(Stash)
-		{
-			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-			if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
-			{
-				infoWidgetUI->weaponHoldPercent=0;
-				if(bStashWidgetOn==false&&PC)
-				{
-					bStashWidgetOn=true;
-					UGameplayStatics::PlaySound2D(GetWorld(), tabSound);
-					infoWidgetUI->RemoveFromParent();
-					PC->SetShowMouseCursor(true);
-					StashWidgetOnViewport();
-				}					
-			}
-		}
-		else if(QuitGameActor)
-		{
-			infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-			if(quitWidgetUI&&infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
-			{
-				infoWidgetUI->weaponHoldPercent=0;
-				if(!quitWidgetUI->IsInViewport()&&PC)
-				{
-					UGameplayStatics::PlaySound2D(GetWorld(), quitGameSound);
-					infoWidgetUI->RemoveFromParent();
-					UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(PC, quitWidgetUI);
-					PC->SetShowMouseCursor(true);
-					quitWidgetUI->AddToViewport();
-				}
-			}
-		}
-	}	
+	}
 }
 
 void APlayerCharacter::Reload()
@@ -2377,29 +2434,19 @@ void APlayerCharacter::ServerRPCFire_Implementation()
 
 void APlayerCharacter::MulticastRPCFire_Implementation()
 {
-	if(HasAuthority())
+	if(weaponArray[0]==true&&curRifleAmmo>0)
 	{
-		ProcessRifleFire();
-	}
-	
-	if(IsLocallyControlled())
-	{
-		UGameplayStatics::PlaySound2D(GetWorld(), RifleFireSound);
-		// 사격 카메라 셰이크 실행
-		PC->PlayerCameraManager->StartCameraShake(rifleFireShake);
-		FTransform particleTrans = rifleComp->GetSocketTransform(FName("RifleFirePosition"));
-		particleTrans.SetScale3D(FVector(0.7));
-		FVector particleLoc2 = rifleComp->GetSocketLocation(FName("RifleFirePosition"));
-		UE::Math::TRotator<double> particleRot2 = rifleComp->GetSocketRotation(FName("RifleFirePosition"))+FRotator(0, 0, 90);
-		FTransform particleTrans2=UKismetMathLibrary::MakeTransform(particleLoc2, particleRot2, FVector(0.4));
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle, particleTrans);
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle2, particleTrans2);
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleFireSound, GetActorLocation());
-	}
-	else
-	{
-		if(curRifleAmmo>0&&CanShoot)
-		{		
+		// 서버 로직 (핵심 프로세스 처리)
+		if(HasAuthority())
+		{
+			ProcessRifleFire();
+		}
+		// 실행하는 주체 (서버 / 클라 무관, 자신에게만 실행되는 로직 구현)
+		if(IsLocallyControlled())
+		{
+			UGameplayStatics::PlaySound2D(GetWorld(), RifleFireSound);
+			// 사격 카메라 셰이크 실행
+			PC->PlayerCameraManager->StartCameraShake(rifleFireShake);
 			FTransform particleTrans = rifleComp->GetSocketTransform(FName("RifleFirePosition"));
 			particleTrans.SetScale3D(FVector(0.7));
 			FVector particleLoc2 = rifleComp->GetSocketLocation(FName("RifleFirePosition"));
@@ -2409,7 +2456,19 @@ void APlayerCharacter::MulticastRPCFire_Implementation()
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle2, particleTrans2);
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleFireSound, GetActorLocation());
 		}
-	}	
+		// Simulated Proxy
+		else
+		{
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleFireSound, GetActorLocation());
+			FTransform particleTrans = rifleComp->GetSocketTransform(FName("RifleFirePosition"));
+			particleTrans.SetScale3D(FVector(0.7));
+			FVector particleLoc2 = rifleComp->GetSocketLocation(FName("RifleFirePosition"));
+			UE::Math::TRotator<double> particleRot2 = rifleComp->GetSocketRotation(FName("RifleFirePosition"))+FRotator(0, 0, 90);
+			FTransform particleTrans2=UKismetMathLibrary::MakeTransform(particleLoc2, particleRot2, FVector(0.4));
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle, particleTrans);
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle2, particleTrans2);
+		}
+	}
 }
 
 void APlayerCharacter::FireRelease()
@@ -2459,7 +2518,7 @@ void APlayerCharacter::ProcessRifleFire()
 				UEnemyFSM* fsm = Cast<UEnemyFSM>(enemy->GetDefaultSubobjectByName(FName("enemyFSM")));
 				// Reward Container Casting
 				ARewardContainer* rewardContainer=Cast<ARewardContainer>(rifleHitResult.GetActor());
-				// Enemy Character Casting
+				// Player Character Casting
 				APlayerCharacter* player = Cast<APlayerCharacter>(rifleHitResult.GetActor());
 				if(fsm&&enemy)
 				{

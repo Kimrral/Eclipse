@@ -2350,7 +2350,6 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 }
 
 
-
 void APlayerCharacter::Fire()
 {
 	// 사격 가능 상태가 아니거나, 뛰고 있거나, 위젯이 켜져 있거나, 엔딩 연출 중이라면 리턴
@@ -2397,18 +2396,20 @@ void APlayerCharacter::MulticastRPCFire_Implementation()
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle2, particleTrans2);
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleFireSound, GetActorLocation());
 	}
-	
-	if(curRifleAmmo>0&&CanShoot)
-	{		
-		FTransform particleTrans = rifleComp->GetSocketTransform(FName("RifleFirePosition"));
-		particleTrans.SetScale3D(FVector(0.7));
-		FVector particleLoc2 = rifleComp->GetSocketLocation(FName("RifleFirePosition"));
-		UE::Math::TRotator<double> particleRot2 = rifleComp->GetSocketRotation(FName("RifleFirePosition"))+FRotator(0, 0, 90);
-		FTransform particleTrans2=UKismetMathLibrary::MakeTransform(particleLoc2, particleRot2, FVector(0.4));
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle, particleTrans);
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle2, particleTrans2);
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleFireSound, GetActorLocation());
-	}
+	else
+	{
+		if(curRifleAmmo>0&&CanShoot)
+		{		
+			FTransform particleTrans = rifleComp->GetSocketTransform(FName("RifleFirePosition"));
+			particleTrans.SetScale3D(FVector(0.7));
+			FVector particleLoc2 = rifleComp->GetSocketLocation(FName("RifleFirePosition"));
+			UE::Math::TRotator<double> particleRot2 = rifleComp->GetSocketRotation(FName("RifleFirePosition"))+FRotator(0, 0, 90);
+			FTransform particleTrans2=UKismetMathLibrary::MakeTransform(particleLoc2, particleRot2, FVector(0.4));
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle, particleTrans);
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle2, particleTrans2);
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleFireSound, GetActorLocation());
+		}
+	}	
 }
 
 void APlayerCharacter::FireRelease()

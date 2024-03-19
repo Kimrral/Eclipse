@@ -168,13 +168,7 @@ void APlayerCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
-
-
-	PC->SetAudioListenerOverride(GetMesh(), FVector::ZeroVector, FRotator::ZeroRotator);
-
-	isDead=false;
-	bPlayerDeath=false;
-
+	
 	// Timeline Binding
 	if (CurveFloat)
 	{
@@ -183,7 +177,8 @@ void APlayerCharacter::BeginPlay()
 		Timeline.AddInterpFloat(CurveFloat, TimelineProgress);
 	}
 
-	UWidgetLayoutLibrary::RemoveAllWidgets(GetWorld());
+	Stat->OnHpZero.AddUObject(this, &APlayerCharacter::PlayerDeath);
+	Stat->OnHpChanged.AddUObject(this, &APlayerCharacter::UpdateTabWidget);
 
 	// Widget Settings
 	crosshairUI = CreateWidget<UCrosshairWidget>(GetWorld(), crosshairFactory);
@@ -195,37 +190,43 @@ void APlayerCharacter::BeginPlay()
 	informationUI = CreateWidget<UInformationWidget>(GetWorld(), informationWidgetFactory);
 	levelSelectionUI = CreateWidget<ULevelSelection>(GetWorld(), levelSelectionWidgetFactory);	
 
-
-	if(!crosshairUI->IsInViewport())
+	if(IsLocallyControlled())
 	{
-		crosshairUI->AddToViewport();
-	}
-	if(informationUI)
-	{
-		FTimerHandle respawnTimer;
-		GetWorldTimerManager().SetTimer(respawnTimer, FTimerDelegate::CreateLambda([this]()->void
+		PC->SetAudioListenerOverride(GetMesh(), FVector::ZeroVector, FRotator::ZeroRotator);
+		UWidgetLayoutLibrary::RemoveAllWidgets(GetWorld());
+		if(!crosshairUI->IsInViewport())
 		{
-			informationUI->owner=this;
-			informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
-			informationUI->BossCount->SetText(FText::AsNumber(BossCount));
-			informationUI->ConsoleCount->SetText(FText::AsNumber(ConsoleCount));
-			informationUI->UpdateAmmo();
-			informationUI->UpdateAmmo_Secondary();
-			if(!informationUI->IsInViewport())
+			crosshairUI->AddToViewport();
+		}
+		if(informationUI)
+		{
+			FTimerHandle respawnTimer;
+			GetWorldTimerManager().SetTimer(respawnTimer, FTimerDelegate::CreateLambda([this]()->void
 			{
-				informationUI->AddToViewport();
-			}
-		}), 0.5, false);
+				informationUI->owner=this;
+				informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
+				informationUI->BossCount->SetText(FText::AsNumber(BossCount));
+				informationUI->ConsoleCount->SetText(FText::AsNumber(ConsoleCount));
+				informationUI->UpdateAmmo();
+				informationUI->UpdateAmmo_Secondary();
+				if(!informationUI->IsInViewport())
+				{
+					informationUI->AddToViewport();
+				}
+			}), 0.5, false);		
+		}
+		
 		APlayerCameraManager* const cameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0));
 		cameraManager->StopCameraFade();
 		cameraManager->StartCameraFade(1.0, 0, 8.0, FColor::Black, false, true);
 	}
 
 	// Set Anim Montage
-	StopAnimMontage();
-	PlayAnimMontage(FullBodyMontage, 1, FName("LevelStart"));
+	//StopAnimMontage();
+	//PlayAnimMontage(FullBodyMontage, 1, FName("LevelStart"));
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
 	AEclipsePlayerController* PlayerController = Cast<AEclipsePlayerController>(GetController());
+	
 	if(PlayerController)
 	{
 		PlayerController->EnableInput(PlayerController);		
@@ -266,14 +267,6 @@ void APlayerCharacter::Tick(float DeltaTime)
 	
 	WeaponDetectionLineTrace();	
 
-}
-
-void APlayerCharacter::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-
-	Stat->OnHpZero.AddUObject(this, &APlayerCharacter::PlayerDeath);
-	Stat->OnHpChanged.AddUObject(this, &APlayerCharacter::UpdateTabWidget);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -906,15 +899,12 @@ void APlayerCharacter::MulticastRPCQ_Implementation()
 {
 	if(HasAuthority())
 	{
-		EC_LOG(LogTemp,Warning,TEXT("%s"), TEXT("HasAuthority"))
 	}
 	else if(IsLocallyControlled())
 	{
-		EC_LOG(LogTemp,Warning,TEXT("%s"), TEXT("LocallyControlled"))
 	}
 	else
 	{
-		EC_LOG(LogTemp,Warning,TEXT("%s"), TEXT("NotLocallyControlled"))
 	}
 }
 
@@ -1451,55 +1441,57 @@ void APlayerCharacter::SetBossHPWidget(AEnemy* enemy)
 
 void APlayerCharacter::SetDamageWidget(int damage, FVector spawnLoc, bool isShieldIconEnable, FLinearColor DamageTextColor)
 {
-
-	ADamageWidgetActor* damWidget = GetWorld()->SpawnActor<ADamageWidgetActor>(damageWidgetFactory, spawnLoc+FVector(0, 0, 50), FRotator::ZeroRotator);
-	if(damWidget)
+	if(IsLocallyControlled())
 	{
-		UUserWidget* widui = damWidget->DamageWidgetComponent->GetUserWidgetObject();
-		if(widui)
+		ADamageWidgetActor* damWidget = GetWorld()->SpawnActor<ADamageWidgetActor>(damageWidgetFactory, spawnLoc+FVector(0, 0, 50), FRotator::ZeroRotator);
+		if(damWidget)
 		{
-			damageWidgetUI=Cast<UDamageWidget>(widui);
-			if(damageWidgetUI)
+			UUserWidget* widui = damWidget->DamageWidgetComponent->GetUserWidgetObject();
+			if(widui)
 			{
-				damageWidgetUI->damageText->SetColorAndOpacity(DamageTextColor);
-				damageWidgetUI->damage=damage;
-				if(isShieldIconEnable)
+				damageWidgetUI=Cast<UDamageWidget>(widui);
+				if(damageWidgetUI)
 				{
-					damageWidgetUI->ShieldImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+					damageWidgetUI->damageText->SetColorAndOpacity(DamageTextColor);
+					damageWidgetUI->damage=damage;
+					if(isShieldIconEnable)
+					{
+						damageWidgetUI->ShieldImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+					}
+					else
+					{
+						damageWidgetUI->ShieldImage->SetVisibility(ESlateVisibility::Hidden);
+					}
+					if(weaponArray[0]==true)
+					{
+						damageWidgetUI->rifleBulletImage->SetVisibility(ESlateVisibility::Visible);
+						damageWidgetUI->sniperBulletImage->SetVisibility(ESlateVisibility::Hidden);
+						damageWidgetUI->pistolBulletImage->SetVisibility(ESlateVisibility::Hidden);
+						damageWidgetUI->M249BulletImage->SetVisibility(ESlateVisibility::Hidden);
+					}
+					else if(weaponArray[1]==true)
+					{
+						damageWidgetUI->rifleBulletImage->SetVisibility(ESlateVisibility::Hidden);
+						damageWidgetUI->sniperBulletImage->SetVisibility(ESlateVisibility::Visible);
+						damageWidgetUI->pistolBulletImage->SetVisibility(ESlateVisibility::Hidden);
+						damageWidgetUI->M249BulletImage->SetVisibility(ESlateVisibility::Hidden);
+					}
+					else if(weaponArray[2]==true)
+					{
+						damageWidgetUI->rifleBulletImage->SetVisibility(ESlateVisibility::Hidden);
+						damageWidgetUI->sniperBulletImage->SetVisibility(ESlateVisibility::Hidden);
+						damageWidgetUI->pistolBulletImage->SetVisibility(ESlateVisibility::Visible);
+						damageWidgetUI->M249BulletImage->SetVisibility(ESlateVisibility::Hidden);
+					}
+					else if(weaponArray[3]==true)
+					{
+						damageWidgetUI->rifleBulletImage->SetVisibility(ESlateVisibility::Hidden);
+						damageWidgetUI->sniperBulletImage->SetVisibility(ESlateVisibility::Hidden);
+						damageWidgetUI->pistolBulletImage->SetVisibility(ESlateVisibility::Hidden);
+						damageWidgetUI->M249BulletImage->SetVisibility(ESlateVisibility::Visible);
+					}
+					damageWidgetUI->PlayAnimation(damageWidgetUI->DamageFloat);
 				}
-				else
-				{
-					damageWidgetUI->ShieldImage->SetVisibility(ESlateVisibility::Hidden);
-				}
-				if(weaponArray[0]==true)
-				{
-					damageWidgetUI->rifleBulletImage->SetVisibility(ESlateVisibility::Visible);
-					damageWidgetUI->sniperBulletImage->SetVisibility(ESlateVisibility::Hidden);
-					damageWidgetUI->pistolBulletImage->SetVisibility(ESlateVisibility::Hidden);
-					damageWidgetUI->M249BulletImage->SetVisibility(ESlateVisibility::Hidden);
-				}
-				else if(weaponArray[1]==true)
-				{
-					damageWidgetUI->rifleBulletImage->SetVisibility(ESlateVisibility::Hidden);
-					damageWidgetUI->sniperBulletImage->SetVisibility(ESlateVisibility::Visible);
-					damageWidgetUI->pistolBulletImage->SetVisibility(ESlateVisibility::Hidden);
-					damageWidgetUI->M249BulletImage->SetVisibility(ESlateVisibility::Hidden);
-				}
-				else if(weaponArray[2]==true)
-				{
-					damageWidgetUI->rifleBulletImage->SetVisibility(ESlateVisibility::Hidden);
-					damageWidgetUI->sniperBulletImage->SetVisibility(ESlateVisibility::Hidden);
-					damageWidgetUI->pistolBulletImage->SetVisibility(ESlateVisibility::Visible);
-					damageWidgetUI->M249BulletImage->SetVisibility(ESlateVisibility::Hidden);
-				}
-				else if(weaponArray[3]==true)
-				{
-					damageWidgetUI->rifleBulletImage->SetVisibility(ESlateVisibility::Hidden);
-					damageWidgetUI->sniperBulletImage->SetVisibility(ESlateVisibility::Hidden);
-					damageWidgetUI->pistolBulletImage->SetVisibility(ESlateVisibility::Hidden);
-					damageWidgetUI->M249BulletImage->SetVisibility(ESlateVisibility::Visible);
-				}
-				damageWidgetUI->PlayAnimation(damageWidgetUI->DamageFloat);
 			}
 		}
 	}
@@ -2222,7 +2214,6 @@ void APlayerCharacter::ApplyCachingValues()
 void APlayerCharacter::Damaged(int damage)
 {
 	DamagedRPCServer(damage);
-
 }
 
 void APlayerCharacter::DamagedRPCServer_Implementation(int damage)
@@ -2237,20 +2228,21 @@ bool APlayerCharacter::DamagedRPCServer_Validate(int damage)
 
 void APlayerCharacter::DamagedRPCMulticast_Implementation(int damage)
 {
+	if(HasAuthority())
+	{
+		Stat->ApplyDamage(damage);
+	}
 	if(IsLocallyControlled())
 	{
-		EC_LOG(LogTemp, Warning, TEXT("%s"), TEXT("IsLocally Controlled Damaged"))
 		APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 		// 카메라 페이드 연출
 		playerCam->StartCameraFade(0.3, 0, 2.0, FLinearColor::Red, false, true);
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), damagedSound, GetActorLocation());
 		PC->PlayerCameraManager->StartCameraShake(PlayerDamagedShake);
 	}
-	Stat->ApplyDamage(damage);
 	UpdateTabWidget();
 	StopAnimMontage();
 	PlayAnimMontage(FullBodyMontage, 1, FName("Damaged"));
-	EC_LOG(LogTemp, Warning, TEXT("%s"), TEXT("Multicast Damaged"))
 }
 
 int32 APlayerCharacter::SetRifleAdditionalMagazine()
@@ -2346,7 +2338,6 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(APlayerCharacter, CanShoot);
-	DOREPLIFETIME(APlayerCharacter, isDead);
 	DOREPLIFETIME(APlayerCharacter, curRifleAmmo);
 	DOREPLIFETIME(APlayerCharacter, curSniperAmmo);
 	DOREPLIFETIME(APlayerCharacter, curPistolAmmo);
@@ -2354,14 +2345,25 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(APlayerCharacter, maxRifleAmmo);
 	DOREPLIFETIME(APlayerCharacter, maxSniperAmmo);
 	DOREPLIFETIME(APlayerCharacter, maxPistolAmmo);
-	DOREPLIFETIME(APlayerCharacter, maxM249Ammo);
-	
+	DOREPLIFETIME(APlayerCharacter, maxM249Ammo);	
+	DOREPLIFETIME(APlayerCharacter, IsPlayerDead);	
 }
 
 
+
 void APlayerCharacter::Fire()
-{	
-	ServerRPCFire();
+{
+	// 사격 가능 상태가 아니거나, 뛰고 있거나, 위젯이 켜져 있거나, 엔딩 연출 중이라면 리턴
+	if(!CanShoot||isRunning||gi->IsWidgetOn||bEnding)
+	{
+		return;
+	}
+	CanShoot=false;
+	GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
+	{
+		ServerRPCFire();
+		CanShoot=true;
+	}), 1/(BulletsPerSecRifle*FireRateMultiplier()), false);	
 }
 
 bool APlayerCharacter::ServerRPCFire_Validate()
@@ -2376,20 +2378,36 @@ void APlayerCharacter::ServerRPCFire_Implementation()
 
 void APlayerCharacter::MulticastRPCFire_Implementation()
 {
-	// 사격 가능 상태가 아니거나, 뛰고 있거나, 위젯이 켜져 있거나, 엔딩 연출 중이라면 리턴
-	if(!CanShoot||isRunning||gi->IsWidgetOn||bEnding)
+	if(HasAuthority())
 	{
-		return;
+		ProcessRifleFire();
 	}
 	
-	if(weaponArray[0]==true)
+	if(IsLocallyControlled())
 	{
-		CanShoot=false;
-		ProcessRifleFire();		
-		GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
-		{
-			CanShoot=true;
-		}), 1/(BulletsPerSecRifle*FireRateMultiplier()), false);
+		UGameplayStatics::PlaySound2D(GetWorld(), RifleFireSound);
+		// 사격 카메라 셰이크 실행
+		PC->PlayerCameraManager->StartCameraShake(rifleFireShake);
+		FTransform particleTrans = rifleComp->GetSocketTransform(FName("RifleFirePosition"));
+		particleTrans.SetScale3D(FVector(0.7));
+		FVector particleLoc2 = rifleComp->GetSocketLocation(FName("RifleFirePosition"));
+		UE::Math::TRotator<double> particleRot2 = rifleComp->GetSocketRotation(FName("RifleFirePosition"))+FRotator(0, 0, 90);
+		FTransform particleTrans2=UKismetMathLibrary::MakeTransform(particleLoc2, particleRot2, FVector(0.4));
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle, particleTrans);
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle2, particleTrans2);
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleFireSound, GetActorLocation());
+	}
+	
+	if(curRifleAmmo>0&&CanShoot)
+	{		
+		FTransform particleTrans = rifleComp->GetSocketTransform(FName("RifleFirePosition"));
+		particleTrans.SetScale3D(FVector(0.7));
+		FVector particleLoc2 = rifleComp->GetSocketLocation(FName("RifleFirePosition"));
+		UE::Math::TRotator<double> particleRot2 = rifleComp->GetSocketRotation(FName("RifleFirePosition"))+FRotator(0, 0, 90);
+		FTransform particleTrans2=UKismetMathLibrary::MakeTransform(particleLoc2, particleRot2, FVector(0.4));
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle, particleTrans);
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle2, particleTrans2);
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleFireSound, GetActorLocation());
 	}
 }
 
@@ -2402,35 +2420,25 @@ void APlayerCharacter::ProcessRifleFire()
 {	
 	if(curRifleAmmo>0)
 	{
-			// Clamp를 통한 탄약 수 차감
-			curRifleAmmo = FMath::Clamp(curRifleAmmo-1, 0, 40+SetRifleAdditionalMagazine());
-			UE_LOG(LogTemp, Warning, TEXT("Cur Rifle Bullet : %d"), curRifleAmmo)
-			FVector startLoc = FollowCamera->GetComponentLocation();
-			FVector EndLoc = startLoc + FollowCamera->GetForwardVector()*10000.0f;
-			TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes; // LineTrace로 히트 가능한 오브젝트 유형들.
-			TEnumAsByte<EObjectTypeQuery> WorldStatic = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic);
-			TEnumAsByte<EObjectTypeQuery> WorldDynamic = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic);
-			TEnumAsByte<EObjectTypeQuery> Pawn = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn);
-			TEnumAsByte<EObjectTypeQuery> PhysicsBody = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody);
-			TEnumAsByte<EObjectTypeQuery> Destructible = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Destructible);
-			ObjectTypes.Add(WorldStatic);
-			ObjectTypes.Add(WorldDynamic);
-			ObjectTypes.Add(Pawn);
-			ObjectTypes.Add(PhysicsBody);
-			ObjectTypes.Add(Destructible);
-			TArray<AActor*> ActorsToIgnore;
-			ActorsToIgnore.Add(this); // LineTrace에서 제외할 대상
-			UGameplayStatics::PlaySound2D(GetWorld(), RifleFireSound);
-			// 사격 카메라 셰이크 실행
-			PC->PlayerCameraManager->StartCameraShake(rifleFireShake);
-			FTransform particleTrans = rifleComp->GetSocketTransform(FName("RifleFirePosition"));
-			particleTrans.SetScale3D(FVector(0.7));
-			FVector particleLoc2 = rifleComp->GetSocketLocation(FName("RifleFirePosition"));
-			UE::Math::TRotator<double> particleRot2 = rifleComp->GetSocketRotation(FName("RifleFirePosition"))+FRotator(0, 0, 90);
-			FTransform particleTrans2=UKismetMathLibrary::MakeTransform(particleLoc2, particleRot2, FVector(0.4));
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle, particleTrans);
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle2, particleTrans2);
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleFireSound, GetActorLocation());
+		// Clamp를 통한 탄약 수 차감
+		curRifleAmmo = FMath::Clamp(curRifleAmmo-1, 0, 40+SetRifleAdditionalMagazine());
+		UE_LOG(LogTemp, Warning, TEXT("Cur Rifle Bullet : %d"), curRifleAmmo)
+		FVector startLoc = FollowCamera->GetComponentLocation();
+		FVector EndLoc = startLoc + FollowCamera->GetForwardVector()*10000.0f;
+		TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes; // LineTrace로 히트 가능한 오브젝트 유형들.
+		TEnumAsByte<EObjectTypeQuery> WorldStatic = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic);
+		TEnumAsByte<EObjectTypeQuery> WorldDynamic = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic);
+		TEnumAsByte<EObjectTypeQuery> Pawn = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn);
+		TEnumAsByte<EObjectTypeQuery> PhysicsBody = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody);
+		TEnumAsByte<EObjectTypeQuery> Destructible = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Destructible);
+		ObjectTypes.Add(WorldStatic);
+		ObjectTypes.Add(WorldDynamic);
+		ObjectTypes.Add(Pawn);
+		ObjectTypes.Add(PhysicsBody);
+		ObjectTypes.Add(Destructible);
+		TArray<AActor*> ActorsToIgnore;
+		ActorsToIgnore.Add(this); // LineTrace에서 제외할 대상
+
 
 			//FActorSpawnParameters param;
 			//param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -2712,9 +2720,8 @@ void APlayerCharacter::ProcessRifleFire()
 						// 적중 파티클 스폰
 						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(0.5f));
 						// 데미지 위젯에 피해 값과 적 위치벡터 할당
-						SetDamageWidget(randRifleDamage, hitLoc, false, FLinearColor::White);
-						player->Damaged(30);
-						EC_LOG(LogTemp, Warning, TEXT("%s"), TEXT("Player Hit"))
+						SetDamageWidget(15, hitLoc, false, FLinearColor::White);
+						player->Damaged(15);
 					}
 				}
 				// 지형지물에 적중
@@ -3773,12 +3780,7 @@ float APlayerCharacter::RecoilRateMultiplier()
 
 void APlayerCharacter::PlayerDeath()
 {
-	isDead=true;
-	if(isDead)
-	{
-		PlayerDeathRPCServer();
-		OnRep_IsDead();
-	}
+	PlayerDeathRPCServer();
 }
 
 void APlayerCharacter::PlayerDeathRPCServer_Implementation()
@@ -3793,10 +3795,25 @@ bool APlayerCharacter::PlayerDeathRPCServer_Validate()
 
 void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 {
+	IsPlayerDead=true;
 	// 몽타주 재생 중단
 	StopAnimMontage();
 	// 사망 몽타주 재생
 	PlayAnimMontage(FullBodyMontage, 1, FName("Death"));
+	EC_LOG(LogTemp, Warning, TEXT("%s"), TEXT("PlayerDeath"))
+
+	if(IsLocallyControlled())
+	{
+		infoWidgetUI->RemoveFromParent();
+		informationUI->RemoveFromParent();
+		crosshairUI->RemoveFromParent();		
+		APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+		// 카메라 페이드 연출
+		playerCam->StartCameraFade(0, 1, 5.0, FLinearColor::Black, false, true);
+		// 사망지점 전역변수에 캐싱
+		DeathPosition=GetActorLocation();
+	}	
+	
 	// FTimerHandle endHandle;
 	// // 7초 뒤 호출되는 함수 타이머
 	// GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()->void
@@ -3826,25 +3843,6 @@ void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 	// 		}
 	// }), 0.4f, false);
 }
-
-void APlayerCharacter::OnRep_IsDead()
-{
-	if(IsLocallyControlled())
-	{
-		infoWidgetUI->RemoveFromParent();
-		informationUI->RemoveFromParent();
-		crosshairUI->RemoveFromParent();		
-		APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
-		// 카메라 페이드 연출
-		playerCam->StartCameraFade(0, 1, 5.0, FLinearColor::Black, false, true);
-	}
-	// 사망지점 전역변수에 캐싱
-	DeathPosition=GetActorLocation();
-	// 인풋 비활성화
-	//DisableInput(PC);
-	isDead=false;
-}
-
 
 void APlayerCharacter::EquipHelmet(bool SoundBool)
 {
@@ -3947,6 +3945,6 @@ void APlayerCharacter::UnEquipArmor(bool SoundBool)
 
 void APlayerCharacter::OnRep_CanShoot()
 {
-	
+	EC_LOG(LogTemp, Warning, TEXT("%s"), TEXT("CanShoot"))
 }
 

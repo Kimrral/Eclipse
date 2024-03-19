@@ -170,7 +170,7 @@ void APlayerCharacter::BeginPlay()
 	}
 
 
-	//pc->SetAudioListenerOverride(GetMesh(), FVector::ZeroVector, FRotator::ZeroRotator);
+	PC->SetAudioListenerOverride(GetMesh(), FVector::ZeroVector, FRotator::ZeroRotator);
 
 	isDead=false;
 	bPlayerDeath=false;
@@ -223,7 +223,7 @@ void APlayerCharacter::BeginPlay()
 
 	// Set Anim Montage
 	StopAnimMontage();
-	PlayAnimMontage(zoomingMontage, 1, FName("LevelStart"));
+	PlayAnimMontage(FullBodyMontage, 1, FName("LevelStart"));
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
 	AEclipsePlayerController* PlayerController = Cast<AEclipsePlayerController>(GetController());
 	if(PlayerController)
@@ -485,7 +485,7 @@ void APlayerCharacter::ZoomRPCReleaseMulticast_Implementation()
 		isSniperZooming=false;
 		const AEclipsePlayerController* controller = Cast<AEclipsePlayerController>(GetController());
 		controller->PlayerCameraManager->StopAllCameraShakes();
-		if(GetMesh()->GetAnimInstance()->Montage_IsPlaying(zoomingMontage))
+		if(GetMesh()->GetAnimInstance()->Montage_IsPlaying(UpperOnlyMontage))
 		{
 			StopAnimMontage();
 		}
@@ -642,7 +642,7 @@ void APlayerCharacter::SwapFirstWeaponRPCMulticast_Implementation()
 			// 애니메이션 블루프린트에 상태 전환 불리언 전달
 			animInst->bPistol=false;
 		}
-		PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+		PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
 		// Visibility 설정
 		rifleComp->SetVisibility(true);
 		sniperComp->SetVisibility(false);
@@ -670,7 +670,7 @@ void APlayerCharacter::SwapFirstWeaponRPCMulticast_Implementation()
 			// 애니메이션 블루프린트에 상태 전환 불리언 전달
 			animInst->bPistol=false;
 		}
-		PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+		PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
 		// Visibility 설정
 		rifleComp->SetVisibility(false);
 		sniperComp->SetVisibility(true);
@@ -697,7 +697,7 @@ void APlayerCharacter::SwapFirstWeaponRPCMulticast_Implementation()
 			// 애니메이션 블루프린트에 상태 전환 불리언 전달
 			animInst->bPistol=true;
 		}
-		PlayAnimMontage(zoomingMontage, 1 , FName("PistolEquip"));
+		PlayAnimMontage(FullBodyMontage, 1 , FName("PistolEquip"));
 		// Visibility 설정
 		rifleComp->SetVisibility(false);
 		sniperComp->SetVisibility(false);
@@ -724,7 +724,7 @@ void APlayerCharacter::SwapFirstWeaponRPCMulticast_Implementation()
 			// 애니메이션 블루프린트에 상태 전환 불리언 전달
 			animInst->bPistol=false;
 		}
-		PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+		PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
 		// Visibility 설정
 		rifleComp->SetVisibility(false);
 		sniperComp->SetVisibility(false);
@@ -786,7 +786,7 @@ void APlayerCharacter::SwapSecondWeaponRPCMulticast_Implementation()
 			// 애니메이션 블루프린트에 상태 전환 불리언 전달
 			animInst->bPistol=false;
 		}
-		PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+		PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
 		// Visibility 설정
 		rifleComp->SetVisibility(true);
 		sniperComp->SetVisibility(false);
@@ -814,7 +814,7 @@ void APlayerCharacter::SwapSecondWeaponRPCMulticast_Implementation()
 			// 애니메이션 블루프린트에 상태 전환 불리언 전달
 			animInst->bPistol=false;
 		}
-		PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+		PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
 		// Visibility 설정
 		rifleComp->SetVisibility(false);
 		sniperComp->SetVisibility(true);
@@ -842,7 +842,7 @@ void APlayerCharacter::SwapSecondWeaponRPCMulticast_Implementation()
 			// 애니메이션 블루프린트에 상태 전환 불리언 전달
 			animInst->bPistol=true;
 		}
-		PlayAnimMontage(zoomingMontage, 1 , FName("PistolEquip"));
+		PlayAnimMontage(FullBodyMontage, 1 , FName("PistolEquip"));
 		// Visibility 설정
 		rifleComp->SetVisibility(false);
 		sniperComp->SetVisibility(false);
@@ -869,7 +869,7 @@ void APlayerCharacter::SwapSecondWeaponRPCMulticast_Implementation()
 			// 애니메이션 블루프린트에 상태 전환 불리언 전달
 			animInst->bPistol=false;
 		}
-		PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+		PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
 		// Visibility 설정
 		rifleComp->SetVisibility(false);
 		sniperComp->SetVisibility(false);
@@ -1578,7 +1578,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 					// 무기 정보 위젯 제거
 					infoWidgetUI->RemoveFromParent();
 					// 무기 교체 Montage 재생
-					PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+					PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
 					// 교체 대상 무기 액터 파괴
 					rifleActor->Destroy();
 					// 액터 스폰 지점 할당
@@ -1647,7 +1647,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 					infoWidgetUI->weaponHoldPercent=0;
 					UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
 					infoWidgetUI->RemoveFromParent();
-					PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+					PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
 					sniperActor->Destroy();
 					FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
 					FRotator spawnRotation = FRotator::ZeroRotator;
@@ -1704,7 +1704,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 					infoWidgetUI->weaponHoldPercent=0;
 					UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
 					infoWidgetUI->RemoveFromParent();
-					PlayAnimMontage(zoomingMontage, 1 , FName("PistolEquip"));
+					PlayAnimMontage(FullBodyMontage, 1 , FName("PistolEquip"));
 					UPlayerAnim* animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 					if(animInst)
 					{
@@ -1759,7 +1759,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 					infoWidgetUI->weaponHoldPercent=0;
 					UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
 					infoWidgetUI->RemoveFromParent();
-					PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+					PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
 					m249Actor->Destroy();
 					FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
 					FRotator spawnRotation = FRotator::ZeroRotator;
@@ -1810,7 +1810,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 				infoWidgetUI->weaponHoldPercent=0;
 				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
 				infoWidgetUI->RemoveFromParent();
-				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+				PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
 				HackingConsole->AddInventory();
 				HackingConsole->Destroy();
 				ConsoleCount++;
@@ -1833,7 +1833,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 					GetCharacterMovement()->DisableMovement();
 					FTransform spawnTrans = this->GetTransform();
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), recallParticle, spawnTrans);
-					PlayAnimMontage(zoomingMontage, 1, FName("LevelEnd"));
+					PlayAnimMontage(FullBodyMontage, 1, FName("LevelEnd"));
 					UGameplayStatics::PlaySoundAtLocation(GetWorld(), PortalSound, GetActorLocation());
 					bUseControllerRotationYaw=false;
 					infoWidgetUI->RemoveFromParent();
@@ -1864,7 +1864,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 				infoWidgetUI->weaponHoldPercent=0;
 				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
 				infoWidgetUI->RemoveFromParent();
-				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+				PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
 				RifleMagActor->AddInventory();
 				RifleMagActor->Destroy();
 			}
@@ -1877,7 +1877,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 				infoWidgetUI->weaponHoldPercent=0;
 				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
 				infoWidgetUI->RemoveFromParent();
-				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+				PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
 				SniperMagActor->AddInventory();
 				SniperMagActor->Destroy();
 			}
@@ -1890,7 +1890,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 				infoWidgetUI->weaponHoldPercent=0;
 				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
 				infoWidgetUI->RemoveFromParent();
-				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+				PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
 				PistolMagActor->AddInventory();
 				PistolMagActor->Destroy();
 			}
@@ -1903,7 +1903,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 				infoWidgetUI->weaponHoldPercent=0;
 				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
 				infoWidgetUI->RemoveFromParent();
-				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+				PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
 				M249MagActor->AddInventory();
 				M249MagActor->Destroy();
 			}
@@ -1916,7 +1916,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 				infoWidgetUI->weaponHoldPercent=0;
 				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
 				infoWidgetUI->RemoveFromParent();
-				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+				PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
 				GoggleActor->AddInventory();
 				GoggleActor->Destroy();
 			}
@@ -1929,7 +1929,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 				infoWidgetUI->weaponHoldPercent=0;
 				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
 				infoWidgetUI->RemoveFromParent();
-				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+				PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
 				HelmetActor->AddInventory();
 				HelmetActor->Destroy();
 			}
@@ -1942,7 +1942,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 				infoWidgetUI->weaponHoldPercent=0;
 				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
 				infoWidgetUI->RemoveFromParent();
-				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+				PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
 				HeadsetActor->AddInventory();
 				HeadsetActor->Destroy();
 			}
@@ -1955,7 +1955,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 				infoWidgetUI->weaponHoldPercent=0;
 				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
 				infoWidgetUI->RemoveFromParent();
-				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+				PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
 				MaskActor->AddInventory();
 				MaskActor->Destroy();
 			}
@@ -1968,7 +1968,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 				infoWidgetUI->weaponHoldPercent=0;
 				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
 				infoWidgetUI->RemoveFromParent();
-				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+				PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
 				ArmorActor->AddInventory();
 				ArmorActor->Destroy();
 			}
@@ -1981,7 +1981,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 				infoWidgetUI->weaponHoldPercent=0;
 				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
 				infoWidgetUI->RemoveFromParent();
-				PlayAnimMontage(zoomingMontage, 1 , FName("WeaponEquip"));
+				PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
 				MedKitActor->AddInventory();
 				MedKitActor->Destroy();
 			}
@@ -2059,7 +2059,7 @@ void APlayerCharacter::MulticastRPCReload_Implementation()
 				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
 			}
 			UGameplayStatics::PlaySound2D(GetWorld(), RifleReloadSound);
-			PlayAnimMontage(reloadMontage, 1, FName("Reload"));
+			PlayAnimMontage(UpperOnlyMontage, 1, FName("Reload"));
 		}
 		else if(weaponArray[1]==true&&curSniperAmmo<5+SetSniperAdditionalMagazine()&&maxSniperAmmo>0)
 		{
@@ -2068,7 +2068,7 @@ void APlayerCharacter::MulticastRPCReload_Implementation()
 				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
 			}
 			UGameplayStatics::PlaySound2D(GetWorld(), SniperReloadSound);
-			PlayAnimMontage(reloadMontage, 1, FName("Reload"));
+			PlayAnimMontage(UpperOnlyMontage, 1, FName("Reload"));
 		}
 		else if(weaponArray[2]==true&&curPistolAmmo<8+SetPistolAdditionalMagazine()&&maxPistolAmmo>0)
 		{
@@ -2077,7 +2077,7 @@ void APlayerCharacter::MulticastRPCReload_Implementation()
 				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
 			}
 			UGameplayStatics::PlaySound2D(GetWorld(), PistolReloadSound);
-			PlayAnimMontage(reloadMontage, 1, FName("PistolReload"));
+			PlayAnimMontage(UpperOnlyMontage, 1, FName("PistolReload"));
 		}
 		else if(weaponArray[3]==true&&curM249Ammo<100+SetM249AdditionalMagazine()&&maxM249Ammo>0)
 		{
@@ -2086,7 +2086,7 @@ void APlayerCharacter::MulticastRPCReload_Implementation()
 				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
 			}
 			UGameplayStatics::PlaySound2D(GetWorld(), M249ReloadSound);
-			PlayAnimMontage(reloadMontage, 1, FName("M249Reload"));
+			PlayAnimMontage(UpperOnlyMontage, 1, FName("M249Reload"));
 		}		
 	}	
 }
@@ -2108,7 +2108,7 @@ void APlayerCharacter::MoveToIsolatedShip()
 	GetCharacterMovement()->DisableMovement();
 	FTransform spawnTrans = this->GetTransform();
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), recallParticle, spawnTrans);
-	PlayAnimMontage(zoomingMontage, 1, FName("LevelEnd"));
+	PlayAnimMontage(FullBodyMontage, 1, FName("LevelEnd"));
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), PortalSound, GetActorLocation());
 	bUseControllerRotationYaw=false;
 	infoWidgetUI->RemoveFromParent();
@@ -2239,19 +2239,18 @@ void APlayerCharacter::DamagedRPCMulticast_Implementation(int damage)
 {
 	if(IsLocallyControlled())
 	{
+		EC_LOG(LogTemp, Warning, TEXT("%s"), TEXT("IsLocally Controlled Damaged"))
 		APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 		// 카메라 페이드 연출
 		playerCam->StartCameraFade(0.3, 0, 2.0, FLinearColor::Red, false, true);
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), damagedSound, GetActorLocation());
 		PC->PlayerCameraManager->StartCameraShake(PlayerDamagedShake);
 	}
-	if(HasAuthority())
-	{
-		Stat->ApplyDamage(damage);
-	}	
+	Stat->ApplyDamage(damage);
 	UpdateTabWidget();
 	StopAnimMontage();
-	PlayAnimMontage(zoomingMontage, 1, FName("Damaged"));
+	PlayAnimMontage(FullBodyMontage, 1, FName("Damaged"));
+	EC_LOG(LogTemp, Warning, TEXT("%s"), TEXT("Multicast Damaged"))
 }
 
 int32 APlayerCharacter::SetRifleAdditionalMagazine()
@@ -2699,11 +2698,26 @@ void APlayerCharacter::ProcessRifleFire()
 						}
 					}
 				}
+				// 플레이어 적중
 				else if(player)
 				{
-					player->Damaged(30);
-					UE_LOG(LogTemp, Warning, TEXT("Player Hit"))
+					if(player->Stat->GetCurrentHp()>0)
+					{
+						FVector_NetQuantize hitLoc = rifleHitResult.Location;
+						FRotator hitRot = UKismetMathLibrary::Conv_VectorToRotator(rifleHitResult.ImpactNormal);
+						// 적중 위젯 애니메이션 재생
+						crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
+						// 적중 사운드 재생
+						UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
+						// 적중 파티클 스폰
+						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(0.5f));
+						// 데미지 위젯에 피해 값과 적 위치벡터 할당
+						SetDamageWidget(randRifleDamage, hitLoc, false, FLinearColor::White);
+						player->Damaged(30);
+						EC_LOG(LogTemp, Warning, TEXT("%s"), TEXT("Player Hit"))
+					}
 				}
+				// 지형지물에 적중
 				else
 				{
 					FRotator decalRot = UKismetMathLibrary::Conv_VectorToRotator(rifleHitResult.ImpactNormal);
@@ -2717,6 +2731,7 @@ void APlayerCharacter::ProcessRifleFire()
 				AddControllerPitchInput(randF);
 				AddControllerYawInput(randF2);						
 			}
+			// 허공에 사격
 			else
 			{
 				double randF = UKismetMathLibrary::RandomFloatInRange(-0.3 * RecoilRateMultiplier(), -0.5 * RecoilRateMultiplier());
@@ -3011,7 +3026,7 @@ void APlayerCharacter::ProcessSniperFire()
 				}
 				else
 				{
-					PlayAnimMontage(zoomingMontage, 1, FName("RifleFire"));
+					PlayAnimMontage(FullBodyMontage, 1, FName("RifleFire"));
 					PC->PlayerCameraManager->StartCameraShake(sniperFireShake);
 					FTransform particleTrans = sniperComp->GetSocketTransform(FName("SniperFirePosition"));
 					particleTrans.SetScale3D(FVector(0.7));
@@ -3070,11 +3085,11 @@ void APlayerCharacter::ProcessPistolFire()
 			PC->PlayerCameraManager->StartCameraShake(pistolFireShake);
 			if(isZooming)
 			{
-				PlayAnimMontage(zoomingMontage, 1, FName("PistolZoomFire"));
+				PlayAnimMontage(FullBodyMontage, 1, FName("PistolZoomFire"));
 			}
 			else
 			{
-				PlayAnimMontage(zoomingMontage, 1, FName("PistolFire"));
+				PlayAnimMontage(FullBodyMontage, 1, FName("PistolFire"));
 			}
 			FVector startLoc = FollowCamera->GetComponentLocation();
 			FVector EndLoc = startLoc + FollowCamera->GetForwardVector()*10000.0f;
@@ -3425,7 +3440,7 @@ void APlayerCharacter::ProcessM249Fire()
 			UGameplayStatics::SpawnSoundAtLocation(GetWorld(), RifleBulletShellDropSound, bulSoundLoc, FRotator::ZeroRotator, 0.4, 1, 0);
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), M249FireSound, GetActorLocation());
 			PC->PlayerCameraManager->StartCameraShake(rifleFireShake);
-			PlayAnimMontage(zoomingMontage, 1, FName("RifleFire"));
+			PlayAnimMontage(FullBodyMontage, 1, FName("RifleFire"));
 			bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),startLoc, EndLoc, ObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, M249HitResult, true);
 			if(bHit)
 			{
@@ -3758,11 +3773,16 @@ float APlayerCharacter::RecoilRateMultiplier()
 
 void APlayerCharacter::PlayerDeath()
 {
-	PlayerDeathRPCServer();
+	isDead=true;
+	if(isDead)
+	{
+		PlayerDeathRPCServer();
+		OnRep_IsDead();
+	}
 }
 
 void APlayerCharacter::PlayerDeathRPCServer_Implementation()
-{
+{	
 	PlayerDeathRPCMulticast();
 }
 
@@ -3773,28 +3793,10 @@ bool APlayerCharacter::PlayerDeathRPCServer_Validate()
 
 void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 {
-	if(isDead==false)
-	{
-		// 몽타주 재생 중단
-		StopAnimMontage();
-		// 사망 몽타주 재생
-		PlayAnimMontage(zoomingMontage, 1, FName("Death"));
-		if(IsLocallyControlled())
-		{
-			infoWidgetUI->RemoveFromParent();
-			informationUI->RemoveFromParent();
-			crosshairUI->RemoveFromParent();		
-			APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
-			// 카메라 페이드 연출
-			playerCam->StartCameraFade(0, 1, 5.0, FLinearColor::Black, false, true);		
-			// 사망지점 전역변수에 캐싱
-			DeathPosition=GetActorLocation();
-			// 인풋 비활성화
-			DisableInput(PC);	
-		}
-		isDead=true;
-	}
-	
+	// 몽타주 재생 중단
+	StopAnimMontage();
+	// 사망 몽타주 재생
+	PlayAnimMontage(FullBodyMontage, 1, FName("Death"));
 	// FTimerHandle endHandle;
 	// // 7초 뒤 호출되는 함수 타이머
 	// GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()->void
@@ -3824,6 +3826,25 @@ void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 	// 		}
 	// }), 0.4f, false);
 }
+
+void APlayerCharacter::OnRep_IsDead()
+{
+	if(IsLocallyControlled())
+	{
+		infoWidgetUI->RemoveFromParent();
+		informationUI->RemoveFromParent();
+		crosshairUI->RemoveFromParent();		
+		APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+		// 카메라 페이드 연출
+		playerCam->StartCameraFade(0, 1, 5.0, FLinearColor::Black, false, true);
+	}
+	// 사망지점 전역변수에 캐싱
+	DeathPosition=GetActorLocation();
+	// 인풋 비활성화
+	//DisableInput(PC);
+	isDead=false;
+}
+
 
 void APlayerCharacter::EquipHelmet(bool SoundBool)
 {

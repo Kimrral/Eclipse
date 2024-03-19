@@ -17,6 +17,8 @@ class ECLIPSE_API UPlayerCharacterStatComponent : public UActorComponent
 public:
 	FOnHpZeroDelegate OnHpZero;
 	FOnHpChangedDelegate OnHpChanged;
+
+	
 	// Sets default values for this component's properties
 	UPlayerCharacterStatComponent();
 	UFUNCTION(BlueprintCallable)

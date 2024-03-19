@@ -600,10 +600,10 @@ public:
 	class UPlayerAnim* animInstance;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
-	class UAnimMontage* zoomingMontage;
+	class UAnimMontage* UpperOnlyMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
-	class UAnimMontage* reloadMontage;
+	class UAnimMontage* FullBodyMontage;
 	
 	UPROPERTY(Replicated)
 	int curRifleAmmo = 40;
@@ -850,8 +850,11 @@ public:
 	UPROPERTY()
 	bool ArmorEquipped = false;
 
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing=OnRep_IsDead)
 	bool isDead = false;
+
+	UFUNCTION()
+	void OnRep_IsDead();
 	
 	UPROPERTY()
 	int randRifleDamage;

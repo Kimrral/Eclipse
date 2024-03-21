@@ -14,7 +14,7 @@ UPlayerCharacterStatComponent::UPlayerCharacterStatComponent()
 void UPlayerCharacterStatComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
-
+	
 	SetHp(MaxHp);
 	SetIsReplicated(true);
 }

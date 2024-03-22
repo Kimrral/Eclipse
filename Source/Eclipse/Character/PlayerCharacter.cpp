@@ -605,8 +605,7 @@ void APlayerCharacter::RunRPCMulticast_Implementation()
 	{
 		return;
 	}
-	CharacterWalkSpeed=520.f;
-	GetCharacterMovement()->MaxWalkSpeed=CharacterWalkSpeed;
+	GetCharacterMovement()->MaxWalkSpeed=520.f;
 }
 
 void APlayerCharacter::RunRPCServer_Implementation()
@@ -636,8 +635,7 @@ void APlayerCharacter::RunRPCReleaseMulticast_Implementation()
 	{
 		return;
 	}
-	CharacterWalkSpeed=360.f;
-	GetCharacterMovement()->MaxWalkSpeed = CharacterWalkSpeed;
+	GetCharacterMovement()->MaxWalkSpeed = 360.f;
 }
 
 

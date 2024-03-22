@@ -83,7 +83,7 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer)
 	// instead of recompiling to adjust them
 	GetCharacterMovement()->JumpZVelocity = 1000.f;
 	GetCharacterMovement()->AirControl = 0.35f;
-	GetCharacterMovement()->MaxWalkSpeed = CharacterWalkSpeed;
+	//GetCharacterMovement()->MaxWalkSpeed = CharacterWalkSpeed;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 
@@ -213,6 +213,7 @@ void APlayerCharacter::BeginPlay()
 		{
 			animInstance->bArmed=false;			
 		}
+		GetCharacterMovement()->MaxWalkSpeed=180.f;
 		bUsingRifle=false;
 		bUsingSniper=false;
 		bUsingPistol=false;
@@ -239,6 +240,7 @@ void APlayerCharacter::BeginPlay()
 		{
 			animInstance->bArmed=true;			
 		}
+		GetCharacterMovement()->MaxWalkSpeed=360.f;
 		bUsingRifle=true;
 		bUsingSniper=false;
 		bUsingPistol=false;
@@ -437,7 +439,8 @@ void APlayerCharacter::ZoomRPCMulticast_Implementation()
 	// Zooming Boolean
 	isZooming=true;
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), zoomSound, GetActorLocation());
-	GetCharacterMovement()->MaxWalkSpeed=240.f;
+	CharacterWalkSpeed=GetCharacterMovement()->MaxWalkSpeed;
+	GetCharacterMovement()->MaxWalkSpeed=180.f;
 	UPlayerAnim* const animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 	if(animInst)
 	{
@@ -509,7 +512,7 @@ void APlayerCharacter::ZoomRPCReleaseMulticast_Implementation()
 	}
 	// Zooming Boolean
 	isZooming = false;
-	GetCharacterMovement()->MaxWalkSpeed=360.f;
+	GetCharacterMovement()->MaxWalkSpeed=CharacterWalkSpeed;
 	UPlayerAnim* const animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 	if(animInst)
 	{
@@ -556,12 +559,18 @@ void APlayerCharacter::ZoomRPCReleaseMulticast_Implementation()
 
 void APlayerCharacter::Run()
 {
-	RunRPCServer();
+	if(UGameplayStatics::GetCurrentLevelName(GetWorld())!=FString("Safe_House"))
+	{
+		RunRPCServer();		
+	}
 }
 
 void APlayerCharacter::RunRelease()
 {
-	RunRPCReleaseServer();
+	if(UGameplayStatics::GetCurrentLevelName(GetWorld())!=FString("Safe_House"))
+	{
+		RunRPCReleaseServer();
+	}
 }
 
 void APlayerCharacter::RunRPCMulticast_Implementation()

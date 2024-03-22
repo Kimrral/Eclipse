@@ -9,8 +9,8 @@ UEclipseGameInstance::UEclipseGameInstance()
 	curSniperAmmo=5;
 	curPistolAmmo=8;
 	curM249Ammo=100;
-	maxRifleAmmo=80;
-	maxSniperAmmo=10;
-	maxPistolAmmo=16;
-	maxM249Ammo=200;
+	maxRifleAmmo=0;
+	maxSniperAmmo=0;
+	maxPistolAmmo=0;
+	maxM249Ammo=0;
 }

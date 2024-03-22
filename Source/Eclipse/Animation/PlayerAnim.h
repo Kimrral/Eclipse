@@ -20,8 +20,6 @@ public:
 	UPROPERTY()
 	class APlayerCharacter* me;
 
-	//virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
 	UFUNCTION()
 	void AnimNotify_ReloadStart();
 
@@ -33,6 +31,9 @@ public:
 
 	UFUNCTION()
 	void AnimNotify_RightPlant();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bArmed = true;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bPistol = false;

@@ -20,52 +20,11 @@ AActor* AEclipseGameMode::ChoosePlayerStart_Implementation(AController* Player)
 	return outActors[0];
 }
 
-void AEclipseGameMode::PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
+void AEclipseGameMode::OnPlayerKilled(AController* Killer, AController* KilledPlayer, APawn* KilledPawn)
 {
-	EC_LOG(LogECNetwork, Log, TEXT("%s"), TEXT("Begin"))
-	Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
-	EC_LOG(LogECNetwork, Log, TEXT("%s"), TEXT("End"))
-}
-
-APlayerController* AEclipseGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal, const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
-{
-	EC_LOG(LogECNetwork, Log, TEXT("%s"), TEXT("Begin"))
-	APlayerController* NewPlayerController= Super::Login(NewPlayer, InRemoteRole, Portal, Options, UniqueId, ErrorMessage);
-	EC_LOG(LogECNetwork, Log, TEXT("%s"), TEXT("End"))
-	return NewPlayerController;
-}
-
-void AEclipseGameMode::PostLogin(APlayerController* NewPlayer)
-{
-	EC_LOG(LogECNetwork, Log, TEXT("%s"), TEXT("Begin"))
-	Super::PostLogin(NewPlayer);
-	UNetDriver* NetDriver = GetNetDriver();
-	if(NetDriver)
+	APlayerState* KillerPlayerState = Killer->PlayerState;
+	if (KillerPlayerState)
 	{
-		if(NetDriver->ClientConnections.Num()==0)
-		{
-			EC_LOG(LogECNetwork, Log, TEXT("%s"), TEXT("No Client Connections"));
-		}
-		else
-		{
-			for(const auto& Connection : NetDriver->ClientConnections)
-			{
-				EC_LOG(LogECNetwork, Log, TEXT("Client Connections : %s"), *Connection.GetName());
-			}
-		}
+		
 	}
-	else
-	{
-		EC_LOG(LogECNetwork, Log, TEXT("%s"), TEXT("No Net Driver"));
-	}
-	
-	EC_LOG(LogECNetwork, Log, TEXT("%s"), TEXT("End"))
 }
-
-void AEclipseGameMode::StartPlay()
-{
-	EC_LOG(LogECNetwork, Log, TEXT("%s"), TEXT("Begin"))
-	Super::StartPlay();
-	EC_LOG(LogECNetwork, Log, TEXT("%s"), TEXT("End"))
-}
-

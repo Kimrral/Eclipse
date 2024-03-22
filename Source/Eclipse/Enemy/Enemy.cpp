@@ -133,35 +133,19 @@ void AEnemy::DropAmmo()
 	auto randIndex = FMath::RandRange(0, 3);
 	if(randIndex==0)
 	{
-		auto rifleAmmo = GetWorld()->SpawnActor<ARifleAmmoActor>(rifleAmmoFactory, GetActorLocation(), GetActorRotation(), param);
-		if(rifleAmmo)
-		{
-			//rifleAmmo->ammoMesh->AddImpulseAtLocation(DropForce, DropLoc);
-		}
+		GetWorld()->SpawnActor<ARifleAmmoActor>(rifleAmmoFactory, GetActorLocation(), GetActorRotation(), param);		
 	}
 	else if(randIndex==1)
 	{
-		auto sniperAmmo = GetWorld()->SpawnActor<ASniperAmmoActor>(sniperAmmoFactory, GetActorLocation(), GetActorRotation(), param);
-		if(sniperAmmo)
-		{
-			//sniperAmmo->ammoMesh->AddImpulseAtLocation(DropForce, DropLoc);
-		}
+		GetWorld()->SpawnActor<ASniperAmmoActor>(sniperAmmoFactory, GetActorLocation(), GetActorRotation(), param);
 	}
 	else if(randIndex==2)
 	{
-		auto pistolAmmo = GetWorld()->SpawnActor<APistolAmmoActor>(pistolAmmoFactory, GetActorLocation(), GetActorRotation(), param);
-		if(pistolAmmo)
-		{
-			//pistolAmmo->ammoMesh->AddImpulseAtLocation(DropForce, DropLoc);
-		}
+		GetWorld()->SpawnActor<APistolAmmoActor>(pistolAmmoFactory, GetActorLocation(), GetActorRotation(), param);
 	}
 	else if(randIndex==3)
 	{
-		auto m249Ammo = GetWorld()->SpawnActor<AM249AmmoActor>(M249AmmoFactory, GetActorLocation(), GetActorRotation(), param);
-		if(m249Ammo)
-		{
-			//m249Ammo->ammoMesh->AddImpulseAtLocation(DropForce, DropLoc);
-		}
+		GetWorld()->SpawnActor<AM249AmmoActor>(M249AmmoFactory, GetActorLocation(), GetActorRotation(), param);
 	}
 }
 
@@ -172,35 +156,19 @@ void AEnemy::DropMagazine()
 	auto randIndex = FMath::RandRange(0, 3);
 	if(randIndex==0)
 	{
-		auto RifleMagActor = GetWorld()->SpawnActor<ARifleMagActor>(RifleMagActorFactory, GetActorLocation(), GetActorRotation(), param);
-		if(RifleMagActor)
-		{
-			//RifleMagActor->magMesh->AddImpulseAtLocation(DropForce, DropLoc);
-		}
+		GetWorld()->SpawnActor<ARifleMagActor>(RifleMagActorFactory, GetActorLocation(), GetActorRotation(), param);
 	}
 	else if(randIndex==1)
 	{
-		auto SniperMagActor = GetWorld()->SpawnActor<ASniperMagActor>(SniperMagActorFactory, GetActorLocation(), GetActorRotation(), param);
-		if(SniperMagActor)
-		{
-			//SniperMagActor->magMesh->AddImpulseAtLocation(DropForce, DropLoc);
-		}
+		GetWorld()->SpawnActor<ASniperMagActor>(SniperMagActorFactory, GetActorLocation(), GetActorRotation(), param);	
 	}
 	else if(randIndex==2)
 	{
-		auto PistolMagActor = GetWorld()->SpawnActor<APistolMagActor>(PistolMagActorFactory, GetActorLocation(), GetActorRotation(), param);
-		if(PistolMagActor)
-		{
-			//PistolMagActor->magMesh->AddImpulseAtLocation(DropForce, DropLoc);
-		}
+		GetWorld()->SpawnActor<APistolMagActor>(PistolMagActorFactory, GetActorLocation(), GetActorRotation(), param);
 	}
 	else if(randIndex==3)
 	{
-		auto M249MagActor = GetWorld()->SpawnActor<AM249MagActor>(M249MagActorFactory, GetActorLocation(), GetActorRotation(), param);
-		if(M249MagActor)
-		{
-			//M249MagActor->magMesh->AddImpulseAtLocation(DropForce, DropLoc);
-		}
+		GetWorld()->SpawnActor<AM249MagActor>(M249MagActorFactory, GetActorLocation(), GetActorRotation(), param);
 	}
 }
 
@@ -211,43 +179,23 @@ void AEnemy::DropGear()
 	auto randIndex = FMath::RandRange(0, 4);
 	if(randIndex==0)
 	{
-		auto HelmetActor = GetWorld()->SpawnActor<AHelmetActor>(HelmetActorFactory, GetActorLocation(), GetActorRotation(), param);
-		if(HelmetActor)
-		{
-			//HelmetActor->gearMesh->AddImpulseAtLocation(DropForce, DropLoc);
-		}
+		GetWorld()->SpawnActor<AHelmetActor>(HelmetActorFactory, GetActorLocation(), GetActorRotation(), param);
 	}
 	else if(randIndex==1)
 	{
-		auto HeadsetActor = GetWorld()->SpawnActor<AHeadsetActor>(HeadsetActorFactory, GetActorLocation(), GetActorRotation(), param);
-		if(HeadsetActor)
-		{
-			//HeadsetActor->gearMesh->AddImpulseAtLocation(DropForce, DropLoc);
-		}
+		GetWorld()->SpawnActor<AHeadsetActor>(HeadsetActorFactory, GetActorLocation(), GetActorRotation(), param);	
 	}
 	else if(randIndex==2)
 	{
-		auto MaskActor = GetWorld()->SpawnActor<AMaskActor>(MaskActorFactory, GetActorLocation(), GetActorRotation(), param);
-		if(MaskActor)
-		{
-			//MaskActor->gearMesh->AddImpulseAtLocation(DropForce, DropLoc);
-		}
+		GetWorld()->SpawnActor<AMaskActor>(MaskActorFactory, GetActorLocation(), GetActorRotation(), param);
 	}
 	else if(randIndex==3)
 	{
-		auto GoggleActor = GetWorld()->SpawnActor<AGoggleActor>(GoggleActorFactory, GetActorLocation(), GetActorRotation(), param);
-		if(GoggleActor)
-		{
-			//GoggleActor->gearMesh->AddImpulseAtLocation(DropForce, DropLoc);
-		}
+		GetWorld()->SpawnActor<AGoggleActor>(GoggleActorFactory, GetActorLocation(), GetActorRotation(), param);
 	}
 	else if(randIndex==4)
 	{
-		auto ArmorActor = GetWorld()->SpawnActor<AArmorActor>(ArmorActorFactory, GetActorLocation(), GetActorRotation(), param);
-		if(ArmorActor)
-		{
-			//ArmorActor->gearMesh->AddImpulseAtLocation(DropForce, DropLoc);
-		}
+		GetWorld()->SpawnActor<AArmorActor>(ArmorActorFactory, GetActorLocation(), GetActorRotation(), param);
 	}
 }
 

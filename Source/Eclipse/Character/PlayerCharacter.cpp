@@ -54,6 +54,7 @@
 #include "Eclipse/CharacterStat/PlayerCharacterStatComponent.h"
 #include "Eclipse/Eclipse.h"
 #include "GeometryCollection/GeometryCollectionComponent.h"
+#include "Engine/DamageEvents.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -129,19 +130,7 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer)
 
 	// Stat Component 
 	Stat = CreateDefaultSubobject<UPlayerCharacterStatComponent>(TEXT("Stat"));	
-
-	bUsingRifle=true;
-	bUsingSniper=false;
-	bUsingPistol=false;
-	bUsingM249=false;
 	
-	weaponArray.Add(bUsingRifle); //0
-	weaponArray.Add(bUsingSniper); //1
-	weaponArray.Add(bUsingPistol); //2
-	weaponArray.Add(bUsingM249); //3
-
-	equippedWeaponStringArray.Add(FString("Rifle")); //0
-	equippedWeaponStringArray.Add(FString("Pistol")); //1
 
 	bReplicates=true;
 
@@ -151,7 +140,7 @@ void APlayerCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 	
-	Stat->OnHpZero.AddUObject(this, &APlayerCharacter::PlayerDeath);
+	//Stat->OnHpZero.AddUObject(this, &APlayerCharacter::PlayerDeath);
 	Stat->OnHpChanged.AddUObject(this, &APlayerCharacter::UpdateTabWidget);
 }
 
@@ -204,52 +193,98 @@ void APlayerCharacter::BeginPlay()
 		{
 			crosshairUI->AddToViewport();
 		}
-		if(informationUI)
-		{
-			FTimerHandle respawnTimer;
-			GetWorldTimerManager().SetTimer(respawnTimer, FTimerDelegate::CreateLambda([this]()->void
-			{
-				informationUI->owner=this;
-				informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
-				informationUI->BossCount->SetText(FText::AsNumber(BossCount));
-				informationUI->ConsoleCount->SetText(FText::AsNumber(ConsoleCount));
-				informationUI->UpdateAmmo();
-				informationUI->UpdateAmmo_Secondary();
-				if(!informationUI->IsInViewport())
-				{
-					informationUI->AddToViewport();
-				}
-			}), 0.5, false);		
-		}
 		
 		APlayerCameraManager* const cameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0));
 		cameraManager->StopCameraFade();
 		cameraManager->StartCameraFade(1.0, 0, 8.0, FColor::Black, false, true);
 	}
 
-	// Set Anim Montage
-	//StopAnimMontage();
-	//PlayAnimMontage(FullBodyMontage, 1, FName("LevelStart"));
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
 	AEclipsePlayerController* PlayerController = Cast<AEclipsePlayerController>(GetController());
 	
 	if(PlayerController)
 	{
 		PlayerController->EnableInput(PlayerController);		
-	}	
+	}
 
-	// Weapon Visibility Settings
-	rifleComp->SetVisibility(true);
-	sniperComp->SetVisibility(false);
-	pistolComp->SetVisibility(false);
-	m249Comp->SetVisibility(false);
+	if(UGameplayStatics::GetCurrentLevelName(GetWorld())==FString("Safe_House"))
+	{
+		if(animInstance)
+		{
+			animInstance->bArmed=false;			
+		}
+		bUsingRifle=false;
+		bUsingSniper=false;
+		bUsingPistol=false;
+		bUsingM249=false;
+		equippedWeaponStringArray.Add(FString("Empty")); //0
+		equippedWeaponStringArray.Add(FString("Empty")); //1
+		
+		// Weapon Visibility Settings
+		rifleComp->SetVisibility(false);
+		sniperComp->SetVisibility(false);
+		pistolComp->SetVisibility(false);
+		m249Comp->SetVisibility(false);
 	
-	// Gear Visibility Settings
-	GoggleSlot->SetVisibility(false);
-	HelmetSlot->SetVisibility(false);
-	HeadSetSlot->SetVisibility(false);
-	MaskSlot->SetVisibility(false);
-	ArmorSlot->SetVisibility(false);
+		// Gear Visibility Settings
+		GoggleSlot->SetVisibility(false);
+		HelmetSlot->SetVisibility(false);
+		HeadSetSlot->SetVisibility(false);
+		MaskSlot->SetVisibility(false);
+		ArmorSlot->SetVisibility(false);
+	}
+	else
+	{
+		if(animInstance)
+		{
+			animInstance->bArmed=true;			
+		}
+		bUsingRifle=true;
+		bUsingSniper=false;
+		bUsingPistol=false;
+		bUsingM249=false;
+		
+		equippedWeaponStringArray.Add(FString("Rifle")); //0
+		equippedWeaponStringArray.Add(FString("Pistol")); //1
+		// Weapon Visibility Settings
+		rifleComp->SetVisibility(true);
+		sniperComp->SetVisibility(false);
+		pistolComp->SetVisibility(false);
+		m249Comp->SetVisibility(false);
+	
+		// Gear Visibility Settings
+		GoggleSlot->SetVisibility(false);
+		HelmetSlot->SetVisibility(false);
+		HeadSetSlot->SetVisibility(false);
+		MaskSlot->SetVisibility(false);
+		ArmorSlot->SetVisibility(false);
+
+		if(IsLocallyControlled())
+		{
+			if(informationUI)
+			{
+				FTimerHandle respawnTimer;
+				GetWorldTimerManager().SetTimer(respawnTimer, FTimerDelegate::CreateLambda([this]()->void
+				{
+					informationUI->owner=this;
+					informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
+					informationUI->BossCount->SetText(FText::AsNumber(BossCount));
+					informationUI->ConsoleCount->SetText(FText::AsNumber(ConsoleCount));
+					informationUI->UpdateAmmo();
+					informationUI->UpdateAmmo_Secondary();
+					if(!informationUI->IsInViewport())
+					{
+						informationUI->AddToViewport();
+					}
+				}), 0.5, false);		
+			}
+		}
+	}
+	
+	weaponArray.Add(bUsingRifle); //0
+	weaponArray.Add(bUsingSniper); //1
+	weaponArray.Add(bUsingPistol); //2
+	weaponArray.Add(bUsingM249); //3	
 
 	// Apply Inventory Cache [GameInstance]
 	ApplyCachingValues();
@@ -262,6 +297,15 @@ void APlayerCharacter::BeginPlay()
 	UpdateTabWidget();
 
 	SetActorEnableCollision(true);
+}
+
+void APlayerCharacter::AttackHitConfirm(AActor* HitActor, float DamageAmount)
+{
+	if (HasAuthority())
+	{
+		FDamageEvent DamageEvent;
+		HitActor->TakeDamage(DamageAmount, DamageEvent, GetController(), this);
+	}
 }
 
 // Called every frame
@@ -602,7 +646,10 @@ void APlayerCharacter::OnActionLookAroundReleased()
 
 void APlayerCharacter::SwapFirstWeapon()
 {
-	SwapFirstWeaponRPCServer();
+	if(UGameplayStatics::GetCurrentLevelName(GetWorld())!=FString("Safe_House"))
+	{
+		SwapFirstWeaponRPCServer();
+	}
 }
 
 void APlayerCharacter::SwapFirstWeaponRPCServer_Implementation()
@@ -746,7 +793,10 @@ void APlayerCharacter::SwapFirstWeaponRPCMulticast_Implementation()
 
 void APlayerCharacter::SwapSecondWeapon()
 {
-	SwapSecondWeaponRPCServer();
+	if(UGameplayStatics::GetCurrentLevelName(GetWorld())!=FString("Safe_House"))
+	{
+		SwapSecondWeaponRPCServer();
+	}
 }
 
 void APlayerCharacter::SwapSecondWeaponRPCServer_Implementation()
@@ -1569,7 +1619,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 			sniperActor=Cast<ASniperActor>(actorHitResult.GetActor());
 			pistolActor=Cast<APistolActor>(actorHitResult.GetActor());
 			m249Actor=Cast<AM249Actor>(actorHitResult.GetActor());
-		
+			
 			HackingConsole=Cast<AHackingConsole>(actorHitResult.GetActor());
 			MissionChecker=Cast<AMissionChecker>(actorHitResult.GetActor());
 
@@ -2085,8 +2135,11 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 }
 
 void APlayerCharacter::Reload()
-{	
-	ServerRPCReload();
+{
+	if(UGameplayStatics::GetCurrentLevelName(GetWorld())!=FString("Safe_House"))
+	{
+		ServerRPCReload();
+	}
 }
 
 
@@ -2407,11 +2460,29 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(APlayerCharacter, IsPlayerDead);	
 }
 
+float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	const float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	
+	Stat->ApplyDamage(DamageAmount);
+	
+	if (Stat->GetCurrentHp() <= 0.0f)
+	{
+		if (gm)
+		{
+			gm->OnPlayerKilled(EventInstigator, GetController(), this);
+			this->PlayerDeath();
+		}
+	}
+
+	return ActualDamage;
+}
+
 
 void APlayerCharacter::Fire()
 {
 	// 사격 가능 상태가 아니거나, 뛰고 있거나, 위젯이 켜져 있거나, 엔딩 연출 중이라면 리턴
-	if(!CanShoot||isRunning||gi->IsWidgetOn||bEnding)
+	if(!CanShoot||isRunning||gi->IsWidgetOn||bEnding||UGameplayStatics::GetCurrentLevelName(GetWorld())==FString("Safe_House"))
 	{
 		return;
 	}

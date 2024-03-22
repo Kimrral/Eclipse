@@ -1,0 +1,1 @@
+"C:\Program Files\UE_5.1\Engine\Binaries\Win64\UnrealEditor.exe"  "E:\Unreal 5 Projects\Eclipse\Eclipse.uproject" Safe_House -server -log -nosteam

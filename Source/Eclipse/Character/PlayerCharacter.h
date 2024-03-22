@@ -34,6 +34,8 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	void AttackHitConfirm(AActor* HitActor, float DamageAmount);
+	virtual  float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	
 public:	
 	// Called every frame
@@ -393,7 +395,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UnSetM249AdditionalMagazineSlot();
 
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;	
 	
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
@@ -626,16 +628,16 @@ public:
 	bool EmptySoundBoolean = false;
 
 	UPROPERTY(Replicated)
-	int maxRifleAmmo = 80;
+	int maxRifleAmmo;
 
 	UPROPERTY(Replicated)
-	int maxSniperAmmo = 10;
+	int maxSniperAmmo;
 
 	UPROPERTY(Replicated)
-	int maxPistolAmmo = 16;
+	int maxPistolAmmo;
 
 	UPROPERTY(Replicated)
-	int maxM249Ammo = 200;
+	int maxM249Ammo;
 
 	UPROPERTY()
 	float zoomTriggeredTime;
@@ -675,6 +677,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool isCursorOnM249;
+
+	UPROPERTY()
+	bool IsHideOut = true;
 
 	UPROPERTY()
 	bool TickOverlapBoolean=false;

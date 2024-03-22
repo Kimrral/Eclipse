@@ -14,14 +14,10 @@ class AEclipseGameMode : public AGameModeBase
 
 public:
 	AEclipseGameMode();
-
-	virtual void PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;
-	virtual APlayerController* Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal, const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;
-	virtual void PostLogin(APlayerController* NewPlayer) override;
-	virtual void StartPlay() override;
 	
 	UFUNCTION()
-	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;	
+	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
+	virtual void OnPlayerKilled(AController* Killer, AController* KilledPlayer, APawn* KilledPawn);
 
 	UPROPERTY()
 	TArray<class AActor*> outActors;

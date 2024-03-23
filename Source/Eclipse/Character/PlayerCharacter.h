@@ -240,7 +240,7 @@ public:
 	//=======================================//
 	
 	UFUNCTION()
-	void Damaged(int damage);
+	void Damaged(int damage, AActor* DamageCauser);
 
 	UFUNCTION(Reliable, Server, WithValidation)
 	void DamagedRPCServer(int damage);
@@ -258,6 +258,17 @@ public:
 
 	UFUNCTION(Unreliable, NetMulticast)
 	void OnPlayerHitRPCMulticast(FHitResult HitResult, APlayerCharacter* HitCharacter);	
+
+	//=======================================//
+		
+	UFUNCTION()
+	void OnPlayerKill();
+
+	UFUNCTION(Reliable, Server, WithValidation)
+	void OnPlayerKillRPCServer();
+
+	UFUNCTION(Unreliable, NetMulticast)
+	void OnPlayerKillRPCMulticast();	
 
 	//=======================================//
 
@@ -386,6 +397,9 @@ public:
 	
 	UFUNCTION(BlueprintImplementableEvent)
 	void UpdateTabWidget();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void UpdateTabWidgetHP();
 
 	UFUNCTION()
 	int32 SetRifleAdditionalMagazine();

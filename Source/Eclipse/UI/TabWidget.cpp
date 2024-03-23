@@ -196,3 +196,12 @@ void UTabWidget::SetTabWidget()
 	}
 }
 
+void UTabWidget::UpdateHealthPoint()
+{
+	if(player)
+	{
+		CurHPText->SetText(FText::AsNumber(player->Stat->GetCurrentHp()));
+		MaxHPText->SetText(FText::AsNumber(player->Stat->GetMaxHp()));
+	}
+}
+

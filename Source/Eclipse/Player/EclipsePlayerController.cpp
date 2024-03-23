@@ -69,8 +69,7 @@ void AEclipsePlayerController::UpdateTabWidget()
 {
 	if(PlayerCharacter)
 	{
-		PlayerCharacter->UpdateTabWidget();
+		PlayerCharacter->UpdateTabWidgetHP();
 	}
 }
-
 

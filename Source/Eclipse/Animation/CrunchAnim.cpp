@@ -27,7 +27,7 @@ void UCrunchAnim::AnimNotify_HitPoint()
 			auto player = Cast<APlayerCharacter>(HitObj[i].GetActor());
 			if(player)
 			{
-				player->Damaged(50);
+				player->Damaged(50, GetOwningActor());
 			}
 		}
 	}

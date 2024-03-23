@@ -21,6 +21,9 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	void SetTabWidget();
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateHealthPoint();
 	
 	UPROPERTY()
 	class AEclipsePlayerController* pc;

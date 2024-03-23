@@ -3,9 +3,22 @@
 
 #include "EclipsePlayerController.h"
 
+#include "Eclipse/CharacterStat/PlayerCharacterStatComponent.h"
 #include "Eclipse/Game/EclipseGameMode.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
+
+void AEclipsePlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	PlayerCharacter = Cast<APlayerCharacter>(GetPawn());
+	if(PlayerCharacter)
+	{
+		PlayerCharacter->Stat->OnHpZero.AddUObject(this, &AEclipsePlayerController::PlayerDeath);
+		PlayerCharacter->Stat->OnHpChanged.AddUObject(this, &AEclipsePlayerController::UpdateTabWidget);
+	}
+}
 
 
 //사망지점에서 가장 먼 플레이어 스타트 지점에서 리스폰
@@ -43,4 +56,21 @@ void AEclipsePlayerController::Respawn(APlayerCharacter* me)
 		}
 	}
 }
+
+void AEclipsePlayerController::PlayerDeath()
+{
+	if(PlayerCharacter)
+	{
+		PlayerCharacter->PlayerDeath();
+	}
+}
+
+void AEclipsePlayerController::UpdateTabWidget()
+{
+	if(PlayerCharacter)
+	{
+		PlayerCharacter->UpdateTabWidget();
+	}
+}
+
 

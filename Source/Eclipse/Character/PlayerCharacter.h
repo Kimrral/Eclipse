@@ -12,6 +12,8 @@
 #include "PlayerCharacter.generated.h"
 
 DECLARE_DYNAMIC_DELEGATE(FRewardContainerDestruct);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FPlayerHit, FHitResult, APlayerCharacter*)
+DECLARE_MULTICAST_DELEGATE_TwoParams(FEnemyHit, FHitResult, AEnemy*)
 
 UCLASS()
 class ECLIPSE_API APlayerCharacter : public ACharacter
@@ -111,6 +113,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FRewardContainerDestruct containerDele;
+	
+	FPlayerHit PlayerHitDele;
+	FEnemyHit EnemyHitDele;
 
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
@@ -222,7 +227,7 @@ public:
 	void SwapSecondWeaponRPCMulticast();
 
 	//=======================================//
-
+	
 	UFUNCTION()
 	void PlayerDeath();
 
@@ -231,7 +236,6 @@ public:
 
 	UFUNCTION(Unreliable, NetMulticast)
 	void PlayerDeathRPCMulticast();
-
 	
 	//=======================================//
 	
@@ -242,20 +246,35 @@ public:
 	void DamagedRPCServer(int damage);
 
 	UFUNCTION(Unreliable, NetMulticast)
-	void DamagedRPCMulticast(int damage);
-	
-
+	void DamagedRPCMulticast(int damage);	
 
 	//=======================================//
+	
+	UFUNCTION()
+	void OnPlayerHit(FHitResult HitResult, APlayerCharacter* HitCharacter);
+
+	UFUNCTION(Reliable, Server, WithValidation)
+	void OnPlayerHitRPCServer(FHitResult HitResult, APlayerCharacter* HitCharacter);
+
+	UFUNCTION(Unreliable, NetMulticast)
+	void OnPlayerHitRPCMulticast(FHitResult HitResult, APlayerCharacter* HitCharacter);	
+
+	//=======================================//
+
+	UFUNCTION()
+	void OnEnemyHit(FHitResult HitResult, AEnemy* HitEnemy);
+
+	UFUNCTION(Reliable, Server, WithValidation)
+	void OnEnemyHitRPCServer(FHitResult HitResult, AEnemy* HitEnemy);
+
+	UFUNCTION(Unreliable, NetMulticast)
+	void OnEnemyHitRPCMulticast(FHitResult HitResult, AEnemy* HitEnemy);
+
+	//=======================================//	
 
 	void Tab();
 
 	void Q();
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerRPCQ();
-
-	UFUNCTION(NetMulticast, UnReliable)
-	void MulticastRPCQ();
 
 	UFUNCTION()
 	void WeaponDetectionLineTrace();
@@ -446,12 +465,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
 	TSubclassOf<class AM249Actor> M249Factory;
-	
-
-
-	UPROPERTY()
-	bool isSniperZoomed = false;
-
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
 	TSubclassOf<class ADamageWidgetActor> damageWidgetFactory;
@@ -530,6 +543,15 @@ public:
 
 	UPROPERTY()
 	class APistolActor* OverlappedPistolActor;
+		
+	UPROPERTY()
+	class UPlayerAnim* animInstance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
+	class UAnimMontage* UpperOnlyMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
+	class UAnimMontage* FullBodyMontage;
 
 	UPROPERTY(EditAnywhere)
 	class USphereComponent* weaponDetectionCollision;
@@ -601,16 +623,10 @@ public:
 	bool bUsingPistol;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	bool bUsingM249;
-	
+	bool bUsingM249;	
+
 	UPROPERTY()
-	class UPlayerAnim* animInstance;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
-	class UAnimMontage* UpperOnlyMontage;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
-	class UAnimMontage* FullBodyMontage;
+	bool isSniperZoomed = false;
 	
 	UPROPERTY(Replicated)
 	int curRifleAmmo = 40;

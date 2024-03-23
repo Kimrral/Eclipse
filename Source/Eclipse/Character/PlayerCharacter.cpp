@@ -140,8 +140,6 @@ void APlayerCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 	
-	//Stat->OnHpZero.AddUObject(this, &APlayerCharacter::PlayerDeath);
-	Stat->OnHpChanged.AddUObject(this, &APlayerCharacter::UpdateTabWidget);
 }
 
 // Called when the game starts or when spawned
@@ -175,6 +173,10 @@ void APlayerCharacter::BeginPlay()
 		Timeline.AddInterpFloat(CurveFloat, TimelineProgress);
 	}
 
+	// Hit Delegate
+	PlayerHitDele.AddUObject(this, &APlayerCharacter::OnPlayerHit);
+	EnemyHitDele.AddUObject(this, &APlayerCharacter::OnEnemyHit);
+	
 	// Widget Settings
 	crosshairUI = CreateWidget<UCrosshairWidget>(GetWorld(), crosshairFactory);
 	quitWidgetUI=CreateWidget<UQuitWidget>(GetWorld(), quitWidgetFactory);
@@ -207,6 +209,7 @@ void APlayerCharacter::BeginPlay()
 		PlayerController->EnableInput(PlayerController);		
 	}
 
+	// Hideout
 	if(UGameplayStatics::GetCurrentLevelName(GetWorld())==FString("Safe_House"))
 	{
 		if(animInstance)
@@ -234,6 +237,7 @@ void APlayerCharacter::BeginPlay()
 		MaskSlot->SetVisibility(false);
 		ArmorSlot->SetVisibility(false);
 	}
+	// Non Hideout
 	else
 	{
 		if(animInstance)
@@ -282,7 +286,8 @@ void APlayerCharacter::BeginPlay()
 			}
 		}
 	}
-	
+
+	// Set Weapon Array
 	weaponArray.Add(bUsingRifle); //0
 	weaponArray.Add(bUsingSniper); //1
 	weaponArray.Add(bUsingPistol); //2
@@ -295,10 +300,9 @@ void APlayerCharacter::BeginPlay()
 	ApplyStashCache();
 	ApplyGearCache();
 	ApplyMagCache();
+	
 	// Update Tab Widget Before Widget Constructor
 	UpdateTabWidget();
-
-	SetActorEnableCollision(true);
 }
 
 void APlayerCharacter::AttackHitConfirm(AActor* HitActor, float DamageAmount)
@@ -948,6 +952,71 @@ void APlayerCharacter::SwapSecondWeaponRPCMulticast_Implementation()
 }
 
 
+void APlayerCharacter::OnPlayerHit(FHitResult HitResult, APlayerCharacter* HitCharacter)
+{
+	if(HitCharacter->Stat->GetCurrentHp()>0)
+	{
+		OnPlayerHitRPCServer(HitResult, HitCharacter);		
+	}
+}
+
+
+void APlayerCharacter::OnPlayerHitRPCServer_Implementation(FHitResult HitResult, APlayerCharacter* HitCharacter)
+{
+	OnPlayerHitRPCMulticast(HitResult, HitCharacter);
+}
+
+bool APlayerCharacter::OnPlayerHitRPCServer_Validate(FHitResult HitResult, APlayerCharacter* HitCharacter)
+{
+	return true;
+}
+
+void APlayerCharacter::OnPlayerHitRPCMulticast_Implementation(FHitResult HitResult, APlayerCharacter* HitCharacter)
+{
+	if(HasAuthority())
+	{
+		HitCharacter->Damaged(15);
+	}
+	if(IsLocallyControlled())
+	{
+		const FRotator hitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
+		UGameplayStatics::PlaySound2D(GetWorld(), BulletHitSound);
+		// 적중 위젯 애니메이션 재생
+		crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
+		// 데미지 위젯에 피해 값과 적 위치벡터 할당
+		SetDamageWidget(15, HitResult.Location, false, FLinearColor::White);
+		// 적중 파티클 스폰
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodParticle, HitResult.Location, hitRot, FVector(1.f));
+	}
+	else
+	{
+		const FRotator hitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
+		// 적중 사운드 재생
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, HitResult.Location);
+		// 적중 파티클 스폰
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodParticle, HitResult.Location, hitRot, FVector(1.f));
+	}	
+}
+
+void APlayerCharacter::OnEnemyHit(FHitResult HitResult, AEnemy* HitEnemy)
+{
+	OnEnemyHitRPCServer(HitResult, HitEnemy);
+}
+
+void APlayerCharacter::OnEnemyHitRPCServer_Implementation(FHitResult HitResult, AEnemy* HitEnemy)
+{
+	OnEnemyHitRPCMulticast(HitResult, HitEnemy);
+}
+
+bool APlayerCharacter::OnEnemyHitRPCServer_Validate(FHitResult HitResult, AEnemy* HitEnemy)
+{
+	return true;
+}
+
+void APlayerCharacter::OnEnemyHitRPCMulticast_Implementation(FHitResult HitResult, AEnemy* HitEnemy)
+{
+}
+
 void APlayerCharacter::Tab()
 {
 	
@@ -955,30 +1024,7 @@ void APlayerCharacter::Tab()
 
 void APlayerCharacter::Q()
 {
-	ServerRPCQ();	
-}
-
-void APlayerCharacter::MulticastRPCQ_Implementation()
-{
-	if(HasAuthority())
-	{
-	}
-	else if(IsLocallyControlled())
-	{
-	}
-	else
-	{
-	}
-}
-
-void APlayerCharacter::ServerRPCQ_Implementation()
-{
-	MulticastRPCQ();
-}
-
-bool APlayerCharacter::ServerRPCQ_Validate()
-{
-	return true;
+	PlayerDeath();
 }
 
 
@@ -2478,7 +2524,6 @@ float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 		if (gm)
 		{
 			gm->OnPlayerKilled(EventInstigator, GetController(), this);
-			this->PlayerDeath();
 		}
 	}
 
@@ -2526,12 +2571,9 @@ void APlayerCharacter::MulticastRPCFire_Implementation()
 			UGameplayStatics::PlaySound2D(GetWorld(), RifleFireSound);
 			// 사격 카메라 셰이크 실행
 			PC->PlayerCameraManager->StartCameraShake(rifleFireShake);
-			FTransform particleTrans = rifleComp->GetSocketTransform(FName("RifleFirePosition"));
-			particleTrans.SetScale3D(FVector(0.7));
-			FVector particleLoc2 = rifleComp->GetSocketLocation(FName("RifleFirePosition"));
-			UE::Math::TRotator<double> particleRot2 = rifleComp->GetSocketRotation(FName("RifleFirePosition"))+FRotator(0, 0, 90);
-			FTransform particleTrans2=UKismetMathLibrary::MakeTransform(particleLoc2, particleRot2, FVector(0.4));
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle, particleTrans);
+			FVector particleLoc = rifleComp->GetSocketLocation(FName("RifleFirePosition"));
+			UE::Math::TRotator<double> particleRot = rifleComp->GetSocketRotation(FName("RifleFirePosition"));
+			FTransform particleTrans2=UKismetMathLibrary::MakeTransform(particleLoc, particleRot, FVector(0.4));
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle2, particleTrans2);
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleFireSound, GetActorLocation());
 		}
@@ -2539,12 +2581,9 @@ void APlayerCharacter::MulticastRPCFire_Implementation()
 		else
 		{
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleFireSound, GetActorLocation());
-			FTransform particleTrans = rifleComp->GetSocketTransform(FName("RifleFirePosition"));
-			particleTrans.SetScale3D(FVector(0.7));
-			FVector particleLoc2 = rifleComp->GetSocketLocation(FName("RifleFirePosition"));
-			UE::Math::TRotator<double> particleRot2 = rifleComp->GetSocketRotation(FName("RifleFirePosition"))+FRotator(0, 0, 90);
-			FTransform particleTrans2=UKismetMathLibrary::MakeTransform(particleLoc2, particleRot2, FVector(0.4));
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle, particleTrans);
+			FVector particleLoc = rifleComp->GetSocketLocation(FName("RifleFirePosition"));
+			UE::Math::TRotator<double> particleRot = rifleComp->GetSocketRotation(FName("RifleFirePosition"));
+			FTransform particleTrans2=UKismetMathLibrary::MakeTransform(particleLoc, particleRot, FVector(0.4));
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle2, particleTrans2);
 		}
 	}
@@ -2848,20 +2887,7 @@ void APlayerCharacter::ProcessRifleFire()
 				// 플레이어 적중
 				else if(player)
 				{
-					if(player->Stat->GetCurrentHp()>0)
-					{
-						FVector_NetQuantize hitLoc = rifleHitResult.Location;
-						FRotator hitRot = UKismetMathLibrary::Conv_VectorToRotator(rifleHitResult.ImpactNormal);
-						// 적중 위젯 애니메이션 재생
-						crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
-						// 적중 사운드 재생
-						UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
-						// 적중 파티클 스폰
-						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodParticle, hitLoc, hitRot, FVector(1.f));
-						// 데미지 위젯에 피해 값과 적 위치벡터 할당
-						SetDamageWidget(15, hitLoc, false, FLinearColor::White);
-						player->Damaged(15);
-					}
+					PlayerHitDele.Broadcast(rifleHitResult, player);					
 				}
 				// 지형지물에 적중
 				else
@@ -3933,7 +3959,7 @@ bool APlayerCharacter::PlayerDeathRPCServer_Validate()
 }
 
 void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
-{	
+{
 	// 몽타주 재생 중단
 	StopAnimMontage();
 	// 사망 몽타주 재생
@@ -4088,6 +4114,6 @@ void APlayerCharacter::UnEquipArmor(bool SoundBool)
 
 void APlayerCharacter::OnRep_CanShoot()
 {
-	EC_LOG(LogTemp, Warning, TEXT("%s"), TEXT("CanShoot"))
+	//EC_LOG(LogTemp, Warning, TEXT("%s"), TEXT("CanShoot"))
 }
 

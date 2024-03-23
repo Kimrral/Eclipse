@@ -54,7 +54,7 @@ void AGuardianProjectile::OnOverlap(UPrimitiveComponent* OverlappedComponent, AA
 		auto player=Cast<APlayerCharacter>(OtherActor);
 		if(player)
 		{			
-			player->Damaged(guardianDamageValue);
+			player->Damaged(guardianDamageValue, this);
 			Explosion();
 		}
 	}
@@ -84,7 +84,7 @@ void AGuardianProjectile::OnOverlap(UPrimitiveComponent* OverlappedComponent, AA
 			{
 				int dist = FMath::RoundHalfFromZero(GetDistanceTo(player));
 				// 폭발 중심점부터의 거리에 따른 데미지 프로세스
-				player->Damaged(FMath::Clamp(guardianDamageValue-(dist*2), 0, 30));
+				player->Damaged(FMath::Clamp(guardianDamageValue-(dist*2), 0, 30), this);
 			}
 		}		
 	}

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Eclipse/Character/PlayerCharacter.h"
 #include "PlayerCharacterStatComponent.generated.h"
 
 DECLARE_MULTICAST_DELEGATE(FOnHpZeroDelegate);
@@ -25,16 +26,17 @@ public:
 	FORCEINLINE float GetCurrentHp() const { return CurrentHp; }
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE float GetMaxHp() const { return MaxHp; }
-	float ApplyDamage(float InDamage);
+	float ApplyDamage(float InDamage, AActor* DamageCauser);
 	UFUNCTION(BlueprintCallable)
 	void SetHp(float NewHp);
+
+	UPROPERTY()
+	class APlayerCharacter* PlayerCharacter;
 
 protected:
 	virtual void InitializeComponent() override;
 	virtual void ReadyForReplication() override;
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
-	
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;	
 
 	UPROPERTY(ReplicatedUsing = OnRep_CurrentHp, Transient, VisibleInstanceOnly, Category = Stat)
 	float CurrentHp;

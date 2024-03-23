@@ -16,8 +16,7 @@ class ECLIPSE_API AEclipsePlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
-public:
-	
+public:	
 	UPROPERTY()
 	TArray<class AActor*> outActors;
 
@@ -27,4 +26,14 @@ public:
 	 UFUNCTION()
 	 void Respawn(APlayerCharacter* me);
 
+	UFUNCTION()
+	void PlayerDeath();
+	UFUNCTION()
+	void UpdateTabWidget();
+
+	UPROPERTY()
+	class APlayerCharacter* PlayerCharacter;
+
+protected:
+	virtual void BeginPlay() override;
 };

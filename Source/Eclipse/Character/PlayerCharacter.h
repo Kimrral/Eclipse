@@ -9,6 +9,7 @@
 #include "Eclipse/Weapon/RifleActor.h"
 #include "Eclipse/UI/StashWidget.h"
 #include "Components/TimelineComponent.h"
+#include "Eclipse/Game/EclipseGameInstance.h"
 #include "PlayerCharacter.generated.h"
 
 DECLARE_DYNAMIC_DELEGATE(FRewardContainerDestruct);
@@ -37,8 +38,6 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	void AttackHitConfirm(AActor* HitActor, float DamageAmount);
-	virtual  float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	
 public:	
 	// Called every frame
@@ -364,7 +363,10 @@ public:
 	void StashWidgetOnViewport();
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void DeadBodyWidgetOnViewport();
+	void DeadBodyWidgetOnViewport(UGameInstance* DeadBodyGameInstance);
+
+	UFUNCTION()
+	void InteractionProcess();
 
 	UFUNCTION()
 	void OnRep_CanShoot();
@@ -417,6 +419,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void UpdateTabWidgetHP();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void SearchDeadBodyInventory(UEclipseGameInstance* DeadBodyGameInstance);
+
 	UFUNCTION()
 	int32 SetRifleAdditionalMagazine();
 	UFUNCTION()
@@ -443,6 +448,9 @@ public:
 	void UnSetPistolAdditionalMagazineSlot();
 	UFUNCTION(BlueprintCallable)
 	void UnSetM249AdditionalMagazineSlot();
+
+	UFUNCTION()
+	void AmmoDepleted();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;	
 	

@@ -7,7 +7,7 @@
 #include "EclipseGameState.h"
 
 AEclipseGameMode::AEclipseGameMode()
-{		
+{
 	GameStateClass = AEclipseGameState::StaticClass();
 }
 
@@ -25,6 +25,5 @@ void AEclipseGameMode::OnPlayerKilled(AController* Killer, AController* KilledPl
 	APlayerState* KillerPlayerState = Killer->PlayerState;
 	if (KillerPlayerState)
 	{
-		
 	}
 }

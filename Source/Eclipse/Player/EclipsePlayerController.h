@@ -16,15 +16,15 @@ class ECLIPSE_API AEclipsePlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	UPROPERTY()
 	TArray<class AActor*> outActors;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<APlayerStart> playerStartFactory;
-	
-	 UFUNCTION()
-	 void Respawn(APlayerCharacter* me);
+
+	UFUNCTION()
+	void Respawn(APlayerCharacter* me);
 
 	UFUNCTION()
 	void PlayerDeath();

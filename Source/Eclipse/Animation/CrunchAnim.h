@@ -15,7 +15,6 @@ class ECLIPSE_API UCrunchAnim : public UEnemyAnim
 	GENERATED_BODY()
 
 public:
-	
 	UFUNCTION()
-	void AnimNotify_HitPoint();	
+	void AnimNotify_HitPoint();
 };

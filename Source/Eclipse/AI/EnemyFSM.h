@@ -17,13 +17,12 @@ enum class EEnemyState : uint8
 	DIE,
 };
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class ECLIPSE_API UEnemyFSM : public UActorComponent
 {
 	GENERATED_BODY()
 
-
-public:	
+public:
 	// Sets default values for this component's properties
 	UEnemyFSM();
 
@@ -79,10 +78,9 @@ public:
 	float aggressiveRange = 600.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=EnemySettings)
 	float attackRange = 300.f;
-	
+
 	UPROPERTY()
 	float curTime;
-
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=EnemySettings)
@@ -94,10 +92,10 @@ public:
 	UPROPERTY()
 	float alpha;
 
-	UPROPERTY(EditAnywhere)  // Timeline 생성
-	FTimeline Timeline;					
+	UPROPERTY(EditAnywhere) // Timeline 생성
+	FTimeline Timeline;
 
-	UPROPERTY(EditAnywhere)  // Timeline 커브
+	UPROPERTY(EditAnywhere) // Timeline 커브
 	UCurveFloat* CurveFloat;
 
 	UPROPERTY()
@@ -105,7 +103,4 @@ public:
 
 	UPROPERTY()
 	FVector originPosition;
-	
-
-		
 };

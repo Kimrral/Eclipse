@@ -16,7 +16,7 @@ class ECLIPSE_API UPlayerAnim : public UAnimInstance
 
 public:
 	virtual void NativeBeginPlay() override;
-	
+
 	UPROPERTY()
 	class APlayerCharacter* me;
 
@@ -34,7 +34,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bArmed = true;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bPistol = false;
 
@@ -46,7 +46,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bM249Zooming = false;
-	
+
 	UPROPERTY(EditAnywhere, Category=Sound)
 	class USoundBase* walkSound;
 };

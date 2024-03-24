@@ -15,39 +15,38 @@ void ULevelSelection::NativeConstruct()
 
 	PlayAnimation(LevelSelectionStartAnim);
 
-	player=Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	pc=Cast<AEclipsePlayerController>(GetWorld()->GetFirstPlayerController());
-	gi=Cast<UEclipseGameInstance>(GetWorld()->GetGameInstance());
-	gi->IsWidgetOn=true;
+	player = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	pc = Cast<AEclipsePlayerController>(GetWorld()->GetFirstPlayerController());
+	gi = Cast<UEclipseGameInstance>(GetWorld()->GetGameInstance());
+	gi->IsWidgetOn = true;
 
 	//SelectLevel1Yes->OnClicked.AddDynamic(this, &ULevelSelection::Level1Y);
 	//SelectLevel1No->OnClicked.AddDynamic(this, &ULevelSelection::Level1N);
 
 	//SelectLevel2Yes->OnClicked.AddDynamic(this, &ULevelSelection::Level2Y);
 	//SelectLevel2No->OnClicked.AddDynamic(this, &ULevelSelection::Level2N);
-	
+
 	//ExitButton->OnClicked.AddDynamic(this, &ULevelSelection::SelectExitGame);
 
 	//IsolatedShipButton->OnClicked.AddDynamic(this, &ULevelSelection::OpenMoveIsolatedShipSelection);
 
 	WidgetSwitcher_Level->SetActiveWidgetIndex(0);
 
-	
-	quitBool=false;
-	
+
+	quitBool = false;
 }
 
 void ULevelSelection::Level1Y()
 {
 	//Move to Isolation Ship
-	if(quitBool==false)
+	if (quitBool == false)
 	{
-		quitBool=true;
+		quitBool = true;
 		UWidgetBlueprintLibrary::SetInputMode_GameOnly(pc);
 		pc->SetShowMouseCursor(false);
 		this->RemoveFromParent();
 		player->MoveToIsolatedShip();
-	}	
+	}
 }
 
 void ULevelSelection::Level1N()
@@ -78,7 +77,7 @@ void ULevelSelection::SelectExitGame()
 	//Exit Level Selection
 	UWidgetBlueprintLibrary::SetInputMode_GameOnly(pc);
 	pc->SetShowMouseCursor(false);
-	gi->IsWidgetOn=false;
+	gi->IsWidgetOn = false;
 	this->RemoveFromParent();
 }
 
@@ -86,10 +85,10 @@ void ULevelSelection::OpenMoveIsolatedShipSelection()
 {
 	PlayAnimation(LevelSelectionEndAnim);
 	FTimerHandle endHandle;
-	GetWorld()->GetTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()->void
+	GetWorld()->GetTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
 		UGameplayStatics::PlaySound2D(GetWorld(), AskSound);
 		WidgetSwitcher_Level->SetActiveWidgetIndex(1);
 		PlayAnimation(LevelSelectionStartAnim);
-	}), 0.75f, false);				
+	}), 0.75f, false);
 }

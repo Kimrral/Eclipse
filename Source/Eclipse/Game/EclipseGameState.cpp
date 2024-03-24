@@ -13,5 +13,3 @@ void AEclipseGameState::OnRep_ReplicatedHasBegunPlay()
 {
 	Super::OnRep_ReplicatedHasBegunPlay();
 }
-
-

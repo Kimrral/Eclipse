@@ -16,7 +16,7 @@ UPlayerCharacterStatComponent::UPlayerCharacterStatComponent()
 void UPlayerCharacterStatComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
-	
+
 	SetHp(MaxHp);
 	SetIsReplicated(true);
 }
@@ -32,11 +32,11 @@ float UPlayerCharacterStatComponent::ApplyDamage(float InDamage, AActor* DamageC
 	{
 		OnHpZero.Broadcast();
 
-		PlayerCharacter=Cast<APlayerCharacter>(DamageCauser);
-		if(PlayerCharacter)
+		PlayerCharacter = Cast<APlayerCharacter>(DamageCauser);
+		if (PlayerCharacter)
 		{
 			PlayerCharacter->OnPlayerKill();
-		}		
+		}
 	}
 	return ActualDamage;
 }

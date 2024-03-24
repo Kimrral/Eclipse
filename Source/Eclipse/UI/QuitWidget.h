@@ -16,7 +16,7 @@ class ECLIPSE_API UQuitWidget : public UUserWidget
 
 public:
 	virtual void NativeConstruct() override;
-	
+
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UButton* SelectQuitYes;
 
@@ -34,11 +34,10 @@ public:
 
 	UPROPERTY(EditAnywhere, Category=Sound)
 	class USoundBase* CloseSound;
-	
+
 	UFUNCTION(BlueprintCallable)
 	void QuitSelectYes();
 
 	UFUNCTION(BlueprintCallable)
 	void QuitSelectNo();
-
 };

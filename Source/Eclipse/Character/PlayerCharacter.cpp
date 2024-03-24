@@ -61,14 +61,14 @@
 
 // Sets default values
 APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer)
-	:Super(ObjectInitializer)
+	: Super(ObjectInitializer)
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-		
+
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
@@ -106,39 +106,37 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer)
 	rifleComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("rifleComp"));
 	rifleComp->SetupAttachment(GetMesh(), FName("hand_r"));
 
-	pistolComp=CreateDefaultSubobject<UStaticMeshComponent>(TEXT("pistolComp"));
+	pistolComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("pistolComp"));
 	pistolComp->SetupAttachment(GetMesh(), FName("hand_l"));
 
-	m249Comp= CreateDefaultSubobject<UStaticMeshComponent>(TEXT("m249Comp"));
+	m249Comp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("m249Comp"));
 	m249Comp->SetupAttachment(GetMesh(), FName("hand_r"));
 
-	GoggleSlot= CreateDefaultSubobject<UStaticMeshComponent>(TEXT("GoggleSlot"));
+	GoggleSlot = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("GoggleSlot"));
 	GoggleSlot->SetupAttachment(GetMesh(), FName("head"));
 
-	HeadSetSlot= CreateDefaultSubobject<UStaticMeshComponent>(TEXT("HeadSetSlot"));
+	HeadSetSlot = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("HeadSetSlot"));
 	HeadSetSlot->SetupAttachment(GetMesh(), FName("head"));
 
-	MaskSlot= CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MaskSlot"));
+	MaskSlot = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MaskSlot"));
 	MaskSlot->SetupAttachment(GetMesh(), FName("head"));
 
-	HelmetSlot= CreateDefaultSubobject<UStaticMeshComponent>(TEXT("HelmetSlot"));
+	HelmetSlot = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("HelmetSlot"));
 	HelmetSlot->SetupAttachment(GetMesh(), FName("head"));
 
-	ArmorSlot= CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ArmorSlot"));
+	ArmorSlot = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ArmorSlot"));
 	ArmorSlot->SetupAttachment(GetMesh(), FName("spine_03"));
 
 	// Stat Component 
-	Stat = CreateDefaultSubobject<UPlayerCharacterStatComponent>(TEXT("Stat"));	
-	
+	Stat = CreateDefaultSubobject<UPlayerCharacterStatComponent>(TEXT("Stat"));
 
-	bReplicates=true;
 
+	bReplicates = true;
 }
 
 void APlayerCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-	
 }
 
 // Called when the game starts or when spawned
@@ -147,14 +145,14 @@ void APlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	this->SetActorEnableCollision(true);
-	
+
 	// Casting
 	const UGameInstance* GI = GetGameInstance();
 	PC = Cast<AEclipsePlayerController>(GI->GetFirstLocalPlayerController());
-	gm=Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());
-	gi=Cast<UEclipseGameInstance>(GetWorld()->GetGameInstance());
-	animInstance=Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-	
+	gm = Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());
+	gi = Cast<UEclipseGameInstance>(GetWorld()->GetGameInstance());
+	animInstance = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+
 	//Add Input Mapping Context
 	if (PC)
 	{
@@ -163,7 +161,7 @@ void APlayerCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
-	
+
 	// Timeline Binding
 	if (CurveFloat)
 	{
@@ -176,26 +174,26 @@ void APlayerCharacter::BeginPlay()
 	//PlayerHitDele.AddUObject(this, &APlayerCharacter::OnPlayerHit);
 	//EnemyHitDele.AddUObject(this, &APlayerCharacter::OnEnemyHit);
 	//GroundHitDele.AddUObject(this, &APlayerCharacter::OnGroundHit);
-	
+
 	// Widget Settings
 	crosshairUI = CreateWidget<UCrosshairWidget>(GetWorld(), crosshairFactory);
-	quitWidgetUI=CreateWidget<UQuitWidget>(GetWorld(), quitWidgetFactory);
-	infoWidgetUI = CreateWidget<UWeaponInfoWidget>(GetWorld(), infoWidgetFactory);	
-	sniperScopeUI=CreateWidget<UUserWidget>(GetWorld(), sniperScopeFactory);
+	quitWidgetUI = CreateWidget<UQuitWidget>(GetWorld(), quitWidgetFactory);
+	infoWidgetUI = CreateWidget<UWeaponInfoWidget>(GetWorld(), infoWidgetFactory);
+	sniperScopeUI = CreateWidget<UUserWidget>(GetWorld(), sniperScopeFactory);
 	damageWidgetUI = CreateWidget<UDamageWidget>(GetWorld(), damageWidgetUIFactory);
-	bossHPUI=CreateWidget<UBossHPWidget>(GetWorld(), bossHPWidgetFactory);
+	bossHPUI = CreateWidget<UBossHPWidget>(GetWorld(), bossHPWidgetFactory);
 	informationUI = CreateWidget<UInformationWidget>(GetWorld(), informationWidgetFactory);
-	levelSelectionUI = CreateWidget<ULevelSelection>(GetWorld(), levelSelectionWidgetFactory);	
+	levelSelectionUI = CreateWidget<ULevelSelection>(GetWorld(), levelSelectionWidgetFactory);
 
-	if(IsLocallyControlled())
+	if (IsLocallyControlled())
 	{
 		PC->SetAudioListenerOverride(GetMesh(), FVector::ZeroVector, FRotator::ZeroRotator);
 		UWidgetLayoutLibrary::RemoveAllWidgets(GetWorld());
-		if(!crosshairUI->IsInViewport())
+		if (!crosshairUI->IsInViewport())
 		{
 			crosshairUI->AddToViewport();
 		}
-		
+
 		APlayerCameraManager* const cameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0));
 		cameraManager->StopCameraFade();
 		cameraManager->StartCameraFade(1.0, 0, 8.0, FColor::Black, false, true);
@@ -203,33 +201,33 @@ void APlayerCharacter::BeginPlay()
 
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
 	//AEclipsePlayerController* PlayerController = Cast<AEclipsePlayerController>(GetController());
-	
-	if(PC)
+
+	if (PC)
 	{
-		PC->EnableInput(PC);		
+		PC->EnableInput(PC);
 	}
 
 	// Hideout
-	if(UGameplayStatics::GetCurrentLevelName(GetWorld())==FString("Safe_House"))
+	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) == FString("Safe_House"))
 	{
-		if(animInstance)
+		if (animInstance)
 		{
-			animInstance->bArmed=false;			
+			animInstance->bArmed = false;
 		}
-		GetCharacterMovement()->MaxWalkSpeed=180.f;
-		bUsingRifle=false;
-		bUsingSniper=false;
-		bUsingPistol=false;
-		bUsingM249=false;
+		GetCharacterMovement()->MaxWalkSpeed = 180.f;
+		bUsingRifle = false;
+		bUsingSniper = false;
+		bUsingPistol = false;
+		bUsingM249 = false;
 		equippedWeaponStringArray.Add(FString("Empty")); //0
 		equippedWeaponStringArray.Add(FString("Empty")); //1
-		
+
 		// Weapon Visibility Settings
 		rifleComp->SetVisibility(false);
 		sniperComp->SetVisibility(false);
 		pistolComp->SetVisibility(false);
 		m249Comp->SetVisibility(false);
-	
+
 		// Gear Visibility Settings
 		GoggleSlot->SetVisibility(false);
 		HelmetSlot->SetVisibility(false);
@@ -240,16 +238,16 @@ void APlayerCharacter::BeginPlay()
 	// Non Hideout
 	else
 	{
-		if(animInstance)
+		if (animInstance)
 		{
-			animInstance->bArmed=true;			
+			animInstance->bArmed = true;
 		}
-		GetCharacterMovement()->MaxWalkSpeed=360.f;
-		bUsingRifle=true;
-		bUsingSniper=false;
-		bUsingPistol=false;
-		bUsingM249=false;
-		
+		GetCharacterMovement()->MaxWalkSpeed = 360.f;
+		bUsingRifle = true;
+		bUsingSniper = false;
+		bUsingPistol = false;
+		bUsingM249 = false;
+
 		equippedWeaponStringArray.Add(FString("Rifle")); //0
 		equippedWeaponStringArray.Add(FString("Pistol")); //1
 		// Weapon Visibility Settings
@@ -257,7 +255,7 @@ void APlayerCharacter::BeginPlay()
 		sniperComp->SetVisibility(false);
 		pistolComp->SetVisibility(false);
 		m249Comp->SetVisibility(false);
-	
+
 		// Gear Visibility Settings
 		GoggleSlot->SetVisibility(false);
 		HelmetSlot->SetVisibility(false);
@@ -265,24 +263,24 @@ void APlayerCharacter::BeginPlay()
 		MaskSlot->SetVisibility(false);
 		ArmorSlot->SetVisibility(false);
 
-		if(IsLocallyControlled())
+		if (IsLocallyControlled())
 		{
-			if(informationUI)
+			if (informationUI)
 			{
 				FTimerHandle respawnTimer;
-				GetWorldTimerManager().SetTimer(respawnTimer, FTimerDelegate::CreateLambda([this]()->void
+				GetWorldTimerManager().SetTimer(respawnTimer, FTimerDelegate::CreateLambda([this]()-> void
 				{
-					informationUI->owner=this;
+					informationUI->owner = this;
 					informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
 					informationUI->BossCount->SetText(FText::AsNumber(BossCount));
 					informationUI->ConsoleCount->SetText(FText::AsNumber(ConsoleCount));
 					informationUI->UpdateAmmo();
 					informationUI->UpdateAmmo_Secondary();
-					if(!informationUI->IsInViewport())
+					if (!informationUI->IsInViewport())
 					{
 						informationUI->AddToViewport();
 					}
-				}), 0.5, false);		
+				}), 0.5, false);
 			}
 		}
 	}
@@ -300,7 +298,7 @@ void APlayerCharacter::BeginPlay()
 	ApplyStashCache();
 	ApplyGearCache();
 	ApplyMagCache();
-	
+
 	// Update Tab Widget Before Widget Constructor
 	UpdateTabWidget();
 }
@@ -311,9 +309,8 @@ void APlayerCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	Timeline.TickTimeline(DeltaTime);
-	
-	WeaponDetectionLineTrace();	
 
+	WeaponDetectionLineTrace();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -324,8 +321,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	// Set up action bindings
-	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {
-		
+	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
+	{
 		//Jumping
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &APlayerCharacter::StopJumping);
@@ -370,7 +367,6 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 		//Q [Test]
 		EnhancedInputComponent->BindAction(QAction, ETriggerEvent::Started, this, &APlayerCharacter::Q);
-
 	}
 }
 
@@ -388,7 +384,7 @@ void APlayerCharacter::Move(const FInputActionValue& Value)
 
 		// get forward vector
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	
+
 		// get right vector 
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
@@ -400,7 +396,7 @@ void APlayerCharacter::Move(const FInputActionValue& Value)
 
 void APlayerCharacter::Look(const FInputActionValue& Value)
 {
-	if(gi->IsWidgetOn)
+	if (gi->IsWidgetOn)
 	{
 		return;
 	}
@@ -427,33 +423,33 @@ void APlayerCharacter::ZoomRelease()
 
 void APlayerCharacter::ZoomRPCMulticast_Implementation()
 {
-	if(gi->IsWidgetOn)
+	if (gi->IsWidgetOn)
 	{
 		return;
 	}
 	// Zooming Boolean
-	isZooming=true;
+	isZooming = true;
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), zoomSound, GetActorLocation());
-	CharacterWalkSpeed=GetCharacterMovement()->MaxWalkSpeed;
-	GetCharacterMovement()->MaxWalkSpeed=180.f;
+	CharacterWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
+	GetCharacterMovement()->MaxWalkSpeed = 180.f;
 	UPlayerAnim* const animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-	if(animInst)
+	if (animInst)
 	{
-		animInst->bZooming=true;
+		animInst->bZooming = true;
 	}
 	// is using rifle
-	if(weaponArray[0]==true)
+	if (weaponArray[0] == true)
 	{
-		if(animInst)
+		if (animInst)
 		{
-			animInst->bRifleZooming=true;
+			animInst->bRifleZooming = true;
 		}
-		Timeline.PlayFromStart();	
+		Timeline.PlayFromStart();
 	}
 	// is using sniper
-	else if(weaponArray[1]==true)
+	else if (weaponArray[1] == true)
 	{
-		isSniperZooming=true;
+		isSniperZooming = true;
 		crosshairUI->CrosshairImage->SetVisibility(ESlateVisibility::Hidden);
 		APlayerCameraManager* const cameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0));
 		cameraManager->StartCameraFade(1.0, 0.1, 3.0, FColor::Black, false, true);
@@ -463,18 +459,18 @@ void APlayerCharacter::ZoomRPCMulticast_Implementation()
 		Timeline.PlayFromStart();
 		sniperScopeUI->AddToViewport();
 	}
-	else if(weaponArray[3]==true)
+	else if (weaponArray[3] == true)
 	{
-		if(animInst)
+		if (animInst)
 		{
-			animInst->bM249Zooming=true;
+			animInst->bM249Zooming = true;
 		}
-		Timeline.PlayFromStart();	
+		Timeline.PlayFromStart();
 	}
 	else
 	{
 		// 카메라 줌 러프 타임라인 재생
-		Timeline.PlayFromStart();	
+		Timeline.PlayFromStart();
 	}
 }
 
@@ -501,46 +497,46 @@ bool APlayerCharacter::ZoomRPCReleaseServer_Validate()
 
 void APlayerCharacter::ZoomRPCReleaseMulticast_Implementation()
 {
-	if(gi->IsWidgetOn)
+	if (gi->IsWidgetOn)
 	{
 		return;
 	}
 	// Zooming Boolean
 	isZooming = false;
-	GetCharacterMovement()->MaxWalkSpeed=CharacterWalkSpeed;
+	GetCharacterMovement()->MaxWalkSpeed = CharacterWalkSpeed;
 	UPlayerAnim* const animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-	if(animInst)
+	if (animInst)
 	{
-		animInst->bZooming=false;
+		animInst->bZooming = false;
 	}
-	if(weaponArray[0]==true)
+	if (weaponArray[0] == true)
 	{
-		if(animInst)
+		if (animInst)
 		{
-			animInst->bRifleZooming=false;
+			animInst->bRifleZooming = false;
 		}
 		Timeline.ReverseFromEnd();
 	}
-	else if(weaponArray[1]==true)
+	else if (weaponArray[1] == true)
 	{
-		isSniperZooming=false;
+		isSniperZooming = false;
 		const AEclipsePlayerController* controller = Cast<AEclipsePlayerController>(GetController());
 		controller->PlayerCameraManager->StopAllCameraShakes();
-		if(GetMesh()->GetAnimInstance()->Montage_IsPlaying(UpperOnlyMontage))
+		if (GetMesh()->GetAnimInstance()->Montage_IsPlaying(UpperOnlyMontage))
 		{
 			StopAnimMontage();
 		}
 		sniperScopeUI->RemoveFromParent();
 		crosshairUI->CrosshairImage->SetVisibility(ESlateVisibility::Visible);
-		SniperZoomBool=false;
-		SniperZoomOutBool=false;
+		SniperZoomBool = false;
+		SniperZoomOutBool = false;
 		Timeline.ReverseFromEnd();
 	}
-	else if(weaponArray[3]==true)
+	else if (weaponArray[3] == true)
 	{
-		if(animInst)
+		if (animInst)
 		{
-			animInst->bM249Zooming=false;
+			animInst->bM249Zooming = false;
 		}
 		Timeline.ReverseFromEnd();
 	}
@@ -551,18 +547,17 @@ void APlayerCharacter::ZoomRPCReleaseMulticast_Implementation()
 }
 
 
-
 void APlayerCharacter::Run()
 {
-	if(UGameplayStatics::GetCurrentLevelName(GetWorld())!=FString("Safe_House"))
+	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) != FString("Safe_House"))
 	{
-		RunRPCServer();		
+		RunRPCServer();
 	}
 }
 
 void APlayerCharacter::RunRelease()
 {
-	if(UGameplayStatics::GetCurrentLevelName(GetWorld())!=FString("Safe_House"))
+	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) != FString("Safe_House"))
 	{
 		RunRPCReleaseServer();
 	}
@@ -572,35 +567,35 @@ void APlayerCharacter::RunRPCMulticast_Implementation()
 {
 	if (isSniperZooming)
 	{
-		if(!isSniperZoomed)
+		if (!isSniperZoomed)
 		{
 			GetWorldTimerManager().ClearTimer(SniperZoomOutHandle);
-			SniperZoomBool=true;
-			SniperZoomOutBool=false;
+			SniperZoomBool = true;
+			SniperZoomOutBool = false;
 			Timeline.Stop();
 			FollowCamera->SetFieldOfView(40);
 			Timeline.PlayFromStart();
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), SniperZoomInSound, GetActorLocation());
-			isSniperZoomed=true;
+			isSniperZoomed = true;
 		}
-		else if(isSniperZoomed)
+		else if (isSniperZoomed)
 		{
 			GetWorldTimerManager().ClearTimer(SniperZoomHandle);
-			SniperZoomOutBool=true;
-			SniperZoomBool=false;
+			SniperZoomOutBool = true;
+			SniperZoomBool = false;
 			Timeline.Stop();
 			FollowCamera->SetFieldOfView(20);
 			Timeline.PlayFromStart();
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), SniperZoomOutSound, GetActorLocation());
-			isSniperZoomed=false;
+			isSniperZoomed = false;
 		}
 		return;
 	}
-	if(isZooming)
+	if (isZooming)
 	{
 		return;
 	}
-	GetCharacterMovement()->MaxWalkSpeed=520.f;
+	GetCharacterMovement()->MaxWalkSpeed = 520.f;
 }
 
 void APlayerCharacter::RunRPCServer_Implementation()
@@ -626,7 +621,7 @@ bool APlayerCharacter::RunRPCReleaseServer_Validate()
 
 void APlayerCharacter::RunRPCReleaseMulticast_Implementation()
 {
-	if(isZooming)
+	if (isZooming)
 	{
 		return;
 	}
@@ -634,10 +629,9 @@ void APlayerCharacter::RunRPCReleaseMulticast_Implementation()
 }
 
 
-
 void APlayerCharacter::OnActionLookAroundPressed()
 {
-	bUseControllerRotationYaw = false;	
+	bUseControllerRotationYaw = false;
 }
 
 void APlayerCharacter::OnActionLookAroundReleased()
@@ -648,7 +642,7 @@ void APlayerCharacter::OnActionLookAroundReleased()
 
 void APlayerCharacter::SwapFirstWeapon()
 {
-	if(UGameplayStatics::GetCurrentLevelName(GetWorld())!=FString("Safe_House"))
+	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) != FString("Safe_House"))
 	{
 		SwapFirstWeaponRPCServer();
 	}
@@ -666,136 +660,131 @@ bool APlayerCharacter::SwapFirstWeaponRPCServer_Validate()
 
 void APlayerCharacter::SwapFirstWeaponRPCMulticast_Implementation()
 {
-	if(curWeaponSlotNumber==1||isSniperZooming)
+	if (curWeaponSlotNumber == 1 || isSniperZooming)
 	{
 		return;
 	}
 	UPlayerAnim* animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-	if(animInst)
+	if (animInst)
 	{
 		bool montagePlaying = animInst->IsAnyMontagePlaying();
-		if(montagePlaying)
+		if (montagePlaying)
 		{
 			return;
 		}
 	}
-	curWeaponSlotNumber=1;
+	curWeaponSlotNumber = 1;
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), SwapSound, GetActorLocation());
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
-	if(equippedWeaponStringArray[0]==FString("Rifle"))
+	if (equippedWeaponStringArray[0] == FString("Rifle"))
 	{
 		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-		if(animInst)
+		if (animInst)
 		{
 			// 애니메이션 블루프린트에 상태 전환 불리언 전달
-			animInst->bPistol=false;
+			animInst->bPistol = false;
 		}
-		PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
+		PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
 		// Visibility 설정
 		rifleComp->SetVisibility(true);
 		sniperComp->SetVisibility(false);
 		pistolComp->SetVisibility(false);
 		m249Comp->SetVisibility(false);
 		// 무기 배열 설정
-		weaponArray[0]=true;
-		weaponArray[1]=false;
-		weaponArray[2]=false;
-		weaponArray[3]=false;
+		weaponArray[0] = true;
+		weaponArray[1] = false;
+		weaponArray[2] = false;
+		weaponArray[3] = false;
 
-		if(IsLocallyControlled())
+		if (IsLocallyControlled())
 		{
 			informationUI->PlayAnimation(informationUI->WeaponSwap);
 		}
 		informationUI->UpdateAmmo_Secondary();
-
-
 	}
-	else if(equippedWeaponStringArray[0]==FString("Sniper"))
+	else if (equippedWeaponStringArray[0] == FString("Sniper"))
 	{
 		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-		if(animInst)
+		if (animInst)
 		{
 			// 애니메이션 블루프린트에 상태 전환 불리언 전달
-			animInst->bPistol=false;
+			animInst->bPistol = false;
 		}
-		PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
+		PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
 		// Visibility 설정
 		rifleComp->SetVisibility(false);
 		sniperComp->SetVisibility(true);
 		pistolComp->SetVisibility(false);
 		m249Comp->SetVisibility(false);
 		// 무기 배열 설정
-		weaponArray[0]=false;
-		weaponArray[1]=true;
-		weaponArray[2]=false;
-		weaponArray[3]=false;
+		weaponArray[0] = false;
+		weaponArray[1] = true;
+		weaponArray[2] = false;
+		weaponArray[3] = false;
 
-		if(IsLocallyControlled())
+		if (IsLocallyControlled())
 		{
 			informationUI->PlayAnimation(informationUI->WeaponSwap);
 		}
 		informationUI->UpdateAmmo_Secondary();
-
 	}
-	else if(equippedWeaponStringArray[0]==FString("Pistol"))
+	else if (equippedWeaponStringArray[0] == FString("Pistol"))
 	{
 		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-		if(animInst)
+		if (animInst)
 		{
 			// 애니메이션 블루프린트에 상태 전환 불리언 전달
-			animInst->bPistol=true;
+			animInst->bPistol = true;
 		}
-		PlayAnimMontage(FullBodyMontage, 1 , FName("PistolEquip"));
+		PlayAnimMontage(FullBodyMontage, 1, FName("PistolEquip"));
 		// Visibility 설정
 		rifleComp->SetVisibility(false);
 		sniperComp->SetVisibility(false);
 		pistolComp->SetVisibility(true);
 		m249Comp->SetVisibility(false);
 		// 무기 배열 설정
-		weaponArray[0]=false;
-		weaponArray[1]=false;
-		weaponArray[2]=true;
-		weaponArray[3]=false;
+		weaponArray[0] = false;
+		weaponArray[1] = false;
+		weaponArray[2] = true;
+		weaponArray[3] = false;
 
-		if(IsLocallyControlled())
+		if (IsLocallyControlled())
 		{
 			informationUI->PlayAnimation(informationUI->WeaponSwap);
 		}
 		informationUI->UpdateAmmo_Secondary();
-
 	}
-	else if(equippedWeaponStringArray[0]==FString("M249"))
+	else if (equippedWeaponStringArray[0] == FString("M249"))
 	{
 		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-		if(animInst)
+		if (animInst)
 		{
 			// 애니메이션 블루프린트에 상태 전환 불리언 전달
-			animInst->bPistol=false;
+			animInst->bPistol = false;
 		}
-		PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
+		PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
 		// Visibility 설정
 		rifleComp->SetVisibility(false);
 		sniperComp->SetVisibility(false);
 		pistolComp->SetVisibility(false);
 		m249Comp->SetVisibility(true);
 		// 무기 배열 설정
-		weaponArray[0]=false;
-		weaponArray[1]=false;
-		weaponArray[2]=false;
-		weaponArray[3]=true;
+		weaponArray[0] = false;
+		weaponArray[1] = false;
+		weaponArray[2] = false;
+		weaponArray[3] = true;
 
-		if(IsLocallyControlled())
+		if (IsLocallyControlled())
 		{
 			informationUI->PlayAnimation(informationUI->WeaponSwap);
 		}
 		informationUI->UpdateAmmo_Secondary();
-
 	}
 }
 
 void APlayerCharacter::SwapSecondWeapon()
 {
-	if(UGameplayStatics::GetCurrentLevelName(GetWorld())!=FString("Safe_House"))
+	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) != FString("Safe_House"))
 	{
 		SwapSecondWeaponRPCServer();
 	}
@@ -813,126 +802,121 @@ bool APlayerCharacter::SwapSecondWeaponRPCServer_Validate()
 
 void APlayerCharacter::SwapSecondWeaponRPCMulticast_Implementation()
 {
-	if(curWeaponSlotNumber==2||isSniperZooming)
+	if (curWeaponSlotNumber == 2 || isSniperZooming)
 	{
 		return;
 	}
 	UPlayerAnim* animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-	if(animInst)
+	if (animInst)
 	{
 		bool montagePlaying = animInst->IsAnyMontagePlaying();
-		if(montagePlaying)
+		if (montagePlaying)
 		{
 			return;
 		}
 	}
-	curWeaponSlotNumber=2;
+	curWeaponSlotNumber = 2;
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), SwapSound, GetActorLocation());
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
-	if(equippedWeaponStringArray[1]==FString("Rifle"))
+	if (equippedWeaponStringArray[1] == FString("Rifle"))
 	{
 		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-		if(animInst)
+		if (animInst)
 		{
 			// 애니메이션 블루프린트에 상태 전환 불리언 전달
-			animInst->bPistol=false;
+			animInst->bPistol = false;
 		}
-		PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
+		PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
 		// Visibility 설정
 		rifleComp->SetVisibility(true);
 		sniperComp->SetVisibility(false);
 		pistolComp->SetVisibility(false);
 		m249Comp->SetVisibility(false);
 		// 무기 배열 설정
-		weaponArray[0]=true;
-		weaponArray[1]=false;
-		weaponArray[2]=false;
-		weaponArray[3]=false;
+		weaponArray[0] = true;
+		weaponArray[1] = false;
+		weaponArray[2] = false;
+		weaponArray[3] = false;
 
-		if(IsLocallyControlled())
+		if (IsLocallyControlled())
 		{
 			informationUI->PlayAnimation(informationUI->WeaponSwap);
 		}
 		informationUI->UpdateAmmo_Secondary();
-
-
 	}
-	else if(equippedWeaponStringArray[1]==FString("Sniper"))
+	else if (equippedWeaponStringArray[1] == FString("Sniper"))
 	{
 		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-		if(animInst)
+		if (animInst)
 		{
 			// 애니메이션 블루프린트에 상태 전환 불리언 전달
-			animInst->bPistol=false;
+			animInst->bPistol = false;
 		}
-		PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
+		PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
 		// Visibility 설정
 		rifleComp->SetVisibility(false);
 		sniperComp->SetVisibility(true);
 		pistolComp->SetVisibility(false);
 		m249Comp->SetVisibility(false);
 		// 무기 배열 설정
-		weaponArray[0]=false;
-		weaponArray[1]=true;
-		weaponArray[2]=false;
-		weaponArray[3]=false;
+		weaponArray[0] = false;
+		weaponArray[1] = true;
+		weaponArray[2] = false;
+		weaponArray[3] = false;
 
-		if(IsLocallyControlled())
+		if (IsLocallyControlled())
 		{
 			informationUI->PlayAnimation(informationUI->WeaponSwap);
 		}
 		informationUI->UpdateAmmo_Secondary();
-
-
 	}
-	else if(equippedWeaponStringArray[1]==FString("Pistol"))
+	else if (equippedWeaponStringArray[1] == FString("Pistol"))
 	{
 		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-		if(animInst)
+		if (animInst)
 		{
 			// 애니메이션 블루프린트에 상태 전환 불리언 전달
-			animInst->bPistol=true;
+			animInst->bPistol = true;
 		}
-		PlayAnimMontage(FullBodyMontage, 1 , FName("PistolEquip"));
+		PlayAnimMontage(FullBodyMontage, 1, FName("PistolEquip"));
 		// Visibility 설정
 		rifleComp->SetVisibility(false);
 		sniperComp->SetVisibility(false);
 		pistolComp->SetVisibility(true);
 		m249Comp->SetVisibility(false);
 		// 무기 배열 설정
-		weaponArray[0]=false;
-		weaponArray[1]=false;
-		weaponArray[2]=true;
-		weaponArray[3]=false;
+		weaponArray[0] = false;
+		weaponArray[1] = false;
+		weaponArray[2] = true;
+		weaponArray[3] = false;
 
-		if(IsLocallyControlled())
+		if (IsLocallyControlled())
 		{
 			informationUI->PlayAnimation(informationUI->WeaponSwap);
 		}
 		informationUI->UpdateAmmo_Secondary();
-
 	}
-	else if(equippedWeaponStringArray[1]==FString("M249"))
+	else if (equippedWeaponStringArray[1] == FString("M249"))
 	{
 		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-		if(animInst)
+		if (animInst)
 		{
 			// 애니메이션 블루프린트에 상태 전환 불리언 전달
-			animInst->bPistol=false;
+			animInst->bPistol = false;
 		}
-		PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
+		PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
 		// Visibility 설정
 		rifleComp->SetVisibility(false);
 		sniperComp->SetVisibility(false);
 		pistolComp->SetVisibility(false);
 		m249Comp->SetVisibility(true);
 		// 무기 배열 설정
-		weaponArray[0]=false;
-		weaponArray[1]=false;
-		weaponArray[2]=false;
-		weaponArray[3]=true;
+		weaponArray[0] = false;
+		weaponArray[1] = false;
+		weaponArray[2] = false;
+		weaponArray[3] = true;
 
-		if(IsLocallyControlled())
+		if (IsLocallyControlled())
 		{
 			informationUI->PlayAnimation(informationUI->WeaponSwap);
 		}
@@ -943,9 +927,9 @@ void APlayerCharacter::SwapSecondWeaponRPCMulticast_Implementation()
 
 void APlayerCharacter::OnPlayerHit(const FHitResult& HitResult, APlayerCharacter* HitCharacter)
 {
-	if(HitCharacter->Stat->GetCurrentHp()>0)
+	if (HitCharacter->Stat->GetCurrentHp() > 0)
 	{
-		OnPlayerHitRPCServer(HitResult, HitCharacter);		
+		OnPlayerHitRPCServer(HitResult, HitCharacter);
 	}
 }
 
@@ -966,11 +950,11 @@ bool APlayerCharacter::OnPlayerKillRPCServer_Validate()
 
 void APlayerCharacter::OnPlayerKillRPCMulticast_Implementation()
 {
-	if(IsLocallyControlled())
+	if (IsLocallyControlled())
 	{
 		crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
 		UGameplayStatics::PlaySound2D(GetWorld(), KillSound);
-	}	
+	}
 }
 
 void APlayerCharacter::OnPlayerHitRPCServer_Implementation(const FHitResult& HitResult, APlayerCharacter* HitCharacter)
@@ -985,11 +969,11 @@ bool APlayerCharacter::OnPlayerHitRPCServer_Validate(const FHitResult& HitResult
 
 void APlayerCharacter::OnPlayerHitRPCMulticast_Implementation(const FHitResult& HitResult, APlayerCharacter* HitCharacter)
 {
-	if(HasAuthority())
+	if (HasAuthority())
 	{
 		HitCharacter->Damaged(15, this);
 	}
-	if(IsLocallyControlled())
+	if (IsLocallyControlled())
 	{
 		const FRotator hitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
 		UGameplayStatics::PlaySound2D(GetWorld(), BulletHitSound);
@@ -1007,7 +991,7 @@ void APlayerCharacter::OnPlayerHitRPCMulticast_Implementation(const FHitResult& 
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, HitResult.Location);
 		// 적중 파티클 스폰
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodParticle, HitResult.Location, hitRot, FVector(1.f));
-	}	
+	}
 }
 
 void APlayerCharacter::OnEnemyHit(const FHitResult& HitResult, AEnemy* HitEnemy)
@@ -1046,14 +1030,14 @@ bool APlayerCharacter::OnGroundHitRPCServer_Validate(const FHitResult& HitResult
 }
 
 void APlayerCharacter::OnGroundHitRPCMulticast_Implementation(const FHitResult& HitResult)
-{	
-	if(IsLocallyControlled())
+{
+	if (IsLocallyControlled())
 	{
 		FRotator decalRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
 		FVector_NetQuantize decalLoc = HitResult.Location;
 		FTransform decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
 		GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot+FRotator(-90, 0, 0), FVector(0.5f));
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot + FRotator(-90, 0, 0), FVector(0.5f));
 	}
 	else
 	{
@@ -1061,13 +1045,12 @@ void APlayerCharacter::OnGroundHitRPCMulticast_Implementation(const FHitResult& 
 		FVector_NetQuantize decalLoc = HitResult.Location;
 		FTransform decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
 		GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot+FRotator(-90, 0, 0), FVector(0.5f));
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot + FRotator(-90, 0, 0), FVector(0.5f));
 	}
 }
 
 void APlayerCharacter::Tab()
 {
-	
 }
 
 void APlayerCharacter::Q()
@@ -1078,379 +1061,379 @@ void APlayerCharacter::Q()
 
 void APlayerCharacter::WeaponDetectionLineTrace()
 {
-	if(IsLocallyControlled())
+	if (IsLocallyControlled())
 	{
 		// 스나이퍼 줌 도중 교체 불가
-		if(isSniperZooming||bEnding)
+		if (isSniperZooming || bEnding)
 		{
 			return;
 		}
 		FHitResult actorHitResult;
 		FVector StartLoc = FollowCamera->GetComponentLocation();
-		FVector EndLoc = StartLoc+FollowCamera->GetForwardVector()*500.0f;
+		FVector EndLoc = StartLoc + FollowCamera->GetForwardVector() * 500.0f;
 		// 무기 액터 탐지 라인 트레이스
 		bool bHit = GetWorld()->LineTraceSingleByChannel(actorHitResult, StartLoc, EndLoc, ECC_Visibility);
-		if(bHit)
+		if (bHit)
 		{
 			// 무기 액터 캐스팅
 			rifleActor = Cast<ARifleActor>(actorHitResult.GetActor());
-			sniperActor=Cast<ASniperActor>(actorHitResult.GetActor());
-			pistolActor=Cast<APistolActor>(actorHitResult.GetActor());
-			m249Actor=Cast<AM249Actor>(actorHitResult.GetActor());
-		
-			HackingConsole=Cast<AHackingConsole>(actorHitResult.GetActor());
-			MissionChecker=Cast<AMissionChecker>(actorHitResult.GetActor());
+			sniperActor = Cast<ASniperActor>(actorHitResult.GetActor());
+			pistolActor = Cast<APistolActor>(actorHitResult.GetActor());
+			m249Actor = Cast<AM249Actor>(actorHitResult.GetActor());
+
+			HackingConsole = Cast<AHackingConsole>(actorHitResult.GetActor());
+			MissionChecker = Cast<AMissionChecker>(actorHitResult.GetActor());
 
 			RifleMagActor = Cast<ARifleMagActor>(actorHitResult.GetActor());
 			SniperMagActor = Cast<ASniperMagActor>(actorHitResult.GetActor());
 			PistolMagActor = Cast<APistolMagActor>(actorHitResult.GetActor());
 			M249MagActor = Cast<AM249MagActor>(actorHitResult.GetActor());
 
-			GoggleActor= Cast<AGoggleActor>(actorHitResult.GetActor());
-			MaskActor= Cast<AMaskActor>(actorHitResult.GetActor());
-			HelmetActor= Cast<AHelmetActor>(actorHitResult.GetActor());
-			HeadsetActor= Cast<AHeadsetActor>(actorHitResult.GetActor());
-			ArmorActor= Cast<AArmorActor>(actorHitResult.GetActor());
+			GoggleActor = Cast<AGoggleActor>(actorHitResult.GetActor());
+			MaskActor = Cast<AMaskActor>(actorHitResult.GetActor());
+			HelmetActor = Cast<AHelmetActor>(actorHitResult.GetActor());
+			HeadsetActor = Cast<AHeadsetActor>(actorHitResult.GetActor());
+			ArmorActor = Cast<AArmorActor>(actorHitResult.GetActor());
 
-			MedKitActor= Cast<AMedKitActor>(actorHitResult.GetActor());
+			MedKitActor = Cast<AMedKitActor>(actorHitResult.GetActor());
 
-			StageBoard= Cast<AStageBoard>(actorHitResult.GetActor());
-			Stash=Cast<AStash>(actorHitResult.GetActor());
-			QuitGameActor=Cast<AQuitGameActor>(actorHitResult.GetActor());
+			StageBoard = Cast<AStageBoard>(actorHitResult.GetActor());
+			Stash = Cast<AStash>(actorHitResult.GetActor());
+			QuitGameActor = Cast<AQuitGameActor>(actorHitResult.GetActor());
 
-			PlayerCharacter=Cast<APlayerCharacter>(actorHitResult.GetActor());
-		
+			PlayerCharacter = Cast<APlayerCharacter>(actorHitResult.GetActor());
+
 			// 라이플 탐지
-			if(rifleActor)
+			if (rifleActor)
 			{
 				// 1회 실행 불리언
-				if(TickOverlapBoolean==false)
+				if (TickOverlapBoolean == false)
 				{
-					TickOverlapBoolean=true;
-					isCursorOnRifle=true;
+					TickOverlapBoolean = true;
+					isCursorOnRifle = true;
 					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
 					rifleActor->weaponMesh->SetRenderCustomDepth(true);
 					// Widget Switcher 이용한 무기 정보 위젯 스위칭
 					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(0);
 					// Radial Slider Value 초기화
-					infoWidgetUI->weaponHoldPercent=0;
+					infoWidgetUI->weaponHoldPercent = 0;
 					// Weapon Info Widget 뷰포트에 배치
 					infoWidgetUI->AddToViewport();
 				}
 			}
-			else if(sniperActor)
+			else if (sniperActor)
 			{
 				// 1회 실행 불리언
-				if(TickOverlapBoolean==false)
+				if (TickOverlapBoolean == false)
 				{
-					TickOverlapBoolean=true;
-					isCursorOnSniper=true;
+					TickOverlapBoolean = true;
+					isCursorOnSniper = true;
 					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
 					sniperActor->weaponMesh->SetRenderCustomDepth(true);
 					// Widget Switcher 이용한 무기 정보 위젯 스위칭
 					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(1);
 					// Radial Slider Value 초기화
-					infoWidgetUI->weaponHoldPercent=0;
+					infoWidgetUI->weaponHoldPercent = 0;
 					// Weapon Info Widget 뷰포트에 배치
 					infoWidgetUI->AddToViewport();
 				}
 			}
-			else if(pistolActor)
+			else if (pistolActor)
 			{
 				// 1회 실행 불리언
-				if(TickOverlapBoolean==false)
+				if (TickOverlapBoolean == false)
 				{
-					TickOverlapBoolean=true;
-					isCursorOnPistol=true;
+					TickOverlapBoolean = true;
+					isCursorOnPistol = true;
 					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
 					pistolActor->weaponMesh->SetRenderCustomDepth(true);
 					// Widget Switcher 이용한 무기 정보 위젯 스위칭
 					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(2);
 					// Radial Slider Value 초기화
-					infoWidgetUI->weaponHoldPercent=0;
+					infoWidgetUI->weaponHoldPercent = 0;
 					// Weapon Info Widget 뷰포트에 배치
 					infoWidgetUI->AddToViewport();
 				}
 			}
-			else if(m249Actor)
+			else if (m249Actor)
 			{
 				// 1회 실행 불리언
-				if(TickOverlapBoolean==false)
+				if (TickOverlapBoolean == false)
 				{
-					TickOverlapBoolean=true;
-					isCursorOnM249=true;
+					TickOverlapBoolean = true;
+					isCursorOnM249 = true;
 					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
 					m249Actor->weaponMesh->SetRenderCustomDepth(true);
 					// Widget Switcher 이용한 무기 정보 위젯 스위칭
 					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(3);
 					// Radial Slider Value 초기화
-					infoWidgetUI->weaponHoldPercent=0;
+					infoWidgetUI->weaponHoldPercent = 0;
 					// Weapon Info Widget 뷰포트에 배치
 					infoWidgetUI->AddToViewport();
 				}
 			}
-			else if(HackingConsole)
+			else if (HackingConsole)
 			{
 				// 1회 실행 불리언
-				if(TickOverlapBoolean==false)
+				if (TickOverlapBoolean == false)
 				{
-					TickOverlapBoolean=true;
+					TickOverlapBoolean = true;
 					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
 					HackingConsole->rewardMesh->SetRenderCustomDepth(true);
 					// Widget Switcher 이용한 무기 정보 위젯 스위칭
 					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(4);
 					// Radial Slider Value 초기화
-					infoWidgetUI->weaponHoldPercent=0;
+					infoWidgetUI->weaponHoldPercent = 0;
 					// Weapon Info Widget 뷰포트에 배치
 					infoWidgetUI->AddToViewport();
 				}
 			}
-			else if(MissionChecker)
+			else if (MissionChecker)
 			{
 				// 1회 실행 불리언
-				if(TickOverlapBoolean==false)
+				if (TickOverlapBoolean == false)
 				{
-					TickOverlapBoolean=true;
+					TickOverlapBoolean = true;
 					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
 					MissionChecker->checkerMesh->SetRenderCustomDepth(true);
-					if(BossCount>=1&&GuardianCount>=7)
+					if (BossCount >= 1 && GuardianCount >= 7)
 					{
 						infoWidgetUI->MissionCheck1->SetText(FText::FromString("Success"));
 					}
-					if(ConsoleCount>=5)
+					if (ConsoleCount >= 5)
 					{
 						infoWidgetUI->MissionCheck2->SetText(FText::FromString("Success"));
 					}
 					// Widget Switcher 이용한 무기 정보 위젯 스위칭
 					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(5);
 					// Radial Slider Value 초기화
-					infoWidgetUI->weaponHoldPercent=0;
+					infoWidgetUI->weaponHoldPercent = 0;
 					// Weapon Info Widget 뷰포트에 배치
 					infoWidgetUI->AddToViewport();
 				}
 			}
-			else if(RifleMagActor)
+			else if (RifleMagActor)
 			{
 				// 1회 실행 불리언
-				if(TickOverlapBoolean==false)
+				if (TickOverlapBoolean == false)
 				{
-					TickOverlapBoolean=true;
+					TickOverlapBoolean = true;
 					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
 					RifleMagActor->magMesh->SetRenderCustomDepth(true);
 					// Widget Switcher 이용한 무기 정보 위젯 스위칭
 					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(6);
 					// Radial Slider Value 초기화
-					infoWidgetUI->weaponHoldPercent=0;
+					infoWidgetUI->weaponHoldPercent = 0;
 					// Weapon Info Widget 뷰포트에 배치
 					infoWidgetUI->AddToViewport();
 				}
 			}
-			else if(SniperMagActor)
+			else if (SniperMagActor)
 			{
 				// 1회 실행 불리언
-				if(TickOverlapBoolean==false)
+				if (TickOverlapBoolean == false)
 				{
-					TickOverlapBoolean=true;
+					TickOverlapBoolean = true;
 					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
 					SniperMagActor->magMesh->SetRenderCustomDepth(true);
 					// Widget Switcher 이용한 무기 정보 위젯 스위칭
 					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(7);
 					// Radial Slider Value 초기화
-					infoWidgetUI->weaponHoldPercent=0;
+					infoWidgetUI->weaponHoldPercent = 0;
 					// Weapon Info Widget 뷰포트에 배치
 					infoWidgetUI->AddToViewport();
 				}
 			}
-			else if(PistolMagActor)
+			else if (PistolMagActor)
 			{
 				// 1회 실행 불리언
-				if(TickOverlapBoolean==false)
+				if (TickOverlapBoolean == false)
 				{
-					TickOverlapBoolean=true;
+					TickOverlapBoolean = true;
 					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
 					PistolMagActor->magMesh->SetRenderCustomDepth(true);
 					// Widget Switcher 이용한 무기 정보 위젯 스위칭
 					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(8);
 					// Radial Slider Value 초기화
-					infoWidgetUI->weaponHoldPercent=0;
+					infoWidgetUI->weaponHoldPercent = 0;
 					// Weapon Info Widget 뷰포트에 배치
 					infoWidgetUI->AddToViewport();
 				}
 			}
-			else if(M249MagActor)
+			else if (M249MagActor)
 			{
 				// 1회 실행 불리언
-				if(TickOverlapBoolean==false)
+				if (TickOverlapBoolean == false)
 				{
-					TickOverlapBoolean=true;
+					TickOverlapBoolean = true;
 					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
 					M249MagActor->magMesh->SetRenderCustomDepth(true);
 					// Widget Switcher 이용한 무기 정보 위젯 스위칭
 					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(9);
 					// Radial Slider Value 초기화
-					infoWidgetUI->weaponHoldPercent=0;
+					infoWidgetUI->weaponHoldPercent = 0;
 					// Weapon Info Widget 뷰포트에 배치
 					infoWidgetUI->AddToViewport();
 				}
 			}
-			else if(GoggleActor)
+			else if (GoggleActor)
 			{
 				// 1회 실행 불리언
-				if(TickOverlapBoolean==false)
+				if (TickOverlapBoolean == false)
 				{
-					TickOverlapBoolean=true;
+					TickOverlapBoolean = true;
 					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
 					GoggleActor->gearMesh->SetRenderCustomDepth(true);
 					// Widget Switcher 이용한 무기 정보 위젯 스위칭
 					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(10);
 					// Radial Slider Value 초기화
-					infoWidgetUI->weaponHoldPercent=0;
+					infoWidgetUI->weaponHoldPercent = 0;
 					// Weapon Info Widget 뷰포트에 배치
 					infoWidgetUI->AddToViewport();
 				}
 			}
-			else if(HelmetActor)
+			else if (HelmetActor)
 			{
 				// 1회 실행 불리언
-				if(TickOverlapBoolean==false)
+				if (TickOverlapBoolean == false)
 				{
-					TickOverlapBoolean=true;
+					TickOverlapBoolean = true;
 					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
 					HelmetActor->gearMesh->SetRenderCustomDepth(true);
 					// Widget Switcher 이용한 무기 정보 위젯 스위칭
 					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(11);
 					// Radial Slider Value 초기화
-					infoWidgetUI->weaponHoldPercent=0;
+					infoWidgetUI->weaponHoldPercent = 0;
 					// Weapon Info Widget 뷰포트에 배치
 					infoWidgetUI->AddToViewport();
 				}
 			}
-			else if(HeadsetActor)
+			else if (HeadsetActor)
 			{
 				// 1회 실행 불리언
-				if(TickOverlapBoolean==false)
+				if (TickOverlapBoolean == false)
 				{
-					TickOverlapBoolean=true;
+					TickOverlapBoolean = true;
 					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
 					HeadsetActor->gearMesh->SetRenderCustomDepth(true);
 					// Widget Switcher 이용한 무기 정보 위젯 스위칭
 					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(12);
 					// Radial Slider Value 초기화
-					infoWidgetUI->weaponHoldPercent=0;
+					infoWidgetUI->weaponHoldPercent = 0;
 					// Weapon Info Widget 뷰포트에 배치
 					infoWidgetUI->AddToViewport();
 				}
 			}
-			else if(MaskActor)
+			else if (MaskActor)
 			{
 				// 1회 실행 불리언
-				if(TickOverlapBoolean==false)
+				if (TickOverlapBoolean == false)
 				{
-					TickOverlapBoolean=true;
+					TickOverlapBoolean = true;
 					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
 					MaskActor->gearMesh->SetRenderCustomDepth(true);
 					// Widget Switcher 이용한 무기 정보 위젯 스위칭
 					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(13);
 					// Radial Slider Value 초기화
-					infoWidgetUI->weaponHoldPercent=0;
+					infoWidgetUI->weaponHoldPercent = 0;
 					// Weapon Info Widget 뷰포트에 배치
 					infoWidgetUI->AddToViewport();
 				}
 			}
-			else if(ArmorActor)
+			else if (ArmorActor)
 			{
 				// 1회 실행 불리언
-				if(TickOverlapBoolean==false)
+				if (TickOverlapBoolean == false)
 				{
-					TickOverlapBoolean=true;
+					TickOverlapBoolean = true;
 					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
 					ArmorActor->gearMesh->SetRenderCustomDepth(true);
 					// Widget Switcher 이용한 무기 정보 위젯 스위칭
 					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(14);
 					// Radial Slider Value 초기화
-					infoWidgetUI->weaponHoldPercent=0;
+					infoWidgetUI->weaponHoldPercent = 0;
 					// Weapon Info Widget 뷰포트에 배치
 					infoWidgetUI->AddToViewport();
 				}
 			}
-			else if(MedKitActor)
+			else if (MedKitActor)
 			{
 				// 1회 실행 불리언
-				if(TickOverlapBoolean==false)
+				if (TickOverlapBoolean == false)
 				{
-					TickOverlapBoolean=true;
+					TickOverlapBoolean = true;
 					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
 					MedKitActor->consumeMesh->SetRenderCustomDepth(true);
 					// Widget Switcher 이용한 무기 정보 위젯 스위칭
 					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(15);
 					// Radial Slider Value 초기화
-					infoWidgetUI->weaponHoldPercent=0;
+					infoWidgetUI->weaponHoldPercent = 0;
 					// Weapon Info Widget 뷰포트에 배치
 					infoWidgetUI->AddToViewport();
 				}
 			}
-			else if(StageBoard)
+			else if (StageBoard)
 			{
 				// 1회 실행 불리언
-				if(TickOverlapBoolean==false)
+				if (TickOverlapBoolean == false)
 				{
-					TickOverlapBoolean=true;
+					TickOverlapBoolean = true;
 					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
 					StageBoard->boardMesh->SetRenderCustomDepth(true);
 					// Widget Switcher 이용한 무기 정보 위젯 스위칭
 					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(16);
 					// Radial Slider Value 초기화
-					infoWidgetUI->weaponHoldPercent=0;
+					infoWidgetUI->weaponHoldPercent = 0;
 					// Weapon Info Widget 뷰포트에 배치
 					infoWidgetUI->AddToViewport();
 				}
 			}
-			else if(Stash)
+			else if (Stash)
 			{
 				// 1회 실행 불리언
-				if(TickOverlapBoolean==false)
+				if (TickOverlapBoolean == false)
 				{
-					TickOverlapBoolean=true;
+					TickOverlapBoolean = true;
 					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
 					Stash->stashMesh->SetRenderCustomDepth(true);
 					// Widget Switcher 이용한 무기 정보 위젯 스위칭
 					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(17);
 					// Radial Slider Value 초기화
-					infoWidgetUI->weaponHoldPercent=0;
+					infoWidgetUI->weaponHoldPercent = 0;
 					// Weapon Info Widget 뷰포트에 배치
 					infoWidgetUI->AddToViewport();
 				}
 			}
-			else if(QuitGameActor)
+			else if (QuitGameActor)
 			{
 				// 1회 실행 불리언
-				if(TickOverlapBoolean==false)
+				if (TickOverlapBoolean == false)
 				{
-					TickOverlapBoolean=true;
+					TickOverlapBoolean = true;
 					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
 					QuitGameActor->quitGameMesh->SetRenderCustomDepth(true);
 					// Widget Switcher 이용한 무기 정보 위젯 스위칭
 					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(18);
 					// Radial Slider Value 초기화
-					infoWidgetUI->weaponHoldPercent=0;
+					infoWidgetUI->weaponHoldPercent = 0;
 					// Weapon Info Widget 뷰포트에 배치
 					infoWidgetUI->AddToViewport();
 				}
 			}
-			else if(PlayerCharacter)
+			else if (PlayerCharacter)
 			{
-				if(PlayerCharacter->IsPlayerDead)
+				if (PlayerCharacter->IsPlayerDead)
 				{
 					// 1회 실행 불리언
-					if(TickOverlapBoolean==false)
+					if (TickOverlapBoolean == false)
 					{
-						TickOverlapBoolean=true;
+						TickOverlapBoolean = true;
 						// Render Custom Depth 활용한 무기 액터 외곽선 활성화
 						PlayerCharacter->GetMesh()->SetRenderCustomDepth(true);
 						// Widget Switcher 이용한 무기 정보 위젯 스위칭
 						infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(19);
 						// Radial Slider Value 초기화
-						infoWidgetUI->weaponHoldPercent=0;
+						infoWidgetUI->weaponHoldPercent = 0;
 						// Weapon Info Widget 뷰포트에 배치
 						infoWidgetUI->AddToViewport();
 					}
@@ -1459,9 +1442,9 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 			else
 			{
 				// 1회 실행 불리언
-				if(TickOverlapBoolean==true)
+				if (TickOverlapBoolean == true)
 				{
-					TickOverlapBoolean=false;
+					TickOverlapBoolean = false;
 					// 무기 액터 정보 위젯 파괴
 					infoWidgetUI->RemoveFromParent();
 					// 중심점
@@ -1473,129 +1456,129 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 					params.AddIgnoredActor(this);
 					// End Overlap 시점에 호출되는 Overlap Multi
 					bool bEndOverlapHit = GetWorld()->OverlapMultiByChannel(HitObj, Center, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(500), params);
-					if(bEndOverlapHit)
+					if (bEndOverlapHit)
 					{
 						// 충돌 배열 순회
 						for (int i = 0; i < HitObj.Num(); ++i)
 						{
 							// 무기 액터 캐스팅
 							rifleActor = Cast<ARifleActor>(HitObj[i].GetActor());
-							sniperActor=Cast<ASniperActor>(HitObj[i].GetActor());
-							pistolActor=Cast<APistolActor>(HitObj[i].GetActor());
-							m249Actor=Cast<AM249Actor>(HitObj[i].GetActor());
-							HackingConsole=Cast<AHackingConsole>(HitObj[i].GetActor());
-							MissionChecker=Cast<AMissionChecker>(HitObj[i].GetActor());
+							sniperActor = Cast<ASniperActor>(HitObj[i].GetActor());
+							pistolActor = Cast<APistolActor>(HitObj[i].GetActor());
+							m249Actor = Cast<AM249Actor>(HitObj[i].GetActor());
+							HackingConsole = Cast<AHackingConsole>(HitObj[i].GetActor());
+							MissionChecker = Cast<AMissionChecker>(HitObj[i].GetActor());
 							RifleMagActor = Cast<ARifleMagActor>(HitObj[i].GetActor());
 							SniperMagActor = Cast<ASniperMagActor>(HitObj[i].GetActor());
 							PistolMagActor = Cast<APistolMagActor>(HitObj[i].GetActor());
 							M249MagActor = Cast<AM249MagActor>(HitObj[i].GetActor());
-							GoggleActor= Cast<AGoggleActor>(HitObj[i].GetActor());
-							MaskActor= Cast<AMaskActor>(HitObj[i].GetActor());
-							HelmetActor= Cast<AHelmetActor>(HitObj[i].GetActor());
-							HeadsetActor= Cast<AHeadsetActor>(HitObj[i].GetActor());
-							ArmorActor= Cast<AArmorActor>(HitObj[i].GetActor());
-							MedKitActor= Cast<AMedKitActor>(HitObj[i].GetActor());
-							StageBoard= Cast<AStageBoard>(HitObj[i].GetActor());
-							Stash= Cast<AStash>(HitObj[i].GetActor());
-							QuitGameActor= Cast<AQuitGameActor>(HitObj[i].GetActor());
-							PlayerCharacter=Cast<APlayerCharacter>(HitObj[i].GetActor());
-						
-							if(rifleActor)
+							GoggleActor = Cast<AGoggleActor>(HitObj[i].GetActor());
+							MaskActor = Cast<AMaskActor>(HitObj[i].GetActor());
+							HelmetActor = Cast<AHelmetActor>(HitObj[i].GetActor());
+							HeadsetActor = Cast<AHeadsetActor>(HitObj[i].GetActor());
+							ArmorActor = Cast<AArmorActor>(HitObj[i].GetActor());
+							MedKitActor = Cast<AMedKitActor>(HitObj[i].GetActor());
+							StageBoard = Cast<AStageBoard>(HitObj[i].GetActor());
+							Stash = Cast<AStash>(HitObj[i].GetActor());
+							QuitGameActor = Cast<AQuitGameActor>(HitObj[i].GetActor());
+							PlayerCharacter = Cast<APlayerCharacter>(HitObj[i].GetActor());
+
+							if (rifleActor)
 							{
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								rifleActor->weaponMesh->SetRenderCustomDepth(false);
 							}
-							else if(sniperActor)
+							else if (sniperActor)
 							{
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								sniperActor->weaponMesh->SetRenderCustomDepth(false);
 							}
-							else if(pistolActor)
+							else if (pistolActor)
 							{
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								pistolActor->weaponMesh->SetRenderCustomDepth(false);
 							}
-							else if(m249Actor)
+							else if (m249Actor)
 							{
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								m249Actor->weaponMesh->SetRenderCustomDepth(false);
 							}
-							else if(HackingConsole)
+							else if (HackingConsole)
 							{
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								HackingConsole->rewardMesh->SetRenderCustomDepth(false);
 							}
-							else if(MissionChecker)
+							else if (MissionChecker)
 							{
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								MissionChecker->checkerMesh->SetRenderCustomDepth(false);
 							}
-							else if(RifleMagActor)
+							else if (RifleMagActor)
 							{
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								RifleMagActor->magMesh->SetRenderCustomDepth(false);
 							}
-							else if(SniperMagActor)
+							else if (SniperMagActor)
 							{
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								SniperMagActor->magMesh->SetRenderCustomDepth(false);
 							}
-							else if(PistolMagActor)
+							else if (PistolMagActor)
 							{
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								PistolMagActor->magMesh->SetRenderCustomDepth(false);
 							}
-							else if(M249MagActor)
+							else if (M249MagActor)
 							{
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								M249MagActor->magMesh->SetRenderCustomDepth(false);
 							}
-							else if(GoggleActor)
+							else if (GoggleActor)
 							{
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								GoggleActor->gearMesh->SetRenderCustomDepth(false);
 							}
-							else if(HelmetActor)
+							else if (HelmetActor)
 							{
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								HelmetActor->gearMesh->SetRenderCustomDepth(false);
 							}
-							else if(HeadsetActor)
+							else if (HeadsetActor)
 							{
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								HeadsetActor->gearMesh->SetRenderCustomDepth(false);
 							}
-							else if(MaskActor)
+							else if (MaskActor)
 							{
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								MaskActor->gearMesh->SetRenderCustomDepth(false);
 							}
-							else if(ArmorActor)
+							else if (ArmorActor)
 							{
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								ArmorActor->gearMesh->SetRenderCustomDepth(false);
 							}
-							else if(MedKitActor)
+							else if (MedKitActor)
 							{
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								MedKitActor->consumeMesh->SetRenderCustomDepth(false);
 							}
-							else if(StageBoard)
+							else if (StageBoard)
 							{
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								StageBoard->boardMesh->SetRenderCustomDepth(false);
 							}
-							else if(Stash)
+							else if (Stash)
 							{
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								Stash->stashMesh->SetRenderCustomDepth(false);
 							}
-							else if(QuitGameActor)
+							else if (QuitGameActor)
 							{
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								QuitGameActor->quitGameMesh->SetRenderCustomDepth(false);
 							}
-							else if(PlayerCharacter)
+							else if (PlayerCharacter)
 							{
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								PlayerCharacter->GetMesh()->SetRenderCustomDepth(false);
@@ -1607,75 +1590,74 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 		}
 		else
 		{
-
 		}
 	}
 }
 
 void APlayerCharacter::SetBossHPWidget(AEnemy* enemy)
 {
-	if(enemy&&bossHPUI)
+	if (enemy && bossHPUI)
 	{
-		const float bossHP = enemy->curHP*0.0001;
+		const float bossHP = enemy->curHP * 0.0001;
 		bossHPUI->progressBar->SetPercent(bossHP);
-		const float bossShield = enemy->curShield*0.01;
+		const float bossShield = enemy->curShield * 0.01;
 		bossHPUI->shieldProgressBar->SetPercent(bossShield);
 	}
 }
 
 void APlayerCharacter::SetDamageWidget(int damage, FVector spawnLoc, bool isShieldIconEnable, FLinearColor DamageTextColor)
 {
-		ADamageWidgetActor* damWidget = GetWorld()->SpawnActor<ADamageWidgetActor>(damageWidgetFactory, spawnLoc+FVector(0, 0, 50), FRotator::ZeroRotator);
-		if(damWidget)
+	ADamageWidgetActor* damWidget = GetWorld()->SpawnActor<ADamageWidgetActor>(damageWidgetFactory, spawnLoc + FVector(0, 0, 50), FRotator::ZeroRotator);
+	if (damWidget)
+	{
+		UUserWidget* widui = damWidget->DamageWidgetComponent->GetUserWidgetObject();
+		if (widui)
 		{
-			UUserWidget* widui = damWidget->DamageWidgetComponent->GetUserWidgetObject();
-			if(widui)
+			damageWidgetUI = Cast<UDamageWidget>(widui);
+			if (damageWidgetUI)
 			{
-				damageWidgetUI=Cast<UDamageWidget>(widui);
-				if(damageWidgetUI)
+				damageWidgetUI->damageText->SetColorAndOpacity(DamageTextColor);
+				damageWidgetUI->damage = damage;
+				if (isShieldIconEnable)
 				{
-					damageWidgetUI->damageText->SetColorAndOpacity(DamageTextColor);
-					damageWidgetUI->damage=damage;
-					if(isShieldIconEnable)
-					{
-						damageWidgetUI->ShieldImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-					}
-					else
-					{
-						damageWidgetUI->ShieldImage->SetVisibility(ESlateVisibility::Hidden);
-					}
-					if(weaponArray[0]==true)
-					{
-						damageWidgetUI->rifleBulletImage->SetVisibility(ESlateVisibility::Visible);
-						damageWidgetUI->sniperBulletImage->SetVisibility(ESlateVisibility::Hidden);
-						damageWidgetUI->pistolBulletImage->SetVisibility(ESlateVisibility::Hidden);
-						damageWidgetUI->M249BulletImage->SetVisibility(ESlateVisibility::Hidden);
-					}
-					else if(weaponArray[1]==true)
-					{
-						damageWidgetUI->rifleBulletImage->SetVisibility(ESlateVisibility::Hidden);
-						damageWidgetUI->sniperBulletImage->SetVisibility(ESlateVisibility::Visible);
-						damageWidgetUI->pistolBulletImage->SetVisibility(ESlateVisibility::Hidden);
-						damageWidgetUI->M249BulletImage->SetVisibility(ESlateVisibility::Hidden);
-					}
-					else if(weaponArray[2]==true)
-					{
-						damageWidgetUI->rifleBulletImage->SetVisibility(ESlateVisibility::Hidden);
-						damageWidgetUI->sniperBulletImage->SetVisibility(ESlateVisibility::Hidden);
-						damageWidgetUI->pistolBulletImage->SetVisibility(ESlateVisibility::Visible);
-						damageWidgetUI->M249BulletImage->SetVisibility(ESlateVisibility::Hidden);
-					}
-					else if(weaponArray[3]==true)
-					{
-						damageWidgetUI->rifleBulletImage->SetVisibility(ESlateVisibility::Hidden);
-						damageWidgetUI->sniperBulletImage->SetVisibility(ESlateVisibility::Hidden);
-						damageWidgetUI->pistolBulletImage->SetVisibility(ESlateVisibility::Hidden);
-						damageWidgetUI->M249BulletImage->SetVisibility(ESlateVisibility::Visible);
-					}
-					damageWidgetUI->PlayAnimation(damageWidgetUI->DamageFloat);
+					damageWidgetUI->ShieldImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 				}
+				else
+				{
+					damageWidgetUI->ShieldImage->SetVisibility(ESlateVisibility::Hidden);
+				}
+				if (weaponArray[0] == true)
+				{
+					damageWidgetUI->rifleBulletImage->SetVisibility(ESlateVisibility::Visible);
+					damageWidgetUI->sniperBulletImage->SetVisibility(ESlateVisibility::Hidden);
+					damageWidgetUI->pistolBulletImage->SetVisibility(ESlateVisibility::Hidden);
+					damageWidgetUI->M249BulletImage->SetVisibility(ESlateVisibility::Hidden);
+				}
+				else if (weaponArray[1] == true)
+				{
+					damageWidgetUI->rifleBulletImage->SetVisibility(ESlateVisibility::Hidden);
+					damageWidgetUI->sniperBulletImage->SetVisibility(ESlateVisibility::Visible);
+					damageWidgetUI->pistolBulletImage->SetVisibility(ESlateVisibility::Hidden);
+					damageWidgetUI->M249BulletImage->SetVisibility(ESlateVisibility::Hidden);
+				}
+				else if (weaponArray[2] == true)
+				{
+					damageWidgetUI->rifleBulletImage->SetVisibility(ESlateVisibility::Hidden);
+					damageWidgetUI->sniperBulletImage->SetVisibility(ESlateVisibility::Hidden);
+					damageWidgetUI->pistolBulletImage->SetVisibility(ESlateVisibility::Visible);
+					damageWidgetUI->M249BulletImage->SetVisibility(ESlateVisibility::Hidden);
+				}
+				else if (weaponArray[3] == true)
+				{
+					damageWidgetUI->rifleBulletImage->SetVisibility(ESlateVisibility::Hidden);
+					damageWidgetUI->sniperBulletImage->SetVisibility(ESlateVisibility::Hidden);
+					damageWidgetUI->pistolBulletImage->SetVisibility(ESlateVisibility::Hidden);
+					damageWidgetUI->M249BulletImage->SetVisibility(ESlateVisibility::Visible);
+				}
+				damageWidgetUI->PlayAnimation(damageWidgetUI->DamageFloat);
 			}
 		}
+	}
 }
 
 void APlayerCharacter::Crouching()
@@ -1684,7 +1666,7 @@ void APlayerCharacter::Crouching()
 
 void APlayerCharacter::ChangeWeapon()
 {
-	if(bEnding)
+	if (bEnding)
 	{
 		return;
 	}
@@ -1702,8 +1684,8 @@ bool APlayerCharacter::ChangeWeaponRPCServer_Validate()
 }
 
 void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
-{	
-	if(HasAuthority())
+{
+	if (HasAuthority())
 	{
 		InteractionProcess();
 	}
@@ -1711,553 +1693,552 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 
 void APlayerCharacter::InteractionProcess()
 {
-		FHitResult actorHitResult;
-		FVector StartLoc = FollowCamera->GetComponentLocation();
-		FVector EndLoc = StartLoc+FollowCamera->GetForwardVector()*500.0f;
-		// 무기 액터 탐지 라인 트레이스
-		bool bHit = GetWorld()->LineTraceSingleByChannel(actorHitResult, StartLoc, EndLoc, ECC_Visibility);
-		if(bHit)
+	FHitResult actorHitResult;
+	FVector StartLoc = FollowCamera->GetComponentLocation();
+	FVector EndLoc = StartLoc + FollowCamera->GetForwardVector() * 500.0f;
+	// 무기 액터 탐지 라인 트레이스
+	bool bHit = GetWorld()->LineTraceSingleByChannel(actorHitResult, StartLoc, EndLoc, ECC_Visibility);
+	if (bHit)
+	{
+		// 무기 액터 캐스팅
+		rifleActor = Cast<ARifleActor>(actorHitResult.GetActor());
+		sniperActor = Cast<ASniperActor>(actorHitResult.GetActor());
+		pistolActor = Cast<APistolActor>(actorHitResult.GetActor());
+		m249Actor = Cast<AM249Actor>(actorHitResult.GetActor());
+
+		HackingConsole = Cast<AHackingConsole>(actorHitResult.GetActor());
+		MissionChecker = Cast<AMissionChecker>(actorHitResult.GetActor());
+
+		RifleMagActor = Cast<ARifleMagActor>(actorHitResult.GetActor());
+		SniperMagActor = Cast<ASniperMagActor>(actorHitResult.GetActor());
+		PistolMagActor = Cast<APistolMagActor>(actorHitResult.GetActor());
+		M249MagActor = Cast<AM249MagActor>(actorHitResult.GetActor());
+
+		GoggleActor = Cast<AGoggleActor>(actorHitResult.GetActor());
+		MaskActor = Cast<AMaskActor>(actorHitResult.GetActor());
+		HelmetActor = Cast<AHelmetActor>(actorHitResult.GetActor());
+		HeadsetActor = Cast<AHeadsetActor>(actorHitResult.GetActor());
+		ArmorActor = Cast<AArmorActor>(actorHitResult.GetActor());
+
+		MedKitActor = Cast<AMedKitActor>(actorHitResult.GetActor());
+		StageBoard = Cast<AStageBoard>(actorHitResult.GetActor());
+		Stash = Cast<AStash>(actorHitResult.GetActor());
+		QuitGameActor = Cast<AQuitGameActor>(actorHitResult.GetActor());
+
+		PlayerCharacter = Cast<APlayerCharacter>(actorHitResult.GetActor());
+
+		// 라이플로 교체
+		if (rifleActor)
 		{
-			// 무기 액터 캐스팅
-			rifleActor = Cast<ARifleActor>(actorHitResult.GetActor());
-			sniperActor=Cast<ASniperActor>(actorHitResult.GetActor());
-			pistolActor=Cast<APistolActor>(actorHitResult.GetActor());
-			m249Actor=Cast<AM249Actor>(actorHitResult.GetActor());
-			
-			HackingConsole=Cast<AHackingConsole>(actorHitResult.GetActor());
-			MissionChecker=Cast<AMissionChecker>(actorHitResult.GetActor());
-
-			RifleMagActor = Cast<ARifleMagActor>(actorHitResult.GetActor());
-			SniperMagActor = Cast<ASniperMagActor>(actorHitResult.GetActor());
-			PistolMagActor = Cast<APistolMagActor>(actorHitResult.GetActor());
-			M249MagActor = Cast<AM249MagActor>(actorHitResult.GetActor());
-
-			GoggleActor= Cast<AGoggleActor>(actorHitResult.GetActor());
-			MaskActor= Cast<AMaskActor>(actorHitResult.GetActor());
-			HelmetActor= Cast<AHelmetActor>(actorHitResult.GetActor());
-			HeadsetActor= Cast<AHeadsetActor>(actorHitResult.GetActor());
-			ArmorActor= Cast<AArmorActor>(actorHitResult.GetActor());
-
-			MedKitActor= Cast<AMedKitActor>(actorHitResult.GetActor());
-			StageBoard= Cast<AStageBoard>(actorHitResult.GetActor());
-			Stash= Cast<AStash>(actorHitResult.GetActor());
-			QuitGameActor= Cast<AQuitGameActor>(actorHitResult.GetActor());
-
-			PlayerCharacter=Cast<APlayerCharacter>(actorHitResult.GetActor());			
-		
-			// 라이플로 교체
-			if(rifleActor)
+			// 라이플을 사용하지 않을 때만 교체
+			if (weaponArray[0] == false)
 			{
-				// 라이플을 사용하지 않을 때만 교체
-				if(weaponArray[0]==false)
+				// 키다운 시간 동안 Radial Slider 게이지 상승
+				infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.015, 0, 1);
+				// 게이지가 모두 채워졌을 때
+				if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 				{
-					// 키다운 시간 동안 Radial Slider 게이지 상승
-					infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-					// 게이지가 모두 채워졌을 때
-					if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+					infoWidgetUI->weaponHoldPercent = 0;
+					UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
+					// 무기 정보 위젯 제거
+					infoWidgetUI->RemoveFromParent();
+					// 무기 교체 Montage 재생
+					PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
+					// 교체 대상 무기 액터 파괴
+					rifleActor->Destroy();
+					// 액터 스폰 지점 할당
+					FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
+					FRotator spawnRotation = FRotator::ZeroRotator;
+					FActorSpawnParameters param;
+					param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+					// 스나이퍼를 사용중일 때
+					if (weaponArray[1] == true)
 					{
-						infoWidgetUI->weaponHoldPercent=0;
-						UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
-						// 무기 정보 위젯 제거
-						infoWidgetUI->RemoveFromParent();
-						// 무기 교체 Montage 재생
-						PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
-						// 교체 대상 무기 액터 파괴
-						rifleActor->Destroy();
-						// 액터 스폰 지점 할당
-						FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
-						FRotator spawnRotation = FRotator::ZeroRotator;
-						FActorSpawnParameters param;
-						param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-						// 스나이퍼를 사용중일 때
-						if(weaponArray[1]==true)
-						{
-							// 사용중인 무기 액터 스폰
-							sniperActor = GetWorld()->SpawnActor<ASniperActor>(sniperFactory, spawnPosition, spawnRotation);
-						}
-						// 권총을 사용중일 때
-						else if(weaponArray[2]==true)
-						{
-							// 애니메이션 인스턴스 캐스팅
-							UPlayerAnim* animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-							if(animInst)
-							{
-								// 애니메이션 블루프린트에 상태 전환 불리언 전달
-								animInst->bPistol=false;
-							}
-							// 사용중인 무기 액터 스폰
-							pistolActor = GetWorld()->SpawnActor<APistolActor>(pistolFactory, spawnPosition, spawnRotation);
-						}
-						else if(weaponArray[3]==true)
-						{
-							// 사용중인 무기 액터 스폰
-							m249Actor = GetWorld()->SpawnActor<AM249Actor>(M249Factory, spawnPosition, spawnRotation);
-						}
-						// 현재 활성화된 슬롯이 1번이라면
-						if(curWeaponSlotNumber==1)
-						{
-							// 장착 무기 이름 배열에 할당
-							equippedWeaponStringArray[0]=FString("Rifle");
-						}
-						// 현재 활성화된 슬롯이 2번이라면
-						else if(curWeaponSlotNumber==2)
-						{
-							// 장착 무기 이름 배열에 할당
-							equippedWeaponStringArray[1]=FString("Rifle");
-						}
-						// Visibility 설정
-						rifleComp->SetVisibility(true);
-						sniperComp->SetVisibility(false);
-						pistolComp->SetVisibility(false);
-						m249Comp->SetVisibility(false);
-						// 무기 배열 설정
-						weaponArray[0]=true;
-						weaponArray[1]=false;
-						weaponArray[2]=false;
-						weaponArray[3]=false;
+						// 사용중인 무기 액터 스폰
+						sniperActor = GetWorld()->SpawnActor<ASniperActor>(sniperFactory, spawnPosition, spawnRotation);
 					}
-				}
-			}
-			// 스나이퍼로 교체
-			else if(sniperActor)
-			{
-				// 스나이퍼를 사용하지 않을 때만 교체
-				if(weaponArray[1]==false)
-				{
-					// 키다운 시간 동안 Radial Slider 게이지 상승
-					infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-					if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+					// 권총을 사용중일 때
+					else if (weaponArray[2] == true)
 					{
-						infoWidgetUI->weaponHoldPercent=0;
-						UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
-						infoWidgetUI->RemoveFromParent();
-						PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
-						sniperActor->Destroy();
-						FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
-						FRotator spawnRotation = FRotator::ZeroRotator;
-						FActorSpawnParameters param;
-						param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-			
-						if(weaponArray[0]==true)
-						{
-							rifleActor = GetWorld()->SpawnActor<ARifleActor>(rifleFactory, spawnPosition, spawnRotation);
-						}
-						else if(weaponArray[2]==true)
-						{
-							UPlayerAnim* animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-							if(animInst)
-							{
-								animInst->bPistol=false;
-							}
-							pistolActor = GetWorld()->SpawnActor<APistolActor>(pistolFactory, spawnPosition, spawnRotation);
-						}
-						else if(weaponArray[3]==true)
-						{
-							m249Actor = GetWorld()->SpawnActor<AM249Actor>(M249Factory, spawnPosition, spawnRotation);
-						}
-						if(curWeaponSlotNumber==1)
-						{
-							equippedWeaponStringArray[0]=FString("Sniper");
-						}
-						else if(curWeaponSlotNumber==2)
-						{
-							equippedWeaponStringArray[1]=FString("Sniper");
-						}			
-						rifleComp->SetVisibility(false);
-						sniperComp->SetVisibility(true);
-						pistolComp->SetVisibility(false);
-						m249Comp->SetVisibility(false);
-
-						weaponArray[0]=false;
-						weaponArray[1]=true;
-						weaponArray[2]=false;
-						weaponArray[3]=false;
-
-					}
-				}
-			}
-			// 권총으로 교체
-			else if(pistolActor)
-			{
-				// 권총을 사용하지 않을 때만 교체
-				if(weaponArray[2]==false)
-				{
-					// 키다운 시간 동안 Radial Slider 게이지 상승
-					infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-					if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
-					{
-						infoWidgetUI->weaponHoldPercent=0;
-						UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
-						infoWidgetUI->RemoveFromParent();
-						PlayAnimMontage(FullBodyMontage, 1 , FName("PistolEquip"));
+						// 애니메이션 인스턴스 캐스팅
 						UPlayerAnim* animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-						if(animInst)
+						if (animInst)
 						{
-							animInst->bPistol=true;
+							// 애니메이션 블루프린트에 상태 전환 불리언 전달
+							animInst->bPistol = false;
 						}
-						pistolActor->Destroy();
-						FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
-						FRotator spawnRotation = FRotator::ZeroRotator;
-						FActorSpawnParameters param;
-						param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;		
-						if(weaponArray[0]==true)
-						{
-							rifleActor = GetWorld()->SpawnActor<ARifleActor>(rifleFactory, spawnPosition, spawnRotation);
-						}
-						else if(weaponArray[1]==true)
-						{
-							sniperActor = GetWorld()->SpawnActor<ASniperActor>(sniperFactory, spawnPosition, spawnRotation);
-						}
-						else if(weaponArray[3]==true)
-						{
-							m249Actor = GetWorld()->SpawnActor<AM249Actor>(M249Factory, spawnPosition, spawnRotation);
-						}
-						if(curWeaponSlotNumber==1)
-						{
-							equippedWeaponStringArray[0]=FString("Pistol");
-						}
-						else if(curWeaponSlotNumber==2)
-						{
-							equippedWeaponStringArray[1]=FString("Pistol");
-						}				
-						rifleComp->SetVisibility(false);
-						sniperComp->SetVisibility(false);
-						pistolComp->SetVisibility(true);
-						m249Comp->SetVisibility(false);
-				
-						weaponArray[0]=false;
-						weaponArray[1]=false;
-						weaponArray[2]=true;
-						weaponArray[3]=false;
+						// 사용중인 무기 액터 스폰
+						pistolActor = GetWorld()->SpawnActor<APistolActor>(pistolFactory, spawnPosition, spawnRotation);
 					}
-				}
-			}
-			// M249로 교체
-			else if(m249Actor)
-			{
-				// M249을 사용하지 않을 때만 교체
-				if(weaponArray[3]==false)
-				{
-					// 키다운 시간 동안 Radial Slider 게이지 상승
-					infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-					if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+					else if (weaponArray[3] == true)
 					{
-						infoWidgetUI->weaponHoldPercent=0;
-						UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
-						infoWidgetUI->RemoveFromParent();
-						PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
-						m249Actor->Destroy();
-						FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
-						FRotator spawnRotation = FRotator::ZeroRotator;
-						FActorSpawnParameters param;
-						param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;		
-						if(weaponArray[0]==true)
-						{
-							rifleActor = GetWorld()->SpawnActor<ARifleActor>(rifleFactory, spawnPosition, spawnRotation);
-						}
-						else if(weaponArray[1]==true)
-						{
-							sniperActor = GetWorld()->SpawnActor<ASniperActor>(sniperFactory, spawnPosition, spawnRotation);
-						}
-						else if(weaponArray[2]==true)
-						{
-							UPlayerAnim* animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-							if(animInst)
-							{
-								animInst->bPistol=false;
-							}
-							pistolActor = GetWorld()->SpawnActor<APistolActor>(pistolFactory, spawnPosition, spawnRotation);
-						}
-						if(curWeaponSlotNumber==1)
-						{
-							equippedWeaponStringArray[0]=FString("M249");
-						}
-						else if(curWeaponSlotNumber==2)
-						{
-							equippedWeaponStringArray[1]=FString("M249");
-						}				
-						rifleComp->SetVisibility(false);
-						sniperComp->SetVisibility(false);
-						pistolComp->SetVisibility(false);
-						m249Comp->SetVisibility(true);
-				
-						weaponArray[0]=false;
-						weaponArray[1]=false;
-						weaponArray[2]=false;
-						weaponArray[3]=true;
+						// 사용중인 무기 액터 스폰
+						m249Actor = GetWorld()->SpawnActor<AM249Actor>(M249Factory, spawnPosition, spawnRotation);
 					}
-				}
-			}
-			else if(HackingConsole)
-			{
-				// 키다운 시간 동안 Radial Slider 게이지 상승
-				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
-				{
-					infoWidgetUI->weaponHoldPercent=0;
-					UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
-					infoWidgetUI->RemoveFromParent();
-					PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
-					HackingConsole->AddInventory();
-					HackingConsole->Destroy();
-					ConsoleCount++;
-					informationUI->ConsoleCount->SetText(FText::AsNumber(ConsoleCount));
-				}
-			}
-			else if(MissionChecker)
-			{
-				// 키다운 시간 동안 Radial Slider 게이지 상승
-				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
-				{
-					if(GuardianCount>=7&&ConsoleCount>=5&&BossCount>=1)
+					// 현재 활성화된 슬롯이 1번이라면
+					if (curWeaponSlotNumber == 1)
 					{
-						infoWidgetUI->weaponHoldPercent=0;
-						bEnding=true;
-						APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
-						playerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
-						StopAnimMontage();
-						GetCharacterMovement()->StopActiveMovement();
-						GetCharacterMovement()->DisableMovement();
-						FTransform spawnTrans = this->GetTransform();
-						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), recallParticle, spawnTrans);
-						PlayAnimMontage(FullBodyMontage, 1, FName("LevelEnd"));
-						UGameplayStatics::PlaySoundAtLocation(GetWorld(), PortalSound, GetActorLocation());
-						bUseControllerRotationYaw=false;
-						infoWidgetUI->RemoveFromParent();
-						informationUI->RemoveFromParent();
-						crosshairUI->RemoveFromParent();
-						FTimerHandle endHandle;
-						GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()->void
-						{						
-							PouchCaching();
-							InventoryCaching();
-							GearCaching();
-							MagCaching();
-							UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"));
-						}), 9.f, false);
+						// 장착 무기 이름 배열에 할당
+						equippedWeaponStringArray[0] = FString("Rifle");
 					}
-					else
+					// 현재 활성화된 슬롯이 2번이라면
+					else if (curWeaponSlotNumber == 2)
 					{
-						infoWidgetUI->PlayAnimation(infoWidgetUI->LackMission);
-						infoWidgetUI->weaponHoldPercent=0;
+						// 장착 무기 이름 배열에 할당
+						equippedWeaponStringArray[1] = FString("Rifle");
 					}
+					// Visibility 설정
+					rifleComp->SetVisibility(true);
+					sniperComp->SetVisibility(false);
+					pistolComp->SetVisibility(false);
+					m249Comp->SetVisibility(false);
+					// 무기 배열 설정
+					weaponArray[0] = true;
+					weaponArray[1] = false;
+					weaponArray[2] = false;
+					weaponArray[3] = false;
 				}
 			}
-			else if(RifleMagActor)
+		}
+		// 스나이퍼로 교체
+		else if (sniperActor)
+		{
+			// 스나이퍼를 사용하지 않을 때만 교체
+			if (weaponArray[1] == false)
 			{
 				// 키다운 시간 동안 Radial Slider 게이지 상승
-				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+				infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.015, 0, 1);
+				if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 				{
-					infoWidgetUI->weaponHoldPercent=0;
-					UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
+					infoWidgetUI->weaponHoldPercent = 0;
+					UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
 					infoWidgetUI->RemoveFromParent();
-					PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
-					RifleMagActor->AddInventory();
-					RifleMagActor->Destroy();
+					PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
+					sniperActor->Destroy();
+					FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
+					FRotator spawnRotation = FRotator::ZeroRotator;
+					FActorSpawnParameters param;
+					param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+					if (weaponArray[0] == true)
+					{
+						rifleActor = GetWorld()->SpawnActor<ARifleActor>(rifleFactory, spawnPosition, spawnRotation);
+					}
+					else if (weaponArray[2] == true)
+					{
+						UPlayerAnim* animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+						if (animInst)
+						{
+							animInst->bPistol = false;
+						}
+						pistolActor = GetWorld()->SpawnActor<APistolActor>(pistolFactory, spawnPosition, spawnRotation);
+					}
+					else if (weaponArray[3] == true)
+					{
+						m249Actor = GetWorld()->SpawnActor<AM249Actor>(M249Factory, spawnPosition, spawnRotation);
+					}
+					if (curWeaponSlotNumber == 1)
+					{
+						equippedWeaponStringArray[0] = FString("Sniper");
+					}
+					else if (curWeaponSlotNumber == 2)
+					{
+						equippedWeaponStringArray[1] = FString("Sniper");
+					}
+					rifleComp->SetVisibility(false);
+					sniperComp->SetVisibility(true);
+					pistolComp->SetVisibility(false);
+					m249Comp->SetVisibility(false);
+
+					weaponArray[0] = false;
+					weaponArray[1] = true;
+					weaponArray[2] = false;
+					weaponArray[3] = false;
 				}
 			}
-			else if(SniperMagActor)
+		}
+		// 권총으로 교체
+		else if (pistolActor)
+		{
+			// 권총을 사용하지 않을 때만 교체
+			if (weaponArray[2] == false)
 			{
 				// 키다운 시간 동안 Radial Slider 게이지 상승
-				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+				infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.015, 0, 1);
+				if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 				{
-					infoWidgetUI->weaponHoldPercent=0;
-					UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
+					infoWidgetUI->weaponHoldPercent = 0;
+					UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
 					infoWidgetUI->RemoveFromParent();
-					PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
-					SniperMagActor->AddInventory();
-					SniperMagActor->Destroy();
+					PlayAnimMontage(FullBodyMontage, 1, FName("PistolEquip"));
+					UPlayerAnim* animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+					if (animInst)
+					{
+						animInst->bPistol = true;
+					}
+					pistolActor->Destroy();
+					FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
+					FRotator spawnRotation = FRotator::ZeroRotator;
+					FActorSpawnParameters param;
+					param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+					if (weaponArray[0] == true)
+					{
+						rifleActor = GetWorld()->SpawnActor<ARifleActor>(rifleFactory, spawnPosition, spawnRotation);
+					}
+					else if (weaponArray[1] == true)
+					{
+						sniperActor = GetWorld()->SpawnActor<ASniperActor>(sniperFactory, spawnPosition, spawnRotation);
+					}
+					else if (weaponArray[3] == true)
+					{
+						m249Actor = GetWorld()->SpawnActor<AM249Actor>(M249Factory, spawnPosition, spawnRotation);
+					}
+					if (curWeaponSlotNumber == 1)
+					{
+						equippedWeaponStringArray[0] = FString("Pistol");
+					}
+					else if (curWeaponSlotNumber == 2)
+					{
+						equippedWeaponStringArray[1] = FString("Pistol");
+					}
+					rifleComp->SetVisibility(false);
+					sniperComp->SetVisibility(false);
+					pistolComp->SetVisibility(true);
+					m249Comp->SetVisibility(false);
+
+					weaponArray[0] = false;
+					weaponArray[1] = false;
+					weaponArray[2] = true;
+					weaponArray[3] = false;
 				}
 			}
-			else if(PistolMagActor)
+		}
+		// M249로 교체
+		else if (m249Actor)
+		{
+			// M249을 사용하지 않을 때만 교체
+			if (weaponArray[3] == false)
 			{
 				// 키다운 시간 동안 Radial Slider 게이지 상승
-				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+				infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.015, 0, 1);
+				if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 				{
-					infoWidgetUI->weaponHoldPercent=0;
-					UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
+					infoWidgetUI->weaponHoldPercent = 0;
+					UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
 					infoWidgetUI->RemoveFromParent();
-					PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
-					PistolMagActor->AddInventory();
-					PistolMagActor->Destroy();
+					PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
+					m249Actor->Destroy();
+					FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
+					FRotator spawnRotation = FRotator::ZeroRotator;
+					FActorSpawnParameters param;
+					param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+					if (weaponArray[0] == true)
+					{
+						rifleActor = GetWorld()->SpawnActor<ARifleActor>(rifleFactory, spawnPosition, spawnRotation);
+					}
+					else if (weaponArray[1] == true)
+					{
+						sniperActor = GetWorld()->SpawnActor<ASniperActor>(sniperFactory, spawnPosition, spawnRotation);
+					}
+					else if (weaponArray[2] == true)
+					{
+						UPlayerAnim* animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+						if (animInst)
+						{
+							animInst->bPistol = false;
+						}
+						pistolActor = GetWorld()->SpawnActor<APistolActor>(pistolFactory, spawnPosition, spawnRotation);
+					}
+					if (curWeaponSlotNumber == 1)
+					{
+						equippedWeaponStringArray[0] = FString("M249");
+					}
+					else if (curWeaponSlotNumber == 2)
+					{
+						equippedWeaponStringArray[1] = FString("M249");
+					}
+					rifleComp->SetVisibility(false);
+					sniperComp->SetVisibility(false);
+					pistolComp->SetVisibility(false);
+					m249Comp->SetVisibility(true);
+
+					weaponArray[0] = false;
+					weaponArray[1] = false;
+					weaponArray[2] = false;
+					weaponArray[3] = true;
 				}
 			}
-			else if(M249MagActor)
+		}
+		else if (HackingConsole)
+		{
+			// 키다운 시간 동안 Radial Slider 게이지 상승
+			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.015, 0, 1);
+			if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 			{
-				// 키다운 시간 동안 Radial Slider 게이지 상승
-				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+				infoWidgetUI->weaponHoldPercent = 0;
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
+				infoWidgetUI->RemoveFromParent();
+				PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
+				HackingConsole->AddInventory();
+				HackingConsole->Destroy();
+				ConsoleCount++;
+				informationUI->ConsoleCount->SetText(FText::AsNumber(ConsoleCount));
+			}
+		}
+		else if (MissionChecker)
+		{
+			// 키다운 시간 동안 Radial Slider 게이지 상승
+			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.015, 0, 1);
+			if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
+			{
+				if (GuardianCount >= 7 && ConsoleCount >= 5 && BossCount >= 1)
 				{
-					infoWidgetUI->weaponHoldPercent=0;
-					UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
+					infoWidgetUI->weaponHoldPercent = 0;
+					bEnding = true;
+					APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+					playerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
+					StopAnimMontage();
+					GetCharacterMovement()->StopActiveMovement();
+					GetCharacterMovement()->DisableMovement();
+					FTransform spawnTrans = this->GetTransform();
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), recallParticle, spawnTrans);
+					PlayAnimMontage(FullBodyMontage, 1, FName("LevelEnd"));
+					UGameplayStatics::PlaySoundAtLocation(GetWorld(), PortalSound, GetActorLocation());
+					bUseControllerRotationYaw = false;
 					infoWidgetUI->RemoveFromParent();
-					PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
-					M249MagActor->AddInventory();
-					M249MagActor->Destroy();
+					informationUI->RemoveFromParent();
+					crosshairUI->RemoveFromParent();
+					FTimerHandle endHandle;
+					GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()-> void
+					{
+						PouchCaching();
+						InventoryCaching();
+						GearCaching();
+						MagCaching();
+						UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"));
+					}), 9.f, false);
+				}
+				else
+				{
+					infoWidgetUI->PlayAnimation(infoWidgetUI->LackMission);
+					infoWidgetUI->weaponHoldPercent = 0;
 				}
 			}
-			else if(GoggleActor)
+		}
+		else if (RifleMagActor)
+		{
+			// 키다운 시간 동안 Radial Slider 게이지 상승
+			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.015, 0, 1);
+			if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 			{
-				// 키다운 시간 동안 Radial Slider 게이지 상승
-				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
-				{
-					infoWidgetUI->weaponHoldPercent=0;
-					UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
-					infoWidgetUI->RemoveFromParent();
-					PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
-					GoggleActor->AddInventory();
-					GoggleActor->Destroy();
-				}
+				infoWidgetUI->weaponHoldPercent = 0;
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
+				infoWidgetUI->RemoveFromParent();
+				PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
+				RifleMagActor->AddInventory();
+				RifleMagActor->Destroy();
 			}
-			else if(HelmetActor)
+		}
+		else if (SniperMagActor)
+		{
+			// 키다운 시간 동안 Radial Slider 게이지 상승
+			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.015, 0, 1);
+			if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 			{
-				// 키다운 시간 동안 Radial Slider 게이지 상승
-				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
-				{
-					infoWidgetUI->weaponHoldPercent=0;
-					UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
-					infoWidgetUI->RemoveFromParent();
-					PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
-					HelmetActor->AddInventory();
-					HelmetActor->Destroy();
-				}
+				infoWidgetUI->weaponHoldPercent = 0;
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
+				infoWidgetUI->RemoveFromParent();
+				PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
+				SniperMagActor->AddInventory();
+				SniperMagActor->Destroy();
 			}
-			else if(HeadsetActor)
+		}
+		else if (PistolMagActor)
+		{
+			// 키다운 시간 동안 Radial Slider 게이지 상승
+			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.015, 0, 1);
+			if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 			{
-				// 키다운 시간 동안 Radial Slider 게이지 상승
-				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
-				{
-					infoWidgetUI->weaponHoldPercent=0;
-					UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
-					infoWidgetUI->RemoveFromParent();
-					PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
-					HeadsetActor->AddInventory();
-					HeadsetActor->Destroy();
-				}
+				infoWidgetUI->weaponHoldPercent = 0;
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
+				infoWidgetUI->RemoveFromParent();
+				PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
+				PistolMagActor->AddInventory();
+				PistolMagActor->Destroy();
 			}
-			else if(MaskActor)
+		}
+		else if (M249MagActor)
+		{
+			// 키다운 시간 동안 Radial Slider 게이지 상승
+			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.015, 0, 1);
+			if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 			{
-				// 키다운 시간 동안 Radial Slider 게이지 상승
-				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
-				{
-					infoWidgetUI->weaponHoldPercent=0;
-					UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
-					infoWidgetUI->RemoveFromParent();
-					PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
-					MaskActor->AddInventory();
-					MaskActor->Destroy();
-				}
+				infoWidgetUI->weaponHoldPercent = 0;
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
+				infoWidgetUI->RemoveFromParent();
+				PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
+				M249MagActor->AddInventory();
+				M249MagActor->Destroy();
 			}
-			else if(ArmorActor)
+		}
+		else if (GoggleActor)
+		{
+			// 키다운 시간 동안 Radial Slider 게이지 상승
+			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.015, 0, 1);
+			if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 			{
-				// 키다운 시간 동안 Radial Slider 게이지 상승
-				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
-				{
-					infoWidgetUI->weaponHoldPercent=0;
-					UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
-					infoWidgetUI->RemoveFromParent();
-					PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
-					ArmorActor->AddInventory();
-					ArmorActor->Destroy();
-				}
+				infoWidgetUI->weaponHoldPercent = 0;
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
+				infoWidgetUI->RemoveFromParent();
+				PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
+				GoggleActor->AddInventory();
+				GoggleActor->Destroy();
 			}
-			else if(MedKitActor)
+		}
+		else if (HelmetActor)
+		{
+			// 키다운 시간 동안 Radial Slider 게이지 상승
+			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.015, 0, 1);
+			if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 			{
-				// 키다운 시간 동안 Radial Slider 게이지 상승
-				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
-				{
-					infoWidgetUI->weaponHoldPercent=0;
-					UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
-					infoWidgetUI->RemoveFromParent();
-					PlayAnimMontage(UpperOnlyMontage, 1 , FName("WeaponEquip"));
-					MedKitActor->AddInventory();
-					MedKitActor->Destroy();
-				}
+				infoWidgetUI->weaponHoldPercent = 0;
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
+				infoWidgetUI->RemoveFromParent();
+				PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
+				HelmetActor->AddInventory();
+				HelmetActor->Destroy();
 			}
-			else if(StageBoard)
+		}
+		else if (HeadsetActor)
+		{
+			// 키다운 시간 동안 Radial Slider 게이지 상승
+			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.015, 0, 1);
+			if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 			{
-				// 키다운 시간 동안 Radial Slider 게이지 상승
-				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-				if(levelSelectionUI&&infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+				infoWidgetUI->weaponHoldPercent = 0;
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
+				infoWidgetUI->RemoveFromParent();
+				PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
+				HeadsetActor->AddInventory();
+				HeadsetActor->Destroy();
+			}
+		}
+		else if (MaskActor)
+		{
+			// 키다운 시간 동안 Radial Slider 게이지 상승
+			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.015, 0, 1);
+			if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
+			{
+				infoWidgetUI->weaponHoldPercent = 0;
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
+				infoWidgetUI->RemoveFromParent();
+				PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
+				MaskActor->AddInventory();
+				MaskActor->Destroy();
+			}
+		}
+		else if (ArmorActor)
+		{
+			// 키다운 시간 동안 Radial Slider 게이지 상승
+			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.015, 0, 1);
+			if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
+			{
+				infoWidgetUI->weaponHoldPercent = 0;
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
+				infoWidgetUI->RemoveFromParent();
+				PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
+				ArmorActor->AddInventory();
+				ArmorActor->Destroy();
+			}
+		}
+		else if (MedKitActor)
+		{
+			// 키다운 시간 동안 Radial Slider 게이지 상승
+			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.015, 0, 1);
+			if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
+			{
+				infoWidgetUI->weaponHoldPercent = 0;
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
+				infoWidgetUI->RemoveFromParent();
+				PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
+				MedKitActor->AddInventory();
+				MedKitActor->Destroy();
+			}
+		}
+		else if (StageBoard)
+		{
+			// 키다운 시간 동안 Radial Slider 게이지 상승
+			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.015, 0, 1);
+			if (levelSelectionUI && infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
+			{
+				infoWidgetUI->weaponHoldPercent = 0;
+				UGameplayStatics::PlaySound2D(GetWorld(), levelSelectionSound);
+				infoWidgetUI->RemoveFromParent();
+				UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(PC, levelSelectionUI);
+				PC->SetShowMouseCursor(true);
+				levelSelectionUI->AddToViewport();
+			}
+		}
+		else if (Stash)
+		{
+			// 키다운 시간 동안 Radial Slider 게이지 상승
+			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.015, 0, 1);
+			if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
+			{
+				infoWidgetUI->weaponHoldPercent = 0;
+				if (bStashWidgetOn == false && PC)
 				{
-					infoWidgetUI->weaponHoldPercent=0;
-					UGameplayStatics::PlaySound2D(GetWorld(), levelSelectionSound);
+					bStashWidgetOn = true;
+					UGameplayStatics::PlaySound2D(GetWorld(), tabSound);
 					infoWidgetUI->RemoveFromParent();
-					UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(PC, levelSelectionUI);
 					PC->SetShowMouseCursor(true);
-					levelSelectionUI->AddToViewport();						
+					StashWidgetOnViewport();
 				}
 			}
-			else if(Stash)
+		}
+		else if (QuitGameActor)
+		{
+			// 키다운 시간 동안 Radial Slider 게이지 상승
+			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.015, 0, 1);
+			if (quitWidgetUI && infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 			{
-				// 키다운 시간 동안 Radial Slider 게이지 상승
-				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
+				infoWidgetUI->weaponHoldPercent = 0;
+				if (!quitWidgetUI->IsInViewport() && PC)
 				{
-					infoWidgetUI->weaponHoldPercent=0;
-					if(bStashWidgetOn==false&&PC)
+					UGameplayStatics::PlaySound2D(GetWorld(), quitGameSound);
+					infoWidgetUI->RemoveFromParent();
+					UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(PC, quitWidgetUI);
+					PC->SetShowMouseCursor(true);
+					quitWidgetUI->AddToViewport();
+				}
+			}
+		}
+		else if (PlayerCharacter)
+		{
+			// 키다운 시간 동안 Radial Slider 게이지 상승
+			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.015, 0, 1);
+			if (PlayerCharacter->IsPlayerDead)
+			{
+				if (quitWidgetUI && infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
+				{
+					infoWidgetUI->weaponHoldPercent = 0;
+					if (bDeadBodyWidgetOn == false && PC)
 					{
-						bStashWidgetOn=true;
+						bDeadBodyWidgetOn = true;
 						UGameplayStatics::PlaySound2D(GetWorld(), tabSound);
 						infoWidgetUI->RemoveFromParent();
 						PC->SetShowMouseCursor(true);
-						StashWidgetOnViewport();
-					}					
-				}
-			}
-			else if(QuitGameActor)
-			{
-				// 키다운 시간 동안 Radial Slider 게이지 상승
-				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-				if(quitWidgetUI&&infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
-				{
-					infoWidgetUI->weaponHoldPercent=0;
-					if(!quitWidgetUI->IsInViewport()&&PC)
-					{
-						UGameplayStatics::PlaySound2D(GetWorld(), quitGameSound);
-						infoWidgetUI->RemoveFromParent();
-						UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(PC, quitWidgetUI);
-						PC->SetShowMouseCursor(true);
-						quitWidgetUI->AddToViewport();
-					}
-				}
-			}
-			else if(PlayerCharacter)
-			{
-				// 키다운 시간 동안 Radial Slider 게이지 상승
-				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
-				if(PlayerCharacter->IsPlayerDead)
-				{
-					if(quitWidgetUI&&infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
-					{
-						infoWidgetUI->weaponHoldPercent=0;
-						if(bDeadBodyWidgetOn==false&&PC)
-						{
-							bDeadBodyWidgetOn=true;
-							UGameplayStatics::PlaySound2D(GetWorld(), tabSound);
-							infoWidgetUI->RemoveFromParent();
-							PC->SetShowMouseCursor(true);
-							DeadBodyWidgetOnViewport(PlayerCharacter->GetGameInstance());
-						}		
+						DeadBodyWidgetOnViewport(PlayerCharacter->GetGameInstance());
 					}
 				}
 			}
 		}
+	}
 }
 
 void APlayerCharacter::Reload()
 {
-	if(UGameplayStatics::GetCurrentLevelName(GetWorld())!=FString("Safe_House"))
+	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) != FString("Safe_House"))
 	{
 		ServerRPCReload();
 	}
@@ -2269,49 +2250,48 @@ void APlayerCharacter::ServerRPCReload_Implementation()
 }
 
 void APlayerCharacter::MulticastRPCReload_Implementation()
-{			
+{
 	bool animPlay = animInstance->IsAnyMontagePlaying();
-	if(animPlay==false)
+	if (animPlay == false)
 	{
-		if(weaponArray[0]==true&&curRifleAmmo<40+SetRifleAdditionalMagazine()&&maxRifleAmmo>0)
+		if (weaponArray[0] == true && curRifleAmmo < 40 + SetRifleAdditionalMagazine() && maxRifleAmmo > 0)
 		{
-			if(IsLocallyControlled())
+			if (IsLocallyControlled())
 			{
 				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
 			}
 			UGameplayStatics::PlaySound2D(GetWorld(), RifleReloadSound);
 			PlayAnimMontage(UpperOnlyMontage, 1, FName("Reload"));
 		}
-		else if(weaponArray[1]==true&&curSniperAmmo<5+SetSniperAdditionalMagazine()&&maxSniperAmmo>0)
+		else if (weaponArray[1] == true && curSniperAmmo < 5 + SetSniperAdditionalMagazine() && maxSniperAmmo > 0)
 		{
-			if(IsLocallyControlled())
+			if (IsLocallyControlled())
 			{
 				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
 			}
 			UGameplayStatics::PlaySound2D(GetWorld(), SniperReloadSound);
 			PlayAnimMontage(UpperOnlyMontage, 1, FName("Reload"));
 		}
-		else if(weaponArray[2]==true&&curPistolAmmo<8+SetPistolAdditionalMagazine()&&maxPistolAmmo>0)
+		else if (weaponArray[2] == true && curPistolAmmo < 8 + SetPistolAdditionalMagazine() && maxPistolAmmo > 0)
 		{
-			if(IsLocallyControlled())
+			if (IsLocallyControlled())
 			{
 				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
 			}
 			UGameplayStatics::PlaySound2D(GetWorld(), PistolReloadSound);
 			PlayAnimMontage(UpperOnlyMontage, 1, FName("PistolReload"));
 		}
-		else if(weaponArray[3]==true&&curM249Ammo<100+SetM249AdditionalMagazine()&&maxM249Ammo>0)
+		else if (weaponArray[3] == true && curM249Ammo < 100 + SetM249AdditionalMagazine() && maxM249Ammo > 0)
 		{
-			if(IsLocallyControlled())
+			if (IsLocallyControlled())
 			{
 				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
 			}
 			UGameplayStatics::PlaySound2D(GetWorld(), M249ReloadSound);
 			PlayAnimMontage(UpperOnlyMontage, 1, FName("M249Reload"));
-		}		
-	}	
+		}
+	}
 }
-	
 
 
 bool APlayerCharacter::ServerRPCReload_Validate()
@@ -2321,7 +2301,7 @@ bool APlayerCharacter::ServerRPCReload_Validate()
 
 void APlayerCharacter::MoveToIsolatedShip()
 {
-	bEnding=true;
+	bEnding = true;
 	APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 	playerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
 	StopAnimMontage();
@@ -2331,90 +2311,89 @@ void APlayerCharacter::MoveToIsolatedShip()
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), recallParticle, spawnTrans);
 	PlayAnimMontage(FullBodyMontage, 1, FName("LevelEnd"));
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), PortalSound, GetActorLocation());
-	bUseControllerRotationYaw=false;
+	bUseControllerRotationYaw = false;
 	infoWidgetUI->RemoveFromParent();
 	informationUI->RemoveFromParent();
 	crosshairUI->RemoveFromParent();
 	FTimerHandle endHandle;
-	GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()->void
-	{					
+	GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()-> void
+	{
 		PouchCaching();
 		InventoryCaching();
 		StashCaching();
 		GearCaching();
 		MagCaching();
 		UGameplayStatics::OpenLevel(GetWorld(), FName("Map_BigStarStation"));
-	}), 9.f, false);			
+	}), 9.f, false);
 }
 
-void APlayerCharacter::SetZoomValue(float Value) 
+void APlayerCharacter::SetZoomValue(float Value)
 {
-
-	if(weaponArray[1]==true&&!SniperZoomBool&&!SniperZoomOutBool)
+	if (weaponArray[1] == true && !SniperZoomBool && !SniperZoomOutBool)
 	{
 		// 타임라인 Float Curve 에 따른 Lerp
 		double lerp = UKismetMathLibrary::Lerp(90, 40, Value);
 		// 해당 Lerp값 Arm Length에 적용
 		FollowCamera->SetFieldOfView(lerp);
 	}
-	else if(weaponArray[1]==false)
+	else if (weaponArray[1] == false)
 	{
 		// 타임라인 Float Curve 에 따른 Lerp
 		double lerp = UKismetMathLibrary::Lerp(200, 100, Value);
 		// 해당 Lerp값 Arm Length에 적용
-		CameraBoom->TargetArmLength=lerp;
+		CameraBoom->TargetArmLength = lerp;
 	}
-	else if(SniperZoomBool)
+	else if (SniperZoomBool)
 	{
 		double lerp = UKismetMathLibrary::Lerp(40, 20, Value);
 		FollowCamera->SetFieldOfView(lerp);
-		GetWorldTimerManager().SetTimer(SniperZoomHandle, FTimerDelegate::CreateLambda([this]()->void
+		GetWorldTimerManager().SetTimer(SniperZoomHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
-			SniperZoomBool=false;
+			SniperZoomBool = false;
 		}), 1.0f, false);
 	}
-	else if(SniperZoomOutBool)
+	else if (SniperZoomOutBool)
 	{
 		float lerp = FollowCamera->FieldOfView = UKismetMathLibrary::Lerp(20, 40, Value);
 		FollowCamera->SetFieldOfView(lerp);
-		GetWorldTimerManager().SetTimer(SniperZoomOutHandle, FTimerDelegate::CreateLambda([this]()->void
+		GetWorldTimerManager().SetTimer(SniperZoomOutHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
-		SniperZoomOutBool=false;
+			SniperZoomOutBool = false;
 		}), 1.0f, false);
 	}
 }
 
 void APlayerCharacter::CachingValues()
 {
-	if(gi)
+	if (gi)
 	{
-		 gi->ConsoleCount = ConsoleCount;
+		gi->ConsoleCount = ConsoleCount;
 
-		 gi->GuardianCount = GuardianCount;
+		gi->GuardianCount = GuardianCount;
 
-		 gi->BossCount = BossCount;
+		gi->BossCount = BossCount;
 
-		 gi->curRifleAmmo = curRifleAmmo;
+		gi->curRifleAmmo = curRifleAmmo;
 
-		 gi->curSniperAmmo = curSniperAmmo;
+		gi->curSniperAmmo = curSniperAmmo;
 
-		 gi->curPistolAmmo = curPistolAmmo;
+		gi->curPistolAmmo = curPistolAmmo;
 
-		 gi->curM249Ammo = curM249Ammo;
+		gi->curM249Ammo = curM249Ammo;
 
-		 gi->maxRifleAmmo = maxRifleAmmo;
+		gi->maxRifleAmmo = maxRifleAmmo;
 
-		 gi->maxSniperAmmo = maxSniperAmmo;
+		gi->maxSniperAmmo = maxSniperAmmo;
 
-		 gi->maxPistolAmmo = maxPistolAmmo;
+		gi->maxPistolAmmo = maxPistolAmmo;
 
-		 gi->maxM249Ammo = maxM249Ammo;
+		gi->maxM249Ammo = maxM249Ammo;
 	}
 }
 
 void APlayerCharacter::ApplyCachingValues()
 {
-	if(gi)
+	if (gi)
 	{
 		ConsoleCount = gi->ConsoleCount;
 
@@ -2458,7 +2437,7 @@ bool APlayerCharacter::DamagedRPCServer_Validate(int damage)
 
 void APlayerCharacter::DamagedRPCMulticast_Implementation(int damage)
 {
-	if(IsLocallyControlled())
+	if (IsLocallyControlled())
 	{
 		APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 		// 카메라 페이드 연출
@@ -2473,7 +2452,7 @@ void APlayerCharacter::DamagedRPCMulticast_Implementation(int damage)
 
 int32 APlayerCharacter::SetRifleAdditionalMagazine()
 {
-	if(bRifleAdditionalMag)
+	if (bRifleAdditionalMag)
 	{
 		return 15;
 	}
@@ -2482,7 +2461,7 @@ int32 APlayerCharacter::SetRifleAdditionalMagazine()
 
 int32 APlayerCharacter::SetSniperAdditionalMagazine()
 {
-	if(bSniperAdditionalMag)
+	if (bSniperAdditionalMag)
 	{
 		return 2;
 	}
@@ -2491,7 +2470,7 @@ int32 APlayerCharacter::SetSniperAdditionalMagazine()
 
 int32 APlayerCharacter::SetPistolAdditionalMagazine()
 {
-	if(bPistolAdditionalMag)
+	if (bPistolAdditionalMag)
 	{
 		return 4;
 	}
@@ -2500,7 +2479,7 @@ int32 APlayerCharacter::SetPistolAdditionalMagazine()
 
 int32 APlayerCharacter::SetM249AdditionalMagazine()
 {
-	if(bM249AdditionalMag)
+	if (bM249AdditionalMag)
 	{
 		return 30;
 	}
@@ -2509,52 +2488,52 @@ int32 APlayerCharacter::SetM249AdditionalMagazine()
 
 void APlayerCharacter::SetRifleAdditionalMagazineSlot()
 {
-	bRifleAdditionalMag=true;
+	bRifleAdditionalMag = true;
 }
 
 void APlayerCharacter::SetSniperAdditionalMagazineSlot()
 {
-	bSniperAdditionalMag=true;
+	bSniperAdditionalMag = true;
 }
 
 void APlayerCharacter::SetPistolAdditionalMagazineSlot()
 {
-	bPistolAdditionalMag=true;
+	bPistolAdditionalMag = true;
 }
 
 void APlayerCharacter::SetM249AdditionalMagazineSlot()
 {
-	bM249AdditionalMag=true;
+	bM249AdditionalMag = true;
 }
 
 void APlayerCharacter::UnSetRifleAdditionalMagazineSlot()
 {
-	bRifleAdditionalMag=false;
-	 if(curRifleAmmo>=15)
-	 {
-	 	curRifleAmmo-=15;
-	 	maxRifleAmmo+=15;
-	 }
-	 else
-	 {
-	 	curRifleAmmo=0;
-	 	maxRifleAmmo+=curRifleAmmo;
-	 }
+	bRifleAdditionalMag = false;
+	if (curRifleAmmo >= 15)
+	{
+		curRifleAmmo -= 15;
+		maxRifleAmmo += 15;
+	}
+	else
+	{
+		curRifleAmmo = 0;
+		maxRifleAmmo += curRifleAmmo;
+	}
 }
 
 void APlayerCharacter::UnSetSniperAdditionalMagazineSlot()
 {
-	bSniperAdditionalMag=false;
+	bSniperAdditionalMag = false;
 }
 
 void APlayerCharacter::UnSetPistolAdditionalMagazineSlot()
 {
-	bPistolAdditionalMag=false;
+	bPistolAdditionalMag = false;
 }
 
 void APlayerCharacter::UnSetM249AdditionalMagazineSlot()
 {
-	bM249AdditionalMag=false;
+	bM249AdditionalMag = false;
 }
 
 void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -2569,23 +2548,23 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(APlayerCharacter, maxRifleAmmo);
 	DOREPLIFETIME(APlayerCharacter, maxSniperAmmo);
 	DOREPLIFETIME(APlayerCharacter, maxPistolAmmo);
-	DOREPLIFETIME(APlayerCharacter, maxM249Ammo);	
-	DOREPLIFETIME(APlayerCharacter, IsPlayerDead);	
+	DOREPLIFETIME(APlayerCharacter, maxM249Ammo);
+	DOREPLIFETIME(APlayerCharacter, IsPlayerDead);
 }
 
 void APlayerCharacter::Fire()
 {
 	// 사격 가능 상태가 아니거나, 뛰고 있거나, 위젯이 켜져 있거나, 엔딩 연출 중이라면 리턴
-	if(!CanShoot||isRunning||gi->IsWidgetOn||bEnding||UGameplayStatics::GetCurrentLevelName(GetWorld())==FString("Safe_House"))
+	if (!CanShoot || isRunning || gi->IsWidgetOn || bEnding || UGameplayStatics::GetCurrentLevelName(GetWorld()) == FString("Safe_House"))
 	{
 		return;
 	}
-	CanShoot=false;
-	GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
+	CanShoot = false;
+	GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
 		ServerRPCFire();
-		CanShoot=true;
-	}), 1/(BulletsPerSecRifle*FireRateMultiplier()), false);	
+		CanShoot = true;
+	}), 1 / (BulletsPerSecRifle * FireRateMultiplier()), false);
 }
 
 bool APlayerCharacter::ServerRPCFire_Validate()
@@ -2594,26 +2573,26 @@ bool APlayerCharacter::ServerRPCFire_Validate()
 }
 
 void APlayerCharacter::ServerRPCFire_Implementation()
-{	
-	MulticastRPCFire();	
+{
+	MulticastRPCFire();
 }
 
 void APlayerCharacter::MulticastRPCFire_Implementation()
 {
 	// Rifle
-	if(weaponArray[0]==true)
+	if (weaponArray[0] == true)
 	{
-		if(curRifleAmmo>0)
+		if (curRifleAmmo > 0)
 		{
 			ProcessRifleFireAnim();
-			
+
 			// 서버 로직 (핵심 프로세스 처리)
-			if(HasAuthority())
+			if (HasAuthority())
 			{
 				ProcessRifleFire();
 			}
 			// 실행하는 주체 (서버 / 클라 무관, 자신에게만 실행되는 로직 구현)
-			if(IsLocallyControlled())
+			if (IsLocallyControlled())
 			{
 				ProcessRifleFireLocal();
 			}
@@ -2633,17 +2612,17 @@ void APlayerCharacter::MulticastRPCFire_Implementation()
 
 void APlayerCharacter::AmmoDepleted()
 {
-	if(EmptySoundBoolean==false)
+	if (EmptySoundBoolean == false)
 	{
-		EmptySoundBoolean=true;
-		if(IsLocallyControlled())
+		EmptySoundBoolean = true;
+		if (IsLocallyControlled())
 		{
 			UGameplayStatics::PlaySound2D(GetWorld(), BulletEmptySound);
 		}
 		else
 		{
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletEmptySound, GetActorLocation());
-		}				
+		}
 	}
 }
 
@@ -2660,14 +2639,14 @@ void APlayerCharacter::ProcessRifleFireLocal()
 	PC->PlayerCameraManager->StartCameraShake(rifleFireShake);
 	FVector particleLoc = rifleComp->GetSocketLocation(FName("RifleFirePosition"));
 	UE::Math::TRotator<double> particleRot = rifleComp->GetSocketRotation(FName("RifleFirePosition"));
-	FTransform particleTrans2=UKismetMathLibrary::MakeTransform(particleLoc, particleRot, FVector(0.4));
+	FTransform particleTrans2 = UKismetMathLibrary::MakeTransform(particleLoc, particleRot, FVector(0.4));
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle2, particleTrans2);
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleFireSound, GetActorLocation());
 
 	double randF = UKismetMathLibrary::RandomFloatInRange(-0.3 * RecoilRateMultiplier(), -0.5 * RecoilRateMultiplier());
 	double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.3 * RecoilRateMultiplier(), 0.3 * RecoilRateMultiplier());
 	AddControllerPitchInput(randF);
-	AddControllerYawInput(randF2);		
+	AddControllerYawInput(randF2);
 }
 
 void APlayerCharacter::ProcessRifleFireSimulatedProxy()
@@ -2675,24 +2654,24 @@ void APlayerCharacter::ProcessRifleFireSimulatedProxy()
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleFireSound, GetActorLocation());
 	FVector particleLoc = rifleComp->GetSocketLocation(FName("RifleFirePosition"));
 	UE::Math::TRotator<double> particleRot = rifleComp->GetSocketRotation(FName("RifleFirePosition"));
-	FTransform particleTrans2=UKismetMathLibrary::MakeTransform(particleLoc, particleRot, FVector(0.4));
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle2, particleTrans2);			
+	FTransform particleTrans2 = UKismetMathLibrary::MakeTransform(particleLoc, particleRot, FVector(0.4));
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle2, particleTrans2);
 }
 
 void APlayerCharacter::FireRelease()
 {
-	EmptySoundBoolean=false;
+	EmptySoundBoolean = false;
 }
 
 void APlayerCharacter::ProcessRifleFire()
-{	
-	if(curRifleAmmo>0)
+{
+	if (curRifleAmmo > 0)
 	{
 		// Clamp를 통한 탄약 수 차감
-		curRifleAmmo = FMath::Clamp(curRifleAmmo-1, 0, 40+SetRifleAdditionalMagazine());
+		curRifleAmmo = FMath::Clamp(curRifleAmmo - 1, 0, 40 + SetRifleAdditionalMagazine());
 		UE_LOG(LogTemp, Warning, TEXT("Cur Rifle Bullet : %d"), curRifleAmmo)
 		FVector startLoc = FollowCamera->GetComponentLocation();
-		FVector EndLoc = startLoc + FollowCamera->GetForwardVector()*10000.0f;
+		FVector EndLoc = startLoc + FollowCamera->GetForwardVector() * 10000.0f;
 		TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes; // LineTrace로 히트 가능한 오브젝트 유형들.
 		TEnumAsByte<EObjectTypeQuery> WorldStatic = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic);
 		TEnumAsByte<EObjectTypeQuery> WorldDynamic = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic);
@@ -2707,43 +2686,43 @@ void APlayerCharacter::ProcessRifleFire()
 		TArray<AActor*> ActorsToIgnore;
 		ActorsToIgnore.Add(this); // LineTrace에서 제외할 대상			
 		// Perform Linetrace
-		bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),startLoc, EndLoc, ObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, rifleHitResult, true);
-		if(bHit)
+		bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(), startLoc, EndLoc, ObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, rifleHitResult, true);
+		if (bHit)
 		{
 			// Player Character Casting
 			APlayerCharacter* player = Cast<APlayerCharacter>(rifleHitResult.GetActor());
 			// 플레이어 적중
-			if(player)
+			if (player)
 			{
 				OnPlayerHit(rifleHitResult, player);
 				return;
 			}
 			// Enemy Casting
-			AEnemy* enemy=Cast<AEnemy>(rifleHitResult.GetActor());
+			AEnemy* enemy = Cast<AEnemy>(rifleHitResult.GetActor());
 			// Enemy FSM Casting
-			UEnemyFSM* fsm = Cast<UEnemyFSM>(enemy->GetDefaultSubobjectByName(FName("enemyFSM")));			
-			if(fsm&&enemy)
+			UEnemyFSM* fsm = Cast<UEnemyFSM>(enemy->GetDefaultSubobjectByName(FName("enemyFSM")));
+			if (fsm && enemy)
 			{
 				// Check Enemy Type
-				AGuardian* guardian=Cast<AGuardian>(enemy);
+				AGuardian* guardian = Cast<AGuardian>(enemy);
 				ACrunch* crunch = Cast<ACrunch>(enemy);
-				if(guardian)
+				if (guardian)
 				{
-					bGuardian=true;
+					bGuardian = true;
 				}
-				else if(crunch)
+				else if (crunch)
 				{
-					bCrunch=true;
+					bCrunch = true;
 				}
 				// 이미 죽지 않은 적에게만 실행
-				if(enemy->bDeath==false)
+				if (enemy->bDeath == false)
 				{
 					hitActors = rifleHitResult.GetActor();
 					FName hitBone = rifleHitResult.BoneName;
 					FVector_NetQuantize hitLoc = rifleHitResult.Location;
 					FRotator hitRot = UKismetMathLibrary::Conv_VectorToRotator(rifleHitResult.ImpactNormal);
 					// 헤드샷 적중
-					if(hitBone==FName("head"))
+					if (hitBone == FName("head"))
 					{
 						// 반환값 float의 데미지 증가 처리 함수와 곱연산
 						float min = FMath::RoundFromZero(120 * DamageMultiplier());
@@ -2751,7 +2730,7 @@ void APlayerCharacter::ProcessRifleFire()
 						// 헤드 데미지 랜덤 산출
 						randRifleHeadDamage = FMath::RandRange(min, max);
 						// 이번 공격에 적이 죽는다면
-						if(enemy->curHP<=randRifleHeadDamage)
+						if (enemy->curHP <= randRifleHeadDamage)
 						{
 							// Enemy Kill 위젯 애니메이션 재생
 							crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
@@ -2760,14 +2739,14 @@ void APlayerCharacter::ProcessRifleFire()
 							// 킬 파티클 스폰
 							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.0f));
 							// FSM에 있는 Damage Process 호출		
-							fsm->OnDamageProcess(randRifleHeadDamage);								
-							SetDamageWidget(randRifleHeadDamage, hitLoc, false, FLinearColor::Yellow);								
+							fsm->OnDamageProcess(randRifleHeadDamage);
+							SetDamageWidget(randRifleHeadDamage, hitLoc, false, FLinearColor::Yellow);
 							// 헤드 적중 데미지 프로세스 호출
-							enemy->OnHeadDamaged();								
+							enemy->OnHeadDamaged();
 							// 사망 불리언 활성화
-							enemy->bDeath=true;
+							enemy->bDeath = true;
 							// if Guardian Kill
-							if(bGuardian)
+							if (bGuardian)
 							{
 								GuardianCount++;
 								informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
@@ -2775,8 +2754,8 @@ void APlayerCharacter::ProcessRifleFire()
 								enemy->DropReward();
 							}
 							// if Crunch Kill
-							else if(bCrunch)
-							{									
+							else if (bCrunch)
+							{
 								BossCount++;
 								informationUI->BossCount->SetText(FText::AsNumber(BossCount));
 								SetBossHPWidget(enemy);
@@ -2795,23 +2774,23 @@ void APlayerCharacter::ProcessRifleFire()
 							// 헤드 적중 파티클 스폰
 							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.0f));
 							// 적중 대상이 보스라면
-							if(bCrunch)
+							if (bCrunch)
 							{
 								// 실드가 파괴된 상태라면
-								if(enemy->isShieldBroken)
+								if (enemy->isShieldBroken)
 								{
 									// FSM에 있는 Damage Process 호출		
 									fsm->OnDamageProcess(randRifleHeadDamage);
-									if(enemy->isStunned)
+									if (enemy->isStunned)
 									{
 										// 데미지 위젯에 피해 값과 적 위치벡터 할당
-										SetDamageWidget(randRifleHeadDamage*2, hitLoc, false, FLinearColor::Red);
+										SetDamageWidget(randRifleHeadDamage * 2, hitLoc, false, FLinearColor::Red);
 									}
 									else
 									{
 										// 데미지 위젯에 피해 값과 적 위치벡터 할당
 										SetDamageWidget(randRifleHeadDamage, hitLoc, false, FLinearColor::Yellow);
-									}										
+									}
 									// 헤드 적중 데미지 프로세스 호출
 									enemy->OnHeadDamaged();
 								}
@@ -2824,7 +2803,7 @@ void APlayerCharacter::ProcessRifleFire()
 									// FSM에 있는 Damage Process 호출		
 									fsm->OnShieldDamageProcess(randRifleHeadDamage);
 									// 데미지 위젯에 피해 값과 적 위치벡터 할당
-									SetDamageWidget(randRifleHeadDamage/20, hitLoc, true, FLinearColor::Yellow);
+									SetDamageWidget(randRifleHeadDamage / 20, hitLoc, true, FLinearColor::Yellow);
 									// 헤드 적중 데미지 프로세스 호출
 									enemy->OnHeadDamaged();
 								}
@@ -2851,7 +2830,7 @@ void APlayerCharacter::ProcessRifleFire()
 						// 일반 데미지 랜덤 산출
 						randRifleDamage = FMath::RandRange(min, max);
 						// 이번 공격에 적이 죽는다면
-						if(enemy->curHP<=randRifleDamage)
+						if (enemy->curHP <= randRifleDamage)
 						{
 							// Enemy Kill 위젯 애니메이션 재생
 							crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
@@ -2862,19 +2841,19 @@ void APlayerCharacter::ProcessRifleFire()
 							// FSM에 있는 Damage Process 호출		
 							fsm->OnDamageProcess(randRifleDamage);
 							SetDamageWidget(randRifleDamage, hitLoc, false, FLinearColor::White);
-								// 일반 적중 데미지 프로세스 호출
+							// 일반 적중 데미지 프로세스 호출
 							enemy->OnDamaged();
-							
+
 							// 사망 불리언 활성화
-							enemy->bDeath=true;
-							if(bGuardian)
+							enemy->bDeath = true;
+							if (bGuardian)
 							{
 								GuardianCount++;
 								informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
 								// 전리품 드롭
 								enemy->DropReward();
-								}
-							else if(bCrunch)
+							}
+							else if (bCrunch)
 							{
 								BossCount++;
 								informationUI->BossCount->SetText(FText::AsNumber(BossCount));
@@ -2893,18 +2872,18 @@ void APlayerCharacter::ProcessRifleFire()
 							UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
 							// 적중 파티클 스폰
 							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(0.5f));
-								// 적중 대상이 보스라면
-							if(bCrunch)
+							// 적중 대상이 보스라면
+							if (bCrunch)
 							{
 								// 실드가 파괴된 상태라면
-								if(enemy->isShieldBroken)
+								if (enemy->isShieldBroken)
 								{
 									// FSM에 있는 Damage Process 호출		
 									fsm->OnDamageProcess(randRifleDamage);
-									if(enemy->isStunned)
+									if (enemy->isStunned)
 									{
 										// 데미지 위젯에 피해 값과 적 위치벡터 할당
-										SetDamageWidget(randRifleDamage*2, hitLoc, false, FLinearColor::Red);
+										SetDamageWidget(randRifleDamage * 2, hitLoc, false, FLinearColor::Red);
 									}
 									else
 									{
@@ -2923,7 +2902,7 @@ void APlayerCharacter::ProcessRifleFire()
 									// FSM에 있는 Damage Process 호출		
 									fsm->OnShieldDamageProcess(randRifleDamage);
 									// 데미지 위젯에 피해 값과 적 위치벡터 할당
-									SetDamageWidget(randRifleDamage/20, hitLoc, true, FLinearColor::White);
+									SetDamageWidget(randRifleDamage / 20, hitLoc, true, FLinearColor::White);
 									// 일반 적중 데미지 프로세스 호출
 									enemy->OnDamaged();
 								}
@@ -2942,20 +2921,20 @@ void APlayerCharacter::ProcessRifleFire()
 						}
 					}
 				}
-				bGuardian=false;
-				bCrunch=false;
+				bGuardian = false;
+				bCrunch = false;
 				return;
 			}
 			// Reward Container Casting
-			ARewardContainer* rewardContainer=Cast<ARewardContainer>(rifleHitResult.GetActor());			
-			if(rewardContainer)
+			ARewardContainer* rewardContainer = Cast<ARewardContainer>(rifleHitResult.GetActor());
+			if (rewardContainer)
 			{
-				if(!rewardContainer->bDestroyed)
+				if (!rewardContainer->bDestroyed)
 				{
 					FVector_NetQuantize hitLoc = rifleHitResult.Location;
 					crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
 					UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
-					if(rewardContainer->curBoxHP<=1)
+					if (rewardContainer->curBoxHP <= 1)
 					{
 						rewardContainer->BoxDestroyed();
 						rewardContainer->containerMesh->SetSimulatePhysics(true);
@@ -2964,1013 +2943,1010 @@ void APlayerCharacter::ProcessRifleFire()
 					}
 					else
 					{
-						rewardContainer->curBoxHP=FMath::Clamp(rewardContainer->curBoxHP-1, 0, 10);
+						rewardContainer->curBoxHP = FMath::Clamp(rewardContainer->curBoxHP - 1, 0, 10);
 					}
 				}
-			}			
+			}
 			// 지형지물에 적중
 			else
 			{
 				OnGroundHit(rifleHitResult);
-			}								
+			}
 		}
 		// 허공에 사격
 		else
 		{
-
-		}		
+		}
 	}
 	else
 	{
-		
 	}
 }
 
 
 void APlayerCharacter::ProcessSniperFire()
 {
-	if(curSniperAmmo>0)
+	if (curSniperAmmo > 0)
+	{
+		// Clamp를 통한 탄약 수 차감
+		curSniperAmmo = FMath::Clamp(curSniperAmmo - 1, 0, 5 + SetSniperAdditionalMagazine());
+		UE_LOG(LogTemp, Warning, TEXT("Cur Sniper Bullet : %d"), curSniperAmmo)
+		FVector startLoc = FollowCamera->GetComponentLocation();
+		FVector EndLoc = startLoc + FollowCamera->GetForwardVector() * 10000.0f;
+		TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes; // LineTrace로 히트 가능한 오브젝트 유형들.
+		TEnumAsByte<EObjectTypeQuery> WorldStatic = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic);
+		TEnumAsByte<EObjectTypeQuery> WorldDynamic = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic);
+		TEnumAsByte<EObjectTypeQuery> Pawn = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn);
+		TEnumAsByte<EObjectTypeQuery> PhysicsBody = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody);
+		TEnumAsByte<EObjectTypeQuery> Destructible = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Destructible);
+		ObjectTypes.Add(WorldStatic);
+		ObjectTypes.Add(WorldDynamic);
+		ObjectTypes.Add(Pawn);
+		ObjectTypes.Add(PhysicsBody);
+		ObjectTypes.Add(Destructible);
+		TArray<AActor*> ActorsToIgnore;
+		ActorsToIgnore.Add(this); // LineTrace에서 제외할 대상
+		FHitResult sniperHitResult;
+		FActorSpawnParameters param;
+		param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		FTransform spawnTrans = sniperComp->GetSocketTransform(FName("BulletShell"));
+		AActor* bulletShell = GetWorld()->SpawnActor<AActor>(BulletShellFactory, spawnTrans);
+		bulletShell->SetLifeSpan(5.0f);
+		UE::Math::TVector<double> bulSoundLoc = GetActorLocation() * FVector(0, 0, -80);
+		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), RifleBulletShellDropSound, bulSoundLoc, FRotator::ZeroRotator, 0.4, 1, 0);
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), SniperFireSound, GetActorLocation());
+		bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(), startLoc, EndLoc, ObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, sniperHitResult, true);
+		// 라인 트레이스가 적중했다면
+		if (bHit)
 		{
-			// Clamp를 통한 탄약 수 차감
-			curSniperAmmo = FMath::Clamp(curSniperAmmo-1, 0, 5+SetSniperAdditionalMagazine());
-			UE_LOG(LogTemp, Warning, TEXT("Cur Sniper Bullet : %d"), curSniperAmmo)
-			FVector startLoc = FollowCamera->GetComponentLocation();
-			FVector EndLoc = startLoc + FollowCamera->GetForwardVector()*10000.0f;
-			TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes; // LineTrace로 히트 가능한 오브젝트 유형들.
-			TEnumAsByte<EObjectTypeQuery> WorldStatic = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic);
-			TEnumAsByte<EObjectTypeQuery> WorldDynamic = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic);
-			TEnumAsByte<EObjectTypeQuery> Pawn = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn);
-			TEnumAsByte<EObjectTypeQuery> PhysicsBody = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody);
-			TEnumAsByte<EObjectTypeQuery> Destructible = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Destructible);
-			ObjectTypes.Add(WorldStatic);
-			ObjectTypes.Add(WorldDynamic);
-			ObjectTypes.Add(Pawn);
-			ObjectTypes.Add(PhysicsBody);
-			ObjectTypes.Add(Destructible);
-			TArray<AActor*> ActorsToIgnore;
-			ActorsToIgnore.Add(this); // LineTrace에서 제외할 대상
-			FHitResult sniperHitResult;
-			FActorSpawnParameters param;
-			param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-			FTransform spawnTrans = sniperComp->GetSocketTransform(FName("BulletShell"));
-			AActor* bulletShell = GetWorld()->SpawnActor<AActor>(BulletShellFactory, spawnTrans);
-			bulletShell->SetLifeSpan(5.0f);
-			UE::Math::TVector<double> bulSoundLoc = GetActorLocation() * FVector(0, 0, -80);
-			UGameplayStatics::SpawnSoundAtLocation(GetWorld(), RifleBulletShellDropSound, bulSoundLoc, FRotator::ZeroRotator, 0.4, 1, 0);
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), SniperFireSound, GetActorLocation());
-			bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),startLoc, EndLoc, ObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, sniperHitResult, true);
-			// 라인 트레이스가 적중했다면
-			if(bHit)
+			// Enemy Casting
+			AEnemy* enemy = Cast<AEnemy>(sniperHitResult.GetActor());
+			// Enemy FSM Casting
+			UEnemyFSM* fsm = Cast<UEnemyFSM>(enemy->GetDefaultSubobjectByName(FName("enemyFSM")));
+			// Reward Container Casting
+			ARewardContainer* rewardContainer = Cast<ARewardContainer>(sniperHitResult.GetActor());
+			if (fsm && enemy)
 			{
-				// Enemy Casting
-				AEnemy* enemy=Cast<AEnemy>(sniperHitResult.GetActor());
-				// Enemy FSM Casting
-				UEnemyFSM* fsm = Cast<UEnemyFSM>(enemy->GetDefaultSubobjectByName(FName("enemyFSM")));
-				// Reward Container Casting
-				ARewardContainer* rewardContainer=Cast<ARewardContainer>(sniperHitResult.GetActor());
-				if(fsm&&enemy)
+				AGuardian* guardian = Cast<AGuardian>(enemy);
+				ACrunch* crunch = Cast<ACrunch>(enemy);
+				if (guardian)
 				{
-					AGuardian* guardian = Cast<AGuardian>(enemy);
-					ACrunch* crunch = Cast<ACrunch>(enemy);
-					if(guardian)
+					bGuardian = true;
+				}
+				else if (crunch)
+				{
+					bCrunch = true;
+				}
+				// 이미 죽지 않은 적에게만 실행
+				if (enemy->bDeath == false)
+				{
+					hitActors = sniperHitResult.GetActor();
+					FName hitBone = sniperHitResult.BoneName;
+					FVector_NetQuantize hitLoc = sniperHitResult.Location;
+					FRotator hitRot = UKismetMathLibrary::Conv_VectorToRotator(sniperHitResult.ImpactNormal);
+					if (hitBone == FName("head"))
 					{
-						bGuardian=true;
-					}
-					else if(crunch)
-					{
-						bCrunch=true;
-					}
-					// 이미 죽지 않은 적에게만 실행
-					if(enemy->bDeath==false)
-					{
-						hitActors = sniperHitResult.GetActor();
-						FName hitBone = sniperHitResult.BoneName;
-						FVector_NetQuantize hitLoc = sniperHitResult.Location;
-						FRotator hitRot = UKismetMathLibrary::Conv_VectorToRotator(sniperHitResult.ImpactNormal);
-						if(hitBone==FName("head"))
+						float min = FMath::RoundFromZero(1000 * DamageMultiplier());
+						float max = FMath::RoundFromZero(1200 * DamageMultiplier());
+						randSniperHeadDamage = FMath::RandRange(min, max);
+						if (enemy->curHP <= randSniperHeadDamage)
 						{
-							float min = FMath::RoundFromZero(1000 * DamageMultiplier());
-							float max = FMath::RoundFromZero(1200 * DamageMultiplier());
-							randSniperHeadDamage = FMath::RandRange(min, max);
-							if(enemy->curHP<=randSniperHeadDamage)
+							crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
+							UGameplayStatics::PlaySoundAtLocation(GetWorld(), KillSound, hitLoc);
+							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(3.0f));
+							// FSM에 있는 Damage Process 호출		
+							fsm->OnDamageProcess(randSniperHeadDamage);
+							SetDamageWidget(randSniperHeadDamage, hitLoc, false, FLinearColor::Yellow);
+							// 헤드 적중 데미지 프로세스 호출
+							enemy->OnHeadDamaged();
+							enemy->bDeath = true;
+							if (bGuardian)
 							{
-								crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
-								UGameplayStatics::PlaySoundAtLocation(GetWorld(), KillSound, hitLoc);
-								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(3.0f));
-								// FSM에 있는 Damage Process 호출		
-								fsm->OnDamageProcess(randSniperHeadDamage);
-								SetDamageWidget(randSniperHeadDamage, hitLoc, false, FLinearColor::Yellow);
-								// 헤드 적중 데미지 프로세스 호출
-								enemy->OnHeadDamaged();								
-								enemy->bDeath=true;
-								if(bGuardian)
-								{
-									GuardianCount++;
-									informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
-									enemy->DropReward();
-								}
-								else if(bCrunch)
-								{
-									BossCount++;
-									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
-									SetBossHPWidget(enemy);
-									enemy->DropReward();
-									FTimerHandle removeHandle;
-									GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
-								}
+								GuardianCount++;
+								informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
+								enemy->DropReward();
 							}
-							else
+							else if (bCrunch)
 							{
-								crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
-								UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHeadHitSound, hitLoc);
-								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(3.0f));
-								// 적중 대상이 보스라면
-								if(bCrunch)
-								{
-									// 실드가 파괴된 상태라면
-									if(enemy->isShieldBroken)
-									{
-										// FSM에 있는 Damage Process 호출		
-										fsm->OnDamageProcess(randSniperHeadDamage);
-										if(enemy->isStunned)
-										{
-											// 데미지 위젯에 피해 값과 적 위치벡터 할당
-											SetDamageWidget(randSniperHeadDamage*2, hitLoc, false, FLinearColor::Red);
-										}
-										else
-										{
-											// 데미지 위젯에 피해 값과 적 위치벡터 할당
-											SetDamageWidget(randSniperHeadDamage, hitLoc, false, FLinearColor::Yellow);
-										}										
-										// 헤드 적중 데미지 프로세스 호출
-										enemy->OnHeadDamaged();
-									}
-									// 실드가 파괴되지 않은 상태라면
-									else
-									{
-										FTransform EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
-										EmitterTrans.SetScale3D(FVector(1.3));
-										UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldHitEmitter, EmitterTrans);
-										// FSM에 있는 Damage Process 호출		
-										fsm->OnShieldDamageProcess(randSniperHeadDamage);
-										// 데미지 위젯에 피해 값과 적 위치벡터 할당
-										SetDamageWidget(randSniperHeadDamage/20, hitLoc, true, FLinearColor::Yellow);
-										// 헤드 적중 데미지 프로세스 호출
-										enemy->OnHeadDamaged();
-									}
-									SetBossHPWidget(enemy);
-								}
-								// 보스가 아니라면
-								else
+								BossCount++;
+								informationUI->BossCount->SetText(FText::AsNumber(BossCount));
+								SetBossHPWidget(enemy);
+								enemy->DropReward();
+								FTimerHandle removeHandle;
+								GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
+							}
+						}
+						else
+						{
+							crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
+							UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHeadHitSound, hitLoc);
+							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(3.0f));
+							// 적중 대상이 보스라면
+							if (bCrunch)
+							{
+								// 실드가 파괴된 상태라면
+								if (enemy->isShieldBroken)
 								{
 									// FSM에 있는 Damage Process 호출		
 									fsm->OnDamageProcess(randSniperHeadDamage);
-									// 데미지 위젯에 피해 값과 적 위치벡터 할당
-									SetDamageWidget(randSniperHeadDamage, hitLoc, false, FLinearColor::Yellow);
+									if (enemy->isStunned)
+									{
+										// 데미지 위젯에 피해 값과 적 위치벡터 할당
+										SetDamageWidget(randSniperHeadDamage * 2, hitLoc, false, FLinearColor::Red);
+									}
+									else
+									{
+										// 데미지 위젯에 피해 값과 적 위치벡터 할당
+										SetDamageWidget(randSniperHeadDamage, hitLoc, false, FLinearColor::Yellow);
+									}
 									// 헤드 적중 데미지 프로세스 호출
 									enemy->OnHeadDamaged();
 								}
+								// 실드가 파괴되지 않은 상태라면
+								else
+								{
+									FTransform EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
+									EmitterTrans.SetScale3D(FVector(1.3));
+									UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldHitEmitter, EmitterTrans);
+									// FSM에 있는 Damage Process 호출		
+									fsm->OnShieldDamageProcess(randSniperHeadDamage);
+									// 데미지 위젯에 피해 값과 적 위치벡터 할당
+									SetDamageWidget(randSniperHeadDamage / 20, hitLoc, true, FLinearColor::Yellow);
+									// 헤드 적중 데미지 프로세스 호출
+									enemy->OnHeadDamaged();
+								}
+								SetBossHPWidget(enemy);
+							}
+							// 보스가 아니라면
+							else
+							{
+								// FSM에 있는 Damage Process 호출		
+								fsm->OnDamageProcess(randSniperHeadDamage);
+								// 데미지 위젯에 피해 값과 적 위치벡터 할당
+								SetDamageWidget(randSniperHeadDamage, hitLoc, false, FLinearColor::Yellow);
+								// 헤드 적중 데미지 프로세스 호출
+								enemy->OnHeadDamaged();
+							}
+						}
+					}
+					else
+					{
+						float min = FMath::RoundFromZero(650 * DamageMultiplier());
+						float max = FMath::RoundFromZero(850 * DamageMultiplier());
+						randSniperDamage = FMath::RandRange(min, max);
+						if (enemy->curHP <= randSniperDamage)
+						{
+							crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
+							UGameplayStatics::PlaySoundAtLocation(GetWorld(), KillSound, hitLoc);
+							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(3.0f));
+							// FSM에 있는 Damage Process 호출		
+							fsm->OnDamageProcess(randSniperDamage);
+							SetDamageWidget(randSniperDamage, hitLoc, false, FLinearColor::White);
+
+							// 일반 적중 데미지 프로세스 호출
+							enemy->OnDamaged();
+							enemy->bDeath = true;
+							if (bGuardian)
+							{
+								GuardianCount++;
+								informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
+								enemy->DropReward();
+							}
+							else if (bCrunch)
+							{
+								BossCount++;
+								informationUI->BossCount->SetText(FText::AsNumber(BossCount));
+								SetBossHPWidget(enemy);
+								enemy->DropReward();
+								FTimerHandle removeHandle;
+								GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
 							}
 						}
 						else
 						{
-							float min = FMath::RoundFromZero(650 * DamageMultiplier());
-							float max = FMath::RoundFromZero(850 * DamageMultiplier());
-							randSniperDamage = FMath::RandRange(min, max);
-							if(enemy->curHP<=randSniperDamage)
+							crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
+							UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
+							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(0.8f));
+							// 적중 대상이 보스라면
+							if (bCrunch)
 							{
-								crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
-								UGameplayStatics::PlaySoundAtLocation(GetWorld(), KillSound, hitLoc);
-								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(3.0f));
-								// FSM에 있는 Damage Process 호출		
-								fsm->OnDamageProcess(randSniperDamage);
-								SetDamageWidget(randSniperDamage, hitLoc, false, FLinearColor::White);
-
-								// 일반 적중 데미지 프로세스 호출
-								enemy->OnDamaged();
-								enemy->bDeath=true;
-								if(bGuardian)
-								{
-									GuardianCount++;
-									informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
-									enemy->DropReward();
-								}
-								else if(bCrunch)
-								{
-									BossCount++;
-									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
-									SetBossHPWidget(enemy);
-									enemy->DropReward();
-									FTimerHandle removeHandle;
-									GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
-								}
-							}
-							else
-							{
-								crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
-								UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
-								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(0.8f));
-								// 적중 대상이 보스라면
-								if(bCrunch)
-								{
-									// 실드가 파괴된 상태라면
-									if(enemy->isShieldBroken)
-									{
-										// FSM에 있는 Damage Process 호출		
-										fsm->OnDamageProcess(randSniperDamage);
-										if(enemy->isStunned)
-										{
-											// 데미지 위젯에 피해 값과 적 위치벡터 할당
-											SetDamageWidget(randSniperDamage*2, hitLoc, false, FLinearColor::Red);
-										}
-										else
-										{
-											// 데미지 위젯에 피해 값과 적 위치벡터 할당
-											SetDamageWidget(randSniperDamage, hitLoc, false, FLinearColor::White);
-										}
-										// 일반 적중 데미지 프로세스 호출
-										enemy->OnDamaged();
-									}
-									// 실드가 있는 상태라면
-									else
-									{
-										FTransform EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
-										EmitterTrans.SetScale3D(FVector(1.3));
-										UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldHitEmitter, EmitterTrans);
-										// FSM에 있는 Damage Process 호출		
-										fsm->OnShieldDamageProcess(randSniperDamage);
-										// 데미지 위젯에 피해 값과 적 위치벡터 할당
-										SetDamageWidget(randSniperDamage/20, hitLoc, true, FLinearColor::White);
-										// 일반 적중 데미지 프로세스 호출
-										enemy->OnDamaged();
-									}
-									SetBossHPWidget(enemy);
-								}
-								// 보스가 아니라면
-								else
+								// 실드가 파괴된 상태라면
+								if (enemy->isShieldBroken)
 								{
 									// FSM에 있는 Damage Process 호출		
 									fsm->OnDamageProcess(randSniperDamage);
-									// 데미지 위젯에 피해 값과 적 위치벡터 할당
-									SetDamageWidget(randSniperDamage, hitLoc, false, FLinearColor::White);
+									if (enemy->isStunned)
+									{
+										// 데미지 위젯에 피해 값과 적 위치벡터 할당
+										SetDamageWidget(randSniperDamage * 2, hitLoc, false, FLinearColor::Red);
+									}
+									else
+									{
+										// 데미지 위젯에 피해 값과 적 위치벡터 할당
+										SetDamageWidget(randSniperDamage, hitLoc, false, FLinearColor::White);
+									}
 									// 일반 적중 데미지 프로세스 호출
 									enemy->OnDamaged();
 								}
+								// 실드가 있는 상태라면
+								else
+								{
+									FTransform EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
+									EmitterTrans.SetScale3D(FVector(1.3));
+									UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldHitEmitter, EmitterTrans);
+									// FSM에 있는 Damage Process 호출		
+									fsm->OnShieldDamageProcess(randSniperDamage);
+									// 데미지 위젯에 피해 값과 적 위치벡터 할당
+									SetDamageWidget(randSniperDamage / 20, hitLoc, true, FLinearColor::White);
+									// 일반 적중 데미지 프로세스 호출
+									enemy->OnDamaged();
+								}
+								SetBossHPWidget(enemy);
+							}
+							// 보스가 아니라면
+							else
+							{
+								// FSM에 있는 Damage Process 호출		
+								fsm->OnDamageProcess(randSniperDamage);
+								// 데미지 위젯에 피해 값과 적 위치벡터 할당
+								SetDamageWidget(randSniperDamage, hitLoc, false, FLinearColor::White);
+								// 일반 적중 데미지 프로세스 호출
+								enemy->OnDamaged();
 							}
 						}
 					}
-					bGuardian=false;
-					bCrunch=false;
 				}
-				else if(rewardContainer)
+				bGuardian = false;
+				bCrunch = false;
+			}
+			else if (rewardContainer)
+			{
+				if (!rewardContainer->bDestroyed)
 				{
-					if(!rewardContainer->bDestroyed)
+					FVector_NetQuantize hitLoc = sniperHitResult.Location;
+					crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
+					UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
+					if (rewardContainer->curBoxHP <= 5)
 					{
-						FVector_NetQuantize hitLoc = sniperHitResult.Location;
-						crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
-						UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
-						if(rewardContainer->curBoxHP<=5)
-						{
-							rewardContainer->BoxDestroyed();
-							rewardContainer->containerMesh->SetSimulatePhysics(true);
-							ContainerLoc = rewardContainer->GetActorLocation();
-							containerDele.ExecuteIfBound();
-						}
-						else
-						{
-							rewardContainer->curBoxHP=FMath::Clamp(rewardContainer->curBoxHP-5, 0, 10);
-						}
+						rewardContainer->BoxDestroyed();
+						rewardContainer->containerMesh->SetSimulatePhysics(true);
+						ContainerLoc = rewardContainer->GetActorLocation();
+						containerDele.ExecuteIfBound();
+					}
+					else
+					{
+						rewardContainer->curBoxHP = FMath::Clamp(rewardContainer->curBoxHP - 5, 0, 10);
 					}
 				}
-				else
-				{
-					FRotator decalRot = UKismetMathLibrary::Conv_VectorToRotator(sniperHitResult.ImpactNormal);
-					FVector_NetQuantize decalLoc = sniperHitResult.Location;
-					FTransform decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
-					GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot+FRotator(-90, 0, 0), FVector(0.5f));
-				}
-				double randF = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), -1.2 * RecoilRateMultiplier());
-				double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), 0.8 * RecoilRateMultiplier());
-				AddControllerPitchInput(randF);
-				AddControllerYawInput(randF2);				
-				if(isSniperZooming)
-				{
-					UE::Math::TVector<double> particleTrans = FollowCamera->GetComponentLocation() + FollowCamera->GetUpVector() * -70.0f;
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperFireParticle, particleTrans);
-					PC->PlayerCameraManager->StartCameraShake(sniperCameraShake);
-				}
-				else
-				{
-					PlayAnimMontage(FullBodyMontage, 1, FName("RifleFire"));
-					PC->PlayerCameraManager->StartCameraShake(sniperFireShake);
-					FTransform particleTrans = sniperComp->GetSocketTransform(FName("SniperFirePosition"));
-					particleTrans.SetScale3D(FVector(0.7));
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperFireParticle, particleTrans);
-				}
-
-				CanShoot=false;
-				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
-				{
-					CanShoot=true;
-				}), BulletsPerSecSniper*FireRateMultiplier(), false);
 			}
-			// 라인 트레이스가 적중하지 않았다면
 			else
 			{
-				double randF = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), -1.2 * RecoilRateMultiplier());
-				double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), 0.8 * RecoilRateMultiplier());
-				AddControllerPitchInput(randF);
-				AddControllerYawInput(randF2);
-				if(isZooming)
-				{
-					UE::Math::TVector<double> particleTrans = FollowCamera->GetComponentLocation() + FollowCamera->GetUpVector() * -70.0f;
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperFireParticle, particleTrans);
-				}
-				else
-				{
-					FTransform particleTrans = sniperComp->GetSocketTransform(FName("SniperFirePosition"));
-					particleTrans.SetScale3D(FVector(0.7));
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperFireParticle, particleTrans);
-				}
-				CanShoot=false;				
-				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
-				{
-					CanShoot=true;
-				}), BulletsPerSecSniper*FireRateMultiplier(), false);
+				FRotator decalRot = UKismetMathLibrary::Conv_VectorToRotator(sniperHitResult.ImpactNormal);
+				FVector_NetQuantize decalLoc = sniperHitResult.Location;
+				FTransform decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
+				GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot + FRotator(-90, 0, 0), FVector(0.5f));
 			}
+			double randF = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), -1.2 * RecoilRateMultiplier());
+			double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), 0.8 * RecoilRateMultiplier());
+			AddControllerPitchInput(randF);
+			AddControllerYawInput(randF2);
+			if (isSniperZooming)
+			{
+				UE::Math::TVector<double> particleTrans = FollowCamera->GetComponentLocation() + FollowCamera->GetUpVector() * -70.0f;
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperFireParticle, particleTrans);
+				PC->PlayerCameraManager->StartCameraShake(sniperCameraShake);
+			}
+			else
+			{
+				PlayAnimMontage(FullBodyMontage, 1, FName("RifleFire"));
+				PC->PlayerCameraManager->StartCameraShake(sniperFireShake);
+				FTransform particleTrans = sniperComp->GetSocketTransform(FName("SniperFirePosition"));
+				particleTrans.SetScale3D(FVector(0.7));
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperFireParticle, particleTrans);
+			}
+
+			CanShoot = false;
+			GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()-> void
+			{
+				CanShoot = true;
+			}), BulletsPerSecSniper * FireRateMultiplier(), false);
 		}
+		// 라인 트레이스가 적중하지 않았다면
 		else
 		{
-			if(EmptySoundBoolean==false)
+			double randF = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), -1.2 * RecoilRateMultiplier());
+			double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), 0.8 * RecoilRateMultiplier());
+			AddControllerPitchInput(randF);
+			AddControllerYawInput(randF2);
+			if (isZooming)
 			{
-				EmptySoundBoolean=true;
-				// 탄약 고갈 사운드 재생
-				UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletEmptySound, GetActorLocation());
+				UE::Math::TVector<double> particleTrans = FollowCamera->GetComponentLocation() + FollowCamera->GetUpVector() * -70.0f;
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperFireParticle, particleTrans);
 			}
+			else
+			{
+				FTransform particleTrans = sniperComp->GetSocketTransform(FName("SniperFirePosition"));
+				particleTrans.SetScale3D(FVector(0.7));
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperFireParticle, particleTrans);
+			}
+			CanShoot = false;
+			GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()-> void
+			{
+				CanShoot = true;
+			}), BulletsPerSecSniper * FireRateMultiplier(), false);
 		}
+	}
+	else
+	{
+		if (EmptySoundBoolean == false)
+		{
+			EmptySoundBoolean = true;
+			// 탄약 고갈 사운드 재생
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletEmptySound, GetActorLocation());
+		}
+	}
 }
 
 void APlayerCharacter::ProcessPistolFire()
 {
-	if(curPistolAmmo>0)
+	if (curPistolAmmo > 0)
+	{
+		// Clamp를 통한 탄약 수 차감
+		curPistolAmmo = FMath::Clamp(curPistolAmmo - 1, 0, 8 + SetPistolAdditionalMagazine());
+		UE_LOG(LogTemp, Warning, TEXT("Cur Pistol Bullet : %d"), curPistolAmmo)
+		PC->PlayerCameraManager->StartCameraShake(pistolFireShake);
+		if (isZooming)
 		{
-			// Clamp를 통한 탄약 수 차감
-			curPistolAmmo = FMath::Clamp(curPistolAmmo-1, 0, 8+SetPistolAdditionalMagazine());
-			UE_LOG(LogTemp, Warning, TEXT("Cur Pistol Bullet : %d"), curPistolAmmo)
-			PC->PlayerCameraManager->StartCameraShake(pistolFireShake);
-			if(isZooming)
-			{
-				PlayAnimMontage(FullBodyMontage, 1, FName("PistolZoomFire"));
-			}
-			else
-			{
-				PlayAnimMontage(FullBodyMontage, 1, FName("PistolFire"));
-			}
-			FVector startLoc = FollowCamera->GetComponentLocation();
-			FVector EndLoc = startLoc + FollowCamera->GetForwardVector()*10000.0f;
-			TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes; // LineTrace로 히트 가능한 오브젝트 유형들.
-			TEnumAsByte<EObjectTypeQuery> WorldStatic = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic);
-			TEnumAsByte<EObjectTypeQuery> WorldDynamic = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic);
-			TEnumAsByte<EObjectTypeQuery> Pawn = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn);
-			TEnumAsByte<EObjectTypeQuery> PhysicsBody = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody);
-			TEnumAsByte<EObjectTypeQuery> Destructible = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Destructible);
-			ObjectTypes.Add(WorldStatic);
-			ObjectTypes.Add(WorldDynamic);
-			ObjectTypes.Add(Pawn);
-			ObjectTypes.Add(PhysicsBody);
-			ObjectTypes.Add(Destructible);
-			TArray<AActor*> ActorsToIgnore;
-			ActorsToIgnore.Add(this); // LineTrace에서 제외할 대상
-			FHitResult pistolHitResult;
-			FTransform particleTrans = pistolComp->GetSocketTransform(FName("PistolFirePosition"));
-			particleTrans.SetScale3D(FVector(0.7));
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PistolfireParticle, particleTrans);
-			FActorSpawnParameters param;
-			param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-			FTransform spawnTrans = pistolComp->GetSocketTransform(FName("BulletShell"));
-			AActor* bulletShell = GetWorld()->SpawnActor<AActor>(BulletShellFactory, spawnTrans);
-			bulletShell->SetLifeSpan(5.0f);
-			UE::Math::TVector<double> bulSoundLoc = GetActorLocation() * FVector(0, 0, -80);
-			UGameplayStatics::SpawnSoundAtLocation(GetWorld(), RifleBulletShellDropSound, bulSoundLoc, FRotator::ZeroRotator, 0.4, 1, 0);
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), PistolFireSound, GetActorLocation());
-			bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),startLoc, EndLoc, ObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, pistolHitResult, true);
-			if(bHit)
-			{
-				// Enemy Casting
-				AEnemy* enemy=Cast<AEnemy>(pistolHitResult.GetActor());
-				// Enemy FSM Casting
-				UEnemyFSM* fsm = Cast<UEnemyFSM>(enemy->GetDefaultSubobjectByName(FName("enemyFSM")));
-				// Reward Container Casting
-				ARewardContainer* rewardContainer=Cast<ARewardContainer>(pistolHitResult.GetActor());
-				if(fsm&&enemy)
-				{
-					AGuardian* guardian = Cast<AGuardian>(enemy);
-					ACrunch* crunch = Cast<ACrunch>(enemy);
-					if(guardian)
-					{
-						bGuardian=true;
-					}
-					else if(crunch)
-					{
-						bCrunch=true;
-					}
-					// 이미 죽지 않은 적에게만 실행
-					if(enemy->bDeath==false)
-					{
-						hitActors = pistolHitResult.GetActor();
-						FName hitBone = pistolHitResult.BoneName;
-						FVector_NetQuantize hitLoc = pistolHitResult.Location;
-						FRotator hitRot = UKismetMathLibrary::Conv_VectorToRotator(pistolHitResult.ImpactNormal);
-						if(hitBone==FName("head"))
-						{
-							float min = FMath::RoundFromZero(450 * DamageMultiplier());
-							float max = FMath::RoundFromZero(550 * DamageMultiplier());
-							randPistolHeadDamage = FMath::RandRange(min, max);
-							// 이번 공격에 Enemy가 죽는다면
-							if(enemy->curHP<=randPistolHeadDamage)
-							{
-								crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
-								UGameplayStatics::PlaySoundAtLocation(GetWorld(), KillSound, hitLoc);
-								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.5f));
-								// FSM에 있는 Damage Process 호출		
-								fsm->OnDamageProcess(randPistolHeadDamage);
-								SetDamageWidget(randPistolHeadDamage, hitLoc, false, FLinearColor::Yellow);
-
-								// 헤드 적중 데미지 프로세스 호출
-								enemy->OnHeadDamaged();
-								enemy->bDeath=true;
-								if(bGuardian)
-								{
-									GuardianCount++;
-									informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
-									enemy->DropReward();
-								}
-								else if(bCrunch)
-								{
-									BossCount++;
-									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
-									SetBossHPWidget(enemy);
-									enemy->DropReward();
-									FTimerHandle removeHandle;
-									GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
-								}
-							}
-							else
-							{
-								crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
-								UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHeadHitSound, hitLoc);
-								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.5f));
-								// 적중 대상이 보스라면
-								if(bCrunch)
-								{
-									// 실드가 파괴된 상태라면
-									if(enemy->isShieldBroken)
-									{
-										// FSM에 있는 Damage Process 호출		
-										fsm->OnDamageProcess(randPistolHeadDamage);
-										if(enemy->isStunned)
-										{
-											// 데미지 위젯에 피해 값과 적 위치벡터 할당
-											SetDamageWidget(randPistolHeadDamage*2, hitLoc, false, FLinearColor::Red);
-										}
-										else
-										{
-											// 데미지 위젯에 피해 값과 적 위치벡터 할당
-											SetDamageWidget(randPistolHeadDamage, hitLoc, false, FLinearColor::Yellow);
-										}										
-										// 헤드 적중 데미지 프로세스 호출
-										enemy->OnHeadDamaged();
-									}
-									// 실드가 파괴되지 않은 상태라면
-									else
-									{
-										FTransform EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
-										EmitterTrans.SetScale3D(FVector(1.3));
-										UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldHitEmitter, EmitterTrans);
-										// FSM에 있는 Damage Process 호출		
-										fsm->OnShieldDamageProcess(randPistolHeadDamage);
-										// 데미지 위젯에 피해 값과 적 위치벡터 할당
-										SetDamageWidget(randPistolHeadDamage/20, hitLoc, true, FLinearColor::Yellow);
-										// 헤드 적중 데미지 프로세스 호출
-										enemy->OnHeadDamaged();
-									}
-									SetBossHPWidget(enemy);
-								}
-								// 보스가 아니라면
-								else
-								{
-									// FSM에 있는 Damage Process 호출		
-									fsm->OnDamageProcess(randPistolHeadDamage);
-									// 데미지 위젯에 피해 값과 적 위치벡터 할당
-									SetDamageWidget(randPistolHeadDamage, hitLoc, false, FLinearColor::Yellow);
-									// 헤드 적중 데미지 프로세스 호출
-									enemy->OnHeadDamaged();
-								}
-							}
-						}
-						else
-						{
-							float min = FMath::RoundFromZero(220 * DamageMultiplier());
-							float max = FMath::RoundFromZero(300 * DamageMultiplier());
-							randPistolDamage = FMath::RandRange(min, max);
-							// 이번 공격에 Enemy가 죽는다면
-							if(enemy->curHP<=randPistolDamage)
-							{
-								crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
-								UGameplayStatics::PlaySoundAtLocation(GetWorld(), KillSound, hitLoc);
-								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.5f));
-								// FSM에 있는 Damage Process 호출		
-								fsm->OnDamageProcess(randPistolDamage);
-								SetDamageWidget(randPistolDamage, hitLoc, false, FLinearColor::White);
-
-								// 일반 적중 데미지 프로세스 호출
-								enemy->OnDamaged();
-								enemy->bDeath=true;
-								if(bGuardian)
-								{
-									GuardianCount++;
-									informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
-									enemy->DropReward();
-
-								}
-								else if(bCrunch)
-								{
-									BossCount++;
-									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
-									SetBossHPWidget(enemy);
-									enemy->DropReward();
-									FTimerHandle removeHandle;
-									GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
-								}
-							}
-							else
-							{
-								crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
-								UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
-								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(0.7f));
-								// 적중 대상이 보스라면
-								if(bCrunch)
-								{
-									// 실드가 파괴된 상태라면
-									if(enemy->isShieldBroken)
-									{
-										// FSM에 있는 Damage Process 호출		
-										fsm->OnDamageProcess(randPistolDamage);
-										if(enemy->isStunned)
-										{
-											// 데미지 위젯에 피해 값과 적 위치벡터 할당
-											SetDamageWidget(randPistolDamage*2, hitLoc, false, FLinearColor::Red);
-										}
-										else
-										{
-											// 데미지 위젯에 피해 값과 적 위치벡터 할당
-											SetDamageWidget(randPistolDamage, hitLoc, false, FLinearColor::White);
-										}
-										// 일반 적중 데미지 프로세스 호출
-										enemy->OnDamaged();
-									}
-									// 실드가 있는 상태라면
-									else
-									{
-										FTransform EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
-										EmitterTrans.SetScale3D(FVector(1.3));
-										UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldHitEmitter, EmitterTrans);
-										// FSM에 있는 Damage Process 호출		
-										fsm->OnShieldDamageProcess(randPistolDamage);
-										// 데미지 위젯에 피해 값과 적 위치벡터 할당
-										SetDamageWidget(randPistolDamage/20, hitLoc, true, FLinearColor::White);
-										// 일반 적중 데미지 프로세스 호출
-										enemy->OnDamaged();
-									}
-									SetBossHPWidget(enemy);
-								}
-								// 보스가 아니라면
-								else
-								{
-									// FSM에 있는 Damage Process 호출		
-									fsm->OnDamageProcess(randPistolDamage);
-									// 데미지 위젯에 피해 값과 적 위치벡터 할당
-									SetDamageWidget(randPistolDamage, hitLoc, false, FLinearColor::White);
-									// 일반 적중 데미지 프로세스 호출
-									enemy->OnDamaged();
-								}
-							}
-						}
-					}
-					bGuardian=false;
-					bCrunch=false;
-				}
-				else if(rewardContainer)
-				{
-					if(!rewardContainer->bDestroyed)
-					{
-						FVector_NetQuantize hitLoc = pistolHitResult.Location;
-						crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
-						UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
-						if(rewardContainer->curBoxHP<=2)
-						{
-							rewardContainer->BoxDestroyed();
-							rewardContainer->containerMesh->SetSimulatePhysics(true);
-							ContainerLoc = rewardContainer->GetActorLocation();
-							containerDele.ExecuteIfBound();
-						}
-						else
-						{
-							rewardContainer->curBoxHP=FMath::Clamp(rewardContainer->curBoxHP-2, 0, 10);
-						}
-					}
-				}
-				else
-				{
-					FActorSpawnParameters params;
-					params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-					FRotator decalRot = UKismetMathLibrary::Conv_VectorToRotator(pistolHitResult.ImpactNormal);
-					FVector_NetQuantize decalLoc = pistolHitResult.Location;
-					FTransform decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
-					GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot+FRotator(-90, 0, 0), FVector(0.5f));
-				}
-				double randF = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), -1.2 * RecoilRateMultiplier());
-				double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), 0.8 * RecoilRateMultiplier());
-				AddControllerPitchInput(randF);
-				AddControllerYawInput(randF2);
-				UE::Math::TVector<double> fireSocketLoc = pistolComp->GetSocketTransform(FName("PistolFirePosition")).GetLocation();
-				// 탄 궤적 나이아가라 시스템 스폰
-				// UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, pistolHitResult.Location, FRotator::ZeroRotator,FVector(1), true, true, ENCPoolMethod::AutoRelease);
-				// if(niagara)
-				// {
-				// 	// 나이아가라 파라미터 벡터 위치 변수 할당
-				// 	niagara->SetVectorParameter(FName("EndPoint"), fireSocketLoc);
-				// }
-				CanShoot=false;
-				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
-				{
-					CanShoot=true;
-				}), 1/(BulletsPerSecPistol*FireRateMultiplier()), false);
-			}
-			else
-			{
-				double randF = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), -1.2 * RecoilRateMultiplier());
-				double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), 0.8 * RecoilRateMultiplier());
-				AddControllerPitchInput(randF);
-				AddControllerYawInput(randF2);
-				FVector niagaraSpawnLoc = FollowCamera->K2_GetComponentLocation();
-				FVector ForwardLoc = niagaraSpawnLoc + FollowCamera->GetForwardVector()*10000.0f;
-				UE::Math::TVector<double> FireLoc = pistolComp->GetSocketTransform(FName("PistolFirePosition")).GetLocation();
-				// UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, ForwardLoc, FRotator::ZeroRotator, FVector(1), true, true, ENCPoolMethod::AutoRelease);
-				// if(niagara)
-				// {
-				// 	niagara->SetVectorParameter(FName("EndPoint"), FireLoc);
-				// }
-				CanShoot=false;				
-				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
-				{
-					CanShoot=true;
-				}), 1/(BulletsPerSecPistol*FireRateMultiplier()), false);
-			}
+			PlayAnimMontage(FullBodyMontage, 1, FName("PistolZoomFire"));
 		}
 		else
 		{
-			if(EmptySoundBoolean==false)
-			{
-				EmptySoundBoolean=true;
-				// 탄약 고갈 사운드 재생
-				UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletEmptySound, GetActorLocation());
-			}
+			PlayAnimMontage(FullBodyMontage, 1, FName("PistolFire"));
 		}
+		FVector startLoc = FollowCamera->GetComponentLocation();
+		FVector EndLoc = startLoc + FollowCamera->GetForwardVector() * 10000.0f;
+		TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes; // LineTrace로 히트 가능한 오브젝트 유형들.
+		TEnumAsByte<EObjectTypeQuery> WorldStatic = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic);
+		TEnumAsByte<EObjectTypeQuery> WorldDynamic = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic);
+		TEnumAsByte<EObjectTypeQuery> Pawn = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn);
+		TEnumAsByte<EObjectTypeQuery> PhysicsBody = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody);
+		TEnumAsByte<EObjectTypeQuery> Destructible = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Destructible);
+		ObjectTypes.Add(WorldStatic);
+		ObjectTypes.Add(WorldDynamic);
+		ObjectTypes.Add(Pawn);
+		ObjectTypes.Add(PhysicsBody);
+		ObjectTypes.Add(Destructible);
+		TArray<AActor*> ActorsToIgnore;
+		ActorsToIgnore.Add(this); // LineTrace에서 제외할 대상
+		FHitResult pistolHitResult;
+		FTransform particleTrans = pistolComp->GetSocketTransform(FName("PistolFirePosition"));
+		particleTrans.SetScale3D(FVector(0.7));
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PistolfireParticle, particleTrans);
+		FActorSpawnParameters param;
+		param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		FTransform spawnTrans = pistolComp->GetSocketTransform(FName("BulletShell"));
+		AActor* bulletShell = GetWorld()->SpawnActor<AActor>(BulletShellFactory, spawnTrans);
+		bulletShell->SetLifeSpan(5.0f);
+		UE::Math::TVector<double> bulSoundLoc = GetActorLocation() * FVector(0, 0, -80);
+		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), RifleBulletShellDropSound, bulSoundLoc, FRotator::ZeroRotator, 0.4, 1, 0);
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), PistolFireSound, GetActorLocation());
+		bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(), startLoc, EndLoc, ObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, pistolHitResult, true);
+		if (bHit)
+		{
+			// Enemy Casting
+			AEnemy* enemy = Cast<AEnemy>(pistolHitResult.GetActor());
+			// Enemy FSM Casting
+			UEnemyFSM* fsm = Cast<UEnemyFSM>(enemy->GetDefaultSubobjectByName(FName("enemyFSM")));
+			// Reward Container Casting
+			ARewardContainer* rewardContainer = Cast<ARewardContainer>(pistolHitResult.GetActor());
+			if (fsm && enemy)
+			{
+				AGuardian* guardian = Cast<AGuardian>(enemy);
+				ACrunch* crunch = Cast<ACrunch>(enemy);
+				if (guardian)
+				{
+					bGuardian = true;
+				}
+				else if (crunch)
+				{
+					bCrunch = true;
+				}
+				// 이미 죽지 않은 적에게만 실행
+				if (enemy->bDeath == false)
+				{
+					hitActors = pistolHitResult.GetActor();
+					FName hitBone = pistolHitResult.BoneName;
+					FVector_NetQuantize hitLoc = pistolHitResult.Location;
+					FRotator hitRot = UKismetMathLibrary::Conv_VectorToRotator(pistolHitResult.ImpactNormal);
+					if (hitBone == FName("head"))
+					{
+						float min = FMath::RoundFromZero(450 * DamageMultiplier());
+						float max = FMath::RoundFromZero(550 * DamageMultiplier());
+						randPistolHeadDamage = FMath::RandRange(min, max);
+						// 이번 공격에 Enemy가 죽는다면
+						if (enemy->curHP <= randPistolHeadDamage)
+						{
+							crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
+							UGameplayStatics::PlaySoundAtLocation(GetWorld(), KillSound, hitLoc);
+							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.5f));
+							// FSM에 있는 Damage Process 호출		
+							fsm->OnDamageProcess(randPistolHeadDamage);
+							SetDamageWidget(randPistolHeadDamage, hitLoc, false, FLinearColor::Yellow);
+
+							// 헤드 적중 데미지 프로세스 호출
+							enemy->OnHeadDamaged();
+							enemy->bDeath = true;
+							if (bGuardian)
+							{
+								GuardianCount++;
+								informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
+								enemy->DropReward();
+							}
+							else if (bCrunch)
+							{
+								BossCount++;
+								informationUI->BossCount->SetText(FText::AsNumber(BossCount));
+								SetBossHPWidget(enemy);
+								enemy->DropReward();
+								FTimerHandle removeHandle;
+								GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
+							}
+						}
+						else
+						{
+							crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
+							UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHeadHitSound, hitLoc);
+							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.5f));
+							// 적중 대상이 보스라면
+							if (bCrunch)
+							{
+								// 실드가 파괴된 상태라면
+								if (enemy->isShieldBroken)
+								{
+									// FSM에 있는 Damage Process 호출		
+									fsm->OnDamageProcess(randPistolHeadDamage);
+									if (enemy->isStunned)
+									{
+										// 데미지 위젯에 피해 값과 적 위치벡터 할당
+										SetDamageWidget(randPistolHeadDamage * 2, hitLoc, false, FLinearColor::Red);
+									}
+									else
+									{
+										// 데미지 위젯에 피해 값과 적 위치벡터 할당
+										SetDamageWidget(randPistolHeadDamage, hitLoc, false, FLinearColor::Yellow);
+									}
+									// 헤드 적중 데미지 프로세스 호출
+									enemy->OnHeadDamaged();
+								}
+								// 실드가 파괴되지 않은 상태라면
+								else
+								{
+									FTransform EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
+									EmitterTrans.SetScale3D(FVector(1.3));
+									UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldHitEmitter, EmitterTrans);
+									// FSM에 있는 Damage Process 호출		
+									fsm->OnShieldDamageProcess(randPistolHeadDamage);
+									// 데미지 위젯에 피해 값과 적 위치벡터 할당
+									SetDamageWidget(randPistolHeadDamage / 20, hitLoc, true, FLinearColor::Yellow);
+									// 헤드 적중 데미지 프로세스 호출
+									enemy->OnHeadDamaged();
+								}
+								SetBossHPWidget(enemy);
+							}
+							// 보스가 아니라면
+							else
+							{
+								// FSM에 있는 Damage Process 호출		
+								fsm->OnDamageProcess(randPistolHeadDamage);
+								// 데미지 위젯에 피해 값과 적 위치벡터 할당
+								SetDamageWidget(randPistolHeadDamage, hitLoc, false, FLinearColor::Yellow);
+								// 헤드 적중 데미지 프로세스 호출
+								enemy->OnHeadDamaged();
+							}
+						}
+					}
+					else
+					{
+						float min = FMath::RoundFromZero(220 * DamageMultiplier());
+						float max = FMath::RoundFromZero(300 * DamageMultiplier());
+						randPistolDamage = FMath::RandRange(min, max);
+						// 이번 공격에 Enemy가 죽는다면
+						if (enemy->curHP <= randPistolDamage)
+						{
+							crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
+							UGameplayStatics::PlaySoundAtLocation(GetWorld(), KillSound, hitLoc);
+							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.5f));
+							// FSM에 있는 Damage Process 호출		
+							fsm->OnDamageProcess(randPistolDamage);
+							SetDamageWidget(randPistolDamage, hitLoc, false, FLinearColor::White);
+
+							// 일반 적중 데미지 프로세스 호출
+							enemy->OnDamaged();
+							enemy->bDeath = true;
+							if (bGuardian)
+							{
+								GuardianCount++;
+								informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
+								enemy->DropReward();
+							}
+							else if (bCrunch)
+							{
+								BossCount++;
+								informationUI->BossCount->SetText(FText::AsNumber(BossCount));
+								SetBossHPWidget(enemy);
+								enemy->DropReward();
+								FTimerHandle removeHandle;
+								GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
+							}
+						}
+						else
+						{
+							crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
+							UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
+							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(0.7f));
+							// 적중 대상이 보스라면
+							if (bCrunch)
+							{
+								// 실드가 파괴된 상태라면
+								if (enemy->isShieldBroken)
+								{
+									// FSM에 있는 Damage Process 호출		
+									fsm->OnDamageProcess(randPistolDamage);
+									if (enemy->isStunned)
+									{
+										// 데미지 위젯에 피해 값과 적 위치벡터 할당
+										SetDamageWidget(randPistolDamage * 2, hitLoc, false, FLinearColor::Red);
+									}
+									else
+									{
+										// 데미지 위젯에 피해 값과 적 위치벡터 할당
+										SetDamageWidget(randPistolDamage, hitLoc, false, FLinearColor::White);
+									}
+									// 일반 적중 데미지 프로세스 호출
+									enemy->OnDamaged();
+								}
+								// 실드가 있는 상태라면
+								else
+								{
+									FTransform EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
+									EmitterTrans.SetScale3D(FVector(1.3));
+									UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldHitEmitter, EmitterTrans);
+									// FSM에 있는 Damage Process 호출		
+									fsm->OnShieldDamageProcess(randPistolDamage);
+									// 데미지 위젯에 피해 값과 적 위치벡터 할당
+									SetDamageWidget(randPistolDamage / 20, hitLoc, true, FLinearColor::White);
+									// 일반 적중 데미지 프로세스 호출
+									enemy->OnDamaged();
+								}
+								SetBossHPWidget(enemy);
+							}
+							// 보스가 아니라면
+							else
+							{
+								// FSM에 있는 Damage Process 호출		
+								fsm->OnDamageProcess(randPistolDamage);
+								// 데미지 위젯에 피해 값과 적 위치벡터 할당
+								SetDamageWidget(randPistolDamage, hitLoc, false, FLinearColor::White);
+								// 일반 적중 데미지 프로세스 호출
+								enemy->OnDamaged();
+							}
+						}
+					}
+				}
+				bGuardian = false;
+				bCrunch = false;
+			}
+			else if (rewardContainer)
+			{
+				if (!rewardContainer->bDestroyed)
+				{
+					FVector_NetQuantize hitLoc = pistolHitResult.Location;
+					crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
+					UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
+					if (rewardContainer->curBoxHP <= 2)
+					{
+						rewardContainer->BoxDestroyed();
+						rewardContainer->containerMesh->SetSimulatePhysics(true);
+						ContainerLoc = rewardContainer->GetActorLocation();
+						containerDele.ExecuteIfBound();
+					}
+					else
+					{
+						rewardContainer->curBoxHP = FMath::Clamp(rewardContainer->curBoxHP - 2, 0, 10);
+					}
+				}
+			}
+			else
+			{
+				FActorSpawnParameters params;
+				params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+				FRotator decalRot = UKismetMathLibrary::Conv_VectorToRotator(pistolHitResult.ImpactNormal);
+				FVector_NetQuantize decalLoc = pistolHitResult.Location;
+				FTransform decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
+				GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot + FRotator(-90, 0, 0), FVector(0.5f));
+			}
+			double randF = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), -1.2 * RecoilRateMultiplier());
+			double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), 0.8 * RecoilRateMultiplier());
+			AddControllerPitchInput(randF);
+			AddControllerYawInput(randF2);
+			UE::Math::TVector<double> fireSocketLoc = pistolComp->GetSocketTransform(FName("PistolFirePosition")).GetLocation();
+			// 탄 궤적 나이아가라 시스템 스폰
+			// UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, pistolHitResult.Location, FRotator::ZeroRotator,FVector(1), true, true, ENCPoolMethod::AutoRelease);
+			// if(niagara)
+			// {
+			// 	// 나이아가라 파라미터 벡터 위치 변수 할당
+			// 	niagara->SetVectorParameter(FName("EndPoint"), fireSocketLoc);
+			// }
+			CanShoot = false;
+			GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()-> void
+			{
+				CanShoot = true;
+			}), 1 / (BulletsPerSecPistol * FireRateMultiplier()), false);
+		}
+		else
+		{
+			double randF = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), -1.2 * RecoilRateMultiplier());
+			double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), 0.8 * RecoilRateMultiplier());
+			AddControllerPitchInput(randF);
+			AddControllerYawInput(randF2);
+			FVector niagaraSpawnLoc = FollowCamera->K2_GetComponentLocation();
+			FVector ForwardLoc = niagaraSpawnLoc + FollowCamera->GetForwardVector() * 10000.0f;
+			UE::Math::TVector<double> FireLoc = pistolComp->GetSocketTransform(FName("PistolFirePosition")).GetLocation();
+			// UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, ForwardLoc, FRotator::ZeroRotator, FVector(1), true, true, ENCPoolMethod::AutoRelease);
+			// if(niagara)
+			// {
+			// 	niagara->SetVectorParameter(FName("EndPoint"), FireLoc);
+			// }
+			CanShoot = false;
+			GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()-> void
+			{
+				CanShoot = true;
+			}), 1 / (BulletsPerSecPistol * FireRateMultiplier()), false);
+		}
+	}
+	else
+	{
+		if (EmptySoundBoolean == false)
+		{
+			EmptySoundBoolean = true;
+			// 탄약 고갈 사운드 재생
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletEmptySound, GetActorLocation());
+		}
+	}
 }
 
 void APlayerCharacter::ProcessM249Fire()
 {
-	if(curM249Ammo>0)
+	if (curM249Ammo > 0)
+	{
+		// Clamp를 통한 탄약 수 차감
+		curM249Ammo = FMath::Clamp(curM249Ammo - 1, 0, 100 + SetM249AdditionalMagazine());
+		UE_LOG(LogTemp, Warning, TEXT("Cur M249 Bullet : %d"), curM249Ammo)
+		FVector startLoc = FollowCamera->GetComponentLocation();
+		FVector EndLoc = startLoc + FollowCamera->GetForwardVector() * 10000.0f;
+		TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes; // LineTrace로 히트 가능한 오브젝트 유형들.
+		TEnumAsByte<EObjectTypeQuery> WorldStatic = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic);
+		TEnumAsByte<EObjectTypeQuery> WorldDynamic = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic);
+		TEnumAsByte<EObjectTypeQuery> Pawn = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn);
+		TEnumAsByte<EObjectTypeQuery> PhysicsBody = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody);
+		TEnumAsByte<EObjectTypeQuery> Destructible = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Destructible);
+		ObjectTypes.Add(WorldStatic);
+		ObjectTypes.Add(WorldDynamic);
+		ObjectTypes.Add(Pawn);
+		ObjectTypes.Add(PhysicsBody);
+		ObjectTypes.Add(Destructible);
+		TArray<AActor*> ActorsToIgnore;
+		ActorsToIgnore.Add(this); // LineTrace에서 제외할 대상
+		FHitResult M249HitResult;
+		FTransform particleTrans = m249Comp->GetSocketTransform(FName("M249FirePosition"));
+		particleTrans.SetScale3D(FVector(0.7));
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PistolfireParticle, particleTrans);
+		FActorSpawnParameters param;
+		param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		FTransform spawnTrans = m249Comp->GetSocketTransform(FName("BulletShell"));
+		AActor* bulletShell = GetWorld()->SpawnActor<AActor>(BulletShellFactory, spawnTrans);
+		bulletShell->SetLifeSpan(5.0f);
+		UE::Math::TVector<double> bulSoundLoc = GetActorLocation() * FVector(0, 0, -80);
+		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), RifleBulletShellDropSound, bulSoundLoc, FRotator::ZeroRotator, 0.4, 1, 0);
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), M249FireSound, GetActorLocation());
+		PC->PlayerCameraManager->StartCameraShake(rifleFireShake);
+		PlayAnimMontage(FullBodyMontage, 1, FName("RifleFire"));
+		bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(), startLoc, EndLoc, ObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, M249HitResult, true);
+		if (bHit)
 		{
-			// Clamp를 통한 탄약 수 차감
-			curM249Ammo = FMath::Clamp(curM249Ammo-1, 0, 100+SetM249AdditionalMagazine());
-			UE_LOG(LogTemp, Warning, TEXT("Cur M249 Bullet : %d"), curM249Ammo)
-			FVector startLoc = FollowCamera->GetComponentLocation();
-			FVector EndLoc = startLoc + FollowCamera->GetForwardVector()*10000.0f;
-			TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes; // LineTrace로 히트 가능한 오브젝트 유형들.
-			TEnumAsByte<EObjectTypeQuery> WorldStatic = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic);
-			TEnumAsByte<EObjectTypeQuery> WorldDynamic = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic);
-			TEnumAsByte<EObjectTypeQuery> Pawn = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn);
-			TEnumAsByte<EObjectTypeQuery> PhysicsBody = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody);
-			TEnumAsByte<EObjectTypeQuery> Destructible = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Destructible);
-			ObjectTypes.Add(WorldStatic);
-			ObjectTypes.Add(WorldDynamic);
-			ObjectTypes.Add(Pawn);
-			ObjectTypes.Add(PhysicsBody);
-			ObjectTypes.Add(Destructible);
-			TArray<AActor*> ActorsToIgnore;
-			ActorsToIgnore.Add(this); // LineTrace에서 제외할 대상
-			FHitResult M249HitResult;
-			FTransform particleTrans = m249Comp->GetSocketTransform(FName("M249FirePosition"));
-			particleTrans.SetScale3D(FVector(0.7));
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PistolfireParticle, particleTrans);
-			FActorSpawnParameters param;
-			param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-			FTransform spawnTrans = m249Comp->GetSocketTransform(FName("BulletShell"));
-			AActor* bulletShell = GetWorld()->SpawnActor<AActor>(BulletShellFactory, spawnTrans);
-			bulletShell->SetLifeSpan(5.0f);
-			UE::Math::TVector<double> bulSoundLoc = GetActorLocation() * FVector(0, 0, -80);
-			UGameplayStatics::SpawnSoundAtLocation(GetWorld(), RifleBulletShellDropSound, bulSoundLoc, FRotator::ZeroRotator, 0.4, 1, 0);
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), M249FireSound, GetActorLocation());
-			PC->PlayerCameraManager->StartCameraShake(rifleFireShake);
-			PlayAnimMontage(FullBodyMontage, 1, FName("RifleFire"));
-			bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),startLoc, EndLoc, ObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, M249HitResult, true);
-			if(bHit)
+			// Enemy Casting
+			AEnemy* enemy = Cast<AEnemy>(M249HitResult.GetActor());
+			// Enemy FSM Casting
+			UEnemyFSM* fsm = Cast<UEnemyFSM>(enemy->GetDefaultSubobjectByName(FName("enemyFSM")));
+			// Reward Container Casting
+			ARewardContainer* rewardContainer = Cast<ARewardContainer>(M249HitResult.GetActor());
+			if (fsm && enemy)
 			{
-				// Enemy Casting
-				AEnemy* enemy=Cast<AEnemy>(M249HitResult.GetActor());
-				// Enemy FSM Casting
-				UEnemyFSM* fsm = Cast<UEnemyFSM>(enemy->GetDefaultSubobjectByName(FName("enemyFSM")));
-				// Reward Container Casting
-				ARewardContainer* rewardContainer=Cast<ARewardContainer>(M249HitResult.GetActor());
-				if(fsm&&enemy)
+				AGuardian* guardian = Cast<AGuardian>(enemy);
+				ACrunch* crunch = Cast<ACrunch>(enemy);
+				if (guardian)
 				{
-					AGuardian* guardian = Cast<AGuardian>(enemy);
-					ACrunch* crunch = Cast<ACrunch>(enemy);
-					if(guardian)
+					bGuardian = true;
+				}
+				else if (crunch)
+				{
+					bCrunch = true;
+				}
+				// 이미 죽지 않은 적에게만 실행
+				if (enemy->bDeath == false)
+				{
+					hitActors = M249HitResult.GetActor();
+					FName hitBone = M249HitResult.BoneName;
+					FVector_NetQuantize hitLoc = M249HitResult.Location;
+					FRotator hitRot = UKismetMathLibrary::Conv_VectorToRotator(M249HitResult.ImpactNormal);
+					if (hitBone == FName("head"))
 					{
-						bGuardian=true;
-					}
-					else if(crunch)
-					{
-						bCrunch=true;
-					}
-					// 이미 죽지 않은 적에게만 실행
-					if(enemy->bDeath==false)
-					{
-						hitActors = M249HitResult.GetActor();
-						FName hitBone = M249HitResult.BoneName;
-						FVector_NetQuantize hitLoc = M249HitResult.Location;
-						FRotator hitRot = UKismetMathLibrary::Conv_VectorToRotator(M249HitResult.ImpactNormal);
-						if(hitBone==FName("head"))
+						float min = FMath::RoundFromZero(180 * DamageMultiplier());
+						float max = FMath::RoundFromZero(220 * DamageMultiplier());
+						randM249HeadDamage = FMath::RandRange(min, max);
+						// 이번 공격에 Enemy가 죽는다면
+						if (enemy->curHP <= randM249HeadDamage)
 						{
-							float min = FMath::RoundFromZero(180 * DamageMultiplier());
-							float max = FMath::RoundFromZero(220 * DamageMultiplier());
-							randM249HeadDamage = FMath::RandRange(min, max);
-							// 이번 공격에 Enemy가 죽는다면
-							if(enemy->curHP<=randM249HeadDamage)
-							{
-								crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
-								UGameplayStatics::PlaySoundAtLocation(GetWorld(), KillSound, hitLoc);
-								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.0f));
-								// FSM에 있는 Damage Process 호출		
-								fsm->OnDamageProcess(randM249HeadDamage);
-								SetDamageWidget(randM249HeadDamage, hitLoc, false, FLinearColor::Yellow);
+							crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
+							UGameplayStatics::PlaySoundAtLocation(GetWorld(), KillSound, hitLoc);
+							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.0f));
+							// FSM에 있는 Damage Process 호출		
+							fsm->OnDamageProcess(randM249HeadDamage);
+							SetDamageWidget(randM249HeadDamage, hitLoc, false, FLinearColor::Yellow);
 
-								// 헤드 적중 데미지 프로세스 호출
-								enemy->OnHeadDamaged();
-								enemy->bDeath=true;
-								if(bGuardian)
-								{
-									GuardianCount++;
-									enemy->DropReward();
-									informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
-								}
-								else if(bCrunch)
-								{
-									BossCount++;
-									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
-									SetBossHPWidget(enemy);
-									enemy->DropReward();
-									FTimerHandle removeHandle;
-									GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
-								}
-							}
-							else
+							// 헤드 적중 데미지 프로세스 호출
+							enemy->OnHeadDamaged();
+							enemy->bDeath = true;
+							if (bGuardian)
 							{
-								crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
-								UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHeadHitSound, hitLoc);
-								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.0f));
-								// 적중 대상이 보스라면
-								if(bCrunch)
-								{
-									// 실드가 파괴된 상태라면
-									if(enemy->isShieldBroken)
-									{
-										// FSM에 있는 Damage Process 호출		
-										fsm->OnDamageProcess(randM249HeadDamage);
-										if(enemy->isStunned)
-										{
-											// 데미지 위젯에 피해 값과 적 위치벡터 할당
-											SetDamageWidget(randM249HeadDamage*2, hitLoc, false, FLinearColor::Red);
-										}
-										else
-										{
-											// 데미지 위젯에 피해 값과 적 위치벡터 할당
-											SetDamageWidget(randM249HeadDamage, hitLoc, false, FLinearColor::Yellow);
-										}										
-										// 헤드 적중 데미지 프로세스 호출
-										enemy->OnHeadDamaged();
-									}
-									// 실드가 파괴되지 않은 상태라면
-									else
-									{
-										FTransform EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
-										EmitterTrans.SetScale3D(FVector(1.3));
-										UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldHitEmitter, EmitterTrans);
-										// FSM에 있는 Damage Process 호출		
-										fsm->OnShieldDamageProcess(randM249HeadDamage);
-										// 데미지 위젯에 피해 값과 적 위치벡터 할당
-										SetDamageWidget(randM249HeadDamage/20, hitLoc, true, FLinearColor::Yellow);
-										// 헤드 적중 데미지 프로세스 호출
-										enemy->OnHeadDamaged();
-									}
-									SetBossHPWidget(enemy);
-								}
-								// 보스가 아니라면
-								else
+								GuardianCount++;
+								enemy->DropReward();
+								informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
+							}
+							else if (bCrunch)
+							{
+								BossCount++;
+								informationUI->BossCount->SetText(FText::AsNumber(BossCount));
+								SetBossHPWidget(enemy);
+								enemy->DropReward();
+								FTimerHandle removeHandle;
+								GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
+							}
+						}
+						else
+						{
+							crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
+							UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHeadHitSound, hitLoc);
+							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.0f));
+							// 적중 대상이 보스라면
+							if (bCrunch)
+							{
+								// 실드가 파괴된 상태라면
+								if (enemy->isShieldBroken)
 								{
 									// FSM에 있는 Damage Process 호출		
 									fsm->OnDamageProcess(randM249HeadDamage);
-									// 데미지 위젯에 피해 값과 적 위치벡터 할당
-									SetDamageWidget(randM249HeadDamage, hitLoc, false, FLinearColor::Yellow);
+									if (enemy->isStunned)
+									{
+										// 데미지 위젯에 피해 값과 적 위치벡터 할당
+										SetDamageWidget(randM249HeadDamage * 2, hitLoc, false, FLinearColor::Red);
+									}
+									else
+									{
+										// 데미지 위젯에 피해 값과 적 위치벡터 할당
+										SetDamageWidget(randM249HeadDamage, hitLoc, false, FLinearColor::Yellow);
+									}
 									// 헤드 적중 데미지 프로세스 호출
 									enemy->OnHeadDamaged();
 								}
+								// 실드가 파괴되지 않은 상태라면
+								else
+								{
+									FTransform EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
+									EmitterTrans.SetScale3D(FVector(1.3));
+									UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldHitEmitter, EmitterTrans);
+									// FSM에 있는 Damage Process 호출		
+									fsm->OnShieldDamageProcess(randM249HeadDamage);
+									// 데미지 위젯에 피해 값과 적 위치벡터 할당
+									SetDamageWidget(randM249HeadDamage / 20, hitLoc, true, FLinearColor::Yellow);
+									// 헤드 적중 데미지 프로세스 호출
+									enemy->OnHeadDamaged();
+								}
+								SetBossHPWidget(enemy);
+							}
+							// 보스가 아니라면
+							else
+							{
+								// FSM에 있는 Damage Process 호출		
+								fsm->OnDamageProcess(randM249HeadDamage);
+								// 데미지 위젯에 피해 값과 적 위치벡터 할당
+								SetDamageWidget(randM249HeadDamage, hitLoc, false, FLinearColor::Yellow);
+								// 헤드 적중 데미지 프로세스 호출
+								enemy->OnHeadDamaged();
+							}
+						}
+					}
+					else
+					{
+						float min = FMath::RoundFromZero(90 * DamageMultiplier());
+						float max = FMath::RoundFromZero(110 * DamageMultiplier());
+						randM249Damage = FMath::RandRange(min, max);
+						// 이번 공격에 Enemy가 죽는다면
+						if (enemy->curHP <= randM249Damage)
+						{
+							crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
+							UGameplayStatics::PlaySoundAtLocation(GetWorld(), KillSound, hitLoc);
+							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.0f));
+							// FSM에 있는 Damage Process 호출		
+							fsm->OnDamageProcess(randM249Damage);
+							SetDamageWidget(randM249Damage, hitLoc, false, FLinearColor::White);
+
+							// 일반 적중 데미지 프로세스 호출
+							enemy->OnDamaged();
+							enemy->bDeath = true;
+							if (bGuardian)
+							{
+								GuardianCount++;
+								enemy->DropReward();
+								informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
+							}
+							else if (bCrunch)
+							{
+								BossCount++;
+								informationUI->BossCount->SetText(FText::AsNumber(BossCount));
+								SetBossHPWidget(enemy);
+								enemy->DropReward();
+								FTimerHandle removeHandle;
+								GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
 							}
 						}
 						else
 						{
-							float min = FMath::RoundFromZero(90 * DamageMultiplier());
-							float max = FMath::RoundFromZero(110 * DamageMultiplier());
-							randM249Damage = FMath::RandRange(min, max);
-							// 이번 공격에 Enemy가 죽는다면
-							if(enemy->curHP<=randM249Damage)
+							crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
+							UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
+							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(0.5f));
+							// 적중 대상이 보스라면
+							if (bCrunch)
 							{
-								crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
-								UGameplayStatics::PlaySoundAtLocation(GetWorld(), KillSound, hitLoc);
-								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(2.0f));
-								// FSM에 있는 Damage Process 호출		
-								fsm->OnDamageProcess(randM249Damage);
-								SetDamageWidget(randM249Damage, hitLoc, false, FLinearColor::White);
-
-								// 일반 적중 데미지 프로세스 호출
-								enemy->OnDamaged();
-								enemy->bDeath=true;
-								if(bGuardian)
-								{
-									GuardianCount++;
-									enemy->DropReward();
-									informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
-								}
-								else if(bCrunch)
-								{
-									BossCount++;
-									informationUI->BossCount->SetText(FText::AsNumber(BossCount));
-									SetBossHPWidget(enemy);
-									enemy->DropReward();
-									FTimerHandle removeHandle;
-									GetWorldTimerManager().SetTimer(removeHandle, this, &APlayerCharacter::RemoveBossHPWidget, 4.0f, false);
-								}
-							}
-							else
-							{
-								crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
-								UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
-								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, hitLoc, hitRot, FVector(0.5f));
-								// 적중 대상이 보스라면
-								if(bCrunch)
-								{
-									// 실드가 파괴된 상태라면
-									if(enemy->isShieldBroken)
-									{
-										// FSM에 있는 Damage Process 호출		
-										fsm->OnDamageProcess(randM249Damage);
-										if(enemy->isStunned)
-										{
-											// 데미지 위젯에 피해 값과 적 위치벡터 할당
-											SetDamageWidget(randM249Damage*2, hitLoc, false, FLinearColor::Red);
-										}
-										else
-										{
-											// 데미지 위젯에 피해 값과 적 위치벡터 할당
-											SetDamageWidget(randM249Damage, hitLoc, false, FLinearColor::White);
-										}
-										// 일반 적중 데미지 프로세스 호출
-										enemy->OnDamaged();
-									}
-									// 실드가 있는 상태라면
-									else
-									{
-										FTransform EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
-										EmitterTrans.SetScale3D(FVector(1.3));
-										UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldHitEmitter, EmitterTrans);
-										// FSM에 있는 Damage Process 호출		
-										fsm->OnShieldDamageProcess(randM249Damage);
-										// 데미지 위젯에 피해 값과 적 위치벡터 할당
-										SetDamageWidget(randM249Damage/20, hitLoc, true, FLinearColor::White);
-										// 일반 적중 데미지 프로세스 호출
-										enemy->OnDamaged();
-									}
-									SetBossHPWidget(enemy);
-								}
-								// 보스가 아니라면
-								else
+								// 실드가 파괴된 상태라면
+								if (enemy->isShieldBroken)
 								{
 									// FSM에 있는 Damage Process 호출		
 									fsm->OnDamageProcess(randM249Damage);
-									// 데미지 위젯에 피해 값과 적 위치벡터 할당
-									SetDamageWidget(randM249Damage, hitLoc, false, FLinearColor::White);
+									if (enemy->isStunned)
+									{
+										// 데미지 위젯에 피해 값과 적 위치벡터 할당
+										SetDamageWidget(randM249Damage * 2, hitLoc, false, FLinearColor::Red);
+									}
+									else
+									{
+										// 데미지 위젯에 피해 값과 적 위치벡터 할당
+										SetDamageWidget(randM249Damage, hitLoc, false, FLinearColor::White);
+									}
 									// 일반 적중 데미지 프로세스 호출
 									enemy->OnDamaged();
 								}
+								// 실드가 있는 상태라면
+								else
+								{
+									FTransform EmitterTrans = enemy->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
+									EmitterTrans.SetScale3D(FVector(1.3));
+									UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldHitEmitter, EmitterTrans);
+									// FSM에 있는 Damage Process 호출		
+									fsm->OnShieldDamageProcess(randM249Damage);
+									// 데미지 위젯에 피해 값과 적 위치벡터 할당
+									SetDamageWidget(randM249Damage / 20, hitLoc, true, FLinearColor::White);
+									// 일반 적중 데미지 프로세스 호출
+									enemy->OnDamaged();
+								}
+								SetBossHPWidget(enemy);
+							}
+							// 보스가 아니라면
+							else
+							{
+								// FSM에 있는 Damage Process 호출		
+								fsm->OnDamageProcess(randM249Damage);
+								// 데미지 위젯에 피해 값과 적 위치벡터 할당
+								SetDamageWidget(randM249Damage, hitLoc, false, FLinearColor::White);
+								// 일반 적중 데미지 프로세스 호출
+								enemy->OnDamaged();
 							}
 						}
 					}
-					bGuardian=false;
-					bCrunch=false;
 				}
-				else if(rewardContainer)
+				bGuardian = false;
+				bCrunch = false;
+			}
+			else if (rewardContainer)
+			{
+				if (!rewardContainer->bDestroyed)
 				{
-					if(!rewardContainer->bDestroyed)
+					FVector_NetQuantize hitLoc = M249HitResult.Location;
+					crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
+					UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
+					if (rewardContainer->curBoxHP <= 1)
 					{
-						FVector_NetQuantize hitLoc = M249HitResult.Location;
-						crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
-						UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
-						if(rewardContainer->curBoxHP<=1)
-						{
-							rewardContainer->BoxDestroyed();
-							rewardContainer->containerMesh->SetSimulatePhysics(true);
-							ContainerLoc = rewardContainer->GetActorLocation();
-							containerDele.ExecuteIfBound();
-						}
-						else
-						{
-							rewardContainer->curBoxHP=FMath::Clamp(rewardContainer->curBoxHP-1, 0, 10);
-						}
+						rewardContainer->BoxDestroyed();
+						rewardContainer->containerMesh->SetSimulatePhysics(true);
+						ContainerLoc = rewardContainer->GetActorLocation();
+						containerDele.ExecuteIfBound();
+					}
+					else
+					{
+						rewardContainer->curBoxHP = FMath::Clamp(rewardContainer->curBoxHP - 1, 0, 10);
 					}
 				}
-				else
-				{
-					FActorSpawnParameters params;
-					params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-					FRotator decalRot = UKismetMathLibrary::Conv_VectorToRotator(M249HitResult.ImpactNormal);
-					FVector_NetQuantize decalLoc = M249HitResult.Location;
-					FTransform decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
-					GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot+FRotator(-90, 0, 0), FVector(0.5f));
-				}
-				if(isZooming)
-				{
-					double randF = UKismetMathLibrary::RandomFloatInRange(-0.4 * RecoilRateMultiplier(), -0.7 * RecoilRateMultiplier());
-					double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.4 * RecoilRateMultiplier(), 0.4 * RecoilRateMultiplier());
-					AddControllerPitchInput(randF);
-					AddControllerYawInput(randF2);			
-				}
-				else
-				{
-					double randF = UKismetMathLibrary::RandomFloatInRange(-0.6 * RecoilRateMultiplier(), -1.1 * RecoilRateMultiplier());
-					double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.5 * RecoilRateMultiplier(), 0.5 * RecoilRateMultiplier());
-					AddControllerPitchInput(randF);
-					AddControllerYawInput(randF2);					
-				}				
-				CanShoot=false;
-				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
-				{
-					CanShoot=true;
-				}), 1/(BulletsPerSecM249*FireRateMultiplier()), false);
 			}
 			else
 			{
-				if(isZooming)
-				{
-					double randF = UKismetMathLibrary::RandomFloatInRange(-0.4 * RecoilRateMultiplier(), -0.7 * RecoilRateMultiplier());
-					double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.4 * RecoilRateMultiplier(), 0.4 * RecoilRateMultiplier());
-					AddControllerPitchInput(randF);
-					AddControllerYawInput(randF2);			
-				}
-				else
-				{
-					double randF = UKismetMathLibrary::RandomFloatInRange(-0.6 * RecoilRateMultiplier(), -1.1 * RecoilRateMultiplier());
-					double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.5 * RecoilRateMultiplier(), 0.5 * RecoilRateMultiplier());
-					AddControllerPitchInput(randF);
-					AddControllerYawInput(randF2);					
-				}
-				CanShoot=false;				
-				GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()->void
-				{
-					CanShoot=true;
-				}), 1/(BulletsPerSecM249*FireRateMultiplier()), false);
+				FActorSpawnParameters params;
+				params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+				FRotator decalRot = UKismetMathLibrary::Conv_VectorToRotator(M249HitResult.ImpactNormal);
+				FVector_NetQuantize decalLoc = M249HitResult.Location;
+				FTransform decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
+				GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot + FRotator(-90, 0, 0), FVector(0.5f));
 			}
+			if (isZooming)
+			{
+				double randF = UKismetMathLibrary::RandomFloatInRange(-0.4 * RecoilRateMultiplier(), -0.7 * RecoilRateMultiplier());
+				double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.4 * RecoilRateMultiplier(), 0.4 * RecoilRateMultiplier());
+				AddControllerPitchInput(randF);
+				AddControllerYawInput(randF2);
+			}
+			else
+			{
+				double randF = UKismetMathLibrary::RandomFloatInRange(-0.6 * RecoilRateMultiplier(), -1.1 * RecoilRateMultiplier());
+				double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.5 * RecoilRateMultiplier(), 0.5 * RecoilRateMultiplier());
+				AddControllerPitchInput(randF);
+				AddControllerYawInput(randF2);
+			}
+			CanShoot = false;
+			GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()-> void
+			{
+				CanShoot = true;
+			}), 1 / (BulletsPerSecM249 * FireRateMultiplier()), false);
 		}
 		else
 		{
-			if(EmptySoundBoolean==false)
+			if (isZooming)
 			{
-				EmptySoundBoolean=true;
-				// 탄약 고갈 사운드 재생
-				UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletEmptySound, GetActorLocation());
+				double randF = UKismetMathLibrary::RandomFloatInRange(-0.4 * RecoilRateMultiplier(), -0.7 * RecoilRateMultiplier());
+				double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.4 * RecoilRateMultiplier(), 0.4 * RecoilRateMultiplier());
+				AddControllerPitchInput(randF);
+				AddControllerYawInput(randF2);
 			}
+			else
+			{
+				double randF = UKismetMathLibrary::RandomFloatInRange(-0.6 * RecoilRateMultiplier(), -1.1 * RecoilRateMultiplier());
+				double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.5 * RecoilRateMultiplier(), 0.5 * RecoilRateMultiplier());
+				AddControllerPitchInput(randF);
+				AddControllerYawInput(randF2);
+			}
+			CanShoot = false;
+			GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()-> void
+			{
+				CanShoot = true;
+			}), 1 / (BulletsPerSecM249 * FireRateMultiplier()), false);
 		}
+	}
+	else
+	{
+		if (EmptySoundBoolean == false)
+		{
+			EmptySoundBoolean = true;
+			// 탄약 고갈 사운드 재생
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletEmptySound, GetActorLocation());
+		}
+	}
 }
 
 
 void APlayerCharacter::RemoveBossHPWidget()
 {
-	if(bossHPUI)
+	if (bossHPUI)
 	{
 		bossHPUI->RemoveFromParent();
 	}
@@ -3982,7 +3958,7 @@ void APlayerCharacter::InfoWidgetUpdate()
 
 float APlayerCharacter::DamageMultiplier()
 {
-	if(HeadsetEquipped)
+	if (HeadsetEquipped)
 	{
 		return 1.16f;
 	}
@@ -3991,7 +3967,7 @@ float APlayerCharacter::DamageMultiplier()
 
 float APlayerCharacter::FireRateMultiplier()
 {
-	if(MaskEquipped)
+	if (MaskEquipped)
 	{
 		return 1.23f;
 	}
@@ -4000,7 +3976,7 @@ float APlayerCharacter::FireRateMultiplier()
 
 float APlayerCharacter::RecoilRateMultiplier()
 {
-	if(GoggleEquipped)
+	if (GoggleEquipped)
 	{
 		return 1.2f;
 	}
@@ -4013,7 +3989,7 @@ void APlayerCharacter::PlayerDeath()
 }
 
 void APlayerCharacter::PlayerDeathRPCServer_Implementation()
-{	
+{
 	PlayerDeathRPCMulticast();
 }
 
@@ -4026,26 +4002,26 @@ void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 {
 	InventoryCaching();
 	StashCaching();
-	if(IsLocallyControlled())
+	if (IsLocallyControlled())
 	{
 		UWidgetLayoutLibrary::RemoveAllWidgets(GetWorld());
 		APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 		// 카메라 페이드 연출
 		playerCam->StartCameraFade(0, 1, 5.0, FLinearColor::Black, false, true);
 		// 사망지점 전역변수에 캐싱
-		DeathPosition=GetActorLocation();		
+		DeathPosition = GetActorLocation();
 	}
 	FTimerHandle PlayerDeadHandle;
-	GetWorld()->GetTimerManager().SetTimer(PlayerDeadHandle, FTimerDelegate::CreateLambda([this]()->void
+	GetWorld()->GetTimerManager().SetTimer(PlayerDeadHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
-		IsPlayerDead=true;
+		IsPlayerDead = true;
 	}), 3.f, false);
 
 	// 몽타주 재생 중단
 	StopAnimMontage();
 	// 사망 몽타주 재생
 	PlayAnimMontage(FullBodyMontage, 1, FName("Death"));
-	
+
 	// FTimerHandle endHandle;
 	// // 7초 뒤 호출되는 함수 타이머
 	// GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()->void
@@ -4078,101 +4054,105 @@ void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 
 void APlayerCharacter::EquipHelmet(bool SoundBool)
 {
-	if(SoundBool)
+	if (SoundBool)
 	{
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), gearEquipSound, GetActorLocation());
 	}
 	HelmetSlot->SetVisibility(true);
-	HelmetEquipped=true;
+	HelmetEquipped = true;
 }
 
 void APlayerCharacter::EquipHeadset(bool SoundBool)
 {
-	if(SoundBool)
+	if (SoundBool)
 	{
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), gearEquipSound, GetActorLocation());
 	}
 	HeadSetSlot->SetVisibility(true);
-	HeadsetEquipped=true;
+	HeadsetEquipped = true;
 }
 
 void APlayerCharacter::EquipMask(bool SoundBool)
 {
-	if(SoundBool)
+	if (SoundBool)
 	{
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), gearEquipSound, GetActorLocation());
 	}
 	MaskSlot->SetVisibility(true);
-	MaskEquipped=true;
+	MaskEquipped = true;
 }
 
 void APlayerCharacter::EquipGoggle(bool SoundBool)
 {
-	if(SoundBool)
+	if (SoundBool)
 	{
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), gearEquipSound, GetActorLocation());
 	}
 	GoggleSlot->SetVisibility(true);
-	GoggleEquipped=true;
+	GoggleEquipped = true;
 }
 
 void APlayerCharacter::EquipArmor(bool SoundBool)
 {
-	if(SoundBool)
+	if (SoundBool)
 	{
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), gearEquipSound, GetActorLocation());
 	}
 	ArmorSlot->SetVisibility(true);
-	ArmorEquipped=true;
+	ArmorEquipped = true;
 	//curHP=FMath::Clamp(curHP+35, 0, 135);
 	//maxHP=FMath::Clamp(maxHP+35, 0, 135);
 }
 
 void APlayerCharacter::UnEquipHelmet(bool SoundBool)
 {
-	if(SoundBool)
+	if (SoundBool)
 	{
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), gearUnequipSound, GetActorLocation());
 	}
 	HelmetSlot->SetVisibility(false);
-	HelmetEquipped=false;
+	HelmetEquipped = false;
 }
 
 void APlayerCharacter::UnEquipHeadset(bool SoundBool)
 {
-	if(SoundBool)
+	if (SoundBool)
 	{
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), gearUnequipSound, GetActorLocation());
-	}	HeadSetSlot->SetVisibility(false);
-	HeadsetEquipped=false;
+	}
+	HeadSetSlot->SetVisibility(false);
+	HeadsetEquipped = false;
 }
 
 void APlayerCharacter::UnEquipMask(bool SoundBool)
 {
-	if(SoundBool)
+	if (SoundBool)
 	{
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), gearUnequipSound, GetActorLocation());
-	}	MaskSlot->SetVisibility(false);
-	MaskEquipped=false;
+	}
+	MaskSlot->SetVisibility(false);
+	MaskEquipped = false;
 }
 
 void APlayerCharacter::UnEquipGoggle(bool SoundBool)
 {
-	if(SoundBool)
+	if (SoundBool)
 	{
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), gearUnequipSound, GetActorLocation());
-	}	GoggleSlot->SetVisibility(false);
-	GoggleEquipped=false;
+	}
+	GoggleSlot->SetVisibility(false);
+	GoggleEquipped = false;
 }
 
 
 void APlayerCharacter::UnEquipArmor(bool SoundBool)
 {
-	if(SoundBool)
+	if (SoundBool)
 	{
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), gearUnequipSound, GetActorLocation());
-	}	ArmorSlot->SetVisibility(false);
-	ArmorEquipped=false;
+	}
+	ArmorSlot->SetVisibility(false);
+	ArmorEquipped = false;
 }
 
 
@@ -4180,4 +4160,3 @@ void APlayerCharacter::OnRep_CanShoot()
 {
 	//EC_LOG(LogTemp, Warning, TEXT("%s"), TEXT("CanShoot"))
 }
-

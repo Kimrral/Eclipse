@@ -10,7 +10,7 @@ void AGuardian::DropReward()
 	DropAmmo();
 	DropAmmo();
 	auto randNum = FMath::RandRange(0, 2);
-	if(randNum==0)
+	if (randNum == 0)
 	{
 		DropMagazine();
 	}

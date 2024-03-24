@@ -14,23 +14,22 @@ class ECLIPSE_API UTabWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
-public:	
-
+public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class APlayerCharacter* player;
-	
+
 	UFUNCTION(BlueprintCallable)
 	void SetTabWidget();
 
 	UFUNCTION(BlueprintCallable)
 	void UpdateHealthPoint();
-	
+
 	UPROPERTY()
 	class AEclipsePlayerController* pc;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	class UTabHoveredInfoWidget* TabHoveredInfoWidget;	
-	
+	class UTabHoveredInfoWidget* TabHoveredInfoWidget;
+
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UTextBlock* WeaponText1;
 
@@ -87,7 +86,7 @@ public:
 	class UImage* CurWeaponImage1_2;
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UImage* CurWeaponImage1_3;
-	
+
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UImage* CurWeaponImage2;
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
@@ -116,7 +115,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UTextBlock* CurHPText;
-	
+
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UTextBlock* MaxHPText;
 
@@ -143,5 +142,4 @@ public:
 	class AArmorActor* ArmorActor;
 	UPROPERTY()
 	class AMedKitActor* MedKitActor;
-
 };

@@ -149,7 +149,7 @@ void APlayerCharacter::BeginPlay()
 	this->SetActorEnableCollision(true);
 	
 	// Casting
-	UGameInstance* GI = GetGameInstance();
+	const UGameInstance* GI = GetGameInstance();
 	PC = Cast<AEclipsePlayerController>(GI->GetFirstLocalPlayerController());
 	gm=Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());
 	gi=Cast<UEclipseGameInstance>(GetWorld()->GetGameInstance());
@@ -201,11 +201,11 @@ void APlayerCharacter::BeginPlay()
 	}
 
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
-	AEclipsePlayerController* PlayerController = Cast<AEclipsePlayerController>(GetController());
+	//AEclipsePlayerController* PlayerController = Cast<AEclipsePlayerController>(GetController());
 	
-	if(PlayerController)
+	if(PC)
 	{
-		PlayerController->EnableInput(PlayerController);		
+		PC->EnableInput(PC);		
 	}
 
 	// Hideout
@@ -1590,9 +1590,9 @@ void APlayerCharacter::SetBossHPWidget(AEnemy* enemy)
 {
 	if(enemy&&bossHPUI)
 	{
-		float bossHP = enemy->curHP*0.0001;
+		const float bossHP = enemy->curHP*0.0001;
 		bossHPUI->progressBar->SetPercent(bossHP);
-		float bossShield = enemy->curShield*0.01;
+		const float bossShield = enemy->curShield*0.01;
 		bossHPUI->shieldProgressBar->SetPercent(bossShield);
 	}
 }
@@ -2579,6 +2579,8 @@ void APlayerCharacter::MulticastRPCFire_Implementation()
 {
 	if(weaponArray[0]==true&&curRifleAmmo>0)
 	{
+		StopAnimMontage();
+		PlayAnimMontage(RifleFireMontage);
 		// 서버 로직 (핵심 프로세스 처리)
 		if(HasAuthority())
 		{

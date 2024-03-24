@@ -305,15 +305,6 @@ void APlayerCharacter::BeginPlay()
 	UpdateTabWidget();
 }
 
-void APlayerCharacter::AttackHitConfirm(AActor* HitActor, float DamageAmount)
-{
-	if (HasAuthority())
-	{
-		FDamageEvent DamageEvent;
-		HitActor->TakeDamage(DamageAmount, DamageEvent, GetController(), this);
-	}
-}
-
 // Called every frame
 void APlayerCharacter::Tick(float DeltaTime)
 {
@@ -1634,8 +1625,6 @@ void APlayerCharacter::SetBossHPWidget(AEnemy* enemy)
 
 void APlayerCharacter::SetDamageWidget(int damage, FVector spawnLoc, bool isShieldIconEnable, FLinearColor DamageTextColor)
 {
-	if(IsLocallyControlled())
-	{
 		ADamageWidgetActor* damWidget = GetWorld()->SpawnActor<ADamageWidgetActor>(damageWidgetFactory, spawnLoc+FVector(0, 0, 50), FRotator::ZeroRotator);
 		if(damWidget)
 		{
@@ -1687,7 +1676,6 @@ void APlayerCharacter::SetDamageWidget(int damage, FVector spawnLoc, bool isShie
 				}
 			}
 		}
-	}
 }
 
 void APlayerCharacter::Crouching()
@@ -1696,6 +1684,10 @@ void APlayerCharacter::Crouching()
 
 void APlayerCharacter::ChangeWeapon()
 {
+	if(bEnding)
+	{
+		return;
+	}
 	ChangeWeaponRPCServer();
 }
 
@@ -1710,13 +1702,15 @@ bool APlayerCharacter::ChangeWeaponRPCServer_Validate()
 }
 
 void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
-{
-	if(bEnding)
+{	
+	if(HasAuthority())
 	{
-		return;
+		InteractionProcess();
 	}
-	if(IsLocallyControlled())
-	{
+}
+
+void APlayerCharacter::InteractionProcess()
+{
 		FHitResult actorHitResult;
 		FVector StartLoc = FollowCamera->GetComponentLocation();
 		FVector EndLoc = StartLoc+FollowCamera->GetForwardVector()*500.0f;
@@ -1749,8 +1743,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 			Stash= Cast<AStash>(actorHitResult.GetActor());
 			QuitGameActor= Cast<AQuitGameActor>(actorHitResult.GetActor());
 
-			PlayerCharacter=Cast<APlayerCharacter>(actorHitResult.GetActor());
-		
+			PlayerCharacter=Cast<APlayerCharacter>(actorHitResult.GetActor());			
 		
 			// 라이플로 교체
 			if(rifleActor)
@@ -1831,6 +1824,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 				// 스나이퍼를 사용하지 않을 때만 교체
 				if(weaponArray[1]==false)
 				{
+					// 키다운 시간 동안 Radial Slider 게이지 상승
 					infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 					if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 					{
@@ -1888,6 +1882,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 				// 권총을 사용하지 않을 때만 교체
 				if(weaponArray[2]==false)
 				{
+					// 키다운 시간 동안 Radial Slider 게이지 상승
 					infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 					if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 					{
@@ -1943,6 +1938,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 				// M249을 사용하지 않을 때만 교체
 				if(weaponArray[3]==false)
 				{
+					// 키다운 시간 동안 Radial Slider 게이지 상승
 					infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 					if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 					{
@@ -1994,6 +1990,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 			}
 			else if(HackingConsole)
 			{
+				// 키다운 시간 동안 Radial Slider 게이지 상승
 				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 				{
@@ -2009,6 +2006,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 			}
 			else if(MissionChecker)
 			{
+				// 키다운 시간 동안 Radial Slider 게이지 상승
 				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 				{
@@ -2048,6 +2046,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 			}
 			else if(RifleMagActor)
 			{
+				// 키다운 시간 동안 Radial Slider 게이지 상승
 				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 				{
@@ -2061,6 +2060,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 			}
 			else if(SniperMagActor)
 			{
+				// 키다운 시간 동안 Radial Slider 게이지 상승
 				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 				{
@@ -2074,6 +2074,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 			}
 			else if(PistolMagActor)
 			{
+				// 키다운 시간 동안 Radial Slider 게이지 상승
 				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 				{
@@ -2087,6 +2088,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 			}
 			else if(M249MagActor)
 			{
+				// 키다운 시간 동안 Radial Slider 게이지 상승
 				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 				{
@@ -2100,6 +2102,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 			}
 			else if(GoggleActor)
 			{
+				// 키다운 시간 동안 Radial Slider 게이지 상승
 				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 				{
@@ -2113,6 +2116,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 			}
 			else if(HelmetActor)
 			{
+				// 키다운 시간 동안 Radial Slider 게이지 상승
 				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 				{
@@ -2126,6 +2130,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 			}
 			else if(HeadsetActor)
 			{
+				// 키다운 시간 동안 Radial Slider 게이지 상승
 				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 				{
@@ -2139,6 +2144,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 			}
 			else if(MaskActor)
 			{
+				// 키다운 시간 동안 Radial Slider 게이지 상승
 				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 				{
@@ -2152,6 +2158,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 			}
 			else if(ArmorActor)
 			{
+				// 키다운 시간 동안 Radial Slider 게이지 상승
 				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 				{
@@ -2165,6 +2172,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 			}
 			else if(MedKitActor)
 			{
+				// 키다운 시간 동안 Radial Slider 게이지 상승
 				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 				{
@@ -2178,6 +2186,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 			}
 			else if(StageBoard)
 			{
+				// 키다운 시간 동안 Radial Slider 게이지 상승
 				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 				if(levelSelectionUI&&infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 				{
@@ -2191,6 +2200,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 			}
 			else if(Stash)
 			{
+				// 키다운 시간 동안 Radial Slider 게이지 상승
 				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 				if(infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 				{
@@ -2207,6 +2217,7 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 			}
 			else if(QuitGameActor)
 			{
+				// 키다운 시간 동안 Radial Slider 게이지 상승
 				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 				if(quitWidgetUI&&infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 				{
@@ -2223,9 +2234,10 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 			}
 			else if(PlayerCharacter)
 			{
+				// 키다운 시간 동안 Radial Slider 게이지 상승
+				infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 				if(PlayerCharacter->IsPlayerDead)
 				{
-					infoWidgetUI->weaponHoldPercent=FMath::Clamp(infoWidgetUI->weaponHoldPercent+0.015, 0, 1);
 					if(quitWidgetUI&&infoWidgetUI&&infoWidgetUI->weaponHoldPercent>=1)
 					{
 						infoWidgetUI->weaponHoldPercent=0;
@@ -2235,13 +2247,12 @@ void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 							UGameplayStatics::PlaySound2D(GetWorld(), tabSound);
 							infoWidgetUI->RemoveFromParent();
 							PC->SetShowMouseCursor(true);
-							DeadBodyWidgetOnViewport();
+							DeadBodyWidgetOnViewport(PlayerCharacter->GetGameInstance());
 						}		
 					}
 				}
 			}
 		}
-	}
 }
 
 void APlayerCharacter::Reload()
@@ -2252,13 +2263,10 @@ void APlayerCharacter::Reload()
 	}
 }
 
-
 void APlayerCharacter::ServerRPCReload_Implementation()
 {
 	MulticastRPCReload();
 }
-	
-
 
 void APlayerCharacter::MulticastRPCReload_Implementation()
 {			
@@ -2519,8 +2527,6 @@ void APlayerCharacter::SetM249AdditionalMagazineSlot()
 	bM249AdditionalMag=true;
 }
 
-
-
 void APlayerCharacter::UnSetRifleAdditionalMagazineSlot()
 {
 	bRifleAdditionalMag=false;
@@ -2567,24 +2573,6 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(APlayerCharacter, IsPlayerDead);	
 }
 
-float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
-{
-	const float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-	
-	//Stat->ApplyDamage(DamageAmount);
-	
-	if (Stat->GetCurrentHp() <= 0.0f)
-	{
-		if (gm)
-		{
-			gm->OnPlayerKilled(EventInstigator, GetController(), this);
-		}
-	}
-
-	return ActualDamage;
-}
-
-
 void APlayerCharacter::Fire()
 {
 	// 사격 가능 상태가 아니거나, 뛰고 있거나, 위젯이 켜져 있거나, 엔딩 연출 중이라면 리턴
@@ -2612,11 +2600,13 @@ void APlayerCharacter::ServerRPCFire_Implementation()
 
 void APlayerCharacter::MulticastRPCFire_Implementation()
 {
+	// Rifle
 	if(weaponArray[0]==true)
 	{
 		if(curRifleAmmo>0)
 		{
 			ProcessRifleFireAnim();
+			
 			// 서버 로직 (핵심 프로세스 처리)
 			if(HasAuthority())
 			{
@@ -2633,22 +2623,27 @@ void APlayerCharacter::MulticastRPCFire_Implementation()
 				ProcessRifleFireSimulatedProxy();
 			}
 		}
+		// No Ammo
 		else
 		{
-			if(EmptySoundBoolean==false)
-			{
-				EmptySoundBoolean=true;
-				if(IsLocallyControlled())
-				{
-					UGameplayStatics::PlaySound2D(GetWorld(), BulletEmptySound);
-				}
-				else
-				{
-					// 탄약 고갈 사운드 재생
-					UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletEmptySound, GetActorLocation());
-				}				
-			}
+			AmmoDepleted();
 		}
+	}
+}
+
+void APlayerCharacter::AmmoDepleted()
+{
+	if(EmptySoundBoolean==false)
+	{
+		EmptySoundBoolean=true;
+		if(IsLocallyControlled())
+		{
+			UGameplayStatics::PlaySound2D(GetWorld(), BulletEmptySound);
+		}
+		else
+		{
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletEmptySound, GetActorLocation());
+		}				
 	}
 }
 
@@ -4029,6 +4024,8 @@ bool APlayerCharacter::PlayerDeathRPCServer_Validate()
 
 void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 {
+	InventoryCaching();
+	StashCaching();
 	if(IsLocallyControlled())
 	{
 		UWidgetLayoutLibrary::RemoveAllWidgets(GetWorld());
@@ -4036,7 +4033,7 @@ void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 		// 카메라 페이드 연출
 		playerCam->StartCameraFade(0, 1, 5.0, FLinearColor::Black, false, true);
 		// 사망지점 전역변수에 캐싱
-		DeathPosition=GetActorLocation();
+		DeathPosition=GetActorLocation();		
 	}
 	FTimerHandle PlayerDeadHandle;
 	GetWorld()->GetTimerManager().SetTimer(PlayerDeadHandle, FTimerDelegate::CreateLambda([this]()->void
@@ -4177,6 +4174,7 @@ void APlayerCharacter::UnEquipArmor(bool SoundBool)
 	}	ArmorSlot->SetVisibility(false);
 	ArmorEquipped=false;
 }
+
 
 void APlayerCharacter::OnRep_CanShoot()
 {

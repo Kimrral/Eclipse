@@ -36,8 +36,7 @@ float UPlayerCharacterStatComponent::ApplyDamage(float InDamage, AActor* DamageC
 		if(PlayerCharacter)
 		{
 			PlayerCharacter->OnPlayerKill();
-		}
-		
+		}		
 	}
 	return ActualDamage;
 }

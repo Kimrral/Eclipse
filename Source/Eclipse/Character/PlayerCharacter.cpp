@@ -953,7 +953,7 @@ void APlayerCharacter::OnPlayerKillRPCMulticast_Implementation()
 	if (IsLocallyControlled())
 	{
 		crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
-		UGameplayStatics::PlaySound2D(GetWorld(), KillSound);
+		UGameplayStatics::PlaySound2D(GetWorld(), PlayerKillSound, 1, 1, 0.25);
 	}
 }
 
@@ -1670,7 +1670,8 @@ void APlayerCharacter::ChangeWeapon()
 	{
 		return;
 	}
-	ChangeWeaponRPCServer();
+	InteractionProcess();
+	//ChangeWeaponRPCServer();
 }
 
 void APlayerCharacter::ChangeWeaponRPCServer_Implementation()
@@ -1685,9 +1686,17 @@ bool APlayerCharacter::ChangeWeaponRPCServer_Validate()
 
 void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
 {
+	InteractionProcess();
 	if (HasAuthority())
 	{
-		InteractionProcess();
+		
+	}
+	if(IsLocallyControlled())
+	{
+	}
+	else
+	{
+		
 	}
 }
 
@@ -2439,10 +2448,8 @@ void APlayerCharacter::DamagedRPCMulticast_Implementation(int damage)
 {
 	if (IsLocallyControlled())
 	{
-		APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
-		// 카메라 페이드 연출
-		playerCam->StartCameraFade(0.3, 0, 2.0, FLinearColor::Red, false, true);
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), damagedSound, GetActorLocation());
+		crosshairUI->PlayAnimation(crosshairUI->DamagedAnimation);
+		UGameplayStatics::PlaySound2D(GetWorld(), DamagedSound);
 		PC->PlayerCameraManager->StartCameraShake(PlayerDamagedShake);
 	}
 	UpdateTabWidget();

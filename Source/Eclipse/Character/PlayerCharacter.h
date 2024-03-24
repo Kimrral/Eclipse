@@ -777,6 +777,9 @@ public:
 	class USoundBase* KillSound;
 
 	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* PlayerKillSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* RifleFireSound;
 
 	UPROPERTY(EditAnywhere, Category="Sounds")
@@ -813,7 +816,7 @@ public:
 	class USoundBase* gearUnequipSound;
 
 	UPROPERTY(EditAnywhere, Category="Sounds")
-	class USoundBase* damagedSound;
+	class USoundBase* DamagedSound;
 
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* deathSound;

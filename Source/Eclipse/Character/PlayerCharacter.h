@@ -567,6 +567,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
 	class UAnimMontage* FullBodyMontage;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
+	class UAnimMontage* RifleFireMontage;
+	
 	UPROPERTY(EditAnywhere)
 	class USphereComponent* weaponDetectionCollision;
 

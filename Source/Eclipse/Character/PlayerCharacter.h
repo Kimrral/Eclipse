@@ -155,6 +155,9 @@ public:
 	void FireRelease();
 
 	void ProcessRifleFire();
+	void ProcessRifleFireAnim();
+	void ProcessRifleFireLocal();
+	void ProcessRifleFireSimulatedProxy();
 	void ProcessSniperFire();
 	void ProcessPistolFire();
 	void ProcessM249Fire();

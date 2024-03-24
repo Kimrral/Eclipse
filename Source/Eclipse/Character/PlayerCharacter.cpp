@@ -1046,7 +1046,7 @@ void APlayerCharacter::Tab()
 
 void APlayerCharacter::Q()
 {
-	PlayerDeath();
+	ProcessRifleFireAnim();
 }
 
 
@@ -2577,42 +2577,76 @@ void APlayerCharacter::ServerRPCFire_Implementation()
 
 void APlayerCharacter::MulticastRPCFire_Implementation()
 {
-	if(weaponArray[0]==true&&curRifleAmmo>0)
+	if(weaponArray[0]==true)
 	{
-		StopAnimMontage();
-		PlayAnimMontage(RifleFireMontage);
-		// 서버 로직 (핵심 프로세스 처리)
-		if(HasAuthority())
+		if(curRifleAmmo>0)
 		{
-			ProcessRifleFire();
+			ProcessRifleFireAnim();
+			// 서버 로직 (핵심 프로세스 처리)
+			if(HasAuthority())
+			{
+				ProcessRifleFire();
+			}
+			// 실행하는 주체 (서버 / 클라 무관, 자신에게만 실행되는 로직 구현)
+			if(IsLocallyControlled())
+			{
+				ProcessRifleFireLocal();
+			}
+			// Simulated Proxy
+			else
+			{
+				ProcessRifleFireSimulatedProxy();
+			}
 		}
-		// 실행하는 주체 (서버 / 클라 무관, 자신에게만 실행되는 로직 구현)
-		if(IsLocallyControlled())
-		{
-			UGameplayStatics::PlaySound2D(GetWorld(), RifleFireSound);
-			// 사격 카메라 셰이크 실행
-			PC->PlayerCameraManager->StartCameraShake(rifleFireShake);
-			FVector particleLoc = rifleComp->GetSocketLocation(FName("RifleFirePosition"));
-			UE::Math::TRotator<double> particleRot = rifleComp->GetSocketRotation(FName("RifleFirePosition"));
-			FTransform particleTrans2=UKismetMathLibrary::MakeTransform(particleLoc, particleRot, FVector(0.4));
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle2, particleTrans2);
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleFireSound, GetActorLocation());
-
-			double randF = UKismetMathLibrary::RandomFloatInRange(-0.3 * RecoilRateMultiplier(), -0.5 * RecoilRateMultiplier());
-			double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.3 * RecoilRateMultiplier(), 0.3 * RecoilRateMultiplier());
-			AddControllerPitchInput(randF);
-			AddControllerYawInput(randF2);		
-		}
-		// Simulated Proxy
 		else
 		{
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleFireSound, GetActorLocation());
-			FVector particleLoc = rifleComp->GetSocketLocation(FName("RifleFirePosition"));
-			UE::Math::TRotator<double> particleRot = rifleComp->GetSocketRotation(FName("RifleFirePosition"));
-			FTransform particleTrans2=UKismetMathLibrary::MakeTransform(particleLoc, particleRot, FVector(0.4));
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle2, particleTrans2);			
+			if(EmptySoundBoolean==false)
+			{
+				EmptySoundBoolean=true;
+				if(IsLocallyControlled())
+				{
+					UGameplayStatics::PlaySound2D(GetWorld(), BulletEmptySound);
+				}
+				else
+				{
+					// 탄약 고갈 사운드 재생
+					UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletEmptySound, GetActorLocation());
+				}				
+			}
 		}
 	}
+}
+
+void APlayerCharacter::ProcessRifleFireAnim()
+{
+	StopAnimMontage();
+	PlayAnimMontage(RifleFireMontage, 1, FName("Fire"));
+}
+
+void APlayerCharacter::ProcessRifleFireLocal()
+{
+	UGameplayStatics::PlaySound2D(GetWorld(), RifleFireSound);
+	// 사격 카메라 셰이크 실행
+	PC->PlayerCameraManager->StartCameraShake(rifleFireShake);
+	FVector particleLoc = rifleComp->GetSocketLocation(FName("RifleFirePosition"));
+	UE::Math::TRotator<double> particleRot = rifleComp->GetSocketRotation(FName("RifleFirePosition"));
+	FTransform particleTrans2=UKismetMathLibrary::MakeTransform(particleLoc, particleRot, FVector(0.4));
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle2, particleTrans2);
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleFireSound, GetActorLocation());
+
+	double randF = UKismetMathLibrary::RandomFloatInRange(-0.3 * RecoilRateMultiplier(), -0.5 * RecoilRateMultiplier());
+	double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.3 * RecoilRateMultiplier(), 0.3 * RecoilRateMultiplier());
+	AddControllerPitchInput(randF);
+	AddControllerYawInput(randF2);		
+}
+
+void APlayerCharacter::ProcessRifleFireSimulatedProxy()
+{
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleFireSound, GetActorLocation());
+	FVector particleLoc = rifleComp->GetSocketLocation(FName("RifleFirePosition"));
+	UE::Math::TRotator<double> particleRot = rifleComp->GetSocketRotation(FName("RifleFirePosition"));
+	FTransform particleTrans2=UKismetMathLibrary::MakeTransform(particleLoc, particleRot, FVector(0.4));
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle2, particleTrans2);			
 }
 
 void APlayerCharacter::FireRelease()
@@ -2920,14 +2954,10 @@ void APlayerCharacter::ProcessRifleFire()
 		}
 		else
 		{
-			if(EmptySoundBoolean==false)
-			{
-				EmptySoundBoolean=true;
-				// 탄약 고갈 사운드 재생
-				UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletEmptySound, GetActorLocation());
-			}
+			
 		}
 }
+
 
 void APlayerCharacter::ProcessSniperFire()
 {

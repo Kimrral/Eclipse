@@ -19,13 +19,13 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	
+
 	UPROPERTY()
 	class AEclipseGameMode* gameMode;
 
@@ -37,13 +37,13 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	class UPawnSensingComponent* PawnSensingComponent;
-	
+
 	UFUNCTION()
 	void Move();
 
 	UFUNCTION()
 	void OnDie();
-	
+
 	UFUNCTION()
 	void OnDamaged();
 
@@ -102,10 +102,10 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AGuardianProjectile> GuardianProjectileFactory;
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int curHP;
-	
+
 	UPROPERTY(EditDefaultsOnly, Category=EnemySettings)
 	int maxHP = 1000.0f;
 
@@ -117,14 +117,14 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool isShieldBroken = false;
-	
+
 	UPROPERTY(EditAnywhere, Category=EnemySettings)
 	UAnimMontage* damageMontage;
-	
+
 	UPROPERTY(EditAnywhere, Category=EnemySettings)
 	UAnimMontage* stunMontage;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category=EnemySettings)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=EnemySettings)
 	class UMaterialInterface* overlayMatRed;
 
 	UPROPERTY()
@@ -153,5 +153,4 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bPlayerInSight = false;
-
 };

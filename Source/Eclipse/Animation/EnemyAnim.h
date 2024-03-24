@@ -18,7 +18,7 @@ class ECLIPSE_API UEnemyAnim : public UAnimInstance
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EEnemyState state;
-	
+
 	virtual void NativeBeginPlay() override;
 
 	UFUNCTION()
@@ -31,11 +31,11 @@ public:
 	virtual void AnimNotify_DamageEnd();
 
 	UFUNCTION()
-	virtual void AnimNotify_DieEnd();	
+	virtual void AnimNotify_DieEnd();
 
 	UFUNCTION()
 	bool IsAttackAnimationPlaying();
-	
+
 	// Casting 변수를 전역변수로 선언한다.
 	UPROPERTY()
 	class AEnemy* me;

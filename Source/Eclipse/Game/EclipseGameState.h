@@ -17,5 +17,4 @@ class ECLIPSE_API AEclipseGameState : public AGameStateBase
 public:
 	virtual void HandleBeginPlay() override;
 	virtual void OnRep_ReplicatedHasBegunPlay() override;
-	
 };

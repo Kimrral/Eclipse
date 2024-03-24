@@ -16,7 +16,7 @@ class ECLIPSE_API UEclipseGameInstance : public UGameInstance
 
 public:
 	UEclipseGameInstance();
-	
+
 	UPROPERTY()
 	int ConsoleCount;
 
@@ -52,5 +52,4 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool IsWidgetOn = false;
-	
 };

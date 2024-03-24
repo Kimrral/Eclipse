@@ -5,7 +5,6 @@
 
 #include "Eclipse/Enemy/Enemy.h"
 #include "Eclipse/Animation/EnemyAnim.h"
-#include "Eclipse/UI/EnemyHPWidget.h"
 #include "Eclipse/Character/PlayerCharacter.h"
 #include "Components/ProgressBar.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -35,7 +34,7 @@ void UEnemyFSM::BeginPlay()
 	originPosition = me->GetActorLocation();
 
 	// Set MoveSpeed
-	me->GetCharacterMovement()->MaxWalkSpeed=maxWalkSpeed;
+	me->GetCharacterMovement()->MaxWalkSpeed = maxWalkSpeed;
 
 	// Timeline Binding
 	if (CurveFloat)
@@ -44,7 +43,6 @@ void UEnemyFSM::BeginPlay()
 		TimelineProgress.BindDynamic(this, &UEnemyFSM::SetRotToPlayer);
 		Timeline.AddInterpFloat(CurveFloat, TimelineProgress);
 	}
-	
 }
 
 // Called every frame
@@ -72,7 +70,7 @@ void UEnemyFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
 	case EEnemyState::DIE:
 		TickDie();
 		break;
-	}	
+	}
 }
 
 void UEnemyFSM::TickIdle()
@@ -81,9 +79,9 @@ void UEnemyFSM::TickIdle()
 	player = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
 	// 플레이어와 적 간의 거리값 도출
 	auto distToPlayer = player->GetDistanceTo(me);
-	if(player)
+	if (player)
 	{
-		if(distToPlayer<=aggressiveRange&&me->bPlayerInSight)
+		if (distToPlayer <= aggressiveRange && me->bPlayerInSight)
 		{
 			// 탐색 범위 내에 플레이어가 있다면, 이동 상태로 전이
 			SetState(EEnemyState::MOVE);
@@ -99,16 +97,16 @@ void UEnemyFSM::TickMove()
 	Timeline.PlayFromStart();
 	// 구한 값을 기준으로 이동 인풋
 	me->AddMovementInput(dir.GetSafeNormal());
-	if(player)
+	if (player)
 	{
 		float dist = player->GetDistanceTo(me);
-		if(dist<=attackRange&&me->bPlayerInSight)
+		if (dist <= attackRange && me->bPlayerInSight)
 		{
 			// 플레이어가 공격 범위 내에 위치한다면, 공격 상태로 전이
 			SetState(EEnemyState::ATTACK);
 		}
 
-		if(player->bPlayerDeath)
+		if (player->bPlayerDeath)
 		{
 			// 이동상태로 전이한다
 			SetState(EEnemyState::IDLE);
@@ -122,21 +120,21 @@ void UEnemyFSM::TickMove()
 
 void UEnemyFSM::TickAttack()
 {
-	if(player)
+	if (player)
 	{
-		if(me->enemyAnim->IsAttackAnimationPlaying()==false)
+		if (me->enemyAnim->IsAttackAnimationPlaying() == false)
 		{
 			// 플레이어와의 거리 도출
 			float dist = player->GetDistanceTo(me);
 			// 공격거리보다 멀어졌다면
-			if(dist>attackRange||!me->bPlayerInSight)
+			if (dist > attackRange || !me->bPlayerInSight)
 			{
 				// 이동상태로 전이한다
 				SetState(EEnemyState::MOVE);
 			}
 		}
 
-		if(player->bPlayerDeath)
+		if (player->bPlayerDeath)
 		{
 			SetState(EEnemyState::IDLE);
 		}
@@ -158,9 +156,9 @@ void UEnemyFSM::TickDie()
 	// 실행되고 있는 Timeline 종료
 	Timeline.Stop();
 	// Die 함수 1회 호출을 위한 불리언
-	if(bTickDie==false)
+	if (bTickDie == false)
 	{
-		bTickDie=true;
+		bTickDie = true;
 		me->OnDie();
 	}
 }
@@ -168,9 +166,9 @@ void UEnemyFSM::TickDie()
 void UEnemyFSM::OnDamageProcess(int damageValue)
 {
 	// 매개변수 damageValue의 값만큼 현재 HP에서 차감한다.
-	me->curHP=FMath::Clamp(me->curHP-=damageValue*StunDamageMultiplier(), 0, me->maxHP);
+	me->curHP = FMath::Clamp(me->curHP -= damageValue * StunDamageMultiplier(), 0, me->maxHP);
 	// 현재 HP가 0 이하라면
-	if(me->curHP<=0)
+	if (me->curHP <= 0)
 	{
 		// Die 상태로 전이한다.
 		SetState(EEnemyState::DIE);
@@ -179,7 +177,7 @@ void UEnemyFSM::OnDamageProcess(int damageValue)
 	// 현재 HP가 1 이상이라면
 	else
 	{
-		if(me->enemyAnim->IsAttackAnimationPlaying()==false)
+		if (me->enemyAnim->IsAttackAnimationPlaying() == false)
 		{
 			// Move 상태로 전이한다.
 			SetState(EEnemyState::MOVE);
@@ -191,12 +189,12 @@ void UEnemyFSM::OnDamageProcess(int damageValue)
 void UEnemyFSM::OnShieldDamageProcess(int damageValue)
 {
 	// 매개변수 damageValue의 값만큼 현재 Shield에서 차감한다.
-	me->curShield=FMath::Clamp(me->curShield-=(damageValue/20), 0, me->maxShield);
+	me->curShield = FMath::Clamp(me->curShield -= (damageValue / 20), 0, me->maxShield);
 	// 현재 실드가 0 이하라면
-	if(me->curShield<=0&&me->isShieldBroken==false)
+	if (me->curShield <= 0 && me->isShieldBroken == false)
 	{
-		me->isShieldBroken=true;
-		me->isStunned=true;
+		me->isShieldBroken = true;
+		me->isStunned = true;
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ShieldBreakSound, me->GetActorLocation(), FRotator::ZeroRotator);
 		auto EmitterTrans = me->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
 		EmitterTrans.SetScale3D(FVector(4));
@@ -206,16 +204,16 @@ void UEnemyFSM::OnShieldDamageProcess(int damageValue)
 		// Movement Mode = None [움직임 차단]
 		me->GetCharacterMovement()->SetMovementMode(MOVE_None);
 		me->StopAnimMontage();
-		me->PlayAnimMontage(me->stunMontage, 1, FName("StunStart"));		
-		GetWorld()->GetTimerManager().SetTimer(stunHandle, FTimerDelegate::CreateLambda([this]()->void
+		me->PlayAnimMontage(me->stunMontage, 1, FName("StunStart"));
+		GetWorld()->GetTimerManager().SetTimer(stunHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
-			me->isStunned=false;
+			me->isStunned = false;
 			me->StopAnimMontage();
 			// Movement Mode = Walking [움직임 재개]
 			me->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 			// Shield 회복
-			me->curShield=me->maxShield;
-			me->isShieldBroken=false;
+			me->curShield = me->maxShield;
+			me->isShieldBroken = false;
 			player->bossHPUI->shieldProgressBar->SetPercent(1);
 			SetState(EEnemyState::MOVE);
 		}), 7.0f, false);
@@ -223,7 +221,7 @@ void UEnemyFSM::OnShieldDamageProcess(int damageValue)
 	// 현재 실드가 1 이상이라면
 	else
 	{
-		if(me->enemyAnim->IsAttackAnimationPlaying()==false)
+		if (me->enemyAnim->IsAttackAnimationPlaying() == false)
 		{
 			// Move 상태로 전이한다.
 			SetState(EEnemyState::MOVE);
@@ -234,13 +232,13 @@ void UEnemyFSM::OnShieldDamageProcess(int damageValue)
 
 void UEnemyFSM::SetState(EEnemyState next) // 상태 전이함수
 {
-	state=next;
-	me->enemyAnim->state=next;
+	state = next;
+	me->enemyAnim->state = next;
 }
 
 void UEnemyFSM::SetRotToPlayer(float Value)
 {
-	if(player)
+	if (player)
 	{
 		// 플레이어를 바라보는 벡터값 산출
 		FVector dir = player->GetActorLocation() - me->GetActorLocation();
@@ -257,7 +255,7 @@ void UEnemyFSM::SetRotToPlayer(float Value)
 
 int32 UEnemyFSM::StunDamageMultiplier()
 {
-	if(me->isStunned)
+	if (me->isStunned)
 	{
 		return 2;
 	}

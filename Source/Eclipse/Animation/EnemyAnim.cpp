@@ -11,29 +11,29 @@ void UEnemyAnim::NativeBeginPlay()
 {
 	Super::NativeBeginPlay();
 
-	me =  Cast<AEnemy>(TryGetPawnOwner());
+	me = Cast<AEnemy>(TryGetPawnOwner());
 }
 
 
 void UEnemyAnim::AnimNotify_AttackStart()
 {
-	bIsAttackingAnim=true;
+	bIsAttackingAnim = true;
 	UEnemyFSM* fsm = Cast<UEnemyFSM>(me->GetDefaultSubobjectByName(FName("enemyFSM")));
-	if(fsm)
+	if (fsm)
 	{
 		me->enemyFSM->Timeline.PlayFromStart();
-		bIsAttackingAnim=true;
+		bIsAttackingAnim = true;
 	}
 }
 
 void UEnemyAnim::AnimNotify_AttackEnd()
 {
-	bIsAttackingAnim=false;
+	bIsAttackingAnim = false;
 	UEnemyFSM* fsm = Cast<UEnemyFSM>(me->GetDefaultSubobjectByName(FName("enemyFSM")));
-	if(fsm)
+	if (fsm)
 	{
 		me->enemyFSM->Timeline.Stop();
-		bIsAttackingAnim=false;
+		bIsAttackingAnim = false;
 	}
 }
 
@@ -41,9 +41,9 @@ void UEnemyAnim::AnimNotify_DamageEnd()
 {
 	me->GetCharacterMovement()->Activate();
 	UEnemyFSM* fsm = Cast<UEnemyFSM>(me->GetDefaultSubobjectByName(FName("enemyFSM")));
-	if(fsm)
+	if (fsm)
 	{
-		me->enemyFSM->state=EEnemyState::MOVE;
+		me->enemyFSM->state = EEnemyState::MOVE;
 	}
 }
 
@@ -55,10 +55,9 @@ void UEnemyAnim::AnimNotify_DieEnd()
 
 bool UEnemyAnim::IsAttackAnimationPlaying()
 {
-	if(bIsAttackingAnim)
+	if (bIsAttackingAnim)
 	{
 		return true;
 	}
 	return false;
 }
-

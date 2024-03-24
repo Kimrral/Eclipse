@@ -13,6 +13,7 @@
 #include "PlayerCharacter.generated.h"
 
 DECLARE_DYNAMIC_DELEGATE(FRewardContainerDestruct);
+
 //DECLARE_MULTICAST_DELEGATE_TwoParams(FPlayerHit, FHitResult, APlayerCharacter*)
 //DECLARE_MULTICAST_DELEGATE_TwoParams(FEnemyHit, FHitResult, AEnemy*)
 //DECLARE_MULTICAST_DELEGATE_OneParam(FGroundHit, FHitResult)
@@ -38,8 +39,8 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	
-public:	
+
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -92,10 +93,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAroundAction;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* ZoomInAction;
-		
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* ZoomOutAction;
 
@@ -104,7 +105,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* SecondWeaponSwapAction;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* TabAction;
 
@@ -113,7 +114,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FRewardContainerDestruct containerDele;
-	
+
 	//FPlayerHit PlayerHitDele;
 	//FEnemyHit EnemyHitDele;
 	//FGroundHit GroundHitDele;
@@ -135,7 +136,7 @@ public:
 
 	UFUNCTION(Unreliable, NetMulticast)
 	void ZoomRPCMulticast();
-	
+
 	UFUNCTION(Reliable, Server, WithValidation)
 	void ZoomRPCReleaseServer();
 
@@ -143,7 +144,7 @@ public:
 	void ZoomRPCReleaseMulticast();
 
 	//=======================================//
-	
+
 	/** Called for fire input */
 	void Fire();
 
@@ -151,8 +152,8 @@ public:
 	void ServerRPCFire();
 
 	UFUNCTION(NetMulticast, UnReliable)
-	void MulticastRPCFire();	
-	
+	void MulticastRPCFire();
+
 	void FireRelease();
 
 	void ProcessRifleFire();
@@ -162,19 +163,19 @@ public:
 	void ProcessSniperFire();
 	void ProcessPistolFire();
 	void ProcessM249Fire();
-	
+
 	//=======================================//
-	
+
 	/** Called for running input */
 	void Run();
 	void RunRelease();
-	
+
 	UFUNCTION(Reliable, Server, WithValidation)
 	void RunRPCServer();
 
 	UFUNCTION(Unreliable, NetMulticast)
 	void RunRPCMulticast();
-	
+
 	UFUNCTION(Reliable, Server, WithValidation)
 	void RunRPCReleaseServer();
 
@@ -182,7 +183,7 @@ public:
 	void RunRPCReleaseMulticast();
 
 	//=======================================//
-	
+
 	/** Called for zooming input */
 	void Crouching();
 
@@ -221,7 +222,7 @@ public:
 
 	UFUNCTION(Unreliable, NetMulticast)
 	void SwapFirstWeaponRPCMulticast();
-	
+
 	void SwapSecondWeapon();
 
 	UFUNCTION(Reliable, Server, WithValidation)
@@ -231,7 +232,7 @@ public:
 	void SwapSecondWeaponRPCMulticast();
 
 	//=======================================//
-	
+
 	UFUNCTION()
 	void PlayerDeath();
 
@@ -240,9 +241,9 @@ public:
 
 	UFUNCTION(Unreliable, NetMulticast)
 	void PlayerDeathRPCMulticast();
-	
+
 	//=======================================//
-	
+
 	UFUNCTION()
 	void Damaged(int damage, AActor* DamageCauser);
 
@@ -250,10 +251,10 @@ public:
 	void DamagedRPCServer(int damage);
 
 	UFUNCTION(Unreliable, NetMulticast)
-	void DamagedRPCMulticast(int damage);	
+	void DamagedRPCMulticast(int damage);
 
 	//=======================================//
-	
+
 	UFUNCTION()
 	void OnPlayerHit(const FHitResult& HitResult, APlayerCharacter* HitCharacter);
 
@@ -261,10 +262,10 @@ public:
 	void OnPlayerHitRPCServer(const FHitResult& HitResult, APlayerCharacter* HitCharacter);
 
 	UFUNCTION(Unreliable, NetMulticast)
-	void OnPlayerHitRPCMulticast(const FHitResult& HitResult, APlayerCharacter* HitCharacter);	
+	void OnPlayerHitRPCMulticast(const FHitResult& HitResult, APlayerCharacter* HitCharacter);
 
 	//=======================================//
-		
+
 	UFUNCTION()
 	void OnPlayerKill();
 
@@ -272,7 +273,7 @@ public:
 	void OnPlayerKillRPCServer();
 
 	UFUNCTION(Unreliable, NetMulticast)
-	void OnPlayerKillRPCMulticast();	
+	void OnPlayerKillRPCMulticast();
 
 	//=======================================//
 
@@ -286,7 +287,7 @@ public:
 	void OnEnemyHitRPCMulticast(const FHitResult& HitResult, AEnemy* HitEnemy);
 
 	//=======================================//
-	
+
 	UFUNCTION()
 	void OnGroundHit(const FHitResult& HitResult);
 
@@ -294,7 +295,7 @@ public:
 	void OnGroundHitRPCServer(const FHitResult& HitResult);
 
 	UFUNCTION(Unreliable, NetMulticast)
-	void OnGroundHitRPCMulticast(const FHitResult& HitResult);	
+	void OnGroundHitRPCMulticast(const FHitResult& HitResult);
 
 	//=======================================//
 
@@ -307,13 +308,13 @@ public:
 
 	UFUNCTION()
 	void SetBossHPWidget(AEnemy* enemy);
-	
+
 	UFUNCTION()
 	void SetDamageWidget(int damage, FVector spawnLoc, bool isShieldIconEnable, FLinearColor DamageTextColor);
 
 	UFUNCTION()
 	void RemoveBossHPWidget();
-	
+
 	UFUNCTION()
 	void InfoWidgetUpdate();
 
@@ -324,8 +325,8 @@ public:
 	float FireRateMultiplier();
 
 	UFUNCTION()
-	float RecoilRateMultiplier();	
-	
+	float RecoilRateMultiplier();
+
 	UFUNCTION(BlueprintImplementableEvent)
 	void ClearInventoryCache();
 
@@ -373,8 +374,8 @@ public:
 
 	UFUNCTION()
 	void MoveToIsolatedShip();
-	
-	UFUNCTION()  // Bind function
+
+	UFUNCTION() // Bind function
 	void SetZoomValue(float Value);
 
 	UFUNCTION()
@@ -412,7 +413,7 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void ApplyMagCache();
-	
+
 	UFUNCTION(BlueprintImplementableEvent)
 	void UpdateTabWidget();
 
@@ -452,8 +453,8 @@ public:
 	UFUNCTION()
 	void AmmoDepleted();
 
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;	
-	
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
@@ -461,7 +462,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
 	class UStaticMeshComponent* sniperComp;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
 	class UStaticMeshComponent* rifleComp;
 
@@ -470,7 +471,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
 	class UStaticMeshComponent* m249Comp;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
 	class UStaticMeshComponent* grenade;
 
@@ -527,10 +528,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
 	TSubclassOf<class ULevelSelection> levelSelectionWidgetFactory;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = widget)
 	class ULevelSelection* levelSelectionUI;
-	
+
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* ShieldHitEmitter;
 
@@ -542,7 +543,7 @@ public:
 
 	UPROPERTY()
 	class APlayerCharacter* PlayerCharacter;
-	
+
 	UPROPERTY()
 	class AMaskActor* MaskActor;
 
@@ -581,7 +582,7 @@ public:
 
 	UPROPERTY()
 	class APistolActor* OverlappedPistolActor;
-		
+
 	UPROPERTY()
 	class UPlayerAnim* animInstance;
 
@@ -593,25 +594,25 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
 	class UAnimMontage* RifleFireMontage;
-	
+
 	UPROPERTY(EditAnywhere)
 	class USphereComponent* weaponDetectionCollision;
 
-	UPROPERTY(EditAnywhere)		
+	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UUserWidget> crosshairFactory;
 
-	UPROPERTY(EditAnywhere)		
+	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UUserWidget> sniperScopeFactory;
 
-	UPROPERTY(EditAnywhere)		
+	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UWeaponInfoWidget> infoWidgetFactory;
 
-	UPROPERTY(EditAnywhere)		
+	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UInformationWidget> informationWidgetFactory;
 
 	UPROPERTY(BlueprintReadOnly)
 	class UInformationWidget* informationUI;
-	
+
 	UPROPERTY(BlueprintReadOnly)
 	class UWeaponInfoWidget* infoWidgetUI;
 
@@ -638,10 +639,10 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	FVector ContainerLoc;
-	
+
 	UPROPERTY(BlueprintReadOnly)
 	class UUserWidget* sniperScopeUI;
-	
+
 	UPROPERTY()
 	class AActor* hitActors;
 
@@ -650,13 +651,13 @@ public:
 
 	UPROPERTY()
 	FVector DeathPosition;
-	
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	int curWeaponSlotNumber = 1;
-	
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bUsingRifle;
-	
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bUsingSniper;
 
@@ -664,11 +665,11 @@ public:
 	bool bUsingPistol;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	bool bUsingM249;	
+	bool bUsingM249;
 
 	UPROPERTY()
 	bool isSniperZoomed = false;
-	
+
 	UPROPERTY(Replicated)
 	int curRifleAmmo = 40;
 
@@ -722,7 +723,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool isM249Zooming = false;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool isCursorOnRifle;
 
@@ -739,8 +740,8 @@ public:
 	bool IsHideOut = true;
 
 	UPROPERTY()
-	bool TickOverlapBoolean=false;
-	
+	bool TickOverlapBoolean = false;
+
 	UPROPERTY()
 	bool isRifleShootable;
 
@@ -748,7 +749,7 @@ public:
 	FHitResult rifleHitResult;
 
 	UPROPERTY(ReplicatedUsing=OnRep_CanShoot)
-	bool CanShoot = true;	
+	bool CanShoot = true;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float BulletsPerSecRifle = 11.0f;
@@ -774,12 +775,12 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* KillSound;
-	
+
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* RifleFireSound;
 
 	UPROPERTY(EditAnywhere, Category="Sounds")
-	class USoundBase* SniperFireSound;	
+	class USoundBase* SniperFireSound;
 
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* PistolFireSound;
@@ -801,10 +802,10 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* SwapSound;
-	
+
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* zoomSound;
-	
+
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* gearEquipSound;
 
@@ -834,7 +835,7 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* tabSound;
-	
+
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* PortalSound;
 
@@ -843,7 +844,7 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* levelSelectionSound;
-	
+
 	UPROPERTY()
 	FTimerHandle shootEnableHandle;
 
@@ -886,14 +887,13 @@ public:
 	class UParticleSystem* SniperFireParticle;
 	UPROPERTY(EditAnywhere, Category="Niagara")
 	class UParticleSystem* BloodParticle;
-	
-	
-	
-	UPROPERTY(EditAnywhere)  // Timeline 생성
-	FTimeline Timeline;					
 
-	UPROPERTY(EditAnywhere)  // Timeline 커브
-	UCurveFloat* CurveFloat;  
+
+	UPROPERTY(EditAnywhere) // Timeline 생성
+	FTimeline Timeline;
+
+	UPROPERTY(EditAnywhere) // Timeline 커브
+	UCurveFloat* CurveFloat;
 
 	UPROPERTY()
 	class AEclipseGameMode* gm;
@@ -905,7 +905,6 @@ public:
 	FTimerHandle SniperZoomHandle;
 	UPROPERTY()
 	FTimerHandle SniperZoomOutHandle;
-
 
 
 	UPROPERTY()
@@ -928,7 +927,7 @@ public:
 
 	//UFUNCTION()
 	//void OnRep_IsPlayerDead();
-	
+
 	UPROPERTY()
 	int randRifleDamage;
 	UPROPERTY()
@@ -958,7 +957,7 @@ public:
 
 	UPROPERTY()
 	class AEclipsePlayerController* PC;
-	
+
 	UPROPERTY()
 	class AHackingConsole* HackingConsole;
 
@@ -973,7 +972,7 @@ public:
 
 	UPROPERTY()
 	class AStash* Stash;
-	
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	class ARifleMagActor* RifleMagActor;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
@@ -985,7 +984,7 @@ public:
 
 	UPROPERTY()
 	float CharacterWalkSpeed = 360.f;
-	
+
 	UPROPERTY()
 	int ConsoleCount;
 
@@ -1009,8 +1008,4 @@ public:
 
 	UPROPERTY()
 	bool SniperZoomOutBool;
-	
-	
-	
-	
 };

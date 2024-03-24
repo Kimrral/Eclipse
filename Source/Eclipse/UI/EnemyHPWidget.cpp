@@ -17,6 +17,4 @@ void UEnemyHPWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	HPdynamicMat = HPBar->GetDynamicMaterial();
-
-	
 }

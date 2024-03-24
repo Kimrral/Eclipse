@@ -9,15 +9,15 @@
 // Sets default values
 AGuardianProjectile::AGuardianProjectile()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	PrimaryActorTick.bStartWithTickEnabled=false;
+	PrimaryActorTick.bStartWithTickEnabled = false;
 
-	rocketMesh=CreateDefaultSubobject<UStaticMeshComponent>(TEXT("rocketMesh"));
+	rocketMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("rocketMesh"));
 	SetRootComponent(rocketMesh);
 	rocketMesh->SetGenerateOverlapEvents(true);
 
-	bReplicates=true;
+	bReplicates = true;
 	SetReplicatingMovement(true);
 }
 
@@ -29,7 +29,6 @@ void AGuardianProjectile::BeginPlay()
 
 	rocketMesh->OnComponentBeginOverlap.AddDynamic(this, &AGuardianProjectile::OnOverlap);
 	this->SetLifeSpan(5.0f);
-	
 }
 
 void AGuardianProjectile::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -44,21 +43,20 @@ void AGuardianProjectile::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void AGuardianProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 void AGuardianProjectile::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if(OtherActor)
+	if (OtherActor)
 	{
-		auto player=Cast<APlayerCharacter>(OtherActor);
-		if(player)
-		{			
+		auto player = Cast<APlayerCharacter>(OtherActor);
+		if (player)
+		{
 			player->Damaged(guardianDamageValue, this);
 			Explosion();
 		}
 	}
-	if(OtherComp)
+	if (OtherComp)
 	{
 		Explosion();
 		// 오버랩 멀티 중심점
@@ -79,14 +77,14 @@ void AGuardianProjectile::OnOverlap(UPrimitiveComponent* OverlappedComponent, AA
 		}
 		for (int i = 0; i < HitObj.Num(); ++i)
 		{
-			auto player=Cast<APlayerCharacter>(OtherActor);
-			if(player)
+			auto player = Cast<APlayerCharacter>(OtherActor);
+			if (player)
 			{
 				int dist = FMath::RoundHalfFromZero(GetDistanceTo(player));
 				// 폭발 중심점부터의 거리에 따른 데미지 프로세스
-				player->Damaged(FMath::Clamp(guardianDamageValue-(dist*2), 0, 30), this);
+				player->Damaged(FMath::Clamp(guardianDamageValue - (dist * 2), 0, 30), this);
 			}
-		}		
+		}
 	}
 }
 

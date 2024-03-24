@@ -173,9 +173,9 @@ void APlayerCharacter::BeginPlay()
 	}
 
 	// Hit Delegate
-	PlayerHitDele.AddUObject(this, &APlayerCharacter::OnPlayerHit);
-	EnemyHitDele.AddUObject(this, &APlayerCharacter::OnEnemyHit);
-	GroundHitDele.AddUObject(this, &APlayerCharacter::OnGroundHit);
+	//PlayerHitDele.AddUObject(this, &APlayerCharacter::OnPlayerHit);
+	//EnemyHitDele.AddUObject(this, &APlayerCharacter::OnEnemyHit);
+	//GroundHitDele.AddUObject(this, &APlayerCharacter::OnGroundHit);
 	
 	// Widget Settings
 	crosshairUI = CreateWidget<UCrosshairWidget>(GetWorld(), crosshairFactory);
@@ -950,7 +950,7 @@ void APlayerCharacter::SwapSecondWeaponRPCMulticast_Implementation()
 }
 
 
-void APlayerCharacter::OnPlayerHit(FHitResult HitResult, APlayerCharacter* HitCharacter)
+void APlayerCharacter::OnPlayerHit(const FHitResult& HitResult, APlayerCharacter* HitCharacter)
 {
 	if(HitCharacter->Stat->GetCurrentHp()>0)
 	{
@@ -982,17 +982,17 @@ void APlayerCharacter::OnPlayerKillRPCMulticast_Implementation()
 	}	
 }
 
-void APlayerCharacter::OnPlayerHitRPCServer_Implementation(FHitResult HitResult, APlayerCharacter* HitCharacter)
+void APlayerCharacter::OnPlayerHitRPCServer_Implementation(const FHitResult& HitResult, APlayerCharacter* HitCharacter)
 {
 	OnPlayerHitRPCMulticast(HitResult, HitCharacter);
 }
 
-bool APlayerCharacter::OnPlayerHitRPCServer_Validate(FHitResult HitResult, APlayerCharacter* HitCharacter)
+bool APlayerCharacter::OnPlayerHitRPCServer_Validate(const FHitResult& HitResult, APlayerCharacter* HitCharacter)
 {
 	return true;
 }
 
-void APlayerCharacter::OnPlayerHitRPCMulticast_Implementation(FHitResult HitResult, APlayerCharacter* HitCharacter)
+void APlayerCharacter::OnPlayerHitRPCMulticast_Implementation(const FHitResult& HitResult, APlayerCharacter* HitCharacter)
 {
 	if(HasAuthority())
 	{
@@ -1019,42 +1019,42 @@ void APlayerCharacter::OnPlayerHitRPCMulticast_Implementation(FHitResult HitResu
 	}	
 }
 
-void APlayerCharacter::OnEnemyHit(FHitResult HitResult, AEnemy* HitEnemy)
+void APlayerCharacter::OnEnemyHit(const FHitResult& HitResult, AEnemy* HitEnemy)
 {
 	OnEnemyHitRPCServer(HitResult, HitEnemy);
 }
 
 
-void APlayerCharacter::OnEnemyHitRPCServer_Implementation(FHitResult HitResult, AEnemy* HitEnemy)
+void APlayerCharacter::OnEnemyHitRPCServer_Implementation(const FHitResult& HitResult, AEnemy* HitEnemy)
 {
 	OnEnemyHitRPCMulticast(HitResult, HitEnemy);
 }
 
-bool APlayerCharacter::OnEnemyHitRPCServer_Validate(FHitResult HitResult, AEnemy* HitEnemy)
+bool APlayerCharacter::OnEnemyHitRPCServer_Validate(const FHitResult& HitResult, AEnemy* HitEnemy)
 {
 	return true;
 }
 
-void APlayerCharacter::OnEnemyHitRPCMulticast_Implementation(FHitResult HitResult, AEnemy* HitEnemy)
+void APlayerCharacter::OnEnemyHitRPCMulticast_Implementation(const FHitResult& HitResult, AEnemy* HitEnemy)
 {
 }
 
-void APlayerCharacter::OnGroundHit(const FHitResult HitResult)
+void APlayerCharacter::OnGroundHit(const FHitResult& HitResult)
 {
 	OnGroundHitRPCServer(HitResult);
 }
 
-void APlayerCharacter::OnGroundHitRPCServer_Implementation(const FHitResult HitResult)
+void APlayerCharacter::OnGroundHitRPCServer_Implementation(const FHitResult& HitResult)
 {
 	OnGroundHitRPCMulticast(HitResult);
 }
 
-bool APlayerCharacter::OnGroundHitRPCServer_Validate(const FHitResult HitResult)
+bool APlayerCharacter::OnGroundHitRPCServer_Validate(const FHitResult& HitResult)
 {
 	return true;
 }
 
-void APlayerCharacter::OnGroundHitRPCMulticast_Implementation(const FHitResult HitResult)
+void APlayerCharacter::OnGroundHitRPCMulticast_Implementation(const FHitResult& HitResult)
 {	
 	if(IsLocallyControlled())
 	{
@@ -1081,7 +1081,7 @@ void APlayerCharacter::Tab()
 
 void APlayerCharacter::Q()
 {
-	ProcessRifleFireAnim();
+	//ProcessRifleFireAnim();
 }
 
 
@@ -2720,7 +2720,7 @@ void APlayerCharacter::ProcessRifleFire()
 			// 플레이어 적중
 			if(player)
 			{
-				PlayerHitDele.Broadcast(rifleHitResult, player);
+				OnPlayerHit(rifleHitResult, player);
 				return;
 			}
 			// Enemy Casting
@@ -2976,7 +2976,7 @@ void APlayerCharacter::ProcessRifleFire()
 			// 지형지물에 적중
 			else
 			{
-				GroundHitDele.Broadcast(rifleHitResult);
+				OnGroundHit(rifleHitResult);
 			}								
 		}
 		// 허공에 사격

@@ -12,9 +12,9 @@
 #include "PlayerCharacter.generated.h"
 
 DECLARE_DYNAMIC_DELEGATE(FRewardContainerDestruct);
-DECLARE_MULTICAST_DELEGATE_TwoParams(FPlayerHit, FHitResult, APlayerCharacter*)
-DECLARE_MULTICAST_DELEGATE_TwoParams(FEnemyHit, FHitResult, AEnemy*)
-DECLARE_MULTICAST_DELEGATE_OneParam(FGroundHit, FHitResult)
+//DECLARE_MULTICAST_DELEGATE_TwoParams(FPlayerHit, FHitResult, APlayerCharacter*)
+//DECLARE_MULTICAST_DELEGATE_TwoParams(FEnemyHit, FHitResult, AEnemy*)
+//DECLARE_MULTICAST_DELEGATE_OneParam(FGroundHit, FHitResult)
 
 UCLASS()
 class ECLIPSE_API APlayerCharacter : public ACharacter
@@ -115,9 +115,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FRewardContainerDestruct containerDele;
 	
-	FPlayerHit PlayerHitDele;
-	FEnemyHit EnemyHitDele;
-	FGroundHit GroundHitDele;
+	//FPlayerHit PlayerHitDele;
+	//FEnemyHit EnemyHitDele;
+	//FGroundHit GroundHitDele;
 
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
@@ -256,13 +256,13 @@ public:
 	//=======================================//
 	
 	UFUNCTION()
-	void OnPlayerHit(FHitResult HitResult, APlayerCharacter* HitCharacter);
+	void OnPlayerHit(const FHitResult& HitResult, APlayerCharacter* HitCharacter);
 
 	UFUNCTION(Reliable, Server, WithValidation)
-	void OnPlayerHitRPCServer(FHitResult HitResult, APlayerCharacter* HitCharacter);
+	void OnPlayerHitRPCServer(const FHitResult& HitResult, APlayerCharacter* HitCharacter);
 
 	UFUNCTION(Unreliable, NetMulticast)
-	void OnPlayerHitRPCMulticast(FHitResult HitResult, APlayerCharacter* HitCharacter);	
+	void OnPlayerHitRPCMulticast(const FHitResult& HitResult, APlayerCharacter* HitCharacter);	
 
 	//=======================================//
 		
@@ -278,24 +278,24 @@ public:
 	//=======================================//
 
 	UFUNCTION()
-	void OnEnemyHit(FHitResult HitResult, AEnemy* HitEnemy);
+	void OnEnemyHit(const FHitResult& HitResult, AEnemy* HitEnemy);
 
 	UFUNCTION(Reliable, Server, WithValidation)
-	void OnEnemyHitRPCServer(FHitResult HitResult, AEnemy* HitEnemy);
+	void OnEnemyHitRPCServer(const FHitResult& HitResult, AEnemy* HitEnemy);
 
 	UFUNCTION(Unreliable, NetMulticast)
-	void OnEnemyHitRPCMulticast(FHitResult HitResult, AEnemy* HitEnemy);
+	void OnEnemyHitRPCMulticast(const FHitResult& HitResult, AEnemy* HitEnemy);
 
 	//=======================================//
 	
 	UFUNCTION()
-	void OnGroundHit(const FHitResult HitResult);
+	void OnGroundHit(const FHitResult& HitResult);
 
 	UFUNCTION(Reliable, Server, WithValidation)
-	void OnGroundHitRPCServer(const FHitResult HitResult);
+	void OnGroundHitRPCServer(const FHitResult& HitResult);
 
 	UFUNCTION(Unreliable, NetMulticast)
-	void OnGroundHitRPCMulticast(const FHitResult HitResult);	
+	void OnGroundHitRPCMulticast(const FHitResult& HitResult);	
 
 	//=======================================//
 

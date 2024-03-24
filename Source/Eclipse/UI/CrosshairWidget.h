@@ -38,4 +38,7 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Transient, meta = (BindWidgetAnim))
 	class UWidgetAnimation* ReloadAnimation;
+
+	UPROPERTY(BlueprintReadWrite, Transient, meta = (BindWidgetAnim))
+	class UWidgetAnimation* DamagedAnimation;
 };

@@ -175,6 +175,7 @@ void APlayerCharacter::BeginPlay()
 	// Hit Delegate
 	PlayerHitDele.AddUObject(this, &APlayerCharacter::OnPlayerHit);
 	EnemyHitDele.AddUObject(this, &APlayerCharacter::OnEnemyHit);
+	GroundHitDele.AddUObject(this, &APlayerCharacter::OnGroundHit);
 	
 	// Widget Settings
 	crosshairUI = CreateWidget<UCrosshairWidget>(GetWorld(), crosshairFactory);
@@ -945,9 +946,7 @@ void APlayerCharacter::SwapSecondWeaponRPCMulticast_Implementation()
 			informationUI->PlayAnimation(informationUI->WeaponSwap);
 		}
 		informationUI->UpdateAmmo_Secondary();
-
 	}
-
 }
 
 
@@ -1025,6 +1024,7 @@ void APlayerCharacter::OnEnemyHit(FHitResult HitResult, AEnemy* HitEnemy)
 	OnEnemyHitRPCServer(HitResult, HitEnemy);
 }
 
+
 void APlayerCharacter::OnEnemyHitRPCServer_Implementation(FHitResult HitResult, AEnemy* HitEnemy)
 {
 	OnEnemyHitRPCMulticast(HitResult, HitEnemy);
@@ -1037,6 +1037,41 @@ bool APlayerCharacter::OnEnemyHitRPCServer_Validate(FHitResult HitResult, AEnemy
 
 void APlayerCharacter::OnEnemyHitRPCMulticast_Implementation(FHitResult HitResult, AEnemy* HitEnemy)
 {
+}
+
+void APlayerCharacter::OnGroundHit(const FHitResult HitResult)
+{
+	OnGroundHitRPCServer(HitResult);
+}
+
+void APlayerCharacter::OnGroundHitRPCServer_Implementation(const FHitResult HitResult)
+{
+	OnGroundHitRPCMulticast(HitResult);
+}
+
+bool APlayerCharacter::OnGroundHitRPCServer_Validate(const FHitResult HitResult)
+{
+	return true;
+}
+
+void APlayerCharacter::OnGroundHitRPCMulticast_Implementation(const FHitResult HitResult)
+{	
+	if(IsLocallyControlled())
+	{
+		FRotator decalRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
+		FVector_NetQuantize decalLoc = HitResult.Location;
+		FTransform decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
+		GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot+FRotator(-90, 0, 0), FVector(0.5f));
+	}
+	else
+	{
+		FRotator decalRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
+		FVector_NetQuantize decalLoc = HitResult.Location;
+		FTransform decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
+		GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot+FRotator(-90, 0, 0), FVector(0.5f));
+	}
 }
 
 void APlayerCharacter::Tab()
@@ -2680,14 +2715,18 @@ void APlayerCharacter::ProcessRifleFire()
 		bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),startLoc, EndLoc, ObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, rifleHitResult, true);
 		if(bHit)
 		{
+			// Player Character Casting
+			APlayerCharacter* player = Cast<APlayerCharacter>(rifleHitResult.GetActor());
+			// 플레이어 적중
+			if(player)
+			{
+				PlayerHitDele.Broadcast(rifleHitResult, player);
+				return;
+			}
 			// Enemy Casting
 			AEnemy* enemy=Cast<AEnemy>(rifleHitResult.GetActor());
 			// Enemy FSM Casting
-			UEnemyFSM* fsm = Cast<UEnemyFSM>(enemy->GetDefaultSubobjectByName(FName("enemyFSM")));
-			// Reward Container Casting
-			ARewardContainer* rewardContainer=Cast<ARewardContainer>(rifleHitResult.GetActor());
-			// Player Character Casting
-			APlayerCharacter* player = Cast<APlayerCharacter>(rifleHitResult.GetActor());
+			UEnemyFSM* fsm = Cast<UEnemyFSM>(enemy->GetDefaultSubobjectByName(FName("enemyFSM")));			
 			if(fsm&&enemy)
 			{
 				// Check Enemy Type
@@ -2910,8 +2949,11 @@ void APlayerCharacter::ProcessRifleFire()
 				}
 				bGuardian=false;
 				bCrunch=false;
+				return;
 			}
-			else if(rewardContainer)
+			// Reward Container Casting
+			ARewardContainer* rewardContainer=Cast<ARewardContainer>(rifleHitResult.GetActor());			
+			if(rewardContainer)
 			{
 				if(!rewardContainer->bDestroyed)
 				{
@@ -2930,32 +2972,23 @@ void APlayerCharacter::ProcessRifleFire()
 						rewardContainer->curBoxHP=FMath::Clamp(rewardContainer->curBoxHP-1, 0, 10);
 					}
 				}
-			}
-				// 플레이어 적중
-				else if(player)
-				{
-					PlayerHitDele.Broadcast(rifleHitResult, player);					
-				}
-				// 지형지물에 적중
-				else
-				{
-					FRotator decalRot = UKismetMathLibrary::Conv_VectorToRotator(rifleHitResult.ImpactNormal);
-					FVector_NetQuantize decalLoc = rifleHitResult.Location;
-					FTransform decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
-					GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot+FRotator(-90, 0, 0), FVector(0.5f));
-				}								
-			}
-			// 허공에 사격
+			}			
+			// 지형지물에 적중
 			else
 			{
-	
-			}		
+				GroundHitDele.Broadcast(rifleHitResult);
+			}								
 		}
+		// 허공에 사격
 		else
 		{
-			
-		}
+
+		}		
+	}
+	else
+	{
+		
+	}
 }
 
 

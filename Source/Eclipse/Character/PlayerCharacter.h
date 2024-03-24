@@ -14,6 +14,7 @@
 DECLARE_DYNAMIC_DELEGATE(FRewardContainerDestruct);
 DECLARE_MULTICAST_DELEGATE_TwoParams(FPlayerHit, FHitResult, APlayerCharacter*)
 DECLARE_MULTICAST_DELEGATE_TwoParams(FEnemyHit, FHitResult, AEnemy*)
+DECLARE_MULTICAST_DELEGATE_OneParam(FGroundHit, FHitResult)
 
 UCLASS()
 class ECLIPSE_API APlayerCharacter : public ACharacter
@@ -116,6 +117,7 @@ public:
 	
 	FPlayerHit PlayerHitDele;
 	FEnemyHit EnemyHitDele;
+	FGroundHit GroundHitDele;
 
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
@@ -284,7 +286,18 @@ public:
 	UFUNCTION(Unreliable, NetMulticast)
 	void OnEnemyHitRPCMulticast(FHitResult HitResult, AEnemy* HitEnemy);
 
-	//=======================================//	
+	//=======================================//
+	
+	UFUNCTION()
+	void OnGroundHit(const FHitResult HitResult);
+
+	UFUNCTION(Reliable, Server, WithValidation)
+	void OnGroundHitRPCServer(const FHitResult HitResult);
+
+	UFUNCTION(Unreliable, NetMulticast)
+	void OnGroundHitRPCMulticast(const FHitResult HitResult);	
+
+	//=======================================//
 
 	void Tab();
 

@@ -52,8 +52,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Eclipse/CharacterStat/PlayerCharacterStatComponent.h"
+#include "Eclipse/Game/EclipseGameState.h"
+#include "GameFramework/GameState.h"
 #include "GeometryCollection/GeometryCollectionComponent.h"
-#include "Engine/DamageEvents.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -1671,34 +1672,63 @@ void APlayerCharacter::ChangeWeapon()
 		return;
 	}
 	InteractionProcess();
-	//ChangeWeaponRPCServer();
 }
 
-void APlayerCharacter::ChangeWeaponRPCServer_Implementation()
+void APlayerCharacter::ArmorActorInteraction(AArmorActor* Armor)
 {
-	ChangeWeaponRPCMulticast();
+	ArmorActorInteractionRPCServer(Armor);
 }
 
-bool APlayerCharacter::ChangeWeaponRPCServer_Validate()
+void APlayerCharacter::ArmorActorInteractionRPCServer_Implementation(AArmorActor* Armor)
+{
+	ArmorActorInteractionRPCMutlicast(Armor);
+}
+
+bool APlayerCharacter::ArmorActorInteractionRPCServer_Validate(AArmorActor* Armor)
 {
 	return true;
 }
 
-void APlayerCharacter::ChangeWeaponRPCMulticast_Implementation()
+void APlayerCharacter::ArmorActorInteractionRPCMutlicast_Implementation(AArmorActor* Armor)
 {
-	InteractionProcess();
-	if (HasAuthority())
-	{
-		
-	}
 	if(IsLocallyControlled())
 	{
-	}
-	else
-	{
-		
+		UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
+		infoWidgetUI->RemoveFromParent();
+		//Armor->Destroy();
+		Armor->AddInventory();
+	}	
+	PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));	
+}
+
+
+void APlayerCharacter::DeadBodyInteraction(APlayerCharacter* DeadPlayer)
+{
+	DeadBodyInteractionRPCServer(DeadPlayer);
+}
+
+void APlayerCharacter::DeadBodyInteractionRPCServer_Implementation(APlayerCharacter* DeadPlayer)
+{
+	DeadBodyInteractionRPCMutlicast(DeadPlayer);
+}
+
+bool APlayerCharacter::DeadBodyInteractionRPCServer_Validate(APlayerCharacter* DeadPlayer)
+{
+	return true;
+}
+
+void APlayerCharacter::DeadBodyInteractionRPCMutlicast_Implementation(APlayerCharacter* DeadPlayer)
+{
+	if(IsLocallyControlled())
+	{		
+		DeadBodyWidgetSettings(DeadPlayer->GetPlayerState());
+		UGameplayStatics::PlaySound2D(GetWorld(), tabSound);
+		infoWidgetUI->RemoveFromParent();
+		PC->SetShowMouseCursor(true);
+		DeadBodyWidgetOnViewport();
 	}
 }
+
 
 void APlayerCharacter::InteractionProcess()
 {
@@ -2153,11 +2183,7 @@ void APlayerCharacter::InteractionProcess()
 			if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 			{
 				infoWidgetUI->weaponHoldPercent = 0;
-				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
-				infoWidgetUI->RemoveFromParent();
-				PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
-				ArmorActor->AddInventory();
-				ArmorActor->Destroy();
+				ArmorActorInteraction(ArmorActor);
 			}
 		}
 		else if (MedKitActor)
@@ -2234,16 +2260,15 @@ void APlayerCharacter::InteractionProcess()
 					if (bDeadBodyWidgetOn == false && PC)
 					{
 						bDeadBodyWidgetOn = true;
-						UGameplayStatics::PlaySound2D(GetWorld(), tabSound);
-						infoWidgetUI->RemoveFromParent();
-						PC->SetShowMouseCursor(true);
-						DeadBodyWidgetOnViewport(PlayerCharacter->GetGameInstance());
+						DeadBodyInteraction(PlayerCharacter);
 					}
 				}
 			}
 		}
 	}
 }
+
+
 
 void APlayerCharacter::Reload()
 {
@@ -3578,7 +3603,7 @@ void APlayerCharacter::ProcessPistolFire()
 			double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), 0.8 * RecoilRateMultiplier());
 			AddControllerPitchInput(randF);
 			AddControllerYawInput(randF2);
-			UE::Math::TVector<double> fireSocketLoc = pistolComp->GetSocketTransform(FName("PistolFirePosition")).GetLocation();
+			//UE::Math::TVector<double> fireSocketLoc = pistolComp->GetSocketTransform(FName("PistolFirePosition")).GetLocation();
 			// 탄 궤적 나이아가라 시스템 스폰
 			// UNiagaraComponent* niagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletTrailSystem, pistolHitResult.Location, FRotator::ZeroRotator,FVector(1), true, true, ENCPoolMethod::AutoRelease);
 			// if(niagara)
@@ -4006,11 +4031,13 @@ bool APlayerCharacter::PlayerDeathRPCServer_Validate()
 }
 
 void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
-{
-	InventoryCaching();
-	StashCaching();
+{	
 	if (IsLocallyControlled())
 	{
+		//AEclipsePlayerController* DeadPlayerController = Cast<AEclipsePlayerController>(GetController());
+		//if(DeadPlayerController) DeadPlayerController->DisableInput(DeadPlayerController);
+		InventoryCaching();
+		StashCaching();		
 		UWidgetLayoutLibrary::RemoveAllWidgets(GetWorld());
 		APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 		// 카메라 페이드 연출

@@ -3,13 +3,3 @@
 
 #include "EclipseGameState.h"
 #include "Eclipse/Eclipse.h"
-
-void AEclipseGameState::HandleBeginPlay()
-{
-	Super::HandleBeginPlay();
-}
-
-void AEclipseGameState::OnRep_ReplicatedHasBegunPlay()
-{
-	Super::OnRep_ReplicatedHasBegunPlay();
-}

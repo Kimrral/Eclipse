@@ -1691,14 +1691,14 @@ bool APlayerCharacter::ArmorActorInteractionRPCServer_Validate(AArmorActor* Armo
 
 void APlayerCharacter::ArmorActorInteractionRPCMutlicast_Implementation(AArmorActor* Armor)
 {
-	if(IsLocallyControlled())
+	if (IsLocallyControlled())
 	{
 		UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
 		infoWidgetUI->RemoveFromParent();
 		//Armor->Destroy();
 		Armor->AddInventory();
-	}	
-	PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));	
+	}
+	PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
 }
 
 
@@ -1719,8 +1719,8 @@ bool APlayerCharacter::DeadBodyInteractionRPCServer_Validate(APlayerCharacter* D
 
 void APlayerCharacter::DeadBodyInteractionRPCMutlicast_Implementation(APlayerCharacter* DeadPlayer)
 {
-	if(IsLocallyControlled())
-	{		
+	if (IsLocallyControlled())
+	{
 		DeadBodyWidgetSettings(DeadPlayer->GetPlayerState());
 		UGameplayStatics::PlaySound2D(GetWorld(), tabSound);
 		infoWidgetUI->RemoveFromParent();
@@ -2051,7 +2051,7 @@ void APlayerCharacter::InteractionProcess()
 					GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()-> void
 					{
 						PouchCaching();
-						InventoryCaching();
+						InventoryCaching(this->GetPlayerState());
 						GearCaching();
 						MagCaching();
 						UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"));
@@ -2269,7 +2269,6 @@ void APlayerCharacter::InteractionProcess()
 }
 
 
-
 void APlayerCharacter::Reload()
 {
 	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) != FString("Safe_House"))
@@ -2353,7 +2352,7 @@ void APlayerCharacter::MoveToIsolatedShip()
 	GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
 		PouchCaching();
-		InventoryCaching();
+		InventoryCaching(this->GetPlayerState());
 		StashCaching();
 		GearCaching();
 		MagCaching();
@@ -4031,13 +4030,13 @@ bool APlayerCharacter::PlayerDeathRPCServer_Validate()
 }
 
 void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
-{	
+{
 	if (IsLocallyControlled())
 	{
 		//AEclipsePlayerController* DeadPlayerController = Cast<AEclipsePlayerController>(GetController());
 		//if(DeadPlayerController) DeadPlayerController->DisableInput(DeadPlayerController);
-		InventoryCaching();
-		StashCaching();		
+		InventoryCaching(this->GetPlayerState());
+		StashCaching();
 		UWidgetLayoutLibrary::RemoveAllWidgets(GetWorld());
 		APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 		// 카메라 페이드 연출

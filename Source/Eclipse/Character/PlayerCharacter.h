@@ -10,6 +10,7 @@
 #include "Eclipse/UI/StashWidget.h"
 #include "Components/TimelineComponent.h"
 #include "Eclipse/Game/EclipseGameInstance.h"
+#include "Eclipse/Item/ArmorActor.h"
 #include "PlayerCharacter.generated.h"
 
 DECLARE_DYNAMIC_DELEGATE(FRewardContainerDestruct);
@@ -146,6 +147,7 @@ public:
 	//=======================================//
 
 	/** Called for fire input */
+	UFUNCTION()
 	void Fire();
 
 	UFUNCTION(Server, Reliable, WithValidation)
@@ -156,18 +158,28 @@ public:
 
 	void FireRelease();
 
+	UFUNCTION()
 	void ProcessRifleFire();
+	UFUNCTION()
 	void ProcessRifleFireAnim();
+	UFUNCTION()
 	void ProcessRifleFireLocal();
+	UFUNCTION()
 	void ProcessRifleFireSimulatedProxy();
+
+	UFUNCTION()
 	void ProcessSniperFire();
+	UFUNCTION()
 	void ProcessPistolFire();
+	UFUNCTION()
 	void ProcessM249Fire();
 
 	//=======================================//
 
 	/** Called for running input */
+	UFUNCTION()
 	void Run();
+	UFUNCTION()
 	void RunRelease();
 
 	UFUNCTION(Reliable, Server, WithValidation)
@@ -190,16 +202,27 @@ public:
 	//=======================================//
 
 	/** Called for change weapon input */
+	UFUNCTION()
 	void ChangeWeapon();
 
+	UFUNCTION()
+	void ArmorActorInteraction(AArmorActor* Armor);
 	UFUNCTION(Reliable, Server, WithValidation)
-	void ChangeWeaponRPCServer();
-
+	void ArmorActorInteractionRPCServer(AArmorActor* Armor);
 	UFUNCTION(Unreliable, NetMulticast)
-	void ChangeWeaponRPCMulticast();
+	void ArmorActorInteractionRPCMutlicast(AArmorActor* Armor);
+
+	UFUNCTION()
+	void DeadBodyInteraction(APlayerCharacter* DeadPlayer);
+	UFUNCTION(Reliable, Server, WithValidation)
+	void DeadBodyInteractionRPCServer(APlayerCharacter* DeadPlayer);
+	UFUNCTION(Unreliable, NetMulticast)
+	void DeadBodyInteractionRPCMutlicast(APlayerCharacter* DeadPlayer);
+
 
 	//=======================================//
 
+	UFUNCTION()
 	void Reload();
 
 	UFUNCTION(Server, Reliable, WithValidation)
@@ -215,6 +238,7 @@ public:
 
 	//=======================================//
 
+	UFUNCTION()
 	void SwapFirstWeapon();
 
 	UFUNCTION(Reliable, Server, WithValidation)
@@ -222,7 +246,8 @@ public:
 
 	UFUNCTION(Unreliable, NetMulticast)
 	void SwapFirstWeaponRPCMulticast();
-
+	
+	UFUNCTION()
 	void SwapSecondWeapon();
 
 	UFUNCTION(Reliable, Server, WithValidation)
@@ -364,7 +389,10 @@ public:
 	void StashWidgetOnViewport();
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void DeadBodyWidgetOnViewport(UGameInstance* DeadBodyGameInstance);
+	void DeadBodyWidgetOnViewport();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void DeadBodyWidgetSettings(APlayerState* DeadBodyPlayerState);
 
 	UFUNCTION()
 	void InteractionProcess();

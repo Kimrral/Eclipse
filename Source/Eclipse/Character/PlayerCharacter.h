@@ -419,7 +419,7 @@ public:
 	void StashCaching();
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void InventoryCaching();
+	void InventoryCaching(APlayerState* DeadBodyPlayerState);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void GearCaching();

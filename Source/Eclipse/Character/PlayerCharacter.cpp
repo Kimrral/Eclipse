@@ -52,7 +52,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Eclipse/CharacterStat/PlayerCharacterStatComponent.h"
-#include "Eclipse/Game/EclipseGameState.h"
+#include "Eclipse/Game/EclipsePlayerState.h"
 #include "GameFramework/GameState.h"
 #include "GeometryCollection/GeometryCollectionComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -146,6 +146,7 @@ void APlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	this->SetActorEnableCollision(true);
+	
 
 	// Casting
 	const UGameInstance* GI = GetGameInstance();
@@ -251,6 +252,7 @@ void APlayerCharacter::BeginPlay()
 
 		equippedWeaponStringArray.Add(FString("Rifle")); //0
 		equippedWeaponStringArray.Add(FString("Pistol")); //1
+		
 		// Weapon Visibility Settings
 		rifleComp->SetVisibility(true);
 		sniperComp->SetVisibility(false);
@@ -1697,6 +1699,7 @@ void APlayerCharacter::ArmorActorInteractionRPCMutlicast_Implementation(AArmorAc
 		infoWidgetUI->RemoveFromParent();
 		//Armor->Destroy();
 		Armor->AddInventory();
+		InventoryCaching(this->GetPlayerState());
 	}
 	PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
 }
@@ -1721,7 +1724,21 @@ void APlayerCharacter::DeadBodyInteractionRPCMutlicast_Implementation(APlayerCha
 {
 	if (IsLocallyControlled())
 	{
-		DeadBodyWidgetSettings(DeadPlayer->GetPlayerState());
+		if(const AGameStateBase* GameState = GetWorld()->GetGameState())
+		{
+			TArray<TObjectPtr<APlayerState>> AllPlayerArray = GameState->PlayerArray;
+			for(auto PlayerArray : AllPlayerArray)
+			{
+				AEclipsePlayerState* PS = Cast<AEclipsePlayerState>(PlayerArray);
+				if(PS)
+				{
+					if(PS->GetPawn()==DeadPlayer)
+					{
+						DeadBodyWidgetSettings(PS);
+					}
+				}
+			}
+		}
 		UGameplayStatics::PlaySound2D(GetWorld(), tabSound);
 		infoWidgetUI->RemoveFromParent();
 		PC->SetShowMouseCursor(true);

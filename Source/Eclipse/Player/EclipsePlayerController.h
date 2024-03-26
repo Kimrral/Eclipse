@@ -23,8 +23,8 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<APlayerStart> playerStartFactory;
 
-	UFUNCTION()
-	void Respawn(APlayerCharacter* me);
+	// UFUNCTION()
+	// void Respawn(APlayerCharacter* me);
 
 	UFUNCTION()
 	void PlayerDeath();

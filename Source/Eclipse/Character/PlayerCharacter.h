@@ -27,7 +27,6 @@ class ECLIPSE_API APlayerCharacter : public ACharacter
 public:
 	// Sets default values for this character's properties
 	APlayerCharacter(const FObjectInitializer& ObjectInitializer);
-	virtual void PostInitializeComponents() override;
 
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -213,11 +212,11 @@ public:
 	void ArmorActorInteractionRPCMutlicast(AArmorActor* Armor);
 
 	UFUNCTION()
-	void DeadBodyInteraction(APlayerCharacter* DeadPlayer);
+	void DeadBodyInteraction(FUniqueNetIdRepl DeadPlayerNetId);
 	UFUNCTION(Reliable, Server, WithValidation)
-	void DeadBodyInteractionRPCServer(APlayerCharacter* DeadPlayer);
+	void DeadBodyInteractionRPCServer(FUniqueNetIdRepl DeadPlayerNetId);
 	UFUNCTION(Unreliable, NetMulticast)
-	void DeadBodyInteractionRPCMutlicast(APlayerCharacter* DeadPlayer);
+	void DeadBodyInteractionRPCMutlicast(FUniqueNetIdRepl DeadPlayerNetId);
 
 
 	//=======================================//
@@ -568,6 +567,9 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* PlayerDeathEmitter;
+
+	UPROPERTY()
+	class AEclipsePlayerState* EclipsePlayerState;
 
 	UPROPERTY()
 	class APlayerCharacter* PlayerCharacter;

@@ -135,18 +135,14 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer)
 	bReplicates = true;
 }
 
-void APlayerCharacter::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-}
-
 // Called when the game starts or when spawned
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
 	this->SetActorEnableCollision(true);
-	
+	GetMesh()->HideBoneByName(TEXT("bot_hand"), EPhysBodyOp::PBO_None);
+	GetMesh()->HideBoneByName(TEXT("shotgun_base"), EPhysBodyOp::PBO_None);
 
 	// Casting
 	const UGameInstance* GI = GetGameInstance();
@@ -154,6 +150,7 @@ void APlayerCharacter::BeginPlay()
 	gm = Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());
 	gi = Cast<UEclipseGameInstance>(GetWorld()->GetGameInstance());
 	animInstance = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+	EclipsePlayerState = Cast<AEclipsePlayerState>(GetPlayerState());
 
 	//Add Input Mapping Context
 	if (PC)
@@ -1705,40 +1702,38 @@ void APlayerCharacter::ArmorActorInteractionRPCMutlicast_Implementation(AArmorAc
 }
 
 
-void APlayerCharacter::DeadBodyInteraction(APlayerCharacter* DeadPlayer)
+void APlayerCharacter::DeadBodyInteraction(FUniqueNetIdRepl DeadPlayerNetId)
 {
-	DeadBodyInteractionRPCServer(DeadPlayer);
+	// if(const AGameStateBase* GameState = GetWorld()->GetGameState())
+	// {
+	// 	TArray<TObjectPtr<APlayerState>> AllPlayerArray = GameState->PlayerArray;
+	// 	for(auto PlayerArray : AllPlayerArray)
+	// 	{
+	// 		UE_LOG(LogTemp, Warning, TEXT("%s"), *(PlayerArray.GetFName()).ToString())
+	// 		if(PlayerArray==DeadPlayerPS)
+	// 		{
+	// 			DeadBodyInteractionRPCServer(PlayerArray);
+	// 		}
+	// 	}
+	// }
+	DeadBodyInteractionRPCServer(DeadPlayerNetId);
 }
 
-void APlayerCharacter::DeadBodyInteractionRPCServer_Implementation(APlayerCharacter* DeadPlayer)
+void APlayerCharacter::DeadBodyInteractionRPCServer_Implementation(FUniqueNetIdRepl DeadPlayerNetId)
 {
-	DeadBodyInteractionRPCMutlicast(DeadPlayer);
+	DeadBodyInteractionRPCMutlicast(DeadPlayerNetId);
 }
 
-bool APlayerCharacter::DeadBodyInteractionRPCServer_Validate(APlayerCharacter* DeadPlayer)
+bool APlayerCharacter::DeadBodyInteractionRPCServer_Validate(FUniqueNetIdRepl DeadPlayerNetId)
 {
 	return true;
 }
 
-void APlayerCharacter::DeadBodyInteractionRPCMutlicast_Implementation(APlayerCharacter* DeadPlayer)
+void APlayerCharacter::DeadBodyInteractionRPCMutlicast_Implementation(FUniqueNetIdRepl DeadPlayerNetId)
 {
 	if (IsLocallyControlled())
 	{
-		if(const AGameStateBase* GameState = GetWorld()->GetGameState())
-		{
-			TArray<TObjectPtr<APlayerState>> AllPlayerArray = GameState->PlayerArray;
-			for(auto PlayerArray : AllPlayerArray)
-			{
-				AEclipsePlayerState* PS = Cast<AEclipsePlayerState>(PlayerArray);
-				if(PS)
-				{
-					if(PS->GetPawn()==DeadPlayer)
-					{
-						DeadBodyWidgetSettings(PS);
-					}
-				}
-			}
-		}
+		DeadBodyWidgetSettings(UGameplayStatics::GetPlayerStateFromUniqueNetId(GetWorld(), DeadPlayerNetId));
 		UGameplayStatics::PlaySound2D(GetWorld(), tabSound);
 		infoWidgetUI->RemoveFromParent();
 		PC->SetShowMouseCursor(true);
@@ -1781,7 +1776,7 @@ void APlayerCharacter::InteractionProcess()
 		Stash = Cast<AStash>(actorHitResult.GetActor());
 		QuitGameActor = Cast<AQuitGameActor>(actorHitResult.GetActor());
 
-		PlayerCharacter = Cast<APlayerCharacter>(actorHitResult.GetActor());
+		APlayerCharacter* EnemyCharacter = Cast<APlayerCharacter>(actorHitResult.GetActor());
 
 		// 라이플로 교체
 		if (rifleActor)
@@ -2265,25 +2260,28 @@ void APlayerCharacter::InteractionProcess()
 				}
 			}
 		}
-		else if (PlayerCharacter)
+		else if (EnemyCharacter)
 		{
 			// 키다운 시간 동안 Radial Slider 게이지 상승
 			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.015, 0, 1);
-			if (PlayerCharacter->IsPlayerDead)
+			if (EnemyCharacter->IsPlayerDead)
 			{
 				if (quitWidgetUI && infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 				{
 					infoWidgetUI->weaponHoldPercent = 0;
-					if (bDeadBodyWidgetOn == false && PC)
+					if (bDeadBodyWidgetOn == false)
 					{
 						bDeadBodyWidgetOn = true;
-						DeadBodyInteraction(PlayerCharacter);
+						AEclipsePlayerState* ECPlayerState = Cast<AEclipsePlayerState>(EnemyCharacter->GetPlayerState());
+						DeadBodyInteraction(ECPlayerState->PlayerUniqueNetId);
 					}
 				}
 			}
 		}
 	}
 }
+
+
 
 
 void APlayerCharacter::Reload()
@@ -4050,10 +4048,10 @@ void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 {
 	if (IsLocallyControlled())
 	{
+		InventoryCaching(GetPlayerState());
+		StashCaching();
 		//AEclipsePlayerController* DeadPlayerController = Cast<AEclipsePlayerController>(GetController());
 		//if(DeadPlayerController) DeadPlayerController->DisableInput(DeadPlayerController);
-		InventoryCaching(this->GetPlayerState());
-		StashCaching();
 		UWidgetLayoutLibrary::RemoveAllWidgets(GetWorld());
 		APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 		// 카메라 페이드 연출

@@ -15,5 +15,7 @@ class ECLIPSE_API AEclipseGameState : public AGameStateBase
 	GENERATED_BODY()
 
 public:
+	
+
 
 };

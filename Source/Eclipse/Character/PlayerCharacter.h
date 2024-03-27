@@ -212,11 +212,11 @@ public:
 	void ArmorActorInteractionRPCMutlicast(AArmorActor* Armor);
 
 	UFUNCTION()
-	void DeadBodyInteraction(FUniqueNetIdRepl DeadPlayerNetId);
+	void DeadBodyInteraction(APlayerState* DeadPlayerState);
 	UFUNCTION(Reliable, Server, WithValidation)
-	void DeadBodyInteractionRPCServer(FUniqueNetIdRepl DeadPlayerNetId);
+	void DeadBodyInteractionRPCServer(APlayerState* DeadPlayerState);
 	UFUNCTION(Unreliable, NetMulticast)
-	void DeadBodyInteractionRPCMutlicast(FUniqueNetIdRepl DeadPlayerNetId);
+	void DeadBodyInteractionRPCMutlicast(APlayerState* DeadPlayerState);
 
 
 	//=======================================//
@@ -391,7 +391,7 @@ public:
 	void DeadBodyWidgetOnViewport();
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void DeadBodyWidgetSettings(APlayerState* DeadBodyPlayerState);
+	void DeadBodyWidgetSettings(AEclipsePlayerState* DeadBodyPlayerState);
 
 	UFUNCTION()
 	void InteractionProcess();

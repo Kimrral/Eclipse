@@ -1702,38 +1702,38 @@ void APlayerCharacter::ArmorActorInteractionRPCMutlicast_Implementation(AArmorAc
 }
 
 
-void APlayerCharacter::DeadBodyInteraction(FUniqueNetIdRepl DeadPlayerNetId)
+void APlayerCharacter::DeadBodyInteraction(APlayerState* DeadPlayerState)
 {
-	// if(const AGameStateBase* GameState = GetWorld()->GetGameState())
-	// {
-	// 	TArray<TObjectPtr<APlayerState>> AllPlayerArray = GameState->PlayerArray;
-	// 	for(auto PlayerArray : AllPlayerArray)
-	// 	{
-	// 		UE_LOG(LogTemp, Warning, TEXT("%s"), *(PlayerArray.GetFName()).ToString())
-	// 		if(PlayerArray==DeadPlayerPS)
-	// 		{
-	// 			DeadBodyInteractionRPCServer(PlayerArray);
-	// 		}
-	// 	}
-	// }
-	DeadBodyInteractionRPCServer(DeadPlayerNetId);
+	DeadBodyInteractionRPCServer(DeadPlayerState);
 }
 
-void APlayerCharacter::DeadBodyInteractionRPCServer_Implementation(FUniqueNetIdRepl DeadPlayerNetId)
+void APlayerCharacter::DeadBodyInteractionRPCServer_Implementation(APlayerState* DeadPlayerState)
 {
-	DeadBodyInteractionRPCMutlicast(DeadPlayerNetId);
+	DeadBodyInteractionRPCMutlicast(DeadPlayerState);
 }
 
-bool APlayerCharacter::DeadBodyInteractionRPCServer_Validate(FUniqueNetIdRepl DeadPlayerNetId)
+bool APlayerCharacter::DeadBodyInteractionRPCServer_Validate(APlayerState* DeadPlayerState)
 {
 	return true;
 }
 
-void APlayerCharacter::DeadBodyInteractionRPCMutlicast_Implementation(FUniqueNetIdRepl DeadPlayerNetId)
+void APlayerCharacter::DeadBodyInteractionRPCMutlicast_Implementation(APlayerState* DeadPlayerState)
 {
 	if (IsLocallyControlled())
 	{
-		DeadBodyWidgetSettings(UGameplayStatics::GetPlayerStateFromUniqueNetId(GetWorld(), DeadPlayerNetId));
+		if(const AGameStateBase* GameState = GetWorld()->GetGameState())
+		{
+			TArray<TObjectPtr<APlayerState>> AllPlayerArray = GameState->PlayerArray;
+			for(auto PlayerArray : AllPlayerArray)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("%s"), *(PlayerArray.GetFName()).ToString())
+				if(PlayerArray==DeadPlayerState)
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Target Player State : %s"), *(PlayerArray.GetFName()).ToString())
+					if(AEclipsePlayerState* CastedPlayerState = Cast<AEclipsePlayerState>(PlayerArray))	DeadBodyWidgetSettings(CastedPlayerState);
+				}
+			}
+		}
 		UGameplayStatics::PlaySound2D(GetWorld(), tabSound);
 		infoWidgetUI->RemoveFromParent();
 		PC->SetShowMouseCursor(true);
@@ -2273,7 +2273,7 @@ void APlayerCharacter::InteractionProcess()
 					{
 						bDeadBodyWidgetOn = true;
 						AEclipsePlayerState* ECPlayerState = Cast<AEclipsePlayerState>(EnemyCharacter->GetPlayerState());
-						DeadBodyInteraction(ECPlayerState->PlayerUniqueNetId);
+						DeadBodyInteraction(ECPlayerState);
 					}
 				}
 			}

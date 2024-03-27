@@ -15,9 +15,6 @@ class ECLIPSE_API AEclipsePlayerState : public APlayerState
 	GENERATED_BODY()
 
 public:	
-	virtual void BeginPlay() override;
 
-	UPROPERTY()
-	FUniqueNetIdRepl PlayerUniqueNetId;
 	
 };

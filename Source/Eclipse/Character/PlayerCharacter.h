@@ -167,11 +167,25 @@ public:
 	void ProcessRifleFireSimulatedProxy();
 
 	UFUNCTION()
-	void ProcessSniperFire();
-	UFUNCTION()
 	void ProcessPistolFire();
 	UFUNCTION()
+	void ProcessPistolFireAnim();
+	UFUNCTION()
+	void ProcessPistolFireLocal();
+	UFUNCTION()
+	void ProcessPistolFireSimulatedProxy();
+
+	UFUNCTION()
+	void ProcessSniperFire();
+	
+	UFUNCTION()
 	void ProcessM249Fire();
+
+	UFUNCTION()
+	float SetFireInterval();
+
+	UFUNCTION()
+	float GetAttackDamage();
 
 	//=======================================//
 
@@ -646,7 +660,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UTabWidget* tabWidgetUI;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Replicated)
 	TArray<bool> weaponArray;
 
 	UPROPERTY(EditAnywhere, Category="Texture")
@@ -660,6 +674,9 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* bulletImpactFactory;
+
+	UPROPERTY(EditAnywhere)
+	class UParticleSystem* BuletTrailSystem;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	FVector ContainerLoc;
@@ -784,6 +801,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float BulletsPerSecM249 = 8.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float AttackDamageRifle = 9.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float AttackDamagePistol = 15.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float AttackDamageSniper = 70.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float AttackDamageM249 = 8.0f;
+
 	//Sounds
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* BulletEmptySound;
@@ -891,27 +920,27 @@ public:
 	TSubclassOf<class UCameraShakeBase> PlayerDamagedShake;
 
 	//Particles
-	UPROPERTY(EditAnywhere, Category="Factory")
+	UPROPERTY(EditAnywhere, Transient, Category="Factory")
 	TSubclassOf<class AActor> ShotDecalFactory;
-	UPROPERTY(EditAnywhere, Category="Factory")
+	UPROPERTY(EditAnywhere, Transient, Category="Factory")
 	TSubclassOf<class AActor> BulletShellFactory;
-	UPROPERTY(EditAnywhere, Category="Particle")
+	UPROPERTY(EditAnywhere, Transient, Category="Particle")
 	class UParticleSystem* bulletMarksParticle;
-	UPROPERTY(EditAnywhere, Category="Particle")
+	UPROPERTY(EditAnywhere, Transient, Category="Particle")
 	class UParticleSystem* RifleFireParticle;
-	UPROPERTY(EditAnywhere, Category="Particle")
+	UPROPERTY(EditAnywhere, Transient, Category="Particle")
 	class UParticleSystem* RifleFireParticle2;
-	UPROPERTY(EditAnywhere, Category="Particle")
+	UPROPERTY(EditAnywhere, Transient, Category="Particle")
 	class UParticleSystem* PistolfireParticle;
-	UPROPERTY(EditAnywhere, Category="Particle")
+	UPROPERTY(EditAnywhere, Transient, Category="Particle")
 	class UParticleSystem* recallParticle;
-	UPROPERTY(EditAnywhere, Category="Niagara")
-	class UNiagaraSystem* BulletTrailSystem;
-	UPROPERTY(EditAnywhere, Category="Niagara")
+	UPROPERTY(EditAnywhere, Transient, Category="Particle")
 	class UParticleSystem* SniperFireParticle;
-	UPROPERTY(EditAnywhere, Category="Niagara")
+	UPROPERTY(EditAnywhere, Transient, Category="Particle")
 	class UParticleSystem* BloodParticle;
 
+	UPROPERTY()
+	FHitResult rifleHitResult;
 
 	UPROPERTY(EditAnywhere) // Timeline 생성
 	FTimeline Timeline;

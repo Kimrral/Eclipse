@@ -16,5 +16,5 @@ class ECLIPSE_API AArmorActor : public AGearActor
 
 public:
 	UFUNCTION(BlueprintImplementableEvent)
-	void AddInventory();
+	void AddInventory(APlayerCharacter* CachingPlayerCharacter);
 };

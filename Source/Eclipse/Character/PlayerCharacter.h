@@ -212,11 +212,11 @@ public:
 	void ArmorActorInteractionRPCMutlicast(AArmorActor* Armor);
 
 	UFUNCTION()
-	void DeadBodyInteraction(APlayerState* DeadPlayerState);
+	void DeadBodyInteraction(APlayerCharacter* DeadPlayerCharacter);
 	UFUNCTION(Reliable, Server, WithValidation)
-	void DeadBodyInteractionRPCServer(APlayerState* DeadPlayerState);
+	void DeadBodyInteractionRPCServer(APlayerCharacter* DeadPlayerCharacter);
 	UFUNCTION(Unreliable, NetMulticast)
-	void DeadBodyInteractionRPCMutlicast(APlayerState* DeadPlayerState);
+	void DeadBodyInteractionRPCMutlicast(APlayerCharacter* DeadPlayerCharacter);
 
 
 	//=======================================//
@@ -391,7 +391,7 @@ public:
 	void DeadBodyWidgetOnViewport();
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void DeadBodyWidgetSettings(AEclipsePlayerState* DeadBodyPlayerState);
+	void DeadBodyWidgetSettings(APlayerState* DeadBodyPlayerState, APlayerCharacter* DeadPlayer);
 
 	UFUNCTION()
 	void InteractionProcess();
@@ -418,7 +418,7 @@ public:
 	void StashCaching();
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void InventoryCaching(APlayerState* DeadBodyPlayerState);
+	void InventoryCaching(APlayerCharacter* PlayerCharacterRef);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void GearCaching();
@@ -446,9 +446,6 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void UpdateTabWidgetHP();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void SearchDeadBodyInventory(UEclipseGameInstance* DeadBodyGameInstance);
 
 	UFUNCTION()
 	int32 SetRifleAdditionalMagazine();
@@ -567,9 +564,6 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* PlayerDeathEmitter;
-
-	UPROPERTY()
-	class AEclipsePlayerState* EclipsePlayerState;
 
 	UPROPERTY()
 	class APlayerCharacter* PlayerCharacter;

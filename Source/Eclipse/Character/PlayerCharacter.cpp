@@ -925,11 +925,80 @@ void APlayerCharacter::SwapSecondWeaponRPCMulticast_Implementation()
 }
 
 
-void APlayerCharacter::OnPlayerHit(const FHitResult& HitResult, APlayerCharacter* HitCharacter)
+void APlayerCharacter::OnPlayerHit(const FHitResult& HitResult, APlayerCharacter* HitCharacter, bool IsHeadshot)
 {
 	if (HitCharacter->Stat->GetCurrentHp() > 0)
 	{
-		OnPlayerHitRPCServer(HitResult, HitCharacter);
+		OnPlayerHitRPCServer(HitResult, HitCharacter, IsHeadshot);
+	}
+}
+
+
+void APlayerCharacter::OnPlayerHitRPCServer_Implementation(const FHitResult& HitResult, APlayerCharacter* HitCharacter, bool IsHeadshot)
+{
+	OnPlayerHitRPCMulticast(HitResult, HitCharacter, IsHeadshot);
+}
+
+bool APlayerCharacter::OnPlayerHitRPCServer_Validate(const FHitResult& HitResult, APlayerCharacter* HitCharacter, bool IsHeadshot)
+{
+	return true;
+}
+
+void APlayerCharacter::OnPlayerHitRPCMulticast_Implementation(const FHitResult& HitResult, APlayerCharacter* HitCharacter, bool IsHeadshot)
+{
+	if (HasAuthority())
+	{
+		if(IsHeadshot)
+		{
+			HitCharacter->Damaged(18, this);
+		}
+		else
+		{
+			HitCharacter->Damaged(10, this);
+		}
+	}
+	if (IsLocallyControlled())
+	{
+		const FRotator hitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
+		if(IsHeadshot)
+		{
+			UGameplayStatics::PlaySound2D(GetWorld(), BulletHeadHitSound);
+			// 적중 위젯 애니메이션 재생
+			crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
+			// 데미지 위젯에 피해 값과 적 위치벡터 할당
+			SetDamageWidget(18, HitResult.Location, false, FLinearColor::Yellow);
+			// 적중 파티클 스폰
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodParticle, HitResult.Location, hitRot, FVector(1.f));
+		}
+		else
+		{
+			UGameplayStatics::PlaySound2D(GetWorld(), BulletHitSound);
+			// 적중 위젯 애니메이션 재생
+			crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
+			// 데미지 위젯에 피해 값과 적 위치벡터 할당
+			SetDamageWidget(10, HitResult.Location, false, FLinearColor::White);
+			// 적중 파티클 스폰
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodParticle, HitResult.Location, hitRot, FVector(1.f));
+		}
+		
+	}
+	else
+	{
+		const FRotator hitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
+		if(IsHeadshot)
+		{
+			// 적중 사운드 재생
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHeadHitSound, HitResult.Location);
+			// 적중 파티클 스폰
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodParticle, HitResult.Location, hitRot, FVector(1.7f));
+		}
+		else
+		{
+			// 적중 사운드 재생
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, HitResult.Location);
+			// 적중 파티클 스폰
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodParticle, HitResult.Location, hitRot, FVector(1.f));
+		}		
 	}
 }
 
@@ -957,42 +1026,6 @@ void APlayerCharacter::OnPlayerKillRPCMulticast_Implementation()
 	}
 }
 
-void APlayerCharacter::OnPlayerHitRPCServer_Implementation(const FHitResult& HitResult, APlayerCharacter* HitCharacter)
-{
-	OnPlayerHitRPCMulticast(HitResult, HitCharacter);
-}
-
-bool APlayerCharacter::OnPlayerHitRPCServer_Validate(const FHitResult& HitResult, APlayerCharacter* HitCharacter)
-{
-	return true;
-}
-
-void APlayerCharacter::OnPlayerHitRPCMulticast_Implementation(const FHitResult& HitResult, APlayerCharacter* HitCharacter)
-{
-	if (HasAuthority())
-	{
-		HitCharacter->Damaged(15, this);
-	}
-	if (IsLocallyControlled())
-	{
-		const FRotator hitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
-		UGameplayStatics::PlaySound2D(GetWorld(), BulletHitSound);
-		// 적중 위젯 애니메이션 재생
-		crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
-		// 데미지 위젯에 피해 값과 적 위치벡터 할당
-		SetDamageWidget(15, HitResult.Location, false, FLinearColor::White);
-		// 적중 파티클 스폰
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodParticle, HitResult.Location, hitRot, FVector(1.f));
-	}
-	else
-	{
-		const FRotator hitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
-		// 적중 사운드 재생
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, HitResult.Location);
-		// 적중 파티클 스폰
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodParticle, HitResult.Location, hitRot, FVector(1.f));
-	}
-}
 
 void APlayerCharacter::OnEnemyHit(const FHitResult& HitResult, AEnemy* HitEnemy)
 {
@@ -1675,6 +1708,7 @@ void APlayerCharacter::ChangeWeapon()
 
 void APlayerCharacter::ArmorActorInteraction(AArmorActor* Armor)
 {
+	
 	ArmorActorInteractionRPCServer(Armor);
 }
 
@@ -1692,11 +1726,11 @@ void APlayerCharacter::ArmorActorInteractionRPCMutlicast_Implementation(AArmorAc
 {
 	if (IsLocallyControlled())
 	{
-		Armor->AddInventory(this);		
+		Armor->AddInventory(this);
+		if(AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))	CachingPlayerState->InventoryCaching(this);
 		UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
 		infoWidgetUI->RemoveFromParent();
 		//Armor->Destroy();		
-		if(AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))	CachingPlayerState->InventoryCaching(this);
 	}
 	PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
 }
@@ -2721,21 +2755,11 @@ void APlayerCharacter::ProcessRifleFire()
 		UE_LOG(LogTemp, Warning, TEXT("Cur Rifle Bullet : %d"), curRifleAmmo)
 		FVector startLoc = FollowCamera->GetComponentLocation();
 		FVector EndLoc = startLoc + FollowCamera->GetForwardVector() * 10000.0f;
-		TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes; // LineTrace로 히트 가능한 오브젝트 유형들.
-		TEnumAsByte<EObjectTypeQuery> WorldStatic = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic);
-		TEnumAsByte<EObjectTypeQuery> WorldDynamic = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic);
-		TEnumAsByte<EObjectTypeQuery> Pawn = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn);
-		TEnumAsByte<EObjectTypeQuery> PhysicsBody = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody);
-		TEnumAsByte<EObjectTypeQuery> Destructible = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Destructible);
-		ObjectTypes.Add(WorldStatic);
-		ObjectTypes.Add(WorldDynamic);
-		ObjectTypes.Add(Pawn);
-		ObjectTypes.Add(PhysicsBody);
-		ObjectTypes.Add(Destructible);
-		TArray<AActor*> ActorsToIgnore;
-		ActorsToIgnore.Add(this); // LineTrace에서 제외할 대상			
+		FCollisionQueryParams params;
+		params.AddIgnoredActor(this);
+		FHitResult rifleHitResult;
 		// Perform Linetrace
-		bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(), startLoc, EndLoc, ObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, rifleHitResult, true);
+		bool bHit = GetWorld()->LineTraceSingleByChannel(rifleHitResult, startLoc, EndLoc, ECC_Visibility, params);
 		if (bHit)
 		{
 			// Player Character Casting
@@ -2743,7 +2767,14 @@ void APlayerCharacter::ProcessRifleFire()
 			// 플레이어 적중
 			if (player)
 			{
-				OnPlayerHit(rifleHitResult, player);
+				if(rifleHitResult.BoneName==FName("head"))
+				{
+					OnPlayerHit(rifleHitResult, player, true);
+				}
+				else
+				{
+					OnPlayerHit(rifleHitResult, player, false);
+				}
 				return;
 			}
 			// Enemy Casting
@@ -4052,8 +4083,6 @@ void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 	if (IsLocallyControlled())
 	{
 		if(AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))	CachingPlayerState->InventoryCaching(this);
-		//AEclipsePlayerController* DeadPlayerController = Cast<AEclipsePlayerController>(GetController());
-		//if(DeadPlayerController) DeadPlayerController->DisableInput(DeadPlayerController);
 		UWidgetLayoutLibrary::RemoveAllWidgets(GetWorld());
 		APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 		// 카메라 페이드 연출

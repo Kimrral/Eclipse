@@ -280,13 +280,13 @@ public:
 	//=======================================//
 
 	UFUNCTION()
-	void OnPlayerHit(const FHitResult& HitResult, APlayerCharacter* HitCharacter);
+	void OnPlayerHit(const FHitResult& HitResult, APlayerCharacter* HitCharacter, bool IsHeadshot);
 
 	UFUNCTION(Reliable, Server, WithValidation)
-	void OnPlayerHitRPCServer(const FHitResult& HitResult, APlayerCharacter* HitCharacter);
+	void OnPlayerHitRPCServer(const FHitResult& HitResult, APlayerCharacter* HitCharacter, bool IsHeadshot);
 
 	UFUNCTION(Unreliable, NetMulticast)
-	void OnPlayerHitRPCMulticast(const FHitResult& HitResult, APlayerCharacter* HitCharacter);
+	void OnPlayerHitRPCMulticast(const FHitResult& HitResult, APlayerCharacter* HitCharacter, bool IsHeadshot);
 
 	//=======================================//
 
@@ -769,9 +769,6 @@ public:
 	UPROPERTY()
 	bool isRifleShootable;
 
-	UPROPERTY()
-	FHitResult rifleHitResult;
-
 	UPROPERTY(ReplicatedUsing=OnRep_CanShoot)
 	bool CanShoot = true;
 
@@ -949,7 +946,7 @@ public:
 	UPROPERTY()
 	bool ArmorEquipped = false;
 
-	UPROPERTY(Replicated)
+	UPROPERTY(Replicated, BlueprintReadOnly)
 	bool IsPlayerDead = false;
 
 	//UFUNCTION()

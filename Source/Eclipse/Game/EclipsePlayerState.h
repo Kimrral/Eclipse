@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Eclipse/Character/PlayerCharacter.h"
 #include "GameFramework/PlayerState.h"
 #include "EclipsePlayerState.generated.h"
 
@@ -14,7 +15,11 @@ class ECLIPSE_API AEclipsePlayerState : public APlayerState
 {
 	GENERATED_BODY()
 
-public:	
+public:
+	UFUNCTION(BlueprintImplementableEvent)
+	void InventoryCaching(APlayerCharacter* PlayerCharacterRef);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void DeadBodyWidgetSettings(APlayerCharacter* DeadPlayerCharacterRef);
 	
 };

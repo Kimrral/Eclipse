@@ -52,6 +52,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Eclipse/CharacterStat/PlayerCharacterStatComponent.h"
+#include "Eclipse/Game/EclipseGameState.h"
 #include "Eclipse/Game/EclipsePlayerState.h"
 #include "GameFramework/GameState.h"
 #include "GeometryCollection/GeometryCollectionComponent.h"
@@ -150,7 +151,6 @@ void APlayerCharacter::BeginPlay()
 	gm = Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());
 	gi = Cast<UEclipseGameInstance>(GetWorld()->GetGameInstance());
 	animInstance = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-	EclipsePlayerState = Cast<AEclipsePlayerState>(GetPlayerState());
 
 	//Add Input Mapping Context
 	if (PC)
@@ -1692,45 +1692,48 @@ void APlayerCharacter::ArmorActorInteractionRPCMutlicast_Implementation(AArmorAc
 {
 	if (IsLocallyControlled())
 	{
+		Armor->AddInventory(this);		
 		UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
 		infoWidgetUI->RemoveFromParent();
-		//Armor->Destroy();
-		Armor->AddInventory();
-		InventoryCaching(this->GetPlayerState());
+		//Armor->Destroy();		
+		if(AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))	CachingPlayerState->InventoryCaching(this);
 	}
 	PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
 }
 
 
-void APlayerCharacter::DeadBodyInteraction(APlayerState* DeadPlayerState)
+void APlayerCharacter::DeadBodyInteraction(APlayerCharacter* DeadPlayerCharacter)
 {
-	DeadBodyInteractionRPCServer(DeadPlayerState);
+	DeadBodyInteractionRPCServer(DeadPlayerCharacter);
 }
 
-void APlayerCharacter::DeadBodyInteractionRPCServer_Implementation(APlayerState* DeadPlayerState)
+void APlayerCharacter::DeadBodyInteractionRPCServer_Implementation(APlayerCharacter* DeadPlayerCharacter)
 {
-	DeadBodyInteractionRPCMutlicast(DeadPlayerState);
+	DeadBodyInteractionRPCMutlicast(DeadPlayerCharacter);
 }
 
-bool APlayerCharacter::DeadBodyInteractionRPCServer_Validate(APlayerState* DeadPlayerState)
+bool APlayerCharacter::DeadBodyInteractionRPCServer_Validate(APlayerCharacter* DeadPlayerCharacter)
 {
 	return true;
 }
 
-void APlayerCharacter::DeadBodyInteractionRPCMutlicast_Implementation(APlayerState* DeadPlayerState)
+void APlayerCharacter::DeadBodyInteractionRPCMutlicast_Implementation(APlayerCharacter* DeadPlayerCharacter)
 {
 	if (IsLocallyControlled())
 	{
-		if(const AGameStateBase* GameState = GetWorld()->GetGameState())
+		if(const AEclipseGameState* GameState = Cast<AEclipseGameState>(GetWorld()->GetGameState()))
 		{
 			TArray<TObjectPtr<APlayerState>> AllPlayerArray = GameState->PlayerArray;
 			for(auto PlayerArray : AllPlayerArray)
 			{
 				UE_LOG(LogTemp, Warning, TEXT("%s"), *(PlayerArray.GetFName()).ToString())
-				if(PlayerArray==DeadPlayerState)
+				if(PlayerArray->GetPlayerName()==DeadPlayerCharacter->GetPlayerState()->GetPlayerName())
 				{
-					UE_LOG(LogTemp, Warning, TEXT("Target Player State : %s"), *(PlayerArray.GetFName()).ToString())
-					if(AEclipsePlayerState* CastedPlayerState = Cast<AEclipsePlayerState>(PlayerArray))	DeadBodyWidgetSettings(CastedPlayerState);
+					UE_LOG(LogTemp, Warning, TEXT("Target Player Name : %s"), *(PlayerArray->GetPlayerName()))
+					if(AEclipsePlayerState* ECDeadPlayerState = Cast<AEclipsePlayerState>(PlayerArray))
+					{
+						ECDeadPlayerState->DeadBodyWidgetSettings(DeadPlayerCharacter);
+					}
 				}
 			}
 		}
@@ -2063,7 +2066,7 @@ void APlayerCharacter::InteractionProcess()
 					GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()-> void
 					{
 						PouchCaching();
-						InventoryCaching(this->GetPlayerState());
+						if(AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))	CachingPlayerState->InventoryCaching(this);
 						GearCaching();
 						MagCaching();
 						UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"));
@@ -2262,21 +2265,21 @@ void APlayerCharacter::InteractionProcess()
 		}
 		else if (EnemyCharacter)
 		{
-			// 키다운 시간 동안 Radial Slider 게이지 상승
-			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.015, 0, 1);
-			if (EnemyCharacter->IsPlayerDead)
-			{
-				if (quitWidgetUI && infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
-				{
-					infoWidgetUI->weaponHoldPercent = 0;
-					if (bDeadBodyWidgetOn == false)
-					{
-						bDeadBodyWidgetOn = true;
-						AEclipsePlayerState* ECPlayerState = Cast<AEclipsePlayerState>(EnemyCharacter->GetPlayerState());
-						DeadBodyInteraction(ECPlayerState);
-					}
-				}
-			}
+			DeadBodyInteraction(EnemyCharacter);
+			// // 키다운 시간 동안 Radial Slider 게이지 상승
+			// infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.015, 0, 1);
+			// if (EnemyCharacter->IsPlayerDead)
+			// {
+			// 	if (quitWidgetUI && infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
+			// 	{
+			// 		infoWidgetUI->weaponHoldPercent = 0;
+			// 		if (bDeadBodyWidgetOn == false)
+			// 		{
+			// 			bDeadBodyWidgetOn = true;
+			// 			DeadBodyInteraction(EnemyCharacter);
+			// 		}
+			// 	}
+			// }
 		}
 	}
 }
@@ -2367,7 +2370,7 @@ void APlayerCharacter::MoveToIsolatedShip()
 	GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
 		PouchCaching();
-		InventoryCaching(this->GetPlayerState());
+		if(AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))	CachingPlayerState->InventoryCaching(this);
 		StashCaching();
 		GearCaching();
 		MagCaching();
@@ -4048,8 +4051,7 @@ void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 {
 	if (IsLocallyControlled())
 	{
-		InventoryCaching(GetPlayerState());
-		StashCaching();
+		if(AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))	CachingPlayerState->InventoryCaching(this);
 		//AEclipsePlayerController* DeadPlayerController = Cast<AEclipsePlayerController>(GetController());
 		//if(DeadPlayerController) DeadPlayerController->DisableInput(DeadPlayerController);
 		UWidgetLayoutLibrary::RemoveAllWidgets(GetWorld());

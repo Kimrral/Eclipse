@@ -731,7 +731,7 @@ void APlayerCharacter::SwapFirstWeaponRPCMulticast_Implementation()
 			// 애니메이션 블루프린트에 상태 전환 불리언 전달
 			animInst->bPistol = true;
 		}
-		PlayAnimMontage(FullBodyMontage, 1, FName("PistolEquip"));
+		PlayAnimMontage(UpperOnlyMontage, 1, FName("PistolEquip"));
 		// Visibility 설정
 		rifleComp->SetVisibility(false);
 		sniperComp->SetVisibility(false);
@@ -873,7 +873,7 @@ void APlayerCharacter::SwapSecondWeaponRPCMulticast_Implementation()
 			// 애니메이션 블루프린트에 상태 전환 불리언 전달
 			animInst->bPistol = true;
 		}
-		PlayAnimMontage(FullBodyMontage, 1, FName("PistolEquip"));
+		PlayAnimMontage(UpperOnlyMontage, 1, FName("PistolEquip"));
 		// Visibility 설정
 		rifleComp->SetVisibility(false);
 		sniperComp->SetVisibility(false);

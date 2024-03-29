@@ -1061,17 +1061,17 @@ void APlayerCharacter::OnGroundHitRPCMulticast_Implementation(const FHitResult& 
 {
 	if (IsLocallyControlled())
 	{
-		FRotator decalRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
-		FVector_NetQuantize decalLoc = HitResult.Location;
-		FTransform decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
+		const FRotator decalRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
+		const FVector_NetQuantize decalLoc = HitResult.Location;
+		const FTransform decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
 		GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot + FRotator(-90, 0, 0), FVector(0.5f));
 	}
 	else
 	{
-		FRotator decalRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
-		FVector_NetQuantize decalLoc = HitResult.Location;
-		FTransform decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
+		const FRotator decalRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
+		const FVector_NetQuantize decalLoc = HitResult.Location;
+		const FTransform decalTrans = UKismetMathLibrary::MakeTransform(decalLoc, decalRot);
 		GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot + FRotator(-90, 0, 0), FVector(0.5f));
 	}
@@ -1622,7 +1622,7 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 	}
 }
 
-void APlayerCharacter::SetBossHPWidget(AEnemy* enemy)
+void APlayerCharacter::SetBossHPWidget(const AEnemy* enemy)
 {
 	if (enemy && bossHPUI)
 	{
@@ -1750,21 +1750,9 @@ void APlayerCharacter::DeadBodyInteractionRPCMutlicast_Implementation(APlayerCha
 {
 	if (IsLocallyControlled())
 	{
-		if(const AEclipseGameState* GameState = Cast<AEclipseGameState>(GetWorld()->GetGameState()))
+		if(AEclipsePlayerState* ECDeadPlayerState = Cast<AEclipsePlayerState>(DeadPlayerCharacter->GetPlayerState()))
 		{
-			TArray<TObjectPtr<APlayerState>> AllPlayerArray = GameState->PlayerArray;
-			for(auto PlayerArray : AllPlayerArray)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("%s"), *(PlayerArray.GetFName()).ToString())
-				if(PlayerArray->GetPlayerName()==DeadPlayerCharacter->GetPlayerState()->GetPlayerName())
-				{
-					UE_LOG(LogTemp, Warning, TEXT("Target Player Name : %s"), *(PlayerArray->GetPlayerName()))
-					if(AEclipsePlayerState* ECDeadPlayerState = Cast<AEclipsePlayerState>(PlayerArray))
-					{
-						ECDeadPlayerState->DeadBodyWidgetSettings(DeadPlayerCharacter);
-					}
-				}
-			}
+			ECDeadPlayerState->DeadBodyWidgetSettings(this, ECDeadPlayerState);
 		}
 		UGameplayStatics::PlaySound2D(GetWorld(), tabSound);
 		infoWidgetUI->RemoveFromParent();
@@ -2330,7 +2318,7 @@ void APlayerCharacter::ServerRPCReload_Implementation()
 
 void APlayerCharacter::MulticastRPCReload_Implementation()
 {
-	bool animPlay = animInstance->IsAnyMontagePlaying();
+	const bool animPlay = animInstance->IsAnyMontagePlaying();
 	if (animPlay == false)
 	{
 		if (weaponArray[0] == true && curRifleAmmo < 40 + SetRifleAdditionalMagazine() && maxRifleAmmo > 0)
@@ -2525,6 +2513,13 @@ void APlayerCharacter::DamagedRPCMulticast_Implementation(int damage)
 	UpdateTabWidget();
 	StopAnimMontage();
 	PlayAnimMontage(FullBodyMontage, 1, FName("Damaged"));
+	FTimerHandle overlayMatHandle;
+	GetMesh()->SetOverlayMaterial(overlayMatRed);
+	GetWorldTimerManager().ClearTimer(overlayMatHandle);
+	GetWorldTimerManager().SetTimer(overlayMatHandle, FTimerDelegate::CreateLambda([this]()-> void
+	{
+		GetMesh()->SetOverlayMaterial(nullptr);
+	}), 0.3f, false);
 }
 
 int32 APlayerCharacter::SetRifleAdditionalMagazine()
@@ -4273,10 +4268,4 @@ void APlayerCharacter::UnEquipArmor(bool SoundBool)
 	}
 	ArmorSlot->SetVisibility(false);
 	ArmorEquipped = false;
-}
-
-
-void APlayerCharacter::OnRep_CanShoot()
-{
-	//EC_LOG(LogTemp, Warning, TEXT("%s"), TEXT("CanShoot"))
 }

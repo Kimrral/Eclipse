@@ -20,6 +20,6 @@ public:
 	void InventoryCaching(APlayerCharacter* PlayerCharacterRef);
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void DeadBodyWidgetSettings(APlayerCharacter* DeadPlayerCharacterRef);
+	void DeadBodyWidgetSettings(APlayerCharacter* DeadPlayerCharacterRef, AEclipsePlayerState* DeadPlayerState);
 	
 };

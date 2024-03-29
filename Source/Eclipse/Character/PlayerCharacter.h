@@ -345,7 +345,7 @@ public:
 	void WeaponDetectionLineTrace();
 
 	UFUNCTION()
-	void SetBossHPWidget(AEnemy* enemy);
+	void SetBossHPWidget(const AEnemy* enemy);
 
 	UFUNCTION()
 	void SetDamageWidget(int damage, FVector spawnLoc, bool isShieldIconEnable, FLinearColor DamageTextColor);
@@ -404,14 +404,8 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void DeadBodyWidgetOnViewport();
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void DeadBodyWidgetSettings(APlayerState* DeadBodyPlayerState, APlayerCharacter* DeadPlayer);
-
 	UFUNCTION()
 	void InteractionProcess();
-
-	UFUNCTION()
-	void OnRep_CanShoot();
 
 	UFUNCTION()
 	void MoveToIsolatedShip();
@@ -690,6 +684,9 @@ public:
 	UPROPERTY()
 	class AEnemy* enemyRef;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Material)
+	class UMaterialInterface* overlayMatRed;
+
 	UPROPERTY()
 	FVector DeathPosition;
 
@@ -786,7 +783,7 @@ public:
 	UPROPERTY()
 	bool isRifleShootable;
 
-	UPROPERTY(ReplicatedUsing=OnRep_CanShoot)
+	UPROPERTY(Replicated)
 	bool CanShoot = true;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -951,7 +948,7 @@ public:
 	UPROPERTY()
 	class AEclipseGameMode* gm;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	class UEclipseGameInstance* gi;
 
 	UPROPERTY()

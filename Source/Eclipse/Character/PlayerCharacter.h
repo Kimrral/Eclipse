@@ -11,6 +11,9 @@
 #include "Components/TimelineComponent.h"
 #include "Eclipse/Game/EclipseGameInstance.h"
 #include "Eclipse/Item/ArmorActor.h"
+#include "Eclipse/Weapon/M249Actor.h"
+#include "Eclipse/Weapon/PistolActor.h"
+#include "Eclipse/Weapon/SniperActor.h"
 #include "PlayerCharacter.generated.h"
 
 DECLARE_DYNAMIC_DELEGATE(FRewardContainerDestruct);
@@ -45,7 +48,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;	
 
 	// Stat Section
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
@@ -167,6 +170,13 @@ public:
 	void ProcessRifleFireSimulatedProxy();
 
 	UFUNCTION()
+	void ProcessSniperFire();
+	UFUNCTION()
+	void ProcessSniperFireLocal();
+	UFUNCTION()
+	void ProcessSniperFireSimulatedProxy();
+
+	UFUNCTION()
 	void ProcessPistolFire();
 	UFUNCTION()
 	void ProcessPistolFireAnim();
@@ -174,18 +184,52 @@ public:
 	void ProcessPistolFireLocal();
 	UFUNCTION()
 	void ProcessPistolFireSimulatedProxy();
-
-	UFUNCTION()
-	void ProcessSniperFire();
+	
 	
 	UFUNCTION()
 	void ProcessM249Fire();
+	UFUNCTION()
+	void ProcessM249FireAnim();
+	UFUNCTION()
+	void ProcessM249FireLocal();
+	UFUNCTION()
+	void ProcessM249FireSimulatedProxy();
 
 	UFUNCTION()
 	float SetFireInterval();
 
 	UFUNCTION()
 	float GetAttackDamage();
+
+	UFUNCTION()
+	void ChangeWeaponToRifle(ARifleActor* RifleActor);
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ChangeWeaponToRifleRPCServer(ARifleActor* RifleActor);
+	UFUNCTION(NetMulticast, UnReliable)
+	void ChangeWeaponToRifleRPCMulticast(ARifleActor* RifleActor);
+	
+	UFUNCTION()
+	void ChangeWeaponToSniper(ASniperActor* SniperActor);
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ChangeWeaponToSniperRPCServer(ASniperActor* SniperActor);
+	UFUNCTION(NetMulticast, UnReliable)
+	void ChangeWeaponToSniperRPCMulticast(ASniperActor* SniperActor);
+
+	
+	UFUNCTION()
+	void ChangeWeaponToPistol(APistolActor* PistolActor);
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ChangeWeaponToPistolRPCServer(APistolActor* PistolActor);
+	UFUNCTION(NetMulticast, UnReliable)
+	void ChangeWeaponToPistolRPCMulticast(APistolActor* PistolActor);
+
+	
+	UFUNCTION()
+	void ChangeWeaponToM249(AM249Actor* M249Actor);
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ChangeWeaponToM249RPCServer(AM249Actor* M249Actor);
+	UFUNCTION(NetMulticast, UnReliable)
+	void ChangeWeaponToM249RPCMulticast(AM249Actor* M249Actor);
 
 	//=======================================//
 

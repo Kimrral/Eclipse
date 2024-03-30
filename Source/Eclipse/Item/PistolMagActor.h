@@ -3,19 +3,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "MagActor.h"
+#include "PickableActor.h"
 #include "PistolMagActor.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class ECLIPSE_API APistolMagActor : public AMagActor
+class ECLIPSE_API APistolMagActor : public APickableActor
 {
 	GENERATED_BODY()
 
 public:
 	UFUNCTION(BlueprintImplementableEvent)
-	void AddInventory();
+	void AddInventory(APlayerCharacter* CachingPlayerCharacter);
 	
 };

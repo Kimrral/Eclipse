@@ -4,16 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "RewardActor.generated.h"
+#include "PickableActor.generated.h"
 
 UCLASS()
-class ECLIPSE_API ARewardActor : public AActor
+class ECLIPSE_API APickableActor : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	ARewardActor();
+	APickableActor();
+
+	UPROPERTY(EditAnywhere)
+	class UStaticMeshComponent* RootMesh;
 
 protected:
 	// Called when the game starts or when spawned
@@ -22,8 +25,5 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	UPROPERTY(EditAnywhere)
-	class UStaticMeshComponent* rewardMesh;
 
 };

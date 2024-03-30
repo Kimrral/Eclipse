@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GearActor.h"
+#include "PickableActor.h"
 #include "ArmorActor.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class ECLIPSE_API AArmorActor : public AGearActor
+class ECLIPSE_API AArmorActor : public APickableActor
 {
 	GENERATED_BODY()
 

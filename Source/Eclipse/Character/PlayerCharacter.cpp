@@ -52,13 +52,10 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Eclipse/CharacterStat/PlayerCharacterStatComponent.h"
-#include "Eclipse/Game/EclipseGameState.h"
 #include "Eclipse/Game/EclipsePlayerState.h"
-#include "GameFramework/GameState.h"
 #include "GeometryCollection/GeometryCollectionComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Kismet/KismetSystemLibrary.h"
 #include "Net/UnrealNetwork.h"
 
 // Sets default values
@@ -167,7 +164,7 @@ void APlayerCharacter::BeginPlay()
 		FOnTimelineFloat TimelineProgress;
 		TimelineProgress.BindDynamic(this, &APlayerCharacter::SetZoomValue);
 		Timeline.AddInterpFloat(CurveFloat, TimelineProgress);
-	}	
+	}
 
 	// Widget Settings
 	crosshairUI = CreateWidget<UCrosshairWidget>(GetWorld(), crosshairFactory);
@@ -244,7 +241,7 @@ void APlayerCharacter::BeginPlay()
 
 		equippedWeaponStringArray.Add(FString("Rifle")); //0
 		equippedWeaponStringArray.Add(FString("Pistol")); //1
-		
+
 		// Weapon Visibility Settings
 		rifleComp->SetVisibility(true);
 		sniperComp->SetVisibility(false);
@@ -424,7 +421,6 @@ void APlayerCharacter::ZoomRPCMulticast_Implementation()
 	}
 	// Zooming Boolean
 	isZooming = true;
-	UGameplayStatics::PlaySoundAtLocation(GetWorld(), zoomSound, GetActorLocation());
 	CharacterWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
 	GetCharacterMovement()->MaxWalkSpeed = 180.f;
 	UPlayerAnim* const animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
@@ -435,6 +431,15 @@ void APlayerCharacter::ZoomRPCMulticast_Implementation()
 	// is using rifle
 	if (weaponArray[0] == true)
 	{
+		if (IsLocallyControlled())
+		{
+			UGameplayStatics::PlaySound2D(GetWorld(), zoomSound);
+		}
+		else
+		{
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), zoomSound, GetActorLocation());
+		}
+
 		if (animInst)
 		{
 			animInst->bRifleZooming = true;
@@ -444,20 +449,48 @@ void APlayerCharacter::ZoomRPCMulticast_Implementation()
 	// is using sniper
 	else if (weaponArray[1] == true)
 	{
-		if(IsLocallyControlled())
+		if (IsLocallyControlled())
 		{
 			isSniperZooming = true;
 			crosshairUI->CrosshairImage->SetVisibility(ESlateVisibility::Hidden);
 			APlayerCameraManager* const cameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0));
 			cameraManager->StartCameraFade(1.0, 0.1, 3.0, FColor::Black, false, true);
 			PC->PlayerCameraManager->StartCameraShake(sniperZoomingShake);
+			UGameplayStatics::PlaySound2D(GetWorld(), SniperZoomSound);
 			// 카메라 줌 러프 타임라인 재생
 			Timeline.PlayFromStart();
 			sniperScopeUI->AddToViewport();
 		}
+		else
+		{
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), SniperZoomSound, GetActorLocation());
+		}
+		if (animInst)
+		{
+			animInst->bRifleZooming = true;
+		}
+	}
+	else if (weaponArray[2] == true)
+	{
+		if (IsLocallyControlled())
+		{
+			UGameplayStatics::PlaySound2D(GetWorld(), zoomSound);
+		}
+		else
+		{
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), zoomSound, GetActorLocation());
+		}
 	}
 	else if (weaponArray[3] == true)
 	{
+		if (IsLocallyControlled())
+		{
+			UGameplayStatics::PlaySound2D(GetWorld(), zoomSound);
+		}
+		else
+		{
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), zoomSound, GetActorLocation());
+		}
 		if (animInst)
 		{
 			animInst->bM249Zooming = true;
@@ -516,7 +549,7 @@ void APlayerCharacter::ZoomRPCReleaseMulticast_Implementation()
 	}
 	else if (weaponArray[1] == true)
 	{
-		if(IsLocallyControlled())
+		if (IsLocallyControlled())
 		{
 			isSniperZooming = false;
 			PC->PlayerCameraManager->StopAllCameraShakes();
@@ -529,7 +562,11 @@ void APlayerCharacter::ZoomRPCReleaseMulticast_Implementation()
 			SniperZoomBool = false;
 			SniperZoomOutBool = false;
 			Timeline.ReverseFromEnd();
-		}		
+		}
+		if (animInst)
+		{
+			animInst->bRifleZooming = false;
+		}
 	}
 	else if (weaponArray[3] == true)
 	{
@@ -672,9 +709,18 @@ void APlayerCharacter::SwapFirstWeaponRPCMulticast_Implementation()
 			return;
 		}
 	}
+	if (IsLocallyControlled())
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), SwapSound);
+		UGameplayStatics::PlaySound2D(GetWorld(), WeaponSwapSound);
+	}
+	else
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), SwapSound, GetActorLocation());
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
+	}
 	curWeaponSlotNumber = 1;
-	UGameplayStatics::PlaySoundAtLocation(GetWorld(), SwapSound, GetActorLocation());
-	UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
+
 	if (equippedWeaponStringArray[0] == FString("Rifle"))
 	{
 		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
@@ -814,9 +860,19 @@ void APlayerCharacter::SwapSecondWeaponRPCMulticast_Implementation()
 			return;
 		}
 	}
+	if (IsLocallyControlled())
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), SwapSound);
+		UGameplayStatics::PlaySound2D(GetWorld(), WeaponSwapSound);
+	}
+	else
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), SwapSound, GetActorLocation());
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
+	}
+
 	curWeaponSlotNumber = 2;
-	UGameplayStatics::PlaySoundAtLocation(GetWorld(), SwapSound, GetActorLocation());
-	UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
+
 	if (equippedWeaponStringArray[1] == FString("Rifle"))
 	{
 		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
@@ -947,9 +1003,9 @@ void APlayerCharacter::OnPlayerHitRPCMulticast_Implementation(const FHitResult& 
 {
 	if (HasAuthority())
 	{
-		if(IsHeadshot)
+		if (IsHeadshot)
 		{
-			HitCharacter->Damaged(GetAttackDamage()*2, this);
+			HitCharacter->Damaged(GetAttackDamage() * 2, this);
 		}
 		else
 		{
@@ -959,13 +1015,13 @@ void APlayerCharacter::OnPlayerHitRPCMulticast_Implementation(const FHitResult& 
 	if (IsLocallyControlled())
 	{
 		const FRotator hitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
-		if(IsHeadshot)
+		if (IsHeadshot)
 		{
 			UGameplayStatics::PlaySound2D(GetWorld(), BulletHeadHitSound);
 			// 적중 위젯 애니메이션 재생
 			crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
 			// 데미지 위젯에 피해 값과 적 위치벡터 할당
-			SetDamageWidget(GetAttackDamage()*2, HitResult.Location, false, FLinearColor::Yellow);
+			SetDamageWidget(GetAttackDamage() * 2, HitResult.Location, false, FLinearColor::Yellow);
 			// 적중 파티클 스폰
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodParticle, HitResult.Location, hitRot, FVector(1.f));
 		}
@@ -979,12 +1035,11 @@ void APlayerCharacter::OnPlayerHitRPCMulticast_Implementation(const FHitResult& 
 			// 적중 파티클 스폰
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodParticle, HitResult.Location, hitRot, FVector(1.f));
 		}
-		
 	}
 	else
 	{
 		const FRotator hitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
-		if(IsHeadshot)
+		if (IsHeadshot)
 		{
 			// 적중 사운드 재생
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHeadHitSound, HitResult.Location);
@@ -997,7 +1052,7 @@ void APlayerCharacter::OnPlayerHitRPCMulticast_Implementation(const FHitResult& 
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, HitResult.Location);
 			// 적중 파티클 스폰
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodParticle, HitResult.Location, hitRot, FVector(1.f));
-		}		
+		}
 	}
 }
 
@@ -1707,7 +1762,6 @@ void APlayerCharacter::ChangeWeapon()
 
 void APlayerCharacter::ArmorActorInteraction(AArmorActor* Armor)
 {
-	
 	ArmorActorInteractionRPCServer(Armor);
 }
 
@@ -1723,13 +1777,20 @@ bool APlayerCharacter::ArmorActorInteractionRPCServer_Validate(AArmorActor* Armo
 
 void APlayerCharacter::ArmorActorInteractionRPCMutlicast_Implementation(AArmorActor* Armor)
 {
+	if (HasAuthority())
+	{
+		//Armor->Destroy();		
+	}
 	if (IsLocallyControlled())
 	{
 		Armor->AddInventory(this);
-		if(AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))	CachingPlayerState->InventoryCaching(this);
+
+		if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))
+		{
+			CachingPlayerState->InventoryCaching(this);
+		}
 		UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
 		infoWidgetUI->RemoveFromParent();
-		//Armor->Destroy();		
 	}
 	PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
 }
@@ -1754,7 +1815,7 @@ void APlayerCharacter::DeadBodyInteractionRPCMutlicast_Implementation(APlayerCha
 {
 	if (IsLocallyControlled())
 	{
-		if(AEclipsePlayerState* ECDeadPlayerState = Cast<AEclipsePlayerState>(DeadPlayerCharacter->GetPlayerState()))
+		if (AEclipsePlayerState* ECDeadPlayerState = Cast<AEclipsePlayerState>(DeadPlayerCharacter->GetPlayerState()))
 		{
 			ECDeadPlayerState->DeadBodyWidgetSettings(this, ECDeadPlayerState);
 		}
@@ -1782,13 +1843,13 @@ bool APlayerCharacter::ChangeWeaponToRifleRPCServer_Validate(ARifleActor* RifleA
 
 void APlayerCharacter::ChangeWeaponToRifleRPCMulticast_Implementation(ARifleActor* RifleActor)
 {
-	if(HasAuthority())
+	if (HasAuthority())
 	{
 		// 교체 대상 무기 액터 파괴
 		RifleActor->Destroy();
 	}
 	// 무기 교체 Montage 재생
-	PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));	
+	PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
 	// 액터 스폰 지점 할당
 	const FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
 	const FRotator spawnRotation = FRotator::ZeroRotator;
@@ -1840,8 +1901,8 @@ void APlayerCharacter::ChangeWeaponToRifleRPCMulticast_Implementation(ARifleActo
 	weaponArray[1] = false;
 	weaponArray[2] = false;
 	weaponArray[3] = false;
-	
-	if(IsLocallyControlled())
+
+	if (IsLocallyControlled())
 	{
 		UGameplayStatics::PlaySound2D(GetWorld(), WeaponSwapSound);
 		// 무기 정보 위젯 제거
@@ -1870,7 +1931,7 @@ bool APlayerCharacter::ChangeWeaponToSniperRPCServer_Validate(ASniperActor* Snip
 
 void APlayerCharacter::ChangeWeaponToSniperRPCMulticast_Implementation(ASniperActor* SniperActor)
 {
-	if(HasAuthority())
+	if (HasAuthority())
 	{
 		SniperActor->Destroy();
 	}
@@ -1915,7 +1976,7 @@ void APlayerCharacter::ChangeWeaponToSniperRPCMulticast_Implementation(ASniperAc
 	weaponArray[2] = false;
 	weaponArray[3] = false;
 
-	if(IsLocallyControlled())
+	if (IsLocallyControlled())
 	{
 		UGameplayStatics::PlaySound2D(GetWorld(), WeaponSwapSound);
 		// 무기 정보 위젯 제거
@@ -1928,7 +1989,7 @@ void APlayerCharacter::ChangeWeaponToSniperRPCMulticast_Implementation(ASniperAc
 }
 
 void APlayerCharacter::ChangeWeaponToPistol(APistolActor* PistolActor)
-{	
+{
 	ChangeWeaponToPistolRPCServer(PistolActor);
 }
 
@@ -1944,7 +2005,7 @@ bool APlayerCharacter::ChangeWeaponToPistolRPCServer_Validate(APistolActor* Pist
 
 void APlayerCharacter::ChangeWeaponToPistolRPCMulticast_Implementation(APistolActor* PistolActor)
 {
-	if(HasAuthority())
+	if (HasAuthority())
 	{
 		PistolActor->Destroy();
 	}
@@ -1953,7 +2014,7 @@ void APlayerCharacter::ChangeWeaponToPistolRPCMulticast_Implementation(APistolAc
 	if (animInst)
 	{
 		animInst->bPistol = true;
-	}	
+	}
 	const FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
 	const FRotator spawnRotation = FRotator::ZeroRotator;
 	FActorSpawnParameters param;
@@ -1987,8 +2048,8 @@ void APlayerCharacter::ChangeWeaponToPistolRPCMulticast_Implementation(APistolAc
 	weaponArray[1] = false;
 	weaponArray[2] = true;
 	weaponArray[3] = false;
-	
-	if(IsLocallyControlled())
+
+	if (IsLocallyControlled())
 	{
 		UGameplayStatics::PlaySound2D(GetWorld(), WeaponSwapSound);
 		// 무기 정보 위젯 제거
@@ -2001,7 +2062,7 @@ void APlayerCharacter::ChangeWeaponToPistolRPCMulticast_Implementation(APistolAc
 }
 
 void APlayerCharacter::ChangeWeaponToM249(AM249Actor* M249Actor)
-{	
+{
 	ChangeWeaponToM249RPCServer(M249Actor);
 }
 
@@ -2017,7 +2078,7 @@ bool APlayerCharacter::ChangeWeaponToM249RPCServer_Validate(AM249Actor* M249Acto
 
 void APlayerCharacter::ChangeWeaponToM249RPCMulticast_Implementation(AM249Actor* M249Actor)
 {
-	if(HasAuthority())
+	if (HasAuthority())
 	{
 		M249Actor->Destroy();
 	}
@@ -2061,7 +2122,7 @@ void APlayerCharacter::ChangeWeaponToM249RPCMulticast_Implementation(AM249Actor*
 	weaponArray[2] = false;
 	weaponArray[3] = true;
 
-	if(IsLocallyControlled())
+	if (IsLocallyControlled())
 	{
 		UGameplayStatics::PlaySound2D(GetWorld(), WeaponSwapSound);
 		// 무기 정보 위젯 제거
@@ -2137,7 +2198,7 @@ void APlayerCharacter::InteractionProcess()
 				if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 				{
 					infoWidgetUI->weaponHoldPercent = 0;
-					ChangeWeaponToSniper(sniperActor);			
+					ChangeWeaponToSniper(sniperActor);
 				}
 			}
 		}
@@ -2152,7 +2213,7 @@ void APlayerCharacter::InteractionProcess()
 				if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 				{
 					infoWidgetUI->weaponHoldPercent = 0;
-					ChangeWeaponToPistol(pistolActor);				
+					ChangeWeaponToPistol(pistolActor);
 				}
 			}
 		}
@@ -2167,7 +2228,7 @@ void APlayerCharacter::InteractionProcess()
 				if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 				{
 					infoWidgetUI->weaponHoldPercent = 0;
-					ChangeWeaponToM249(m249Actor);				
+					ChangeWeaponToM249(m249Actor);
 				}
 			}
 		}
@@ -2214,7 +2275,10 @@ void APlayerCharacter::InteractionProcess()
 					GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()-> void
 					{
 						PouchCaching();
-						if(AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))	CachingPlayerState->InventoryCaching(this);
+						if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))
+						{
+							CachingPlayerState->InventoryCaching(this);
+						}
 						GearCaching();
 						MagCaching();
 						UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"));
@@ -2432,8 +2496,6 @@ void APlayerCharacter::InteractionProcess()
 }
 
 
-
-
 void APlayerCharacter::Reload()
 {
 	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) != FString("Safe_House"))
@@ -2449,8 +2511,8 @@ void APlayerCharacter::ServerRPCReload_Implementation()
 
 void APlayerCharacter::MulticastRPCReload_Implementation()
 {
-	const bool animPlay = animInstance->IsAnyMontagePlaying();
-	if (animPlay == false)
+	const bool IsMontagePlaying = animInstance->IsAnyMontagePlaying();
+	if (!IsMontagePlaying)
 	{
 		if (weaponArray[0] == true && curRifleAmmo < 40 + SetRifleAdditionalMagazine() && maxRifleAmmo > 0)
 		{
@@ -2459,6 +2521,11 @@ void APlayerCharacter::MulticastRPCReload_Implementation()
 				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
 				UGameplayStatics::PlaySound2D(GetWorld(), RifleReloadSound);
 			}
+			else
+			{
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleReloadSound, GetActorLocation());
+			}
+
 			PlayAnimMontage(UpperOnlyMontage, 1, FName("Reload"));
 		}
 		else if (weaponArray[1] == true && curSniperAmmo < 5 + SetSniperAdditionalMagazine() && maxSniperAmmo > 0)
@@ -2467,6 +2534,10 @@ void APlayerCharacter::MulticastRPCReload_Implementation()
 			{
 				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
 				UGameplayStatics::PlaySound2D(GetWorld(), SniperReloadSound);
+			}
+			else
+			{
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), SniperReloadSound, GetActorLocation());
 			}
 			PlayAnimMontage(UpperOnlyMontage, 1, FName("Reload"));
 		}
@@ -2477,6 +2548,10 @@ void APlayerCharacter::MulticastRPCReload_Implementation()
 				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
 				UGameplayStatics::PlaySound2D(GetWorld(), PistolReloadSound);
 			}
+			else
+			{
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PistolReloadSound, GetActorLocation());
+			}
 			PlayAnimMontage(UpperOnlyMontage, 1, FName("PistolReload"));
 		}
 		else if (weaponArray[3] == true && curM249Ammo < 100 + SetM249AdditionalMagazine() && maxM249Ammo > 0)
@@ -2485,6 +2560,10 @@ void APlayerCharacter::MulticastRPCReload_Implementation()
 			{
 				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
 				UGameplayStatics::PlaySound2D(GetWorld(), M249ReloadSound);
+			}
+			else
+			{
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), M249ReloadSound, GetActorLocation());
 			}
 			PlayAnimMontage(UpperOnlyMontage, 1, FName("M249Reload"));
 		}
@@ -2517,7 +2596,7 @@ void APlayerCharacter::MoveToIsolatedShip()
 	GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
 		PouchCaching();
-		if(AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))	CachingPlayerState->InventoryCaching(this);
+		if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->InventoryCaching(this);
 		StashCaching();
 		GearCaching();
 		MagCaching();
@@ -2943,10 +3022,9 @@ void APlayerCharacter::ProcessRifleFireSimulatedProxy()
 {
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleFireSound, GetActorLocation());
 	const FVector particleLoc = rifleComp->GetSocketLocation(FName("RifleFirePosition"));
-	const UE::Math::TRotator<double> particleRot = rifleComp->GetSocketRotation(FName("RifleFirePosition"));	
+	const UE::Math::TRotator<double> particleRot = rifleComp->GetSocketRotation(FName("RifleFirePosition"));
 	const FTransform particleTrans = UKismetMathLibrary::MakeTransform(particleLoc, particleRot, FVector(0.4));
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle2, particleTrans);
-
 }
 
 void APlayerCharacter::FireRelease()
@@ -2961,10 +3039,11 @@ void APlayerCharacter::ProcessRifleFire()
 		// Clamp를 통한 탄약 수 차감
 		curRifleAmmo = FMath::Clamp(curRifleAmmo - 1, 0, 40 + SetRifleAdditionalMagazine());
 		UE_LOG(LogTemp, Warning, TEXT("Cur Rifle Bullet : %d"), curRifleAmmo)
+		FHitResult rifleHitResult;
 		FVector startLoc = FollowCamera->GetComponentLocation();
 		FVector EndLoc = startLoc + FollowCamera->GetForwardVector() * 10000.0f;
 		FCollisionQueryParams params;
-		params.AddIgnoredActor(this);		
+		params.AddIgnoredActor(this);
 		// Perform Linetrace
 		bool bHit = GetWorld()->LineTraceSingleByChannel(rifleHitResult, startLoc, EndLoc, ECC_Visibility, params);
 		if (bHit)
@@ -2974,7 +3053,7 @@ void APlayerCharacter::ProcessRifleFire()
 			// 플레이어 적중
 			if (player)
 			{
-				if(rifleHitResult.BoneName==FName("head"))
+				if (rifleHitResult.BoneName == FName("head"))
 				{
 					OnPlayerHit(rifleHitResult, player, true);
 				}
@@ -3239,8 +3318,8 @@ void APlayerCharacter::ProcessRifleFire()
 			{
 				OnGroundHit(rifleHitResult);
 			}
-		}		
-	}	
+		}
+	}
 }
 
 
@@ -3255,9 +3334,9 @@ void APlayerCharacter::ProcessSniperFire()
 		FVector startLoc = FollowCamera->GetComponentLocation();
 		FVector EndLoc = startLoc + FollowCamera->GetForwardVector() * 10000.0f;
 		FCollisionQueryParams params;
-		params.AddIgnoredActor(this);		
+		params.AddIgnoredActor(this);
 		// Perform Linetrace
-		bool bHit = GetWorld()->LineTraceSingleByChannel(sniperHitResult, startLoc, EndLoc, ECC_Visibility, params);		
+		bool bHit = GetWorld()->LineTraceSingleByChannel(sniperHitResult, startLoc, EndLoc, ECC_Visibility, params);
 		// 라인 트레이스가 적중했다면
 		if (bHit)
 		{
@@ -3266,7 +3345,7 @@ void APlayerCharacter::ProcessSniperFire()
 			// 플레이어 적중
 			if (player)
 			{
-				if(sniperHitResult.BoneName==FName("head"))
+				if (sniperHitResult.BoneName == FName("head"))
 				{
 					OnPlayerHit(sniperHitResult, player, true);
 				}
@@ -3500,8 +3579,8 @@ void APlayerCharacter::ProcessSniperFire()
 			{
 				OnGroundHit(sniperHitResult);
 			}
-		}		
-	}	
+		}
+	}
 }
 
 void APlayerCharacter::ProcessSniperFireLocal()
@@ -3523,23 +3602,15 @@ void APlayerCharacter::ProcessSniperFireLocal()
 		particleTrans.SetScale3D(FVector(0.7));
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperFireParticle, particleTrans);
 		PC->PlayerCameraManager->StartCameraShake(sniperFireShake);
-	}		
+	}
 }
 
 void APlayerCharacter::ProcessSniperFireSimulatedProxy()
 {
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), SniperFireSound, GetActorLocation());
-	if (isZooming)
-	{
-		UE::Math::TVector<double> particleTrans = FollowCamera->GetComponentLocation() + FollowCamera->GetUpVector() * -70.0f;
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperFireParticle, particleTrans);
-	}
-	else
-	{
-		FTransform particleTrans = sniperComp->GetSocketTransform(FName("SniperFirePosition"));
-		particleTrans.SetScale3D(FVector(0.7));
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperFireParticle, particleTrans);
-	}		
+	FTransform particleTrans = sniperComp->GetSocketTransform(FName("SniperFirePosition"));
+	particleTrans.SetScale3D(FVector(0.7));
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperFireParticle, particleTrans);
 }
 
 void APlayerCharacter::ProcessPistolFire()
@@ -3548,14 +3619,14 @@ void APlayerCharacter::ProcessPistolFire()
 	{
 		// Clamp를 통한 탄약 수 차감
 		curPistolAmmo = FMath::Clamp(curPistolAmmo - 1, 0, 8 + SetPistolAdditionalMagazine());
-		UE_LOG(LogTemp, Warning, TEXT("Cur Pistol Bullet : %d"), curPistolAmmo)		
+		UE_LOG(LogTemp, Warning, TEXT("Cur Pistol Bullet : %d"), curPistolAmmo)
 		FHitResult pistolHitResult;
 		FVector startLoc = FollowCamera->GetComponentLocation();
 		FVector EndLoc = startLoc + FollowCamera->GetForwardVector() * 10000.0f;
 		FCollisionQueryParams params;
-		params.AddIgnoredActor(this);		
+		params.AddIgnoredActor(this);
 		// Perform Linetrace
-		bool bHit = GetWorld()->LineTraceSingleByChannel(pistolHitResult, startLoc, EndLoc, ECC_Visibility, params);		
+		bool bHit = GetWorld()->LineTraceSingleByChannel(pistolHitResult, startLoc, EndLoc, ECC_Visibility, params);
 		if (bHit)
 		{
 			// Player Character Casting
@@ -3563,7 +3634,7 @@ void APlayerCharacter::ProcessPistolFire()
 			// 플레이어 적중
 			if (player)
 			{
-				if(pistolHitResult.BoneName==FName("head"))
+				if (pistolHitResult.BoneName == FName("head"))
 				{
 					OnPlayerHit(pistolHitResult, player, true);
 				}
@@ -3799,9 +3870,9 @@ void APlayerCharacter::ProcessPistolFire()
 			else
 			{
 				OnGroundHit(pistolHitResult);
-			}			
-		}		
-	}	
+			}
+		}
+	}
 }
 
 void APlayerCharacter::ProcessPistolFireAnim()
@@ -3827,7 +3898,7 @@ void APlayerCharacter::ProcessPistolFireLocal()
 	double randF = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), -1.2 * RecoilRateMultiplier());
 	double randF2 = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), 0.8 * RecoilRateMultiplier());
 	AddControllerPitchInput(randF);
-	AddControllerYawInput(randF2);	
+	AddControllerYawInput(randF2);
 }
 
 void APlayerCharacter::ProcessPistolFireSimulatedProxy()
@@ -3836,7 +3907,6 @@ void APlayerCharacter::ProcessPistolFireSimulatedProxy()
 	FTransform particleTrans = pistolComp->GetSocketTransform(FName("PistolFirePosition"));
 	particleTrans.SetScale3D(FVector(0.7));
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PistolfireParticle, particleTrans);
-
 }
 
 void APlayerCharacter::ProcessM249Fire()
@@ -3850,9 +3920,9 @@ void APlayerCharacter::ProcessM249Fire()
 		FVector startLoc = FollowCamera->GetComponentLocation();
 		FVector EndLoc = startLoc + FollowCamera->GetForwardVector() * 10000.0f;
 		FCollisionQueryParams params;
-		params.AddIgnoredActor(this);		
+		params.AddIgnoredActor(this);
 		// Perform Linetrace
-		bool bHit = GetWorld()->LineTraceSingleByChannel(M249HitResult, startLoc, EndLoc, ECC_Visibility, params);				
+		bool bHit = GetWorld()->LineTraceSingleByChannel(M249HitResult, startLoc, EndLoc, ECC_Visibility, params);
 		if (bHit)
 		{
 			// Player Character Casting
@@ -3860,7 +3930,7 @@ void APlayerCharacter::ProcessM249Fire()
 			// 플레이어 적중
 			if (player)
 			{
-				if(M249HitResult.BoneName==FName("head"))
+				if (M249HitResult.BoneName == FName("head"))
 				{
 					OnPlayerHit(M249HitResult, player, true);
 				}
@@ -4096,8 +4166,8 @@ void APlayerCharacter::ProcessM249Fire()
 			else
 			{
 				OnGroundHit(M249HitResult);
-			}			
-		}		
+			}
+		}
 	}
 }
 
@@ -4106,11 +4176,11 @@ void APlayerCharacter::ProcessM249FireAnim()
 	PlayAnimMontage(FullBodyMontage, 1, FName("RifleFire"));
 }
 
-void APlayerCharacter::ProcessM249FireLocal(){
-	
+void APlayerCharacter::ProcessM249FireLocal()
+{
 	FTransform particleTrans = m249Comp->GetSocketTransform(FName("M249FirePosition"));
 	particleTrans.SetScale3D(FVector(0.7));
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PistolfireParticle, particleTrans);		
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PistolfireParticle, particleTrans);
 	UGameplayStatics::PlaySound2D(GetWorld(), M249FireSound);
 	PC->PlayerCameraManager->StartCameraShake(rifleFireShake);
 	if (isZooming)
@@ -4133,25 +4203,25 @@ void APlayerCharacter::ProcessM249FireSimulatedProxy()
 {
 	FTransform particleTrans = m249Comp->GetSocketTransform(FName("M249FirePosition"));
 	particleTrans.SetScale3D(FVector(0.7));
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PistolfireParticle, particleTrans);		
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PistolfireParticle, particleTrans);
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), M249FireSound, GetActorLocation());
 }
 
 float APlayerCharacter::SetFireInterval()
 {
-	if(weaponArray[0]==true)
+	if (weaponArray[0] == true)
 	{
 		return BulletsPerSecRifle;
 	}
-	if(weaponArray[1]==true)
+	if (weaponArray[1] == true)
 	{
 		return BulletsPerSecSniper;
 	}
-	if(weaponArray[2]==true)
+	if (weaponArray[2] == true)
 	{
 		return BulletsPerSecPistol;
 	}
-	if(weaponArray[3]==true)
+	if (weaponArray[3] == true)
 	{
 		return BulletsPerSecM249;
 	}
@@ -4160,25 +4230,24 @@ float APlayerCharacter::SetFireInterval()
 
 float APlayerCharacter::GetAttackDamage()
 {
-	if(weaponArray[0]==true)
+	if (weaponArray[0] == true)
 	{
 		return AttackDamageRifle;
 	}
-	if(weaponArray[1]==true)
+	if (weaponArray[1] == true)
 	{
 		return AttackDamageSniper;
 	}
-	if(weaponArray[2]==true)
+	if (weaponArray[2] == true)
 	{
 		return AttackDamagePistol;
 	}
-	if(weaponArray[3]==true)
+	if (weaponArray[3] == true)
 	{
 		return AttackDamageM249;
 	}
 	return 0;
 }
-
 
 
 void APlayerCharacter::RemoveBossHPWidget()
@@ -4239,7 +4308,7 @@ void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 {
 	if (IsLocallyControlled())
 	{
-		if(AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))	CachingPlayerState->InventoryCaching(this);
+		if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->InventoryCaching(this);
 		UWidgetLayoutLibrary::RemoveAllWidgets(GetWorld());
 		APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 		// 카메라 페이드 연출

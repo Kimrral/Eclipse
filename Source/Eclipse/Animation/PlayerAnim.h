@@ -35,7 +35,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bArmed = true;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
 	bool bPistol = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -49,4 +49,6 @@ public:
 
 	UPROPERTY(EditAnywhere, Category=Sound)
 	class USoundBase* walkSound;
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

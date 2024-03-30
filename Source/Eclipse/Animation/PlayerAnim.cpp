@@ -5,6 +5,7 @@
 
 #include "Eclipse/Character/PlayerCharacter.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 
 void UPlayerAnim::NativeBeginPlay()
 {
@@ -82,7 +83,7 @@ void UPlayerAnim::AnimNotify_ReloadEnd()
 
 void UPlayerAnim::AnimNotify_LeftPlant()
 {
-	if (me->HasAuthority())
+	if (me->IsLocallyControlled())
 	{
 		UGameplayStatics::PlaySound2D(GetWorld(), walkSound);
 	}
@@ -94,7 +95,7 @@ void UPlayerAnim::AnimNotify_LeftPlant()
 
 void UPlayerAnim::AnimNotify_RightPlant()
 {
-	if (me->HasAuthority())
+	if (me->IsLocallyControlled())
 	{
 		UGameplayStatics::PlaySound2D(GetWorld(), walkSound);
 	}
@@ -102,4 +103,12 @@ void UPlayerAnim::AnimNotify_RightPlant()
 	{
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), walkSound, me->GetActorLocation());
 	}
+}
+
+void UPlayerAnim::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(UPlayerAnim, bPistol);
+
 }

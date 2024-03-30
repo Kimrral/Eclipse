@@ -3,20 +3,20 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ConsumableActor.h"
+#include "PickableActor.h"
 #include "MedKitActor.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class ECLIPSE_API AMedKitActor : public AConsumableActor
+class ECLIPSE_API AMedKitActor : public APickableActor
 {
 	GENERATED_BODY()
 
 	
 public:
 	UFUNCTION(BlueprintImplementableEvent)
-	void AddInventory();
+	void AddInventory(APlayerCharacter* CachingPlayerCharacter);
 	
 };

@@ -3,22 +3,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "RewardActor.h"
+#include "PickableActor.h"
 #include "HackingConsole.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class ECLIPSE_API AHackingConsole : public ARewardActor
+class ECLIPSE_API AHackingConsole : public APickableActor
 {
 	GENERATED_BODY()
 
-public:
-	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaSeconds) override;
-	
+public:	
 	UFUNCTION(BlueprintImplementableEvent)
-	void AddInventory();
+	void AddInventory(APlayerCharacter* CachingPlayerCharacter);
 		
 };

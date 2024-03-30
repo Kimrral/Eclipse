@@ -263,11 +263,11 @@ public:
 	void ChangeWeapon();
 
 	UFUNCTION()
-	void ArmorActorInteraction(AArmorActor* Armor);
+	void PickableItemActorInteraction(APickableActor* PickableActor);
 	UFUNCTION(Reliable, Server, WithValidation)
-	void ArmorActorInteractionRPCServer(AArmorActor* Armor);
+	void PickableItemActorInteractionRPCServer(APickableActor* PickableActor);
 	UFUNCTION(Unreliable, NetMulticast)
-	void ArmorActorInteractionRPCMutlicast(AArmorActor* Armor);
+	void PickableItemActorInteractionRPCMutlicast(APickableActor* PickableActor);
 
 	UFUNCTION()
 	void DeadBodyInteraction(APlayerCharacter* DeadPlayerCharacter);
@@ -619,6 +619,9 @@ public:
 
 	UPROPERTY()
 	class APlayerCharacter* PlayerCharacter;
+
+	UPROPERTY()
+	class APickableActor* PickableItemActor;
 
 	UPROPERTY()
 	class AMaskActor* MaskActor;

@@ -3,18 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GearActor.h"
+#include "PickableActor.h"
 #include "GoggleActor.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class ECLIPSE_API AGoggleActor : public AGearActor
+class ECLIPSE_API AGoggleActor : public APickableActor
 {
 	GENERATED_BODY()
 
 public:
 	UFUNCTION(BlueprintImplementableEvent)
-	void AddInventory();
+	void AddInventory(APlayerCharacter* CachingPlayerCharacter);
 };

@@ -831,28 +831,28 @@ public:
 	bool CanShoot = true;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float BulletsPerSecRifle = 11.0f;
+	float BulletsPerSecRifle = 11.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float BulletsPerSecPistol = 3.0f;
+	float BulletsPerSecPistol = 3.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float BulletsPerSecSniper = 1.8f;
+	float BulletsPerSecSniper = 1.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float BulletsPerSecM249 = 8.0f;
+	float BulletsPerSecM249 = 8.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float AttackDamageRifle = 9.0f;
+	float AttackDamageRifle = 9.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float AttackDamagePistol = 15.0f;
+	float AttackDamagePistol = 15.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float AttackDamageSniper = 70.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float AttackDamageM249 = 8.0f;
+	float AttackDamageM249 = 8.f;
 
 	//Sounds
 	UPROPERTY(EditAnywhere, Category="Sounds")
@@ -899,6 +899,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* zoomSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* SniperZoomSound;
 
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* gearEquipSound;
@@ -979,9 +982,6 @@ public:
 	class UParticleSystem* SniperFireParticle;
 	UPROPERTY(EditAnywhere, Transient, Category="Particle")
 	class UParticleSystem* BloodParticle;
-
-	UPROPERTY()
-	FHitResult rifleHitResult;
 
 	UPROPERTY(EditAnywhere) // Timeline 생성
 	FTimeline Timeline;

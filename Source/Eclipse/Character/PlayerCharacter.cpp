@@ -1148,10 +1148,14 @@ void APlayerCharacter::Q()
 
 void APlayerCharacter::WeaponDetectionLineTrace()
 {
-	if (IsLocallyControlled())
+	//if (IsLocallyControlled())
 	{
 		// 스나이퍼 줌 도중 교체 불가
 		if (isSniperZooming || bEnding)
+		{
+			return;
+		}
+		if (infoWidgetUI == nullptr)
 		{
 			return;
 		}
@@ -1167,27 +1171,11 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 			sniperActor = Cast<ASniperActor>(actorHitResult.GetActor());
 			pistolActor = Cast<APistolActor>(actorHitResult.GetActor());
 			m249Actor = Cast<AM249Actor>(actorHitResult.GetActor());
-
-			HackingConsole = Cast<AHackingConsole>(actorHitResult.GetActor());
 			MissionChecker = Cast<AMissionChecker>(actorHitResult.GetActor());
-
-			RifleMagActor = Cast<ARifleMagActor>(actorHitResult.GetActor());
-			SniperMagActor = Cast<ASniperMagActor>(actorHitResult.GetActor());
-			PistolMagActor = Cast<APistolMagActor>(actorHitResult.GetActor());
-			M249MagActor = Cast<AM249MagActor>(actorHitResult.GetActor());
-
-			GoggleActor = Cast<AGoggleActor>(actorHitResult.GetActor());
-			MaskActor = Cast<AMaskActor>(actorHitResult.GetActor());
-			HelmetActor = Cast<AHelmetActor>(actorHitResult.GetActor());
-			HeadsetActor = Cast<AHeadsetActor>(actorHitResult.GetActor());
-			ArmorActor = Cast<AArmorActor>(actorHitResult.GetActor());
-
-			MedKitActor = Cast<AMedKitActor>(actorHitResult.GetActor());
-
+			PickableItemActor = Cast<APickableActor>(actorHitResult.GetActor());
 			StageBoard = Cast<AStageBoard>(actorHitResult.GetActor());
 			Stash = Cast<AStash>(actorHitResult.GetActor());
 			QuitGameActor = Cast<AQuitGameActor>(actorHitResult.GetActor());
-
 			PlayerCharacter = Cast<APlayerCharacter>(actorHitResult.GetActor());
 
 			// 라이플 탐지
@@ -1259,22 +1247,197 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 					infoWidgetUI->AddToViewport();
 				}
 			}
-			else if (HackingConsole)
+			else if (PickableItemActor)
 			{
-				// 1회 실행 불리언
-				if (TickOverlapBoolean == false)
+				HackingConsole = Cast<AHackingConsole>(PickableItemActor);
+				RifleMagActor = Cast<ARifleMagActor>(PickableItemActor);
+				SniperMagActor = Cast<ASniperMagActor>(PickableItemActor);
+				PistolMagActor = Cast<APistolMagActor>(PickableItemActor);
+				M249MagActor = Cast<AM249MagActor>(PickableItemActor);
+				GoggleActor = Cast<AGoggleActor>(PickableItemActor);
+				MaskActor = Cast<AMaskActor>(PickableItemActor);
+				HelmetActor = Cast<AHelmetActor>(PickableItemActor);
+				HeadsetActor = Cast<AHeadsetActor>(PickableItemActor);
+				ArmorActor = Cast<AArmorActor>(PickableItemActor);
+				MedKitActor = Cast<AMedKitActor>(PickableItemActor);
+				if (RifleMagActor)
 				{
-					TickOverlapBoolean = true;
-					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-					HackingConsole->RootMesh->SetRenderCustomDepth(true);
-					// Widget Switcher 이용한 무기 정보 위젯 스위칭
-					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(4);
-					// Radial Slider Value 초기화
-					infoWidgetUI->weaponHoldPercent = 0;
-					// Weapon Info Widget 뷰포트에 배치
-					infoWidgetUI->AddToViewport();
+					// 1회 실행 불리언
+					if (TickOverlapBoolean == false)
+					{
+						TickOverlapBoolean = true;
+						// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+						RifleMagActor->RootMesh->SetRenderCustomDepth(true);
+						// Widget Switcher 이용한 무기 정보 위젯 스위칭
+						infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(6);
+						// Radial Slider Value 초기화
+						infoWidgetUI->weaponHoldPercent = 0;
+						// Weapon Info Widget 뷰포트에 배치
+						infoWidgetUI->AddToViewport();
+					}
+				}
+				else if (SniperMagActor)
+				{
+					// 1회 실행 불리언
+					if (TickOverlapBoolean == false)
+					{
+						TickOverlapBoolean = true;
+						// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+						SniperMagActor->RootMesh->SetRenderCustomDepth(true);
+						// Widget Switcher 이용한 무기 정보 위젯 스위칭
+						infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(7);
+						// Radial Slider Value 초기화
+						infoWidgetUI->weaponHoldPercent = 0;
+						// Weapon Info Widget 뷰포트에 배치
+						infoWidgetUI->AddToViewport();
+					}
+				}
+				else if (PistolMagActor)
+				{
+					// 1회 실행 불리언
+					if (TickOverlapBoolean == false)
+					{
+						TickOverlapBoolean = true;
+						// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+						PistolMagActor->RootMesh->SetRenderCustomDepth(true);
+						// Widget Switcher 이용한 무기 정보 위젯 스위칭
+						infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(8);
+						// Radial Slider Value 초기화
+						infoWidgetUI->weaponHoldPercent = 0;
+						// Weapon Info Widget 뷰포트에 배치
+						infoWidgetUI->AddToViewport();
+					}
+				}
+				else if (M249MagActor)
+				{
+					// 1회 실행 불리언
+					if (TickOverlapBoolean == false)
+					{
+						TickOverlapBoolean = true;
+						// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+						M249MagActor->RootMesh->SetRenderCustomDepth(true);
+						// Widget Switcher 이용한 무기 정보 위젯 스위칭
+						infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(9);
+						// Radial Slider Value 초기화
+						infoWidgetUI->weaponHoldPercent = 0;
+						// Weapon Info Widget 뷰포트에 배치
+						infoWidgetUI->AddToViewport();
+					}
+				}
+				else if (GoggleActor)
+				{
+					// 1회 실행 불리언
+					if (TickOverlapBoolean == false)
+					{
+						TickOverlapBoolean = true;
+						// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+						GoggleActor->RootMesh->SetRenderCustomDepth(true);
+						// Widget Switcher 이용한 무기 정보 위젯 스위칭
+						infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(10);
+						// Radial Slider Value 초기화
+						infoWidgetUI->weaponHoldPercent = 0;
+						// Weapon Info Widget 뷰포트에 배치
+						infoWidgetUI->AddToViewport();
+					}
+				}
+				else if (HelmetActor)
+				{
+					// 1회 실행 불리언
+					if (TickOverlapBoolean == false)
+					{
+						TickOverlapBoolean = true;
+						// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+						HelmetActor->RootMesh->SetRenderCustomDepth(true);
+						// Widget Switcher 이용한 무기 정보 위젯 스위칭
+						infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(11);
+						// Radial Slider Value 초기화
+						infoWidgetUI->weaponHoldPercent = 0;
+						// Weapon Info Widget 뷰포트에 배치
+						infoWidgetUI->AddToViewport();
+					}
+				}
+				else if (HeadsetActor)
+				{
+					// 1회 실행 불리언
+					if (TickOverlapBoolean == false)
+					{
+						TickOverlapBoolean = true;
+						// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+						HeadsetActor->RootMesh->SetRenderCustomDepth(true);
+						// Widget Switcher 이용한 무기 정보 위젯 스위칭
+						infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(12);
+						// Radial Slider Value 초기화
+						infoWidgetUI->weaponHoldPercent = 0;
+						// Weapon Info Widget 뷰포트에 배치
+						infoWidgetUI->AddToViewport();
+					}
+				}
+				else if (MaskActor)
+				{
+					// 1회 실행 불리언
+					if (TickOverlapBoolean == false)
+					{
+						TickOverlapBoolean = true;
+						// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+						MaskActor->RootMesh->SetRenderCustomDepth(true);
+						// Widget Switcher 이용한 무기 정보 위젯 스위칭
+						infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(13);
+						// Radial Slider Value 초기화
+						infoWidgetUI->weaponHoldPercent = 0;
+						// Weapon Info Widget 뷰포트에 배치
+						infoWidgetUI->AddToViewport();
+					}
+				}
+				else if (ArmorActor)
+				{
+					// 1회 실행 불리언
+					if (TickOverlapBoolean == false)
+					{
+						TickOverlapBoolean = true;
+						// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+						ArmorActor->RootMesh->SetRenderCustomDepth(true);
+						// Widget Switcher 이용한 무기 정보 위젯 스위칭
+						infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(14);
+						// Radial Slider Value 초기화
+						infoWidgetUI->weaponHoldPercent = 0;
+						// Weapon Info Widget 뷰포트에 배치
+						infoWidgetUI->AddToViewport();
+					}
+				}
+				else if (MedKitActor)
+				{
+					// 1회 실행 불리언
+					if (TickOverlapBoolean == false)
+					{
+						TickOverlapBoolean = true;
+						// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+						MedKitActor->RootMesh->SetRenderCustomDepth(true);
+						// Widget Switcher 이용한 무기 정보 위젯 스위칭
+						infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(15);
+						// Radial Slider Value 초기화
+						infoWidgetUI->weaponHoldPercent = 0;
+						// Weapon Info Widget 뷰포트에 배치
+						infoWidgetUI->AddToViewport();
+					}
+				}
+				else if (HackingConsole)
+				{
+					// 1회 실행 불리언
+					if (TickOverlapBoolean == false)
+					{
+						TickOverlapBoolean = true;
+						// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+						HackingConsole->RootMesh->SetRenderCustomDepth(true);
+						// Widget Switcher 이용한 무기 정보 위젯 스위칭
+						infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(4);
+						// Radial Slider Value 초기화
+						infoWidgetUI->weaponHoldPercent = 0;
+						// Weapon Info Widget 뷰포트에 배치
+						infoWidgetUI->AddToViewport();
+					}
 				}
 			}
+
 			else if (MissionChecker)
 			{
 				// 1회 실행 불리언
@@ -1293,166 +1456,6 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 					}
 					// Widget Switcher 이용한 무기 정보 위젯 스위칭
 					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(5);
-					// Radial Slider Value 초기화
-					infoWidgetUI->weaponHoldPercent = 0;
-					// Weapon Info Widget 뷰포트에 배치
-					infoWidgetUI->AddToViewport();
-				}
-			}
-			else if (RifleMagActor)
-			{
-				// 1회 실행 불리언
-				if (TickOverlapBoolean == false)
-				{
-					TickOverlapBoolean = true;
-					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-					RifleMagActor->RootMesh->SetRenderCustomDepth(true);
-					// Widget Switcher 이용한 무기 정보 위젯 스위칭
-					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(6);
-					// Radial Slider Value 초기화
-					infoWidgetUI->weaponHoldPercent = 0;
-					// Weapon Info Widget 뷰포트에 배치
-					infoWidgetUI->AddToViewport();
-				}
-			}
-			else if (SniperMagActor)
-			{
-				// 1회 실행 불리언
-				if (TickOverlapBoolean == false)
-				{
-					TickOverlapBoolean = true;
-					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-					SniperMagActor->RootMesh->SetRenderCustomDepth(true);
-					// Widget Switcher 이용한 무기 정보 위젯 스위칭
-					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(7);
-					// Radial Slider Value 초기화
-					infoWidgetUI->weaponHoldPercent = 0;
-					// Weapon Info Widget 뷰포트에 배치
-					infoWidgetUI->AddToViewport();
-				}
-			}
-			else if (PistolMagActor)
-			{
-				// 1회 실행 불리언
-				if (TickOverlapBoolean == false)
-				{
-					TickOverlapBoolean = true;
-					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-					PistolMagActor->RootMesh->SetRenderCustomDepth(true);
-					// Widget Switcher 이용한 무기 정보 위젯 스위칭
-					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(8);
-					// Radial Slider Value 초기화
-					infoWidgetUI->weaponHoldPercent = 0;
-					// Weapon Info Widget 뷰포트에 배치
-					infoWidgetUI->AddToViewport();
-				}
-			}
-			else if (M249MagActor)
-			{
-				// 1회 실행 불리언
-				if (TickOverlapBoolean == false)
-				{
-					TickOverlapBoolean = true;
-					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-					M249MagActor->RootMesh->SetRenderCustomDepth(true);
-					// Widget Switcher 이용한 무기 정보 위젯 스위칭
-					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(9);
-					// Radial Slider Value 초기화
-					infoWidgetUI->weaponHoldPercent = 0;
-					// Weapon Info Widget 뷰포트에 배치
-					infoWidgetUI->AddToViewport();
-				}
-			}
-			else if (GoggleActor)
-			{
-				// 1회 실행 불리언
-				if (TickOverlapBoolean == false)
-				{
-					TickOverlapBoolean = true;
-					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-					GoggleActor->RootMesh->SetRenderCustomDepth(true);
-					// Widget Switcher 이용한 무기 정보 위젯 스위칭
-					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(10);
-					// Radial Slider Value 초기화
-					infoWidgetUI->weaponHoldPercent = 0;
-					// Weapon Info Widget 뷰포트에 배치
-					infoWidgetUI->AddToViewport();
-				}
-			}
-			else if (HelmetActor)
-			{
-				// 1회 실행 불리언
-				if (TickOverlapBoolean == false)
-				{
-					TickOverlapBoolean = true;
-					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-					HelmetActor->RootMesh->SetRenderCustomDepth(true);
-					// Widget Switcher 이용한 무기 정보 위젯 스위칭
-					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(11);
-					// Radial Slider Value 초기화
-					infoWidgetUI->weaponHoldPercent = 0;
-					// Weapon Info Widget 뷰포트에 배치
-					infoWidgetUI->AddToViewport();
-				}
-			}
-			else if (HeadsetActor)
-			{
-				// 1회 실행 불리언
-				if (TickOverlapBoolean == false)
-				{
-					TickOverlapBoolean = true;
-					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-					HeadsetActor->RootMesh->SetRenderCustomDepth(true);
-					// Widget Switcher 이용한 무기 정보 위젯 스위칭
-					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(12);
-					// Radial Slider Value 초기화
-					infoWidgetUI->weaponHoldPercent = 0;
-					// Weapon Info Widget 뷰포트에 배치
-					infoWidgetUI->AddToViewport();
-				}
-			}
-			else if (MaskActor)
-			{
-				// 1회 실행 불리언
-				if (TickOverlapBoolean == false)
-				{
-					TickOverlapBoolean = true;
-					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-					MaskActor->RootMesh->SetRenderCustomDepth(true);
-					// Widget Switcher 이용한 무기 정보 위젯 스위칭
-					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(13);
-					// Radial Slider Value 초기화
-					infoWidgetUI->weaponHoldPercent = 0;
-					// Weapon Info Widget 뷰포트에 배치
-					infoWidgetUI->AddToViewport();
-				}
-			}
-			else if (ArmorActor)
-			{
-				// 1회 실행 불리언
-				if (TickOverlapBoolean == false)
-				{
-					TickOverlapBoolean = true;
-					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-					ArmorActor->RootMesh->SetRenderCustomDepth(true);
-					// Widget Switcher 이용한 무기 정보 위젯 스위칭
-					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(14);
-					// Radial Slider Value 초기화
-					infoWidgetUI->weaponHoldPercent = 0;
-					// Weapon Info Widget 뷰포트에 배치
-					infoWidgetUI->AddToViewport();
-				}
-			}
-			else if (MedKitActor)
-			{
-				// 1회 실행 불리언
-				if (TickOverlapBoolean == false)
-				{
-					TickOverlapBoolean = true;
-					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-					MedKitActor->RootMesh->SetRenderCustomDepth(true);
-					// Widget Switcher 이용한 무기 정보 위젯 스위칭
-					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(15);
 					// Radial Slider Value 초기화
 					infoWidgetUI->weaponHoldPercent = 0;
 					// Weapon Info Widget 뷰포트에 배치
@@ -1553,8 +1556,8 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 							sniperActor = Cast<ASniperActor>(HitObj[i].GetActor());
 							pistolActor = Cast<APistolActor>(HitObj[i].GetActor());
 							m249Actor = Cast<AM249Actor>(HitObj[i].GetActor());
-							HackingConsole = Cast<AHackingConsole>(HitObj[i].GetActor());
 							MissionChecker = Cast<AMissionChecker>(HitObj[i].GetActor());
+							HackingConsole = Cast<AHackingConsole>(HitObj[i].GetActor());
 							RifleMagActor = Cast<ARifleMagActor>(HitObj[i].GetActor());
 							SniperMagActor = Cast<ASniperMagActor>(HitObj[i].GetActor());
 							PistolMagActor = Cast<APistolMagActor>(HitObj[i].GetActor());

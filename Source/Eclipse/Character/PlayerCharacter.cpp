@@ -433,6 +433,8 @@ void APlayerCharacter::ZoomRPCMulticast_Implementation()
 	{
 		if (IsLocallyControlled())
 		{
+			Timeline.PlayFromStart();
+
 			UGameplayStatics::PlaySound2D(GetWorld(), zoomSound);
 		}
 		else
@@ -444,7 +446,6 @@ void APlayerCharacter::ZoomRPCMulticast_Implementation()
 		{
 			animInst->bRifleZooming = true;
 		}
-		Timeline.PlayFromStart();
 	}
 	// is using sniper
 	else if (weaponArray[1] == true)
@@ -452,13 +453,14 @@ void APlayerCharacter::ZoomRPCMulticast_Implementation()
 		if (IsLocallyControlled())
 		{
 			isSniperZooming = true;
+			Timeline.PlayFromStart();
+
 			crosshairUI->CrosshairImage->SetVisibility(ESlateVisibility::Hidden);
 			APlayerCameraManager* const cameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0));
 			cameraManager->StartCameraFade(1.0, 0.1, 3.0, FColor::Black, false, true);
 			PC->PlayerCameraManager->StartCameraShake(sniperZoomingShake);
 			UGameplayStatics::PlaySound2D(GetWorld(), SniperZoomSound);
 			// 카메라 줌 러프 타임라인 재생
-			Timeline.PlayFromStart();
 			sniperScopeUI->AddToViewport();
 		}
 		else
@@ -474,6 +476,8 @@ void APlayerCharacter::ZoomRPCMulticast_Implementation()
 	{
 		if (IsLocallyControlled())
 		{
+			Timeline.PlayFromStart();
+
 			UGameplayStatics::PlaySound2D(GetWorld(), zoomSound);
 		}
 		else
@@ -485,6 +489,8 @@ void APlayerCharacter::ZoomRPCMulticast_Implementation()
 	{
 		if (IsLocallyControlled())
 		{
+			Timeline.PlayFromStart();
+
 			UGameplayStatics::PlaySound2D(GetWorld(), zoomSound);
 		}
 		else
@@ -495,12 +501,6 @@ void APlayerCharacter::ZoomRPCMulticast_Implementation()
 		{
 			animInst->bM249Zooming = true;
 		}
-		Timeline.PlayFromStart();
-	}
-	else
-	{
-		// 카메라 줌 러프 타임라인 재생
-		Timeline.PlayFromStart();
 	}
 }
 
@@ -3008,6 +3008,8 @@ void APlayerCharacter::MulticastRPCFire_Implementation()
 	{
 		if (curSniperAmmo > 0)
 		{
+			ProcessSniperFireAnim();
+
 			// 서버 로직 (핵심 프로세스 처리)
 			if (HasAuthority())
 			{
@@ -3694,6 +3696,14 @@ void APlayerCharacter::ProcessSniperFire()
 	}
 }
 
+void APlayerCharacter::ProcessSniperFireAnim()
+{
+	if (isZooming)
+	{
+		PlayAnimMontage(RifleFireMontage, 1, FName("SniperFire"));
+	}
+}
+
 void APlayerCharacter::ProcessSniperFireLocal()
 {
 	UGameplayStatics::PlaySound2D(GetWorld(), SniperFireSound);
@@ -3703,7 +3713,7 @@ void APlayerCharacter::ProcessSniperFireLocal()
 	AddControllerYawInput(randF2);
 	if (isZooming)
 	{
-		UE::Math::TVector<double> particleTrans = FollowCamera->GetComponentLocation() + FollowCamera->GetUpVector() * -70.0f;
+		const UE::Math::TVector<double> particleTrans = FollowCamera->GetComponentLocation() + FollowCamera->GetUpVector() * -70.0f;
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperFireParticle, particleTrans);
 		PC->PlayerCameraManager->StartCameraShake(sniperCameraShake);
 	}

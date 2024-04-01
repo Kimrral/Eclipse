@@ -1148,7 +1148,7 @@ void APlayerCharacter::Q()
 
 void APlayerCharacter::WeaponDetectionLineTrace()
 {
-	//if (IsLocallyControlled())
+	if (IsLocallyControlled())
 	{
 		// 스나이퍼 줌 도중 교체 불가
 		if (isSniperZooming || bEnding)
@@ -1782,12 +1782,26 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 {
 	if (PickableActor)
 	{
+		if (IsLocallyControlled())
+		{
+			UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
+		}
+		else
+		{
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
+		}
+		PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
 		FTimerHandle DestroyHandle;
 		RifleMagActor = Cast<ARifleMagActor>(PickableActor);
 		if (RifleMagActor)
 		{
+			if (HasAuthority())
+			{
+				SetActorTickEnabled(false);
+			}
 			if (IsLocallyControlled())
 			{
+				if (infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
 				RifleMagActor->AddInventory(this);
 			}
 			if (HasAuthority())
@@ -1796,6 +1810,7 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					RifleMagActor->Destroy();
+					SetActorTickEnabled(true);
 				}), 1.f, false);
 			}
 			return;
@@ -1803,8 +1818,14 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 		SniperMagActor = Cast<ASniperMagActor>(PickableActor);
 		if (SniperMagActor)
 		{
+			if (HasAuthority())
+			{
+				SetActorTickEnabled(false);
+			}
 			if (IsLocallyControlled())
 			{
+				if (infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
+
 				SniperMagActor->AddInventory(this);
 			}
 			if (HasAuthority())
@@ -1813,6 +1834,7 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					SniperMagActor->Destroy();
+					SetActorTickEnabled(true);
 				}), 1.f, false);
 			}
 			return;
@@ -1820,8 +1842,14 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 		PistolMagActor = Cast<APistolMagActor>(PickableActor);
 		if (PistolMagActor)
 		{
+			if (HasAuthority())
+			{
+				SetActorTickEnabled(false);
+			}
 			if (IsLocallyControlled())
 			{
+				if (infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
+
 				PistolMagActor->AddInventory(this);
 			}
 			if (HasAuthority())
@@ -1830,6 +1858,7 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					PistolMagActor->Destroy();
+					SetActorTickEnabled(true);
 				}), 1.f, false);
 			}
 			return;
@@ -1837,8 +1866,14 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 		M249MagActor = Cast<AM249MagActor>(PickableActor);
 		if (M249MagActor)
 		{
+			if (HasAuthority())
+			{
+				SetActorTickEnabled(false);
+			}
 			if (IsLocallyControlled())
 			{
+				if (infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
+
 				M249MagActor->AddInventory(this);
 			}
 			if (HasAuthority())
@@ -1847,6 +1882,7 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					M249MagActor->Destroy();
+					SetActorTickEnabled(true);
 				}), 1.f, false);
 			}
 			return;
@@ -1854,8 +1890,14 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 		GoggleActor = Cast<AGoggleActor>(PickableActor);
 		if (GoggleActor)
 		{
+			if (HasAuthority())
+			{
+				SetActorTickEnabled(false);
+			}
 			if (IsLocallyControlled())
 			{
+				if (infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
+
 				GoggleActor->AddInventory(this);
 			}
 			if (HasAuthority())
@@ -1864,6 +1906,7 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					GoggleActor->Destroy();
+					SetActorTickEnabled(true);
 				}), 1.f, false);
 			}
 			return;
@@ -1871,8 +1914,14 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 		HelmetActor = Cast<AHelmetActor>(PickableActor);
 		if (HelmetActor)
 		{
+			if (HasAuthority())
+			{
+				SetActorTickEnabled(false);
+			}
 			if (IsLocallyControlled())
 			{
+				if (infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
+
 				HelmetActor->AddInventory(this);
 			}
 			if (HasAuthority())
@@ -1881,6 +1930,7 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					HelmetActor->Destroy();
+					SetActorTickEnabled(true);
 				}), 1.f, false);
 			}
 			return;
@@ -1888,8 +1938,14 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 		HeadsetActor = Cast<AHeadsetActor>(PickableActor);
 		if (HeadsetActor)
 		{
+			if (HasAuthority())
+			{
+				SetActorTickEnabled(false);
+			}
 			if (IsLocallyControlled())
 			{
+				if (infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
+
 				HeadsetActor->AddInventory(this);
 			}
 			if (HasAuthority())
@@ -1898,6 +1954,7 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					HeadsetActor->Destroy();
+					SetActorTickEnabled(true);
 				}), 1.f, false);
 			}
 			return;
@@ -1905,8 +1962,14 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 		MaskActor = Cast<AMaskActor>(PickableActor);
 		if (MaskActor)
 		{
+			if (HasAuthority())
+			{
+				SetActorTickEnabled(false);
+			}
 			if (IsLocallyControlled())
 			{
+				if (infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
+
 				MaskActor->AddInventory(this);
 			}
 			if (HasAuthority())
@@ -1915,6 +1978,7 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					MaskActor->Destroy();
+					SetActorTickEnabled(true);
 				}), 1.f, false);
 			}
 			return;
@@ -1922,8 +1986,14 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 		ArmorActor = Cast<AArmorActor>(PickableActor);
 		if (ArmorActor)
 		{
+			if (HasAuthority())
+			{
+				SetActorTickEnabled(false);
+			}
 			if (IsLocallyControlled())
 			{
+				if (infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
+
 				ArmorActor->AddInventory(this);
 			}
 			if (HasAuthority())
@@ -1932,6 +2002,7 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					ArmorActor->Destroy();
+					SetActorTickEnabled(true);
 				}), 1.f, false);
 			}
 			return;
@@ -1939,8 +2010,14 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 		MedKitActor = Cast<AMedKitActor>(PickableActor);
 		if (MedKitActor)
 		{
+			if (HasAuthority())
+			{
+				SetActorTickEnabled(false);
+			}
 			if (IsLocallyControlled())
 			{
+				if (infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
+
 				MedKitActor->AddInventory(this);
 			}
 			if (HasAuthority())
@@ -1949,6 +2026,7 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					MedKitActor->Destroy();
+					SetActorTickEnabled(true);
 				}), 1.f, false);
 			}
 			return;
@@ -1956,8 +2034,14 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 		HackingConsole = Cast<AHackingConsole>(PickableActor);
 		if (HackingConsole)
 		{
+			if (HasAuthority())
+			{
+				SetActorTickEnabled(false);
+			}
 			if (IsLocallyControlled())
 			{
+				if (infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
+
 				HackingConsole->AddInventory(this);
 				ConsoleCount++;
 				informationUI->ConsoleCount->SetText(FText::AsNumber(ConsoleCount));
@@ -1968,17 +2052,11 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					HackingConsole->Destroy();
+					SetActorTickEnabled(true);
 				}), 1.f, false);
 			}
 			return;
 		}
-
-		if (IsLocallyControlled())
-		{
-			UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
-			infoWidgetUI->RemoveFromParent();
-		}
-		PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
 	}
 }
 

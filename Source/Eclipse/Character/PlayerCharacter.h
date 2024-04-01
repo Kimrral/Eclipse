@@ -48,8 +48,8 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;	
-
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	
 	// Stat Section
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UPlayerCharacterStatComponent> Stat;
@@ -171,6 +171,8 @@ public:
 
 	UFUNCTION()
 	void ProcessSniperFire();
+	UFUNCTION()
+	void ProcessSniperFireAnim();
 	UFUNCTION()
 	void ProcessSniperFireLocal();
 	UFUNCTION()

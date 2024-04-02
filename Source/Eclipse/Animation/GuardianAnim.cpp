@@ -7,5 +7,8 @@
 
 void UGuardianAnim::AnimNotify_Fire()
 {
-	me->GuardianFireProcess();
+	if (me->HasAuthority())
+	{
+		me->GuardianFireProcess();
+	}
 }

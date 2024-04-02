@@ -65,6 +65,9 @@ public:
 	void SetRotToPlayer(float Value);
 	UFUNCTION()
 	void FindAgressivePlayer();
+
+	UFUNCTION()
+	bool IsAttackAnimationPlaying();
 	UFUNCTION()
 	APlayerCharacter* ReturnAgressivePlayer();
 
@@ -85,6 +88,9 @@ public:
 
 	UPROPERTY()
 	class AAIController* ai;
+
+	UPROPERTY(VisibleAnywhere)
+	bool IsPlayingAttackAnimation = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=EnemySettings)
 	float aggressiveRange = 600.f;

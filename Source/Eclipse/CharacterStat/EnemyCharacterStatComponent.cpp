@@ -19,6 +19,7 @@ void UEnemyCharacterStatComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
 
+	InitShieldBoolean();
 	SetHp(MaxEnemyHp);
 	SetShield(MaxEnemyShield);
 	SetIsReplicated(true);
@@ -29,7 +30,9 @@ float UEnemyCharacterStatComponent::ApplyDamage(float InDamage, AActor* DamageCa
 {
 	if (!IsShieldBroken)
 	{
-		ApplyShieldDamage(InDamage, DamageCauser);
+		const float ActualDamage = FMath::Clamp<float>(InDamage, 0, InDamage);
+		ApplyShieldDamage(InDamage * 0.05f, DamageCauser);
+		return ActualDamage;
 	}
 	if (IsStunned)
 	{
@@ -79,6 +82,18 @@ void UEnemyCharacterStatComponent::GetLifetimeReplicatedProps(TArray<FLifetimePr
 	DOREPLIFETIME(UEnemyCharacterStatComponent, MaxEnemyShield);
 	DOREPLIFETIME(UEnemyCharacterStatComponent, IsShieldBroken);
 	DOREPLIFETIME(UEnemyCharacterStatComponent, IsStunned);
+}
+
+void UEnemyCharacterStatComponent::InitShieldBoolean()
+{
+	if (GetMaxShield() == 0.0f)
+	{
+		IsShieldBroken = true;
+	}
+	else
+	{
+		IsShieldBroken = false;
+	}
 }
 
 void UEnemyCharacterStatComponent::SetHp(float NewHp)

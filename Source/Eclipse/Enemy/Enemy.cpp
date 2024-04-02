@@ -44,13 +44,15 @@ AEnemy::AEnemy()
 	// Stat Component 
 	EnemyStat = CreateDefaultSubobject<UEnemyCharacterStatComponent>(TEXT("Stat"));
 
-	bReplicates = true;
+	SetReplicates(true);
 }
 
 // Called when the game starts or when spawned
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	SetReplicateMovement(true);
 
 	EnemyStat->OnShieldZero.AddUObject(this, &AEnemy::OnShieldDestroy);
 
@@ -83,22 +85,25 @@ void AEnemy::OnDie()
 
 void AEnemy::Damaged(int damage, AActor* DamageCauser)
 {
-	DamagedRPCServer(damage);
-	EnemyStat->ApplyDamage(damage, DamageCauser);
+	DamagedRPCServer(damage, DamageCauser);	
 }
 
-void AEnemy::DamagedRPCServer_Implementation(int damage)
+void AEnemy::DamagedRPCServer_Implementation(int damage, AActor* DamageCauser)
 {
-	DamagedRPCMulticast(damage);
+	DamagedRPCMulticast(damage, DamageCauser);
 }
 
-bool AEnemy::DamagedRPCServer_Validate(int damage)
+bool AEnemy::DamagedRPCServer_Validate(int damage, AActor* DamageCauser)
 {
 	return true;
 }
 
-void AEnemy::DamagedRPCMulticast_Implementation(int damage)
+void AEnemy::DamagedRPCMulticast_Implementation(int damage, AActor* DamageCauser)
 {
+	if(HasAuthority())
+	{
+		EnemyStat->ApplyDamage(damage, DamageCauser);
+	}
 	FTimerHandle overlayMatHandle;
 	GetMesh()->SetOverlayMaterial(overlayMatRed);
 	GetWorldTimerManager().ClearTimer(overlayMatHandle);
@@ -121,7 +126,7 @@ void AEnemy::OnShieldDestroy()
 	// Movement Mode = None [움직임 차단]
 	GetCharacterMovement()->SetMovementMode(MOVE_None);
 	StopAnimMontage();
-	PlayAnimMontage(stunMontage, 1, FName("StunStart"));	
+	PlayAnimMontage(stunMontage, 1, FName("StunStart"));
 	GetWorld()->GetTimerManager().SetTimer(StunHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
 		EnemyStat->IsStunned = false;
@@ -132,7 +137,7 @@ void AEnemy::OnShieldDestroy()
 		EnemyStat->SetShield(EnemyStat->GetMaxShield());
 		EnemyStat->IsShieldBroken = false;
 		EnemyFSM->player->bossHPUI->shieldProgressBar->SetPercent(1);
-		EnemyFSM->SetState(EEnemyState::MOVE);		
+		EnemyFSM->SetState(EEnemyState::MOVE);
 	}), 7.0f, false);
 }
 

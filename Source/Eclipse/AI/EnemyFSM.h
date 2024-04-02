@@ -30,7 +30,7 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
@@ -45,11 +45,11 @@ public:
 	UFUNCTION()
 	void TickDie();
 	UFUNCTION()
-	void DieProcess();	
+	void DieProcess();
 	UFUNCTION()
 	void SetState(EEnemyState next);
 	UFUNCTION()
-	void SetRotToPlayer(float Value);		
+	void SetRotToPlayer(float Value);
 
 	UPROPERTY(EditAnywhere)
 	class USoundBase* ShieldBreakSound;
@@ -57,7 +57,7 @@ public:
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* ShieldBreakEmitter;
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	EEnemyState state;
 
 	UPROPERTY()
@@ -97,4 +97,6 @@ public:
 
 	UPROPERTY()
 	FVector originPosition;
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

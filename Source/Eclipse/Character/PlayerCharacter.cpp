@@ -187,8 +187,8 @@ void APlayerCharacter::BeginPlay()
 		APlayerCameraManager* const cameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0));
 		cameraManager->StopCameraFade();
 		cameraManager->StartCameraFade(1.0, 0, 8.0, FColor::Black, false, true);
-	}	
-	
+	}
+
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
 	//AEclipsePlayerController* PlayerController = Cast<AEclipsePlayerController>(GetController());
 
@@ -1082,7 +1082,7 @@ void APlayerCharacter::OnPlayerKillRPCMulticast_Implementation()
 
 void APlayerCharacter::OnEnemyHit(const FHitResult& HitResult, AEnemy* HitEnemy, bool IsHeadshot)
 {
-	if(HitEnemy->EnemyStat->GetCurrentHp()>0)
+	if (HitEnemy->EnemyStat->GetCurrentHp() > 0)
 	{
 		OnEnemyHitRPCServer(HitResult, HitEnemy, IsHeadshot);
 	}
@@ -1139,25 +1139,77 @@ void APlayerCharacter::OnEnemyHitRPCMulticast_Implementation(const FHitResult& H
 	if (IsLocallyControlled())
 	{
 		const FRotator hitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
-		if (IsHeadshot)
+		if (HitEnemy->EnemyStat->IsStunned)
 		{
-			UGameplayStatics::PlaySound2D(GetWorld(), BulletHeadHitSound);
-			// 적중 위젯 애니메이션 재생
-			crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
-			// 데미지 위젯에 피해 값과 적 위치벡터 할당
-			SetDamageWidget(GetAttackDamage(false) * 2, HitResult.Location, false, FLinearColor::Yellow);
-			// 적중 파티클 스폰
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, hitRot, FVector(2.f));
+			if (IsHeadshot)
+			{
+				UGameplayStatics::PlaySound2D(GetWorld(), BulletHeadHitSound);
+				// 적중 위젯 애니메이션 재생
+				crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
+				// 데미지 위젯에 피해 값과 적 위치벡터 할당
+				SetDamageWidget(GetAttackDamage(false) * 4, HitResult.Location, false, FLinearColor::Red);
+				// 적중 파티클 스폰
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, hitRot, FVector(2.f));
+			}
+			else
+			{
+				UGameplayStatics::PlaySound2D(GetWorld(), BulletHitSound);
+				// 적중 위젯 애니메이션 재생
+				crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
+				// 데미지 위젯에 피해 값과 적 위치벡터 할당
+				SetDamageWidget(GetAttackDamage(false) * 2, HitResult.Location, false, FLinearColor::Red);
+				// 적중 파티클 스폰
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, hitRot, FVector(1.f));
+			}
 		}
 		else
 		{
-			UGameplayStatics::PlaySound2D(GetWorld(), BulletHitSound);
-			// 적중 위젯 애니메이션 재생
-			crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
-			// 데미지 위젯에 피해 값과 적 위치벡터 할당
-			SetDamageWidget(GetAttackDamage(false), HitResult.Location, false, FLinearColor::White);
-			// 적중 파티클 스폰
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, hitRot, FVector(1.f));
+			if(HitEnemy->EnemyStat->IsShieldBroken)
+			{
+				if (IsHeadshot)
+				{
+					UGameplayStatics::PlaySound2D(GetWorld(), BulletHeadHitSound);
+					// 적중 위젯 애니메이션 재생
+					crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
+					// 데미지 위젯에 피해 값과 적 위치벡터 할당
+					SetDamageWidget(GetAttackDamage(false) * 2, HitResult.Location, false, FLinearColor::Yellow);
+					// 적중 파티클 스폰
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, hitRot, FVector(2.f));
+				}
+				else
+				{
+					UGameplayStatics::PlaySound2D(GetWorld(), BulletHitSound);
+					// 적중 위젯 애니메이션 재생
+					crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
+					// 데미지 위젯에 피해 값과 적 위치벡터 할당
+					SetDamageWidget(GetAttackDamage(false), HitResult.Location, false, FLinearColor::White);
+					// 적중 파티클 스폰
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, hitRot, FVector(1.f));
+				}	
+			}
+			else
+			{
+				if (IsHeadshot)
+				{
+					UGameplayStatics::PlaySound2D(GetWorld(), BulletHeadHitSound);
+					// 적중 위젯 애니메이션 재생
+					crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
+					// 데미지 위젯에 피해 값과 적 위치벡터 할당
+					SetDamageWidget(GetAttackDamage(false) * 0.1f, HitResult.Location, true, FLinearColor::Gray);
+					// 적중 파티클 스폰
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, hitRot, FVector(2.f));
+				}
+				else
+				{
+					UGameplayStatics::PlaySound2D(GetWorld(), BulletHitSound);
+					// 적중 위젯 애니메이션 재생
+					crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
+					// 데미지 위젯에 피해 값과 적 위치벡터 할당
+					SetDamageWidget(GetAttackDamage(false)*0.05f, HitResult.Location, true, FLinearColor::Gray);
+					// 적중 파티클 스폰
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, hitRot, FVector(1.f));
+				}
+			}
 		}
 	}
 	else
@@ -1390,7 +1442,6 @@ void APlayerCharacter::OnEnemyHitRPCMulticast_Implementation(const FHitResult& H
 	// bGuardian = false;
 	// bCrunch = false;
 }
-
 
 
 void APlayerCharacter::OnGroundHit(const FHitResult& HitResult)
@@ -3101,22 +3152,26 @@ void APlayerCharacter::ApplyCachingValues()
 
 void APlayerCharacter::Damaged(int damage, AActor* DamageCauser)
 {
-	DamagedRPCServer(damage);
+	DamagedRPCServer(damage, DamageCauser);
 	Stat->ApplyDamage(damage, DamageCauser);
 }
 
-void APlayerCharacter::DamagedRPCServer_Implementation(int damage)
+void APlayerCharacter::DamagedRPCServer_Implementation(int damage, AActor* DamageCauser)
 {
-	DamagedRPCMulticast(damage);
+	DamagedRPCMulticast(damage, DamageCauser);
 }
 
-bool APlayerCharacter::DamagedRPCServer_Validate(int damage)
+bool APlayerCharacter::DamagedRPCServer_Validate(int damage, AActor* DamageCauser)
 {
 	return true;
 }
 
-void APlayerCharacter::DamagedRPCMulticast_Implementation(int damage)
+void APlayerCharacter::DamagedRPCMulticast_Implementation(int damage, AActor* DamageCauser)
 {
+	if(HasAuthority())
+	{
+		//Stat->ApplyDamage(damage, DamageCauser);
+	}
 	if (IsLocallyControlled())
 	{
 		crosshairUI->PlayAnimation(crosshairUI->DamagedAnimation);

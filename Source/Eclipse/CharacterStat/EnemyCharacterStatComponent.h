@@ -46,7 +46,7 @@ public:
 	bool IsStunned = false;
 
 	UPROPERTY(Replicated, VisibleInstanceOnly, Category = Stat)
-	bool IsShieldBroken = false;
+	bool IsShieldBroken;
 
 	UPROPERTY()
 	class APlayerCharacter* PlayerCharacter;
@@ -55,6 +55,7 @@ protected:
 	virtual void InitializeComponent() override;
 	virtual void ReadyForReplication() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	void InitShieldBoolean();
 
 	UPROPERTY(ReplicatedUsing = OnRep_CurrentEnemyHp, Transient, VisibleInstanceOnly, Category = Stat)
 	float CurrentEnemyHp;

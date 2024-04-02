@@ -49,7 +49,7 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	
+
 	// Stat Section
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UPlayerCharacterStatComponent> Stat;
@@ -186,8 +186,8 @@ public:
 	void ProcessPistolFireLocal();
 	UFUNCTION()
 	void ProcessPistolFireSimulatedProxy();
-	
-	
+
+
 	UFUNCTION()
 	void ProcessM249Fire();
 	UFUNCTION()
@@ -209,7 +209,7 @@ public:
 	void ChangeWeaponToRifleRPCServer(ARifleActor* RifleActor);
 	UFUNCTION(NetMulticast, UnReliable)
 	void ChangeWeaponToRifleRPCMulticast(ARifleActor* RifleActor);
-	
+
 	UFUNCTION()
 	void ChangeWeaponToSniper(ASniperActor* SniperActor);
 	UFUNCTION(Server, Reliable, WithValidation)
@@ -217,7 +217,7 @@ public:
 	UFUNCTION(NetMulticast, UnReliable)
 	void ChangeWeaponToSniperRPCMulticast(ASniperActor* SniperActor);
 
-	
+
 	UFUNCTION()
 	void ChangeWeaponToPistol(APistolActor* PistolActor);
 	UFUNCTION(Server, Reliable, WithValidation)
@@ -225,7 +225,7 @@ public:
 	UFUNCTION(NetMulticast, UnReliable)
 	void ChangeWeaponToPistolRPCMulticast(APistolActor* PistolActor);
 
-	
+
 	UFUNCTION()
 	void ChangeWeaponToM249(AM249Actor* M249Actor);
 	UFUNCTION(Server, Reliable, WithValidation)
@@ -305,7 +305,7 @@ public:
 
 	UFUNCTION(Unreliable, NetMulticast)
 	void SwapFirstWeaponRPCMulticast();
-	
+
 	UFUNCTION()
 	void SwapSecondWeapon();
 
@@ -332,10 +332,10 @@ public:
 	void Damaged(int damage, AActor* DamageCauser);
 
 	UFUNCTION(Reliable, Server, WithValidation)
-	void DamagedRPCServer(int damage);
+	void DamagedRPCServer(int damage, AActor* DamageCauser);
 
 	UFUNCTION(Unreliable, NetMulticast)
-	void DamagedRPCMulticast(int damage);
+	void DamagedRPCMulticast(int damage, AActor* DamageCauser);
 
 	//=======================================//
 

@@ -9,6 +9,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values for this component's properties
 UEnemyFSM::UEnemyFSM()
@@ -191,4 +192,11 @@ void UEnemyFSM::SetRotToPlayer(float Value)
 		// 해당 회전값 Enemy에 할당
 		me->SetActorRotation(FRotator(0, lerp.Yaw, 0));
 	}
+}
+
+void UEnemyFSM::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(UEnemyFSM, state);
 }

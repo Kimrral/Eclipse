@@ -42,10 +42,10 @@ public:
 	void Damaged(int damage, AActor* DamageCauser);
 
 	UFUNCTION(Reliable, Server, WithValidation)
-	void DamagedRPCServer(int damage);
+	void DamagedRPCServer(int damage, AActor* DamageCauser);
 
 	UFUNCTION(Unreliable, NetMulticast)
-	void DamagedRPCMulticast(int damage);
+	void DamagedRPCMulticast(int damage, AActor* DamageCauser);
 
 	UFUNCTION()
 	void OnShieldDestroy();
@@ -102,7 +102,7 @@ public:
 
 	// Stat Section
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UEnemyCharacterStatComponent> EnemyStat;	
+	TObjectPtr<class UEnemyCharacterStatComponent> EnemyStat;
 
 	UPROPERTY(EditAnywhere, Category=EnemySettings)
 	UAnimMontage* damageMontage;

@@ -30,7 +30,10 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-public:
+public:	
+	// Called every frame
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 	UFUNCTION()
 	void TickIdle();
 	UFUNCTION()
@@ -42,25 +45,17 @@ public:
 	UFUNCTION()
 	void TickDie();
 	UFUNCTION()
-	void OnDamageProcess(int damageValue);
-	UFUNCTION()
-	void OnShieldDamageProcess(int damageValue);
+	void DieProcess();	
 	UFUNCTION()
 	void SetState(EEnemyState next);
 	UFUNCTION()
-	void SetRotToPlayer(float Value);
-	UFUNCTION()
-	int32 StunDamageMultiplier();
-	UPROPERTY()
-	FTimerHandle stunHandle;
+	void SetRotToPlayer(float Value);		
 
 	UPROPERTY(EditAnywhere)
 	class USoundBase* ShieldBreakSound;
 
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* ShieldBreakEmitter;
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UPROPERTY()
 	EEnemyState state;
@@ -81,7 +76,6 @@ public:
 
 	UPROPERTY()
 	float curTime;
-
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=EnemySettings)
 	float attackDelayTime = 1.5f;

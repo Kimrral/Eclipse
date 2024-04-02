@@ -2,11 +2,10 @@
 
 
 #include "EnemyFSM.h"
-
+#include "Eclipse/CharacterStat/EnemyCharacterStatComponent.h"
 #include "Eclipse/Enemy/Enemy.h"
 #include "Eclipse/Animation/EnemyAnim.h"
 #include "Eclipse/Character/PlayerCharacter.h"
-#include "Components/ProgressBar.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -35,6 +34,8 @@ void UEnemyFSM::BeginPlay()
 
 	// Set MoveSpeed
 	me->GetCharacterMovement()->MaxWalkSpeed = maxWalkSpeed;
+
+	me->EnemyStat->OnHpZero.AddUObject(this, &UEnemyFSM::DieProcess);
 
 	// Timeline Binding
 	if (CurveFloat)
@@ -122,10 +123,10 @@ void UEnemyFSM::TickAttack()
 {
 	if (player)
 	{
-		if (me->enemyAnim->IsAttackAnimationPlaying() == false)
+		if (me->EnemyAnim->IsAttackAnimationPlaying() == false)
 		{
 			// 플레이어와의 거리 도출
-			float dist = player->GetDistanceTo(me);
+			const float dist = player->GetDistanceTo(me);
 			// 공격거리보다 멀어졌다면
 			if (dist > attackRange || !me->bPlayerInSight)
 			{
@@ -163,77 +164,16 @@ void UEnemyFSM::TickDie()
 	}
 }
 
-void UEnemyFSM::OnDamageProcess(int damageValue)
+void UEnemyFSM::DieProcess()
 {
-	// 매개변수 damageValue의 값만큼 현재 HP에서 차감한다.
-	me->curHP = FMath::Clamp(me->curHP -= damageValue * StunDamageMultiplier(), 0, me->maxHP);
-	// 현재 HP가 0 이하라면
-	if (me->curHP <= 0)
-	{
-		// Die 상태로 전이한다.
-		SetState(EEnemyState::DIE);
-		UE_LOG(LogTemp, Warning, TEXT("Enemy Die State"));
-	}
-	// 현재 HP가 1 이상이라면
-	else
-	{
-		if (me->enemyAnim->IsAttackAnimationPlaying() == false)
-		{
-			// Move 상태로 전이한다.
-			SetState(EEnemyState::MOVE);
-		}
-	}
-	UE_LOG(LogTemp, Warning, TEXT("Enemy HP : %d"), me->curHP);
-}
-
-void UEnemyFSM::OnShieldDamageProcess(int damageValue)
-{
-	// 매개변수 damageValue의 값만큼 현재 Shield에서 차감한다.
-	me->curShield = FMath::Clamp(me->curShield -= (damageValue / 20), 0, me->maxShield);
-	// 현재 실드가 0 이하라면
-	if (me->curShield <= 0 && me->isShieldBroken == false)
-	{
-		me->isShieldBroken = true;
-		me->isStunned = true;
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ShieldBreakSound, me->GetActorLocation(), FRotator::ZeroRotator);
-		auto EmitterTrans = me->GetMesh()->GetSocketTransform(FName("ShieldSocket"));
-		EmitterTrans.SetScale3D(FVector(4));
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldBreakEmitter, EmitterTrans);
-		// 움직임 즉시 중단
-		me->GetCharacterMovement()->StopMovementImmediately();
-		// Movement Mode = None [움직임 차단]
-		me->GetCharacterMovement()->SetMovementMode(MOVE_None);
-		me->StopAnimMontage();
-		me->PlayAnimMontage(me->stunMontage, 1, FName("StunStart"));
-		GetWorld()->GetTimerManager().SetTimer(stunHandle, FTimerDelegate::CreateLambda([this]()-> void
-		{
-			me->isStunned = false;
-			me->StopAnimMontage();
-			// Movement Mode = Walking [움직임 재개]
-			me->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-			// Shield 회복
-			me->curShield = me->maxShield;
-			me->isShieldBroken = false;
-			player->bossHPUI->shieldProgressBar->SetPercent(1);
-			SetState(EEnemyState::MOVE);
-		}), 7.0f, false);
-	}
-	// 현재 실드가 1 이상이라면
-	else
-	{
-		if (me->enemyAnim->IsAttackAnimationPlaying() == false)
-		{
-			// Move 상태로 전이한다.
-			SetState(EEnemyState::MOVE);
-		}
-	}
-	UE_LOG(LogTemp, Warning, TEXT("Enemy Shield : %d"), me->curShield);
+	// Die 상태로 전이한다.
+	SetState(EEnemyState::DIE);
 }
 
 void UEnemyFSM::SetState(EEnemyState next) // 상태 전이함수
 {
 	state = next;
-	me->enemyAnim->state = next;
+	me->EnemyAnim->state = next;
 }
 
 void UEnemyFSM::SetRotToPlayer(float Value)
@@ -241,23 +181,14 @@ void UEnemyFSM::SetRotToPlayer(float Value)
 	if (player)
 	{
 		// 플레이어를 바라보는 벡터값 산출
-		FVector dir = player->GetActorLocation() - me->GetActorLocation();
+		const FVector dir = player->GetActorLocation() - me->GetActorLocation();
 		// 벡터값에서 회전값 산출
-		FRotator attackRot = UKismetMathLibrary::MakeRotFromXZ(dir, player->GetActorUpVector());
-		auto startRot = me->GetActorRotation();
-		auto endRot = attackRot;
+		const FRotator attackRot = UKismetMathLibrary::MakeRotFromXZ(dir, player->GetActorUpVector());
+		const FRotator startRot = me->GetActorRotation();
+		const FRotator endRot = attackRot;
 		// RLerp와 TimeLine Value 값을 통한 자연스러운 회전
-		auto lerp = UKismetMathLibrary::RLerp(startRot, endRot, Value, true);
+		const FRotator lerp = UKismetMathLibrary::RLerp(startRot, endRot, Value, true);
 		// 해당 회전값 Enemy에 할당
 		me->SetActorRotation(FRotator(0, lerp.Yaw, 0));
 	}
-}
-
-int32 UEnemyFSM::StunDamageMultiplier()
-{
-	if (me->isStunned)
-	{
-		return 2;
-	}
-	return 1;
 }

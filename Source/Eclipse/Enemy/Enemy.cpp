@@ -22,6 +22,8 @@
 #include "Eclipse/Item/SniperAmmoActor.h"
 #include "Eclipse/Item/SniperMagActor.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/ProgressBar.h"
+#include "Eclipse/CharacterStat/EnemyCharacterStatComponent.h"
 #include "Eclipse/Game/EclipseGameMode.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -36,9 +38,11 @@ AEnemy::AEnemy()
 	PrimaryActorTick.bStartWithTickEnabled = false;
 
 	// Enemy FSM
-	enemyFSM = CreateDefaultSubobject<UEnemyFSM>(TEXT("enemyFSM"));
-
+	EnemyFSM = CreateDefaultSubobject<UEnemyFSM>(TEXT("enemyFSM"));
+	// Pawn Sensor
 	PawnSensingComponent = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComponent"));
+	// Stat Component 
+	EnemyStat = CreateDefaultSubobject<UEnemyCharacterStatComponent>(TEXT("Stat"));
 
 	bReplicates = true;
 }
@@ -48,20 +52,11 @@ void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Set HP
-	curHP = maxHP;
-	// Set Shield
-	curShield = maxShield;
+	EnemyStat->OnShieldZero.AddUObject(this, &AEnemy::OnShieldDestroy);
 
-	enemyAnim = Cast<UEnemyAnim>(GetMesh()->GetAnimInstance());
+	EnemyAnim = Cast<UEnemyAnim>(GetMesh()->GetAnimInstance());
 	gameMode = Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());
 	PC = Cast<AEclipsePlayerController>(GetWorld()->GetFirstPlayerController());
-}
-
-// Called every frame
-void AEnemy::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 }
 
 // Called to bind functionality to input
@@ -70,28 +65,39 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
-void AEnemy::Move()
-{
-}
-
-
 void AEnemy::OnDie()
 {
 	FTimerHandle destroyHandle;
-	enemyFSM->Timeline.Stop();
-	isStunned = false;
+	EnemyFSM->Timeline.Stop();
+	EnemyStat->IsStunned = false;
 	StopAnimMontage();
-	GetWorld()->GetTimerManager().ClearTimer(enemyFSM->stunHandle);
+	GetWorld()->GetTimerManager().ClearTimer(StunHandle);
 	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 	GetCharacterMovement()->Deactivate();
 	StopAnimMontage();
-	auto capsule = GetCapsuleComponent();
+	UCapsuleComponent* const capsule = GetCapsuleComponent();
 	capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetWorldTimerManager().SetTimer(destroyHandle, this, &AEnemy::OnDestroy, 10.0f, false);
 }
 
-void AEnemy::OnDamaged()
+void AEnemy::Damaged(int damage, AActor* DamageCauser)
+{
+	DamagedRPCServer(damage);
+	EnemyStat->ApplyDamage(damage, DamageCauser);
+}
+
+void AEnemy::DamagedRPCServer_Implementation(int damage)
+{
+	DamagedRPCMulticast(damage);
+}
+
+bool AEnemy::DamagedRPCServer_Validate(int damage)
+{
+	return true;
+}
+
+void AEnemy::DamagedRPCMulticast_Implementation(int damage)
 {
 	FTimerHandle overlayMatHandle;
 	GetMesh()->SetOverlayMaterial(overlayMatRed);
@@ -102,15 +108,32 @@ void AEnemy::OnDamaged()
 	}), 0.3f, false);
 }
 
-void AEnemy::OnHeadDamaged()
+void AEnemy::OnShieldDestroy()
 {
-	FTimerHandle overlayMatHandle;
-	GetMesh()->SetOverlayMaterial(overlayMatRed);
-	GetWorldTimerManager().ClearTimer(overlayMatHandle);
-	GetWorldTimerManager().SetTimer(overlayMatHandle, FTimerDelegate::CreateLambda([this]()-> void
+	EnemyStat->IsShieldBroken = true;
+	EnemyStat->IsStunned = true;
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), EnemyFSM->ShieldBreakSound, GetActorLocation(), FRotator::ZeroRotator);
+	auto EmitterTrans = GetMesh()->GetSocketTransform(FName("ShieldSocket"));
+	EmitterTrans.SetScale3D(FVector(4));
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), EnemyFSM->ShieldBreakEmitter, EmitterTrans);
+	// 움직임 즉시 중단
+	GetCharacterMovement()->StopMovementImmediately();
+	// Movement Mode = None [움직임 차단]
+	GetCharacterMovement()->SetMovementMode(MOVE_None);
+	StopAnimMontage();
+	PlayAnimMontage(stunMontage, 1, FName("StunStart"));	
+	GetWorld()->GetTimerManager().SetTimer(StunHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
-		GetMesh()->SetOverlayMaterial(nullptr);
-	}), 0.3f, false);
+		EnemyStat->IsStunned = false;
+		StopAnimMontage();
+		// Movement Mode = Walking [움직임 재개]
+		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+		// Shield 회복
+		EnemyStat->SetShield(EnemyStat->GetMaxShield());
+		EnemyStat->IsShieldBroken = false;
+		EnemyFSM->player->bossHPUI->shieldProgressBar->SetPercent(1);
+		EnemyFSM->SetState(EEnemyState::MOVE);		
+	}), 7.0f, false);
 }
 
 void AEnemy::OnDestroy()
@@ -197,12 +220,12 @@ void AEnemy::DropGear()
 
 void AEnemy::GuardianFireProcess()
 {
-	if (enemyFSM->player)
+	if (EnemyFSM->player)
 	{
 		auto muzzleTrans = GetMesh()->GetSocketTransform(FName("Muzzle"));
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), fireParticle, muzzleTrans);
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), GuardianFireSound, this->GetActorLocation());
-		FVector playerLoc = (enemyFSM->player->GetActorLocation() - muzzleTrans.GetLocation());
+		FVector playerLoc = (EnemyFSM->player->GetActorLocation() - muzzleTrans.GetLocation());
 		auto projectileRot = UKismetMathLibrary::MakeRotFromXZ(playerLoc, this->GetActorUpVector());
 		GetWorld()->SpawnActor<AGuardianProjectile>(GuardianProjectileFactory, muzzleTrans.GetLocation(), projectileRot);
 	}

@@ -21,7 +21,7 @@ void UEnemyAnim::AnimNotify_AttackStart()
 	UEnemyFSM* fsm = Cast<UEnemyFSM>(me->GetDefaultSubobjectByName(FName("enemyFSM")));
 	if (fsm)
 	{
-		me->enemyFSM->Timeline.PlayFromStart();
+		me->EnemyFSM->Timeline.PlayFromStart();
 		bIsAttackingAnim = true;
 	}
 }
@@ -32,7 +32,7 @@ void UEnemyAnim::AnimNotify_AttackEnd()
 	UEnemyFSM* fsm = Cast<UEnemyFSM>(me->GetDefaultSubobjectByName(FName("enemyFSM")));
 	if (fsm)
 	{
-		me->enemyFSM->Timeline.Stop();
+		me->EnemyFSM->Timeline.Stop();
 		bIsAttackingAnim = false;
 	}
 }
@@ -43,7 +43,7 @@ void UEnemyAnim::AnimNotify_DamageEnd()
 	UEnemyFSM* fsm = Cast<UEnemyFSM>(me->GetDefaultSubobjectByName(FName("enemyFSM")));
 	if (fsm)
 	{
-		me->enemyFSM->state = EEnemyState::MOVE;
+		me->EnemyFSM->state = EEnemyState::MOVE;
 	}
 }
 

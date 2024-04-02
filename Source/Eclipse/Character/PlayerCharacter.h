@@ -201,7 +201,7 @@ public:
 	float SetFireInterval();
 
 	UFUNCTION()
-	float GetAttackDamage();
+	float GetAttackDamage(bool IsPlayer);
 
 	UFUNCTION()
 	void ChangeWeaponToRifle(ARifleActor* RifleActor);
@@ -362,13 +362,24 @@ public:
 	//=======================================//
 
 	UFUNCTION()
-	void OnEnemyHit(const FHitResult& HitResult, AEnemy* HitEnemy);
+	void OnEnemyHit(const FHitResult& HitResult, AEnemy* HitEnemy, bool IsHeadshot);
 
 	UFUNCTION(Reliable, Server, WithValidation)
-	void OnEnemyHitRPCServer(const FHitResult& HitResult, AEnemy* HitEnemy);
+	void OnEnemyHitRPCServer(const FHitResult& HitResult, AEnemy* HitEnemy, bool IsHeadshot);
 
 	UFUNCTION(Unreliable, NetMulticast)
-	void OnEnemyHitRPCMulticast(const FHitResult& HitResult, AEnemy* HitEnemy);
+	void OnEnemyHitRPCMulticast(const FHitResult& HitResult, AEnemy* HitEnemy, bool IsHeadshot);
+
+	//=======================================//
+
+	UFUNCTION()
+	void OnEnemyKill();
+
+	UFUNCTION(Reliable, Server, WithValidation)
+	void OnEnemyKillRPCServer();
+
+	UFUNCTION(Unreliable, NetMulticast)
+	void OnEnemyKillRPCMulticast();
 
 	//=======================================//
 
@@ -848,16 +859,28 @@ public:
 	float BulletsPerSecM249 = 8.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float AttackDamageRifle = 9.f;
+	float PlayerAttackDamageRifle = 9.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float AttackDamagePistol = 15.f;
+	float PlayerAttackDamagePistol = 15.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float AttackDamageSniper = 70.f;
+	float PlayerAttackDamageSniper = 70.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float AttackDamageM249 = 8.f;
+	float PlayerAttackDamageM249 = 8.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float EnemyAttackDamageRifle = 90.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float EnemyAttackDamagePistol = 150.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float EnemyAttackDamageSniper = 700.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float EnemyAttackDamageM249 = 80.f;
 
 	//Sounds
 	UPROPERTY(EditAnywhere, Category="Sounds")

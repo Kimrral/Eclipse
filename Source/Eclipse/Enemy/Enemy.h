@@ -20,9 +20,6 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -30,25 +27,28 @@ public:
 	class AEclipseGameMode* gameMode;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=FSM)
-	class UEnemyFSM* enemyFSM;
+	class UEnemyFSM* EnemyFSM;
 
 	UPROPERTY()
-	class UEnemyAnim* enemyAnim;
+	class UEnemyAnim* EnemyAnim;
 
 	UPROPERTY(EditAnywhere)
 	class UPawnSensingComponent* PawnSensingComponent;
 
 	UFUNCTION()
-	void Move();
-
-	UFUNCTION()
 	void OnDie();
 
 	UFUNCTION()
-	void OnDamaged();
+	void Damaged(int damage, AActor* DamageCauser);
+
+	UFUNCTION(Reliable, Server, WithValidation)
+	void DamagedRPCServer(int damage);
+
+	UFUNCTION(Unreliable, NetMulticast)
+	void DamagedRPCMulticast(int damage);
 
 	UFUNCTION()
-	void OnHeadDamaged();
+	void OnShieldDestroy();
 
 	UFUNCTION()
 	void OnDestroy();
@@ -67,9 +67,6 @@ public:
 
 	UFUNCTION()
 	void GuardianFireProcess();
-
-	UPROPERTY()
-	bool isStunned = false;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class APistolAmmoActor> pistolAmmoFactory;
@@ -103,20 +100,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AGuardianProjectile> GuardianProjectileFactory;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	int curHP;
-
-	UPROPERTY(EditDefaultsOnly, Category=EnemySettings)
-	int maxHP = 1000.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	int curShield;
-
-	UPROPERTY(EditDefaultsOnly, Category=EnemySettings)
-	int maxShield = 100;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	bool isShieldBroken = false;
+	// Stat Section
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UEnemyCharacterStatComponent> EnemyStat;	
 
 	UPROPERTY(EditAnywhere, Category=EnemySettings)
 	UAnimMontage* damageMontage;
@@ -129,6 +115,9 @@ public:
 
 	UPROPERTY()
 	class UEnemyHPWidget* enemyHPWidget;
+
+	UPROPERTY()
+	FTimerHandle StunHandle;
 
 	UPROPERTY()
 	FTimerHandle HPWidgetInvisibleHandle;

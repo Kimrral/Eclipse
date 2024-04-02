@@ -20,10 +20,3 @@ AEclipseGameMode::AEclipseGameMode()
 // 	return outActors[0];
 // }
 
-void AEclipseGameMode::OnPlayerKilled(AController* Killer, AController* KilledPlayer, APawn* KilledPawn)
-{
-	APlayerState* KillerPlayerState = Killer->PlayerState;
-	if (KillerPlayerState)
-	{
-	}
-}

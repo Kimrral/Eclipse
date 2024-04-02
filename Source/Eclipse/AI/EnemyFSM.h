@@ -29,6 +29,9 @@ public:
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+	virtual void InitializeComponent() override;
+	virtual void ReadyForReplication() override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
 	// Called every frame
@@ -46,10 +49,24 @@ public:
 	void TickDie();
 	UFUNCTION()
 	void DieProcess();
+
+	
 	UFUNCTION()
 	void SetState(EEnemyState next);
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void SetStateRPCServer(EEnemyState next);
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void SetStateRPCMulticast(EEnemyState next);
+	
+	
 	UFUNCTION()
 	void SetRotToPlayer(float Value);
+	UFUNCTION()
+	void FindAgressivePlayer();
+	UFUNCTION()
+	APlayerCharacter* ReturnAgressivePlayer();
 
 	UPROPERTY(EditAnywhere)
 	class USoundBase* ShieldBreakSound;
@@ -97,6 +114,4 @@ public:
 
 	UPROPERTY()
 	FVector originPosition;
-
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

@@ -10,6 +10,7 @@ DECLARE_MULTICAST_DELEGATE(FOnEnemyHpZeroDelegate);
 DECLARE_MULTICAST_DELEGATE(FOnEnemyHpChangedDelegate);
 DECLARE_MULTICAST_DELEGATE(FOnEnemyShieldZeroDelegate);
 DECLARE_MULTICAST_DELEGATE(FOnEnemyShieldChangedDelegate);
+DECLARE_MULTICAST_DELEGATE(FOnEnemyDamagedDelegate);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class ECLIPSE_API UEnemyCharacterStatComponent : public UActorComponent
@@ -21,6 +22,7 @@ public:
 	FOnEnemyHpChangedDelegate OnHpChanged;
 	FOnEnemyShieldZeroDelegate OnShieldZero;
 	FOnEnemyShieldChangedDelegate OnShieldChanged;
+	FOnEnemyDamagedDelegate OnEnemyDamaged;
 
 
 	// Sets default values for this component's properties
@@ -60,14 +62,14 @@ protected:
 	UPROPERTY(ReplicatedUsing = OnRep_CurrentEnemyHp, Transient, VisibleInstanceOnly, Category = Stat)
 	float CurrentEnemyHp;
 
-	UPROPERTY(ReplicatedUsing = OnRep_MaxEnemyHp, Transient, EditAnywhere, Category = Stat)
+	UPROPERTY(ReplicatedUsing = OnRep_MaxEnemyHp, EditDefaultsOnly, Category = Stat)
 	float MaxEnemyHp = 1000.f;
 
 
 	UPROPERTY(ReplicatedUsing = OnRep_CurrentEnemyShield, Transient, VisibleInstanceOnly, Category = Stat)
 	int CurrentEnemyShield;
 
-	UPROPERTY(ReplicatedUsing = OnRep_CurrentEnemyShield, Transient, EditAnywhere, Category = Stat)
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentEnemyShield, EditDefaultsOnly, Category = Stat)
 	int MaxEnemyShield = 100.f;
 
 	UFUNCTION()

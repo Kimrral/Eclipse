@@ -52,6 +52,8 @@ void UPlayerCharacterStatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeP
 
 	DOREPLIFETIME(UPlayerCharacterStatComponent, CurrentHp);
 	DOREPLIFETIME(UPlayerCharacterStatComponent, MaxHp);
+	DOREPLIFETIME(UPlayerCharacterStatComponent, AccumulatedDamageToPlayer);
+	DOREPLIFETIME(UPlayerCharacterStatComponent, AccumulatedDamageToEnemy);
 }
 
 void UPlayerCharacterStatComponent::SetHp(float NewHp)

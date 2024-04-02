@@ -18,7 +18,7 @@ UEnemyFSM::UEnemyFSM()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-	//bWantsInitializeComponent = true;
+	bWantsInitializeComponent = true;
 
 	// ...
 }
@@ -29,7 +29,7 @@ void UEnemyFSM::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//SetIsReplicated(true);
+	SetIsReplicated(true);
 
 	state = EEnemyState::IDLE;
 	me = Cast<AEnemy>(GetOwner());
@@ -66,7 +66,7 @@ void UEnemyFSM::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	//DOREPLIFETIME(UEnemyFSM, state);
+	DOREPLIFETIME(UEnemyFSM, state);
 }
 
 // Called every frame
@@ -115,14 +115,14 @@ void UEnemyFSM::TickIdle()
 
 void UEnemyFSM::TickMove()
 {
-	// 플레이어 방향벡터 산출
-	FVector dir = player->GetActorLocation() - me->GetActorLocation();
-	// 타임라인을 이용한 Enemy 캐릭터 회전 러프
-	Timeline.PlayFromStart();
-	// 구한 값을 기준으로 이동 인풋
-	me->AddMovementInput(dir.GetSafeNormal());
 	if (player)
 	{
+		// 플레이어 방향벡터 산출
+		FVector dir = player->GetActorLocation() - me->GetActorLocation();
+		// 타임라인을 이용한 Enemy 캐릭터 회전 러프
+		Timeline.PlayFromStart();
+		// 구한 값을 기준으로 이동 인풋
+		me->AddMovementInput(dir.GetSafeNormal());
 		float dist = player->GetDistanceTo(me);
 		if (dist <= attackRange && me->bPlayerInSight)
 		{
@@ -144,10 +144,17 @@ void UEnemyFSM::TickMove()
 
 void UEnemyFSM::TickAttack()
 {
+	if (IsAttackAnimationPlaying())
+	{
+		return;
+	}
 	if (player)
 	{
-		if (me->EnemyAnim->IsAttackAnimationPlaying() == false)
+		if (player->IsPlayerDead)
 		{
+			SetState(EEnemyState::IDLE);
+			return;
+		}
 			// 플레이어와의 거리 도출
 			const float dist = player->GetDistanceTo(me);
 			// 공격거리보다 멀어졌다면
@@ -156,12 +163,6 @@ void UEnemyFSM::TickAttack()
 				// 이동상태로 전이한다
 				SetState(EEnemyState::MOVE);
 			}
-		}
-
-		if (player->IsPlayerDead)
-		{
-			SetState(EEnemyState::IDLE);
-		}
 	}
 	else
 	{
@@ -194,12 +195,12 @@ void UEnemyFSM::DieProcess()
 }
 
 void UEnemyFSM::SetState(EEnemyState next) // 상태 전이함수
-{	
+{
 	SetStateRPCServer(next);
 }
 
 void UEnemyFSM::SetStateRPCServer_Implementation(EEnemyState next)
-{	
+{
 	SetStateRPCMulticast(next);
 }
 
@@ -210,11 +211,12 @@ bool UEnemyFSM::SetStateRPCServer_Validate(EEnemyState next)
 
 void UEnemyFSM::SetStateRPCMulticast_Implementation(EEnemyState next)
 {
-	if(me->HasAuthority())
+	if (me->HasAuthority())
 	{
 		state = next;
-		me->EnemyAnim->state = next;
 	}
+
+	me->EnemyAnim->state = next;
 }
 
 void UEnemyFSM::SetRotToPlayer(float Value)
@@ -239,10 +241,11 @@ void UEnemyFSM::FindAgressivePlayer()
 	if (state == EEnemyState::IDLE)
 	{
 		SetState(EEnemyState::MOVE);
+		return;
 	}
-	else if (state == EEnemyState::MOVE)
+	if (state == EEnemyState::MOVE)
 	{
-		player=ReturnAgressivePlayer();
+		player = ReturnAgressivePlayer();
 	}
 }
 
@@ -255,7 +258,7 @@ APlayerCharacter* UEnemyFSM::ReturnAgressivePlayer()
 	int MaxDamageIndex = 0;
 	for (int i = 0; i < ActorCharacterArray.Num(); i++)
 	{
-		if(APlayerCharacter* Player = Cast<APlayerCharacter>(ActorCharacterArray[i]))
+		if (APlayerCharacter* Player = Cast<APlayerCharacter>(ActorCharacterArray[i]))
 		{
 			PlayerCharacterArray.Add(Player);
 		}
@@ -266,13 +269,22 @@ APlayerCharacter* UEnemyFSM::ReturnAgressivePlayer()
 		const float MaxDamage = PlayerCharacterArray[MaxDamageIndex]->Stat->AccumulatedDamageToEnemy;
 		// [i]번째 플레이어 누적 데미지
 		const float NextDamage = PlayerCharacterArray[i]->Stat->AccumulatedDamageToEnemy;
-	
+
 		// 만약 이번 대상이 현재 대상보다 축적 데미지가 많다면
-		if (NextDamage >= MaxDamage)
+		if (NextDamage > MaxDamage)
 		{
 			// 누적 데미지가 많은 대상 플레이어로 변경하기
 			MaxDamageIndex = i;
 		}
 	}
 	return PlayerCharacterArray[MaxDamageIndex];
+}
+
+bool UEnemyFSM::IsAttackAnimationPlaying()
+{
+	if (IsPlayingAttackAnimation)
+	{
+		return true;
+	}
+	return false;
 }

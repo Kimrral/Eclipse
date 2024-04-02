@@ -1005,10 +1005,12 @@ void APlayerCharacter::OnPlayerHitRPCMulticast_Implementation(const FHitResult& 
 		if (IsHeadshot)
 		{
 			HitCharacter->Damaged(GetAttackDamage(true) * 2, this);
+			Stat->AccumulatedDamageToPlayer+=GetAttackDamage(true)*2;
 		}
 		else
 		{
 			HitCharacter->Damaged(GetAttackDamage(true), this);
+			Stat->AccumulatedDamageToPlayer+=GetAttackDamage(true);
 		}
 	}
 	if (IsLocallyControlled())
@@ -1130,10 +1132,12 @@ void APlayerCharacter::OnEnemyHitRPCMulticast_Implementation(const FHitResult& H
 		if (IsHeadshot)
 		{
 			HitEnemy->Damaged(GetAttackDamage(false) * 2, this);
+			Stat->AccumulatedDamageToEnemy+=GetAttackDamage(false)*2;
 		}
 		else
 		{
 			HitEnemy->Damaged(GetAttackDamage(false), this);
+			Stat->AccumulatedDamageToEnemy+=GetAttackDamage(false);
 		}
 	}
 	if (IsLocallyControlled())
@@ -1485,7 +1489,6 @@ void APlayerCharacter::Tab()
 
 void APlayerCharacter::Q()
 {
-	//ProcessRifleFireAnim();
 }
 
 

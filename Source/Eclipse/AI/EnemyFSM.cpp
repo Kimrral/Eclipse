@@ -9,6 +9,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Eclipse/CharacterStat/PlayerCharacterStatComponent.h"
 #include "Net/UnrealNetwork.h"
 
 // Sets default values for this component's properties
@@ -17,6 +18,7 @@ UEnemyFSM::UEnemyFSM()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
+	//bWantsInitializeComponent = true;
 
 	// ...
 }
@@ -26,6 +28,8 @@ UEnemyFSM::UEnemyFSM()
 void UEnemyFSM::BeginPlay()
 {
 	Super::BeginPlay();
+
+	//SetIsReplicated(true);
 
 	state = EEnemyState::IDLE;
 	me = Cast<AEnemy>(GetOwner());
@@ -37,6 +41,7 @@ void UEnemyFSM::BeginPlay()
 	me->GetCharacterMovement()->MaxWalkSpeed = maxWalkSpeed;
 
 	me->EnemyStat->OnHpZero.AddUObject(this, &UEnemyFSM::DieProcess);
+	me->EnemyStat->OnEnemyDamaged.AddUObject(this, &UEnemyFSM::FindAgressivePlayer);
 
 	// Timeline Binding
 	if (CurveFloat)
@@ -45,6 +50,23 @@ void UEnemyFSM::BeginPlay()
 		TimelineProgress.BindDynamic(this, &UEnemyFSM::SetRotToPlayer);
 		Timeline.AddInterpFloat(CurveFloat, TimelineProgress);
 	}
+}
+
+void UEnemyFSM::InitializeComponent()
+{
+	Super::InitializeComponent();
+}
+
+void UEnemyFSM::ReadyForReplication()
+{
+	Super::ReadyForReplication();
+}
+
+void UEnemyFSM::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	//DOREPLIFETIME(UEnemyFSM, state);
 }
 
 // Called every frame
@@ -78,9 +100,9 @@ void UEnemyFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
 void UEnemyFSM::TickIdle()
 {
 	// 월드 내의 플레이어 찾기
-	player = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
+	player = ReturnAgressivePlayer();
 	// 플레이어와 적 간의 거리값 도출
-	auto distToPlayer = player->GetDistanceTo(me);
+	const auto distToPlayer = player->GetDistanceTo(me);
 	if (player)
 	{
 		if (distToPlayer <= aggressiveRange && me->bPlayerInSight)
@@ -136,7 +158,7 @@ void UEnemyFSM::TickAttack()
 			}
 		}
 
-		if (player->bPlayerDeath)
+		if (player->IsPlayerDead)
 		{
 			SetState(EEnemyState::IDLE);
 		}
@@ -172,9 +194,27 @@ void UEnemyFSM::DieProcess()
 }
 
 void UEnemyFSM::SetState(EEnemyState next) // 상태 전이함수
+{	
+	SetStateRPCServer(next);
+}
+
+void UEnemyFSM::SetStateRPCServer_Implementation(EEnemyState next)
+{	
+	SetStateRPCMulticast(next);
+}
+
+bool UEnemyFSM::SetStateRPCServer_Validate(EEnemyState next)
 {
-	state = next;
-	me->EnemyAnim->state = next;
+	return true;
+}
+
+void UEnemyFSM::SetStateRPCMulticast_Implementation(EEnemyState next)
+{
+	if(me->HasAuthority())
+	{
+		state = next;
+		me->EnemyAnim->state = next;
+	}
 }
 
 void UEnemyFSM::SetRotToPlayer(float Value)
@@ -194,9 +234,45 @@ void UEnemyFSM::SetRotToPlayer(float Value)
 	}
 }
 
-void UEnemyFSM::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void UEnemyFSM::FindAgressivePlayer()
 {
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	if (state == EEnemyState::IDLE)
+	{
+		SetState(EEnemyState::MOVE);
+	}
+	else if (state == EEnemyState::MOVE)
+	{
+		player=ReturnAgressivePlayer();
+	}
+}
 
-	DOREPLIFETIME(UEnemyFSM, state);
+APlayerCharacter* UEnemyFSM::ReturnAgressivePlayer()
+{
+	TArray<AActor*> ActorCharacterArray;
+	TArray<APlayerCharacter*> PlayerCharacterArray;
+	PlayerCharacterArray.Reset();
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerCharacter::StaticClass(), ActorCharacterArray);
+	int MaxDamageIndex = 0;
+	for (int i = 0; i < ActorCharacterArray.Num(); i++)
+	{
+		if(APlayerCharacter* Player = Cast<APlayerCharacter>(ActorCharacterArray[i]))
+		{
+			PlayerCharacterArray.Add(Player);
+		}
+	}
+	for (int i = 0; i < PlayerCharacterArray.Num(); i++)
+	{
+		// [MaxDistIndex]번째 플레이어 누적 데미지
+		const float MaxDamage = PlayerCharacterArray[MaxDamageIndex]->Stat->AccumulatedDamageToEnemy;
+		// [i]번째 플레이어 누적 데미지
+		const float NextDamage = PlayerCharacterArray[i]->Stat->AccumulatedDamageToEnemy;
+	
+		// 만약 이번 대상이 현재 대상보다 축적 데미지가 많다면
+		if (NextDamage >= MaxDamage)
+		{
+			// 누적 데미지가 많은 대상 플레이어로 변경하기
+			MaxDamageIndex = i;
+		}
+	}
+	return PlayerCharacterArray[MaxDamageIndex];
 }

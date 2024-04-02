@@ -61,12 +61,6 @@ void AEnemy::BeginPlay()
 	PC = Cast<AEclipsePlayerController>(GetWorld()->GetFirstPlayerController());
 }
 
-// Called to bind functionality to input
-void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-}
-
 void AEnemy::OnDie()
 {
 	FTimerHandle destroyHandle;
@@ -85,7 +79,8 @@ void AEnemy::OnDie()
 
 void AEnemy::Damaged(int damage, AActor* DamageCauser)
 {
-	DamagedRPCServer(damage, DamageCauser);	
+	DamagedRPCServer(damage, DamageCauser);
+	EnemyStat->ApplyDamage(damage, DamageCauser);
 }
 
 void AEnemy::DamagedRPCServer_Implementation(int damage, AActor* DamageCauser)
@@ -100,10 +95,6 @@ bool AEnemy::DamagedRPCServer_Validate(int damage, AActor* DamageCauser)
 
 void AEnemy::DamagedRPCMulticast_Implementation(int damage, AActor* DamageCauser)
 {
-	if(HasAuthority())
-	{
-		EnemyStat->ApplyDamage(damage, DamageCauser);
-	}
 	FTimerHandle overlayMatHandle;
 	GetMesh()->SetOverlayMaterial(overlayMatRed);
 	GetWorldTimerManager().ClearTimer(overlayMatHandle);
@@ -227,11 +218,11 @@ void AEnemy::GuardianFireProcess()
 {
 	if (EnemyFSM->player)
 	{
-		auto muzzleTrans = GetMesh()->GetSocketTransform(FName("Muzzle"));
+		const FTransform muzzleTrans = GetMesh()->GetSocketTransform(FName("Muzzle"));
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), fireParticle, muzzleTrans);
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), GuardianFireSound, this->GetActorLocation());
-		FVector playerLoc = (EnemyFSM->player->GetActorLocation() - muzzleTrans.GetLocation());
-		auto projectileRot = UKismetMathLibrary::MakeRotFromXZ(playerLoc, this->GetActorUpVector());
+		const FVector playerLoc = (EnemyFSM->player->GetActorLocation() - muzzleTrans.GetLocation());
+		const FRotator projectileRot = UKismetMathLibrary::MakeRotFromXZ(playerLoc, this->GetActorUpVector());
 		GetWorld()->SpawnActor<AGuardianProjectile>(GuardianProjectileFactory, muzzleTrans.GetLocation(), projectileRot);
 	}
 }

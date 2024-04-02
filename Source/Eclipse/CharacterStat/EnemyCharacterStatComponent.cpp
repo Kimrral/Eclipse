@@ -28,6 +28,7 @@ void UEnemyCharacterStatComponent::InitializeComponent()
 
 float UEnemyCharacterStatComponent::ApplyDamage(float InDamage, AActor* DamageCauser)
 {
+	OnEnemyDamaged.Broadcast();
 	if (!IsShieldBroken)
 	{
 		const float ActualDamage = FMath::Clamp<float>(InDamage, 0, InDamage);

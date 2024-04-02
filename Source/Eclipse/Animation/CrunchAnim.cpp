@@ -10,7 +10,7 @@
 void UCrunchAnim::AnimNotify_HitPoint()
 {
 	// 중심점
-	FVector Center = me->GetActorLocation() + me->GetActorForwardVector() * 150.f;
+	const FVector Center = me->GetActorLocation() + me->GetActorForwardVector() * 150.f;
 	// 충돌체크(구충돌)
 	// 충돌한 물체를 기억할 배열
 	TArray<FOverlapResult> HitObj;;

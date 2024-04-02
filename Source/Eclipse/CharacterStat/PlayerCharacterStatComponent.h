@@ -35,6 +35,12 @@ public:
 	UPROPERTY()
 	class APlayerCharacter* PlayerCharacter;
 
+	UPROPERTY(Replicated, VisibleInstanceOnly, Category = Score)
+	float AccumulatedDamageToEnemy;
+
+	UPROPERTY(Replicated, VisibleInstanceOnly, Category = Score)
+	float AccumulatedDamageToPlayer;
+
 protected:
 	virtual void InitializeComponent() override;
 	virtual void ReadyForReplication() override;
@@ -45,6 +51,7 @@ protected:
 
 	UPROPERTY(ReplicatedUsing = OnRep_MaxHp, Transient, VisibleInstanceOnly, Category = Stat)
 	float MaxHp = 100.f;
+
 
 	UFUNCTION()
 	void OnRep_CurrentHp();

@@ -15,13 +15,10 @@ class AEclipseGameMode : public AGameModeBase
 public:
 	AEclipseGameMode();
 
-	UFUNCTION()
+	//UFUNCTION()
 	// virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
-	virtual void OnPlayerKilled(AController* Killer, AController* KilledPlayer, APawn* KilledPawn);
-
 	UPROPERTY()
 	TArray<class AActor*> outActors;
-
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<APlayerStart> playerStartFactory;
 };

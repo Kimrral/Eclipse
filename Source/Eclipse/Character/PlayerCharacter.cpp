@@ -724,13 +724,8 @@ void APlayerCharacter::SwapFirstWeaponRPCMulticast_Implementation()
 	curWeaponSlotNumber = 1;
 
 	if (equippedWeaponStringArray[0] == FString("Rifle"))
-	{
-		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-		if (animInst)
-		{
-			// 애니메이션 블루프린트에 상태 전환 불리언 전달
-			animInst->bPistol = false;
-		}
+	{		
+		animInstance->bPistol = false;
 		PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
 		// Visibility 설정
 		rifleComp->SetVisibility(true);
@@ -751,12 +746,7 @@ void APlayerCharacter::SwapFirstWeaponRPCMulticast_Implementation()
 	}
 	else if (equippedWeaponStringArray[0] == FString("Sniper"))
 	{
-		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-		if (animInst)
-		{
-			// 애니메이션 블루프린트에 상태 전환 불리언 전달
-			animInst->bPistol = false;
-		}
+		animInstance->bPistol = false;
 		PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
 		// Visibility 설정
 		rifleComp->SetVisibility(false);
@@ -777,12 +767,7 @@ void APlayerCharacter::SwapFirstWeaponRPCMulticast_Implementation()
 	}
 	else if (equippedWeaponStringArray[0] == FString("Pistol"))
 	{
-		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-		if (animInst)
-		{
-			// 애니메이션 블루프린트에 상태 전환 불리언 전달
-			animInst->bPistol = true;
-		}
+		animInstance->bPistol = true;
 		PlayAnimMontage(UpperOnlyMontage, 1, FName("PistolEquip"));
 		// Visibility 설정
 		rifleComp->SetVisibility(false);
@@ -803,12 +788,7 @@ void APlayerCharacter::SwapFirstWeaponRPCMulticast_Implementation()
 	}
 	else if (equippedWeaponStringArray[0] == FString("M249"))
 	{
-		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-		if (animInst)
-		{
-			// 애니메이션 블루프린트에 상태 전환 불리언 전달
-			animInst->bPistol = false;
-		}
+		animInstance->bPistol = false;
 		PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
 		// Visibility 설정
 		rifleComp->SetVisibility(false);
@@ -877,12 +857,7 @@ void APlayerCharacter::SwapSecondWeaponRPCMulticast_Implementation()
 
 	if (equippedWeaponStringArray[1] == FString("Rifle"))
 	{
-		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-		if (animInst)
-		{
-			// 애니메이션 블루프린트에 상태 전환 불리언 전달
-			animInst->bPistol = false;
-		}
+		animInstance->bPistol = false;
 		PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
 		// Visibility 설정
 		rifleComp->SetVisibility(true);
@@ -903,12 +878,7 @@ void APlayerCharacter::SwapSecondWeaponRPCMulticast_Implementation()
 	}
 	else if (equippedWeaponStringArray[1] == FString("Sniper"))
 	{
-		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-		if (animInst)
-		{
-			// 애니메이션 블루프린트에 상태 전환 불리언 전달
-			animInst->bPistol = false;
-		}
+		animInstance->bPistol = false;
 		PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
 		// Visibility 설정
 		rifleComp->SetVisibility(false);
@@ -929,12 +899,7 @@ void APlayerCharacter::SwapSecondWeaponRPCMulticast_Implementation()
 	}
 	else if (equippedWeaponStringArray[1] == FString("Pistol"))
 	{
-		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-		if (animInst)
-		{
-			// 애니메이션 블루프린트에 상태 전환 불리언 전달
-			animInst->bPistol = true;
-		}
+		animInstance->bPistol = true;
 		PlayAnimMontage(UpperOnlyMontage, 1, FName("PistolEquip"));
 		// Visibility 설정
 		rifleComp->SetVisibility(false);
@@ -955,12 +920,7 @@ void APlayerCharacter::SwapSecondWeaponRPCMulticast_Implementation()
 	}
 	else if (equippedWeaponStringArray[1] == FString("M249"))
 	{
-		animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-		if (animInst)
-		{
-			// 애니메이션 블루프린트에 상태 전환 불리언 전달
-			animInst->bPistol = false;
-		}
+		animInstance->bPistol = false;
 		PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
 		// Visibility 설정
 		rifleComp->SetVisibility(false);
@@ -2478,13 +2438,7 @@ void APlayerCharacter::ChangeWeaponToRifleRPCMulticast_Implementation(ARifleActo
 	// 권총을 사용중일 때
 	else if (weaponArray[2] == true)
 	{
-		// 애니메이션 인스턴스 캐스팅
-		UPlayerAnim* animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-		if (animInst)
-		{
-			// 애니메이션 블루프린트에 상태 전환 불리언 전달
-			animInst->bPistol = false;
-		}
+		animInstance->bPistol = false;
 		// 사용중인 무기 액터 스폰
 		GetWorld()->SpawnActor<APistolActor>(pistolFactory, spawnPosition, spawnRotation, param);
 	}
@@ -2561,11 +2515,7 @@ void APlayerCharacter::ChangeWeaponToSniperRPCMulticast_Implementation(ASniperAc
 	}
 	else if (weaponArray[2] == true)
 	{
-		UPlayerAnim* animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-		if (animInst)
-		{
-			animInst->bPistol = false;
-		}
+		animInstance->bPistol = false;
 		GetWorld()->SpawnActor<APistolActor>(pistolFactory, spawnPosition, spawnRotation, param);
 	}
 	else if (weaponArray[3] == true)
@@ -2624,11 +2574,7 @@ void APlayerCharacter::ChangeWeaponToPistolRPCMulticast_Implementation(APistolAc
 		PistolActor->Destroy();
 	}
 	PlayAnimMontage(FullBodyMontage, 1, FName("PistolEquip"));
-	UPlayerAnim* animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-	if (animInst)
-	{
-		animInst->bPistol = true;
-	}
+	animInstance->bPistol = true;
 	const FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
 	const FRotator spawnRotation = FRotator::ZeroRotator;
 	FActorSpawnParameters param;
@@ -2711,11 +2657,7 @@ void APlayerCharacter::ChangeWeaponToM249RPCMulticast_Implementation(AM249Actor*
 	}
 	else if (weaponArray[2] == true)
 	{
-		UPlayerAnim* animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-		if (animInst)
-		{
-			animInst->bPistol = false;
-		}
+		animInstance->bPistol = false;
 		GetWorld()->SpawnActor<APistolActor>(pistolFactory, spawnPosition, spawnRotation);
 	}
 	if (curWeaponSlotNumber == 1)
@@ -3282,6 +3224,11 @@ void APlayerCharacter::UnSetM249AdditionalMagazineSlot()
 	bM249AdditionalMag = false;
 }
 
+void APlayerCharacter::OnRep_WeaponArrayChanged()
+{
+	WeaponChangeDele.Broadcast();
+}
+
 void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -3505,7 +3452,6 @@ void APlayerCharacter::ProcessRifleFire()
 	{
 		// Clamp를 통한 탄약 수 차감
 		curRifleAmmo = FMath::Clamp(curRifleAmmo - 1, 0, 40 + SetRifleAdditionalMagazine());
-		UE_LOG(LogTemp, Warning, TEXT("Cur Rifle Bullet : %d"), curRifleAmmo)
 		FHitResult rifleHitResult;
 		FVector startLoc = FollowCamera->GetComponentLocation();
 		FVector EndLoc = startLoc + FollowCamera->GetForwardVector() * 10000.0f;
@@ -3582,7 +3528,6 @@ void APlayerCharacter::ProcessSniperFire()
 	{
 		// Clamp를 통한 탄약 수 차감
 		curSniperAmmo = FMath::Clamp(curSniperAmmo - 1, 0, 5 + SetSniperAdditionalMagazine());
-		UE_LOG(LogTemp, Warning, TEXT("Cur Sniper Bullet : %d"), curSniperAmmo)
 		FHitResult sniperHitResult;
 		FVector startLoc = FollowCamera->GetComponentLocation();
 		FVector EndLoc = startLoc + FollowCamera->GetForwardVector() * 10000.0f;
@@ -3896,7 +3841,6 @@ void APlayerCharacter::ProcessPistolFire()
 	{
 		// Clamp를 통한 탄약 수 차감
 		curPistolAmmo = FMath::Clamp(curPistolAmmo - 1, 0, 8 + SetPistolAdditionalMagazine());
-		UE_LOG(LogTemp, Warning, TEXT("Cur Pistol Bullet : %d"), curPistolAmmo)
 		FHitResult pistolHitResult;
 		FVector startLoc = FollowCamera->GetComponentLocation();
 		FVector EndLoc = startLoc + FollowCamera->GetForwardVector() * 10000.0f;
@@ -4208,7 +4152,6 @@ void APlayerCharacter::ProcessM249Fire()
 	{
 		// Clamp를 통한 탄약 수 차감
 		curM249Ammo = FMath::Clamp(curM249Ammo - 1, 0, 100 + SetM249AdditionalMagazine());
-		UE_LOG(LogTemp, Warning, TEXT("Cur M249 Bullet : %d"), curM249Ammo)
 		FHitResult M249HitResult;
 		FVector startLoc = FollowCamera->GetComponentLocation();
 		FVector EndLoc = startLoc + FollowCamera->GetForwardVector() * 10000.0f;
@@ -4631,12 +4574,12 @@ bool APlayerCharacter::PlayerDeathRPCServer_Validate()
 
 void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 {
-	if(HasAuthority())
+	if (HasAuthority())
 	{
 		IsPlayerDeadImmediately = true;
 	}
 	if (IsLocallyControlled())
-	{		
+	{
 		GetController()->SetIgnoreMoveInput(true);
 		GetController()->SetIgnoreLookInput(true);
 		if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->InventoryCaching(this);
@@ -4645,7 +4588,7 @@ void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 		// 카메라 페이드 연출
 		playerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
 		// 사망지점 전역변수에 캐싱
-		DeathPosition = GetActorLocation();		
+		DeathPosition = GetActorLocation();
 	}
 	FTimerHandle PlayerDeadHandle;
 	GetWorld()->GetTimerManager().SetTimer(PlayerDeadHandle, FTimerDelegate::CreateLambda([this]()-> void

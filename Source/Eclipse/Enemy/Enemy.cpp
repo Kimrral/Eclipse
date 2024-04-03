@@ -126,7 +126,7 @@ void AEnemy::OnShieldDestroy()
 	EnemyStat->IsShieldBroken = true;
 	EnemyStat->IsStunned = true;
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), EnemyFSM->ShieldBreakSound, GetActorLocation(), FRotator::ZeroRotator);
-	auto EmitterTrans = GetMesh()->GetSocketTransform(FName("ShieldSocket"));
+	FTransform EmitterTrans = GetMesh()->GetSocketTransform(FName("ShieldSocket"));
 	EmitterTrans.SetScale3D(FVector(4));
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), EnemyFSM->ShieldBreakEmitter, EmitterTrans);
 	// 움직임 즉시 중단

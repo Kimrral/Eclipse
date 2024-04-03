@@ -28,7 +28,10 @@ public:
 	virtual void AnimNotify_DamageEnd();
 
 	UFUNCTION()
-	virtual void AnimNotify_DieEnd();	
+	virtual void AnimNotify_DieEnd();
+
+	UFUNCTION()
+	void ReplicateChangedState();
 
 	UPROPERTY()
 	class AEnemy* me;

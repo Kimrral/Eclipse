@@ -17,6 +17,7 @@
 #include "PlayerCharacter.generated.h"
 
 DECLARE_DYNAMIC_DELEGATE(FRewardContainerDestruct);
+DECLARE_MULTICAST_DELEGATE(FOnWeaponChange);
 
 //DECLARE_MULTICAST_DELEGATE_TwoParams(FPlayerHit, FHitResult, APlayerCharacter*)
 //DECLARE_MULTICAST_DELEGATE_TwoParams(FEnemyHit, FHitResult, AEnemy*)
@@ -117,6 +118,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FRewardContainerDestruct containerDele;
+
+	FOnWeaponChange WeaponChangeDele;
 
 	//FPlayerHit PlayerHitDele;
 	//FEnemyHit EnemyHitDele;
@@ -538,7 +541,10 @@ public:
 	void UnSetPistolAdditionalMagazineSlot();
 	UFUNCTION(BlueprintCallable)
 	void UnSetM249AdditionalMagazineSlot();
-
+	
+	UFUNCTION()
+	void OnRep_WeaponArrayChanged();
+	
 	UFUNCTION()
 	void AmmoDepleted();
 
@@ -714,7 +720,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UTabWidget* tabWidgetUI;
 
-	UPROPERTY(EditAnywhere, Replicated)
+	UPROPERTY(EditAnywhere, ReplicatedUsing=OnRep_WeaponArrayChanged)
 	TArray<bool> weaponArray;
 
 	UPROPERTY(EditAnywhere, Category="Texture")

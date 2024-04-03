@@ -13,6 +13,8 @@ void UEnemyAnim::NativeBeginPlay()
 
 	me = Cast<AEnemy>(TryGetPawnOwner());
 	FSM = Cast<UEnemyFSM>(me->GetDefaultSubobjectByName(FName("enemyFSM")));
+
+	FSM->OnStateChanged.AddUObject(this, &UEnemyAnim::ReplicateChangedState);
 }
 
 
@@ -49,6 +51,11 @@ void UEnemyAnim::AnimNotify_DieEnd()
 {
 	me->GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 	me->GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+}
+
+void UEnemyAnim::ReplicateChangedState()
+{
+	state= FSM->state;
 }
 
 

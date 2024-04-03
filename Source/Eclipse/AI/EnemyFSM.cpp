@@ -3,7 +3,6 @@
 
 #include "EnemyFSM.h"
 
-#include "AIController.h"
 #include "EclipseAIController.h"
 #include "Eclipse/CharacterStat/EnemyCharacterStatComponent.h"
 #include "Eclipse/Enemy/Enemy.h"
@@ -37,7 +36,6 @@ void UEnemyFSM::BeginPlay()
 	state = EEnemyState::IDLE;
 	me = Cast<AEnemy>(GetOwner());
 	AIController = Cast<AEclipseAIController>(me->GetController());
-	if(AIController) UE_LOG(LogTemp, Warning, TEXT("AICOnroller Casting Success"))
 
 	// Origin Location
 	InitialPosition = me->GetActorLocation();
@@ -129,17 +127,14 @@ void UEnemyFSM::TickMove()
 		{
 			MoveBackToInitialPosition();
 			return;
-		}
-		// // 플레이어 방향벡터 산출
-		// FVector dir = player->GetActorLocation() - me->GetActorLocation();
-		// // 구한 값을 기준으로 이동 인풋
-		// me->AddMovementInput(dir.GetSafeNormal());
+		}		
 		// 타임라인을 이용한 Enemy 캐릭터 회전 러프
 		Timeline.PlayFromStart();
-		if(AIController) AIController->MoveToPlayer(player);
+		if (AIController) AIController->MoveToPlayer(player);
 		const float dist = player->GetDistanceTo(me);
 		if (dist <= attackRange && me->bPlayerInSight)
 		{
+			if (AIController) AIController->StopMovement();
 			// 플레이어가 공격 범위 내에 위치한다면, 공격 상태로 전이
 			SetState(EEnemyState::ATTACK);
 		}
@@ -204,34 +199,18 @@ void UEnemyFSM::DieProcess()
 
 void UEnemyFSM::SetState(EEnemyState next) // 상태 전이함수
 {
-	SetStateRPCServer(next);
-}
-
-void UEnemyFSM::SetStateRPCServer_Implementation(EEnemyState next)
-{
-	SetStateRPCMulticast(next);
-}
-
-bool UEnemyFSM::SetStateRPCServer_Validate(EEnemyState next)
-{
-	return true;
-}
-
-void UEnemyFSM::SetStateRPCMulticast_Implementation(EEnemyState next)
-{
 	if (me->HasAuthority())
 	{
 		state = next;
-	}
-
-	me->EnemyAnim->state = next;
+		me->EnemyAnim->state = next;
+	}	
 }
 
 void UEnemyFSM::SetRotToPlayer(float Value)
 {
 	if (player && me->HasAuthority())
 	{
-		if(player->IsPlayerDeadImmediately)
+		if (player->IsPlayerDeadImmediately)
 		{
 			const FVector dir = InitialPosition - me->GetActorLocation();
 			// 벡터값에서 회전값 산출
@@ -255,9 +234,7 @@ void UEnemyFSM::SetRotToPlayer(float Value)
 			const FRotator lerp = UKismetMathLibrary::RLerp(startRot, endRot, Value, true);
 			// 해당 회전값 Enemy에 할당
 			me->SetActorRotation(FRotator(0, lerp.Yaw, 0));
-		}		
-		
-		
+		}
 	}
 }
 
@@ -308,19 +285,23 @@ APlayerCharacter* UEnemyFSM::ReturnAgressivePlayer()
 
 void UEnemyFSM::MoveBackToInitialPosition()
 {
-	if(state == EEnemyState::IDLE)
+	if (state == EEnemyState::IDLE)
 	{
 		return;
 	}
 	// 타임라인을 이용한 Enemy 캐릭터 회전 러프
 	Timeline.PlayFromStart();
-	if(AIController) AIController->MoveToLocation(InitialPosition);
-	// 구한 값을 기준으로 이동 인풋
-	// me->AddMovementInput(InitialPosition.GetSafeNormal());
-	if(FVector::Dist(me->GetActorLocation(), InitialPosition)<=100.f)
+	if (AIController) AIController->MoveToLocation(InitialPosition);
+	if (FVector::Dist(me->GetActorLocation(), InitialPosition) <= 100.f)
 	{
+		player=nullptr;
 		SetState(EEnemyState::IDLE);
 	}
+}
+
+void UEnemyFSM::OnRep_EnemyState()
+{
+	OnStateChanged.Broadcast();
 }
 
 bool UEnemyFSM::IsAttackAnimationPlaying()

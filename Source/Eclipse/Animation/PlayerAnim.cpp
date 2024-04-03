@@ -12,6 +12,7 @@ void UPlayerAnim::NativeBeginPlay()
 	Super::NativeBeginPlay();
 
 	me = Cast<APlayerCharacter>(TryGetPawnOwner());
+	me->WeaponChangeDele.AddUObject(this, &UPlayerAnim::UpdateWeaponEquipState);
 }
 
 void UPlayerAnim::AnimNotify_ReloadStart()
@@ -105,10 +106,15 @@ void UPlayerAnim::AnimNotify_RightPlant()
 	}
 }
 
-void UPlayerAnim::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void UPlayerAnim::UpdateWeaponEquipState()
 {
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(UPlayerAnim, bPistol);
-
+	if(me->weaponArray[2]==true)
+	{
+		bPistol=true;
+	}
+	else
+	{
+		bPistol=false;
+	}
 }
+

@@ -7,6 +7,8 @@
 #include "Components/TimelineComponent.h"
 #include "EnemyFSM.generated.h"
 
+DECLARE_MULTICAST_DELEGATE(FOnStateChangeDele);
+
 UENUM(BlueprintType)
 enum class EEnemyState : uint8
 {
@@ -37,41 +39,47 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	FOnStateChangeDele OnStateChanged;
+
 	UFUNCTION()
 	void TickIdle();
+
 	UFUNCTION()
 	void TickMove();
+
 	UFUNCTION()
 	void TickAttack();
+
 	UFUNCTION()
 	void TickDamage();
+
 	UFUNCTION()
 	void TickDie();
+
 	UFUNCTION()
 	void DieProcess();
 
-	
+
 	UFUNCTION()
 	void SetState(EEnemyState next);
 
-	UFUNCTION(Server, Reliable, WithValidation)
-	void SetStateRPCServer(EEnemyState next);
-
-	UFUNCTION(NetMulticast, Unreliable)
-	void SetStateRPCMulticast(EEnemyState next);
-	
-	
 	UFUNCTION()
 	void SetRotToPlayer(float Value);
+
 	UFUNCTION()
 	void FindAgressivePlayer();
 
 	UFUNCTION()
 	bool IsAttackAnimationPlaying();
+
 	UFUNCTION()
 	APlayerCharacter* ReturnAgressivePlayer();
+
 	UFUNCTION()
 	void MoveBackToInitialPosition();
+
+	UFUNCTION()
+	void OnRep_EnemyState();
 
 	UPROPERTY(EditAnywhere)
 	class USoundBase* ShieldBreakSound;
@@ -79,8 +87,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* ShieldBreakEmitter;
 
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing=OnRep_EnemyState)
 	EEnemyState state;
+
 
 	UPROPERTY()
 	class APlayerCharacter* player;
@@ -122,5 +131,4 @@ public:
 
 	UPROPERTY()
 	bool bIsAttackReady;
-
 };

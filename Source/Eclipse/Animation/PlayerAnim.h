@@ -32,10 +32,13 @@ public:
 	UFUNCTION()
 	void AnimNotify_RightPlant();
 
+	UFUNCTION()
+	void UpdateWeaponEquipState();
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bArmed = true;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bPistol = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -49,6 +52,4 @@ public:
 
 	UPROPERTY(EditAnywhere, Category=Sound)
 	class USoundBase* walkSound;
-
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

@@ -1044,6 +1044,9 @@ public:
 	UPROPERTY()
 	bool ArmorEquipped = false;
 
+	UPROPERTY(Replicated)
+	bool IsPlayerDeadImmediately = false;
+	
 	UPROPERTY(Replicated, BlueprintReadOnly)
 	bool IsPlayerDead = false;
 

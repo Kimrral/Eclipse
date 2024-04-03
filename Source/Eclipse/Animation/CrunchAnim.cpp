@@ -19,16 +19,16 @@ void UCrunchAnim::AnimNotify_HitPoint()
 		FCollisionQueryParams params;
 		params.AddIgnoredActor(me);
 		// Overlap Multi
-		bool bOverlapHit = GetWorld()->OverlapMultiByChannel(HitObj, Center, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(80), params);
+		bool bOverlapHit = GetWorld()->OverlapMultiByChannel(HitObj, Center, FQuat::Identity, ECC_Pawn, FCollisionShape::MakeSphere(80), params);
 		if (bOverlapHit)
 		{
 			// 충돌 배열 순회
 			for (int i = 0; i < HitObj.Num(); ++i)
 			{
 				APlayerCharacter* player = Cast<APlayerCharacter>(HitObj[i].GetActor());
-				if (player)
+				if (player&&player->HasAuthority()&&player->IsPlayerDeadImmediately==false)
 				{
-					player->Damaged(50, GetOwningActor());
+					player->Damaged(50, GetOwningActor()); 
 				}
 			}
 		}

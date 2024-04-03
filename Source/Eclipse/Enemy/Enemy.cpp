@@ -22,7 +22,7 @@
 #include "Eclipse/Item/SniperAmmoActor.h"
 #include "Eclipse/Item/SniperMagActor.h"
 #include "Components/CapsuleComponent.h"
-#include "Components/ProgressBar.h"
+#include "Eclipse/AI/EclipseAIController.h"
 #include "Eclipse/CharacterStat/EnemyCharacterStatComponent.h"
 #include "Eclipse/Game/EclipseGameMode.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -43,6 +43,9 @@ AEnemy::AEnemy()
 	PawnSensingComponent = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComponent"));
 	// Stat Component 
 	EnemyStat = CreateDefaultSubobject<UEnemyCharacterStatComponent>(TEXT("Stat"));
+	// AI Controller
+	AIControllerClass = AEclipseAIController::StaticClass();
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
 	SetReplicates(true);
 }
@@ -95,13 +98,27 @@ bool AEnemy::DamagedRPCServer_Validate(int damage, AActor* DamageCauser)
 
 void AEnemy::DamagedRPCMulticast_Implementation(int damage, AActor* DamageCauser)
 {
-	FTimerHandle overlayMatHandle;
-	GetMesh()->SetOverlayMaterial(overlayMatRed);
-	GetWorldTimerManager().ClearTimer(overlayMatHandle);
-	GetWorldTimerManager().SetTimer(overlayMatHandle, FTimerDelegate::CreateLambda([this]()-> void
+	if(EnemyStat->IsShieldBroken)
 	{
-		GetMesh()->SetOverlayMaterial(nullptr);
-	}), 0.3f, false);
+		FTimerHandle overlayMatHandle;
+		GetMesh()->SetOverlayMaterial(HitOverlayMat);
+		GetWorldTimerManager().ClearTimer(overlayMatHandle);
+		GetWorldTimerManager().SetTimer(overlayMatHandle, FTimerDelegate::CreateLambda([this]()-> void
+		{
+			GetMesh()->SetOverlayMaterial(nullptr);
+		}), 0.3f, false);
+	}
+	else
+	{
+		FTimerHandle overlayMatHandle;
+		GetMesh()->SetOverlayMaterial(HitOverlayMatShield);
+		GetWorldTimerManager().ClearTimer(overlayMatHandle);
+		GetWorldTimerManager().SetTimer(overlayMatHandle, FTimerDelegate::CreateLambda([this]()-> void
+		{
+			GetMesh()->SetOverlayMaterial(nullptr);
+		}), 0.3f, false);
+	}
+
 }
 
 void AEnemy::OnShieldDestroy()
@@ -127,7 +144,7 @@ void AEnemy::OnShieldDestroy()
 		// Shield 회복
 		EnemyStat->SetShield(EnemyStat->GetMaxShield());
 		EnemyStat->IsShieldBroken = false;
-		EnemyFSM->player->bossHPUI->shieldProgressBar->SetPercent(1);
+		//EnemyFSM->player->bossHPUI->shieldProgressBar->SetPercent(1);
 		EnemyFSM->SetState(EEnemyState::MOVE);
 	}), 7.0f, false);
 }

@@ -70,6 +70,8 @@ public:
 	bool IsAttackAnimationPlaying();
 	UFUNCTION()
 	APlayerCharacter* ReturnAgressivePlayer();
+	UFUNCTION()
+	void MoveBackToInitialPosition();
 
 	UPROPERTY(EditAnywhere)
 	class USoundBase* ShieldBreakSound;
@@ -87,7 +89,7 @@ public:
 	class AEnemy* me;
 
 	UPROPERTY()
-	class AAIController* ai;
+	class AEclipseAIController* AIController;
 
 	UPROPERTY(VisibleAnywhere)
 	bool IsPlayingAttackAnimation = false;
@@ -107,6 +109,9 @@ public:
 	bool bTickDie;
 
 	UPROPERTY()
+	FVector InitialPosition;
+
+	UPROPERTY()
 	float alpha;
 
 	UPROPERTY(EditAnywhere) // Timeline 생성
@@ -118,6 +123,4 @@ public:
 	UPROPERTY()
 	bool bIsAttackReady;
 
-	UPROPERTY()
-	FVector originPosition;
 };

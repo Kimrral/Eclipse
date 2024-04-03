@@ -50,47 +50,24 @@ void AGuardianProjectile::OnOverlap(UPrimitiveComponent* OverlappedComponent, AA
 	if (OtherActor)
 	{
 		auto player = Cast<APlayerCharacter>(OtherActor);
-		if (player)
+		if (player&&player->IsPlayerDead==false)
 		{
-			player->Damaged(guardianDamageValue, this);
-			Explosion();
+			if(player->HasAuthority()&&player->IsPlayerDeadImmediately==false)
+			{
+				player->Damaged(guardianDamageValue, this);
+				Explosion();
+			}
 		}
 	}
 	if (OtherComp)
 	{
 		Explosion();
-		// 오버랩 멀티 중심점
-		FVector Center = GetActorLocation();
-		// 충돌체크(구충돌)
-		// 충돌한 물체를 기억할 배열
-		TArray<FOverlapResult> HitObj;
-		FCollisionQueryParams params;
-		// 충돌 무시 액터 리스트 추가
-		params.AddIgnoredActor(this);
-		// 집게를 든채로 컨테이너에서 Trigger 되었는지 판단하는 OverlapMulti
-		bool bHitVat = GetWorld()->OverlapMultiByChannel(HitObj, Center, FQuat::Identity, ECC_Pawn, FCollisionShape::MakeSphere(100), params);
-		// OverlapMulti가 적중하지 않았다면
-		if (bHitVat == false)
-		{
-			// 리턴시킨다.
-			return;
-		}
-		for (int i = 0; i < HitObj.Num(); ++i)
-		{
-			auto player = Cast<APlayerCharacter>(OtherActor);
-			if (player)
-			{
-				int dist = FMath::RoundHalfFromZero(GetDistanceTo(player));
-				// 폭발 중심점부터의 거리에 따른 데미지 프로세스
-				player->Damaged(FMath::Clamp(guardianDamageValue - (dist * 2), 0, 30), this);
-			}
-		}
 	}
 }
 
 void AGuardianProjectile::Explosion()
 {
-	UGameplayStatics::PlaySoundAtLocation(GetWorld(), explosionSound, GetActorLocation());
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), explosionParticle, GetActorLocation(), FRotator::ZeroRotator, FVector(0.2));
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), explosionSound, GetActorLocation(), 0.5f);
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), explosionParticle, GetActorLocation(), FRotator::ZeroRotator, FVector(0.05f));
 	this->Destroy();
 }

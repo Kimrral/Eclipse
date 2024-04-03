@@ -108,7 +108,10 @@ public:
 	UAnimMontage* stunMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=EnemySettings)
-	class UMaterialInterface* overlayMatRed;
+	class UMaterialInterface* HitOverlayMat;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=EnemySettings)
+	class UMaterialInterface* HitOverlayMatShield;
 
 	UPROPERTY()
 	class UEnemyHPWidget* enemyHPWidget;

@@ -141,6 +141,9 @@ void APlayerCharacter::BeginPlay()
 	GetMesh()->HideBoneByName(TEXT("bot_hand"), EPhysBodyOp::PBO_None);
 	GetMesh()->HideBoneByName(TEXT("shotgun_base"), EPhysBodyOp::PBO_None);
 
+	IsPlayerDeadImmediately = false;
+	IsPlayerDead = false;
+
 	// Casting
 	const UGameInstance* GI = GetGameInstance();
 	PC = Cast<AEclipsePlayerController>(GI->GetFirstLocalPlayerController());
@@ -404,20 +407,24 @@ void APlayerCharacter::Look(const FInputActionValue& Value)
 
 void APlayerCharacter::Zoom()
 {
+	if (gi->IsWidgetOn || IsPlayerDeadImmediately)
+	{
+		return;
+	}
 	ZoomRPCServer();
 }
 
 void APlayerCharacter::ZoomRelease()
 {
+	if (gi->IsWidgetOn || IsPlayerDeadImmediately)
+	{
+		return;
+	}
 	ZoomRPCReleaseServer();
 }
 
 void APlayerCharacter::ZoomRPCMulticast_Implementation()
 {
-	if (gi->IsWidgetOn)
-	{
-		return;
-	}
 	// Zooming Boolean
 	isZooming = true;
 	CharacterWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
@@ -526,10 +533,6 @@ bool APlayerCharacter::ZoomRPCReleaseServer_Validate()
 
 void APlayerCharacter::ZoomRPCReleaseMulticast_Implementation()
 {
-	if (gi->IsWidgetOn)
-	{
-		return;
-	}
 	// Zooming Boolean
 	isZooming = false;
 	GetCharacterMovement()->MaxWalkSpeed = CharacterWalkSpeed;
@@ -1005,12 +1008,12 @@ void APlayerCharacter::OnPlayerHitRPCMulticast_Implementation(const FHitResult& 
 		if (IsHeadshot)
 		{
 			HitCharacter->Damaged(GetAttackDamage(true) * 2, this);
-			Stat->AccumulatedDamageToPlayer+=GetAttackDamage(true)*2;
+			Stat->AccumulatedDamageToPlayer += GetAttackDamage(true) * 2;
 		}
 		else
 		{
 			HitCharacter->Damaged(GetAttackDamage(true), this);
-			Stat->AccumulatedDamageToPlayer+=GetAttackDamage(true);
+			Stat->AccumulatedDamageToPlayer += GetAttackDamage(true);
 		}
 	}
 	if (IsLocallyControlled())
@@ -1132,12 +1135,12 @@ void APlayerCharacter::OnEnemyHitRPCMulticast_Implementation(const FHitResult& H
 		if (IsHeadshot)
 		{
 			HitEnemy->Damaged(GetAttackDamage(false) * 2, this);
-			Stat->AccumulatedDamageToEnemy+=GetAttackDamage(false)*2;
+			Stat->AccumulatedDamageToEnemy += GetAttackDamage(false) * 2;
 		}
 		else
 		{
 			HitEnemy->Damaged(GetAttackDamage(false), this);
-			Stat->AccumulatedDamageToEnemy+=GetAttackDamage(false);
+			Stat->AccumulatedDamageToEnemy += GetAttackDamage(false);
 		}
 	}
 	if (IsLocallyControlled())
@@ -1168,7 +1171,7 @@ void APlayerCharacter::OnEnemyHitRPCMulticast_Implementation(const FHitResult& H
 		}
 		else
 		{
-			if(HitEnemy->EnemyStat->IsShieldBroken)
+			if (HitEnemy->EnemyStat->IsShieldBroken)
 			{
 				if (IsHeadshot)
 				{
@@ -1189,7 +1192,7 @@ void APlayerCharacter::OnEnemyHitRPCMulticast_Implementation(const FHitResult& H
 					SetDamageWidget(GetAttackDamage(false), HitResult.Location, false, FLinearColor::White);
 					// 적중 파티클 스폰
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, hitRot, FVector(1.f));
-				}	
+				}
 			}
 			else
 			{
@@ -1209,7 +1212,7 @@ void APlayerCharacter::OnEnemyHitRPCMulticast_Implementation(const FHitResult& H
 					// 적중 위젯 애니메이션 재생
 					crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
 					// 데미지 위젯에 피해 값과 적 위치벡터 할당
-					SetDamageWidget(GetAttackDamage(false)*0.05f, HitResult.Location, true, FLinearColor::Gray);
+					SetDamageWidget(GetAttackDamage(false) * 0.05f, HitResult.Location, true, FLinearColor::Gray);
 					// 적중 파티클 스폰
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, hitRot, FVector(1.f));
 				}
@@ -3171,7 +3174,7 @@ bool APlayerCharacter::DamagedRPCServer_Validate(int damage, AActor* DamageCause
 
 void APlayerCharacter::DamagedRPCMulticast_Implementation(int damage, AActor* DamageCauser)
 {
-	if(HasAuthority())
+	if (HasAuthority())
 	{
 		//Stat->ApplyDamage(damage, DamageCauser);
 	}
@@ -3293,13 +3296,14 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(APlayerCharacter, maxPistolAmmo);
 	DOREPLIFETIME(APlayerCharacter, maxM249Ammo);
 	DOREPLIFETIME(APlayerCharacter, IsPlayerDead);
+	DOREPLIFETIME(APlayerCharacter, IsPlayerDeadImmediately);
 	DOREPLIFETIME(APlayerCharacter, weaponArray);
 }
 
 void APlayerCharacter::Fire()
 {
 	// 사격 가능 상태가 아니거나, 뛰고 있거나, 위젯이 켜져 있거나, 엔딩 연출 중이라면 리턴
-	if (!CanShoot || isRunning || gi->IsWidgetOn || bEnding || UGameplayStatics::GetCurrentLevelName(GetWorld()) == FString("Safe_House"))
+	if (!CanShoot || isRunning || gi->IsWidgetOn || bEnding || IsPlayerDeadImmediately || UGameplayStatics::GetCurrentLevelName(GetWorld()) == FString("Safe_House"))
 	{
 		return;
 	}
@@ -4627,19 +4631,26 @@ bool APlayerCharacter::PlayerDeathRPCServer_Validate()
 
 void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 {
-	if (IsLocallyControlled())
+	if(HasAuthority())
 	{
+		IsPlayerDeadImmediately = true;
+	}
+	if (IsLocallyControlled())
+	{		
+		GetController()->SetIgnoreMoveInput(true);
+		GetController()->SetIgnoreLookInput(true);
 		if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->InventoryCaching(this);
 		UWidgetLayoutLibrary::RemoveAllWidgets(GetWorld());
 		APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 		// 카메라 페이드 연출
-		playerCam->StartCameraFade(0, 1, 5.0, FLinearColor::Black, false, true);
+		playerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
 		// 사망지점 전역변수에 캐싱
-		DeathPosition = GetActorLocation();
+		DeathPosition = GetActorLocation();		
 	}
 	FTimerHandle PlayerDeadHandle;
 	GetWorld()->GetTimerManager().SetTimer(PlayerDeadHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
+		UGameplayStatics::PlaySound2D(GetWorld(), deathSound);
 		IsPlayerDead = true;
 	}), 3.f, false);
 

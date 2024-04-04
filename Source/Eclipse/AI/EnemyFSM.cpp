@@ -111,7 +111,7 @@ void UEnemyFSM::TickIdle()
 		}
 		// 플레이어와 적 간의 거리값 도출
 		const auto distToPlayer = player->GetDistanceTo(me);
-		if (distToPlayer <= aggressiveRange && me->bPlayerInSight)
+		if (distToPlayer <= aggressiveRange)
 		{
 			// 탐색 범위 내에 플레이어가 있다면, 이동 상태로 전이
 			SetState(EEnemyState::MOVE);
@@ -132,7 +132,7 @@ void UEnemyFSM::TickMove()
 		Timeline.PlayFromStart();
 		if (AIController) AIController->MoveToPlayer(player);
 		const float dist = player->GetDistanceTo(me);
-		if (dist <= attackRange && me->bPlayerInSight)
+		if (dist <= attackRange)
 		{
 			if (AIController) AIController->StopMovement();
 			// 플레이어가 공격 범위 내에 위치한다면, 공격 상태로 전이
@@ -161,7 +161,7 @@ void UEnemyFSM::TickAttack()
 		// 플레이어와의 거리 도출
 		const float dist = player->GetDistanceTo(me);
 		// 공격거리보다 멀어졌다면
-		if (dist > attackRange || !me->bPlayerInSight)
+		if (dist > attackRange)
 		{
 			// 이동상태로 전이한다
 			SetState(EEnemyState::MOVE);
@@ -181,20 +181,14 @@ void UEnemyFSM::TickDamage()
 
 void UEnemyFSM::TickDie()
 {
-	// 실행되고 있는 Timeline 종료
-	Timeline.Stop();
-	// Die 함수 1회 호출을 위한 불리언
-	if (bTickDie == false)
-	{
-		bTickDie = true;
-		me->OnDie();
-	}
+	
 }
 
 void UEnemyFSM::DieProcess()
 {
 	// Die 상태로 전이한다.
 	SetState(EEnemyState::DIE);
+	me->OnDie();	
 }
 
 void UEnemyFSM::SetState(EEnemyState next) // 상태 전이함수
@@ -208,6 +202,10 @@ void UEnemyFSM::SetState(EEnemyState next) // 상태 전이함수
 
 void UEnemyFSM::SetRotToPlayer(float Value)
 {
+	if(state==EEnemyState::DIE)
+	{
+		return;
+	}
 	if (player && me->HasAuthority() && me->EnemyStat->IsStunned==false)
 	{
 		if (player->IsPlayerDeadImmediately)

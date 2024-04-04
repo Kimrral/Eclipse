@@ -57,6 +57,8 @@ void AEnemy::BeginPlay()
 	
 	SetReplicateMovement(true);
 
+	PawnSensingComponent->OnSeePawn.AddDynamic(this, &AEnemy::OnPawnDetected);
+
 	EnemyStat->OnShieldZero.AddUObject(this, &AEnemy::OnShieldDestroy);
 
 	EnemyAnim = Cast<UEnemyAnim>(GetMesh()->GetAnimInstance());
@@ -71,13 +73,20 @@ void AEnemy::OnDie()
 	EnemyStat->IsStunned = false;
 	StopAnimMontage();
 	GetWorld()->GetTimerManager().ClearTimer(StunHandle);
-	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	GetCharacterMovement()->SetMovementMode(MOVE_None);
 	GetCharacterMovement()->Deactivate();
-	StopAnimMontage();
 	UCapsuleComponent* const capsule = GetCapsuleComponent();
 	capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetWorldTimerManager().SetTimer(destroyHandle, this, &AEnemy::OnDestroy, 10.0f, false);
+}
+
+void AEnemy::OnPawnDetected(APawn* Pawn)
+{
+	if(APlayerCharacter* DetectedPawn = Cast<APlayerCharacter>(Pawn))
+	{
+		EnemyFSM->player=DetectedPawn;
+	}
 }
 
 void AEnemy::Damaged(int damage, AActor* DamageCauser)

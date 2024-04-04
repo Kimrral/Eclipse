@@ -10,8 +10,9 @@ void UDroneAnim::AnimNotify_HitPoint()
 {
 	if(me->HasAuthority())
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Attack"))
 		// 중심점
-		const FVector Center = me->GetActorLocation() + me->GetActorForwardVector() * 50.f - me->GetActorUpVector()*50.f;
+		const FVector Center = me->GetActorLocation() + me->GetActorForwardVector() * 50.f;
 		// 충돌체크(구충돌)
 		// 충돌한 물체를 기억할 배열
 		TArray<FOverlapResult> HitObj;;

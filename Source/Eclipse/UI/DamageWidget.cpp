@@ -10,7 +10,4 @@ void UDamageWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	damageText->SetText(FText::AsNumber(damage));
-
-	UE_LOG(LogTemp, Warning, TEXT("construct"))
-
 }

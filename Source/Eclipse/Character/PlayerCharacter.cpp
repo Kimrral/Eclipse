@@ -3252,6 +3252,14 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(APlayerCharacter, IsPlayerDead);
 	DOREPLIFETIME(APlayerCharacter, IsPlayerDeadImmediately);
 	DOREPLIFETIME(APlayerCharacter, weaponArray);
+	DOREPLIFETIME(APlayerCharacter, RandPlayerAttackDamageRifle);
+	DOREPLIFETIME(APlayerCharacter, RandPlayerAttackDamagePistol);
+	DOREPLIFETIME(APlayerCharacter, RandPlayerAttackDamageSniper);
+	DOREPLIFETIME(APlayerCharacter, RandPlayerAttackDamageM249);
+	DOREPLIFETIME(APlayerCharacter, RandEnemyAttackDamageRifle);
+	DOREPLIFETIME(APlayerCharacter, RandEnemyAttackDamagePistol);
+	DOREPLIFETIME(APlayerCharacter, RandEnemyAttackDamageSniper);
+	DOREPLIFETIME(APlayerCharacter, RandEnemyAttackDamageM249);
 }
 
 void APlayerCharacter::Fire()

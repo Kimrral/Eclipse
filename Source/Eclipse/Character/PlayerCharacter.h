@@ -893,28 +893,28 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float EnemyAttackDamageM249 = 80.f;
 
-	UPROPERTY(VisibleDefaultsOnly)
+	UPROPERTY(Replicated, VisibleDefaultsOnly)
 	float RandPlayerAttackDamageRifle;
 
-	UPROPERTY(VisibleDefaultsOnly)
+	UPROPERTY(Replicated, VisibleDefaultsOnly)
 	float RandPlayerAttackDamagePistol;
 
-	UPROPERTY(VisibleDefaultsOnly)
+	UPROPERTY(Replicated, VisibleDefaultsOnly)
 	float RandPlayerAttackDamageSniper;
 
-	UPROPERTY(VisibleDefaultsOnly)
+	UPROPERTY(Replicated, VisibleDefaultsOnly)
 	float RandPlayerAttackDamageM249;
 
-	UPROPERTY(VisibleDefaultsOnly)
+	UPROPERTY(Replicated, VisibleDefaultsOnly)
 	float RandEnemyAttackDamageRifle;
 
-	UPROPERTY(VisibleDefaultsOnly)
+	UPROPERTY(Replicated, VisibleDefaultsOnly)
 	float RandEnemyAttackDamagePistol;
 
-	UPROPERTY(VisibleDefaultsOnly)
+	UPROPERTY(Replicated, VisibleDefaultsOnly)
 	float RandEnemyAttackDamageSniper;
 
-	UPROPERTY(VisibleDefaultsOnly)
+	UPROPERTY(Replicated, VisibleDefaultsOnly)
 	float RandEnemyAttackDamageM249;
 
 	//Sounds

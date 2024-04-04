@@ -208,7 +208,7 @@ void UEnemyFSM::SetState(EEnemyState next) // 상태 전이함수
 
 void UEnemyFSM::SetRotToPlayer(float Value)
 {
-	if (player && me->HasAuthority())
+	if (player && me->HasAuthority() && me->EnemyStat->IsStunned==false)
 	{
 		if (player->IsPlayerDeadImmediately)
 		{

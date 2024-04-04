@@ -205,6 +205,8 @@ public:
 
 	UFUNCTION()
 	float GetAttackDamage(bool IsPlayer);
+	UFUNCTION()
+	int32 GetAttackDamageCache(bool IsPlayer);
 
 	UFUNCTION()
 	void ChangeWeaponToRifle(ARifleActor* RifleActor);
@@ -544,6 +546,9 @@ public:
 	
 	UFUNCTION()
 	void OnRep_WeaponArrayChanged();
+
+	UFUNCTION()
+	int32 GenerateRandomDamage(float InDamage);
 	
 	UFUNCTION()
 	void AmmoDepleted();
@@ -888,6 +893,30 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float EnemyAttackDamageM249 = 80.f;
 
+	UPROPERTY(VisibleDefaultsOnly)
+	float RandPlayerAttackDamageRifle;
+
+	UPROPERTY(VisibleDefaultsOnly)
+	float RandPlayerAttackDamagePistol;
+
+	UPROPERTY(VisibleDefaultsOnly)
+	float RandPlayerAttackDamageSniper;
+
+	UPROPERTY(VisibleDefaultsOnly)
+	float RandPlayerAttackDamageM249;
+
+	UPROPERTY(VisibleDefaultsOnly)
+	float RandEnemyAttackDamageRifle;
+
+	UPROPERTY(VisibleDefaultsOnly)
+	float RandEnemyAttackDamagePistol;
+
+	UPROPERTY(VisibleDefaultsOnly)
+	float RandEnemyAttackDamageSniper;
+
+	UPROPERTY(VisibleDefaultsOnly)
+	float RandEnemyAttackDamageM249;
+
 	//Sounds
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* BulletEmptySound;
@@ -1055,27 +1084,6 @@ public:
 	
 	UPROPERTY(Replicated, BlueprintReadOnly)
 	bool IsPlayerDead = false;
-
-	//UFUNCTION()
-	//void OnRep_IsPlayerDead();
-
-	UPROPERTY()
-	int randRifleDamage;
-	UPROPERTY()
-	int randRifleHeadDamage;
-	UPROPERTY()
-	int randSniperDamage;
-	UPROPERTY()
-	int randSniperHeadDamage;
-	UPROPERTY()
-	int randPistolDamage;
-	UPROPERTY()
-	int randPistolHeadDamage;
-	UPROPERTY()
-	int randM249Damage;
-	UPROPERTY()
-	int randM249HeadDamage;
-
 
 	UPROPERTY()
 	bool bRifleAdditionalMag;

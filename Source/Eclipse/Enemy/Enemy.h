@@ -36,6 +36,9 @@ public:
 	void OnDie();
 
 	UFUNCTION()
+	void OnPawnDetected(APawn* Pawn); 
+
+	UFUNCTION()
 	void Damaged(int damage, AActor* DamageCauser);
 
 	UFUNCTION(Reliable, Server, WithValidation)

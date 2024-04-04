@@ -968,12 +968,12 @@ void APlayerCharacter::OnPlayerHitRPCMulticast_Implementation(const FHitResult& 
 		if (IsHeadshot)
 		{
 			HitCharacter->Damaged(GetAttackDamage(true) * 2, this);
-			Stat->AccumulatedDamageToPlayer += GetAttackDamage(true) * 2;
+			Stat->AccumulatedDamageToPlayer += GetAttackDamageCache(true) * 2;
 		}
 		else
 		{
 			HitCharacter->Damaged(GetAttackDamage(true), this);
-			Stat->AccumulatedDamageToPlayer += GetAttackDamage(true);
+			Stat->AccumulatedDamageToPlayer += GetAttackDamageCache(true);
 		}
 	}
 	if (IsLocallyControlled())
@@ -985,7 +985,7 @@ void APlayerCharacter::OnPlayerHitRPCMulticast_Implementation(const FHitResult& 
 			// 적중 위젯 애니메이션 재생
 			crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
 			// 데미지 위젯에 피해 값과 적 위치벡터 할당
-			SetDamageWidget(GetAttackDamage(true) * 2, HitResult.Location, false, FLinearColor::Yellow);
+			SetDamageWidget(GetAttackDamageCache(true) * 2, HitResult.Location, false, FLinearColor::Yellow);
 			// 적중 파티클 스폰
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodParticle, HitResult.Location, hitRot, FVector(1.f));
 		}
@@ -995,7 +995,7 @@ void APlayerCharacter::OnPlayerHitRPCMulticast_Implementation(const FHitResult& 
 			// 적중 위젯 애니메이션 재생
 			crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
 			// 데미지 위젯에 피해 값과 적 위치벡터 할당
-			SetDamageWidget(GetAttackDamage(true), HitResult.Location, false, FLinearColor::White);
+			SetDamageWidget(GetAttackDamageCache(true), HitResult.Location, false, FLinearColor::White);
 			// 적중 파티클 스폰
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodParticle, HitResult.Location, hitRot, FVector(1.f));
 		}
@@ -1095,12 +1095,12 @@ void APlayerCharacter::OnEnemyHitRPCMulticast_Implementation(const FHitResult& H
 		if (IsHeadshot)
 		{
 			HitEnemy->Damaged(GetAttackDamage(false) * 2, this);
-			Stat->AccumulatedDamageToEnemy += GetAttackDamage(false) * 2;
+			Stat->AccumulatedDamageToEnemy += GetAttackDamageCache(false) * 2;
 		}
 		else
 		{
 			HitEnemy->Damaged(GetAttackDamage(false), this);
-			Stat->AccumulatedDamageToEnemy += GetAttackDamage(false);
+			Stat->AccumulatedDamageToEnemy += GetAttackDamageCache(false);
 		}
 	}
 	if (IsLocallyControlled())
@@ -1114,7 +1114,7 @@ void APlayerCharacter::OnEnemyHitRPCMulticast_Implementation(const FHitResult& H
 				// 적중 위젯 애니메이션 재생
 				crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
 				// 데미지 위젯에 피해 값과 적 위치벡터 할당
-				SetDamageWidget(GetAttackDamage(false) * 4, HitResult.Location, false, FLinearColor::Red);
+				SetDamageWidget(GetAttackDamageCache(false) * 4, HitResult.Location, false, FLinearColor::Red);
 				// 적중 파티클 스폰
 				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, hitRot, FVector(2.f));
 			}
@@ -1124,7 +1124,7 @@ void APlayerCharacter::OnEnemyHitRPCMulticast_Implementation(const FHitResult& H
 				// 적중 위젯 애니메이션 재생
 				crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
 				// 데미지 위젯에 피해 값과 적 위치벡터 할당
-				SetDamageWidget(GetAttackDamage(false) * 2, HitResult.Location, false, FLinearColor::Red);
+				SetDamageWidget(GetAttackDamageCache(false) * 2, HitResult.Location, false, FLinearColor::Red);
 				// 적중 파티클 스폰
 				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, hitRot, FVector(1.f));
 			}
@@ -1139,7 +1139,7 @@ void APlayerCharacter::OnEnemyHitRPCMulticast_Implementation(const FHitResult& H
 					// 적중 위젯 애니메이션 재생
 					crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
 					// 데미지 위젯에 피해 값과 적 위치벡터 할당
-					SetDamageWidget(GetAttackDamage(false) * 2, HitResult.Location, false, FLinearColor::Yellow);
+					SetDamageWidget(GetAttackDamageCache(false) * 2, HitResult.Location, false, FLinearColor::Yellow);
 					// 적중 파티클 스폰
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, hitRot, FVector(2.f));
 				}
@@ -1149,7 +1149,7 @@ void APlayerCharacter::OnEnemyHitRPCMulticast_Implementation(const FHitResult& H
 					// 적중 위젯 애니메이션 재생
 					crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
 					// 데미지 위젯에 피해 값과 적 위치벡터 할당
-					SetDamageWidget(GetAttackDamage(false), HitResult.Location, false, FLinearColor::White);
+					SetDamageWidget(GetAttackDamageCache(false), HitResult.Location, false, FLinearColor::White);
 					// 적중 파티클 스폰
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, hitRot, FVector(1.f));
 				}
@@ -1162,7 +1162,7 @@ void APlayerCharacter::OnEnemyHitRPCMulticast_Implementation(const FHitResult& H
 					// 적중 위젯 애니메이션 재생
 					crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
 					// 데미지 위젯에 피해 값과 적 위치벡터 할당
-					SetDamageWidget(GetAttackDamage(false) * 0.1f, HitResult.Location, true, FLinearColor::Gray);
+					SetDamageWidget(GetAttackDamageCache(false) * 0.1f, HitResult.Location, true, FLinearColor::Gray);
 					// 적중 파티클 스폰
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, hitRot, FVector(2.f));
 				}
@@ -1172,7 +1172,7 @@ void APlayerCharacter::OnEnemyHitRPCMulticast_Implementation(const FHitResult& H
 					// 적중 위젯 애니메이션 재생
 					crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
 					// 데미지 위젯에 피해 값과 적 위치벡터 할당
-					SetDamageWidget(GetAttackDamage(false) * 0.05f, HitResult.Location, true, FLinearColor::Gray);
+					SetDamageWidget(GetAttackDamageCache(false) * 0.05f, HitResult.Location, true, FLinearColor::Gray);
 					// 적중 파티클 스폰
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, hitRot, FVector(1.f));
 				}
@@ -1444,6 +1444,13 @@ void APlayerCharacter::OnGroundHitRPCMulticast_Implementation(const FHitResult& 
 		GetWorld()->SpawnActor<AActor>(ShotDecalFactory, decalTrans);
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, decalLoc, decalRot + FRotator(-90, 0, 0), FVector(0.5f));
 	}
+}
+
+int32 APlayerCharacter::GenerateRandomDamage(float InDamage)
+{
+	const double DoubleRandDamage = FMath::FRandRange(InDamage * 0.8, InDamage * 1.2);
+	const int32 RoundedRandDamage = FMath::RoundHalfToEven(DoubleRandDamage);
+	return RoundedRandDamage;
 }
 
 void APlayerCharacter::Tab()
@@ -4486,33 +4493,78 @@ float APlayerCharacter::GetAttackDamage(bool IsPlayer)
 	{
 		if (IsPlayer)
 		{
-			return PlayerAttackDamageRifle;
+			RandPlayerAttackDamageRifle = GenerateRandomDamage(PlayerAttackDamageRifle);
+			return RandPlayerAttackDamageRifle;
 		}
-		return EnemyAttackDamageRifle;
+		RandEnemyAttackDamageRifle = GenerateRandomDamage(EnemyAttackDamageRifle);
+		return RandEnemyAttackDamageRifle;
 	}
 	if (weaponArray[1] == true)
 	{
 		if (IsPlayer)
 		{
-			return PlayerAttackDamageSniper;
+			RandPlayerAttackDamageSniper = GenerateRandomDamage(PlayerAttackDamageSniper);
+			return RandPlayerAttackDamageSniper;
 		}
-		return EnemyAttackDamageSniper;
+		RandEnemyAttackDamageSniper = GenerateRandomDamage(EnemyAttackDamageSniper);
+		return RandEnemyAttackDamageSniper;
 	}
 	if (weaponArray[2] == true)
 	{
 		if (IsPlayer)
 		{
-			return PlayerAttackDamagePistol;
+			RandPlayerAttackDamagePistol = GenerateRandomDamage(PlayerAttackDamagePistol);
+			return RandPlayerAttackDamagePistol;
 		}
-		return EnemyAttackDamagePistol;
+		RandEnemyAttackDamagePistol = GenerateRandomDamage(EnemyAttackDamagePistol);
+		return RandEnemyAttackDamagePistol;
 	}
 	if (weaponArray[3] == true)
 	{
 		if (IsPlayer)
 		{
-			return PlayerAttackDamageM249;
+			RandPlayerAttackDamageM249 = GenerateRandomDamage(PlayerAttackDamageM249);
+			return RandPlayerAttackDamageM249;
 		}
-		return EnemyAttackDamageM249;
+		RandEnemyAttackDamageM249 = GenerateRandomDamage(EnemyAttackDamageM249);
+		return RandEnemyAttackDamageM249;
+	}
+	return 0;
+}
+
+int32 APlayerCharacter::GetAttackDamageCache(bool IsPlayer)
+{
+	if (weaponArray[0] == true)
+	{
+		if (IsPlayer)
+		{
+			return RandPlayerAttackDamageRifle;
+		}
+		return RandEnemyAttackDamageRifle;
+	}
+	if (weaponArray[1] == true)
+	{
+		if (IsPlayer)
+		{
+			return RandPlayerAttackDamageSniper;
+		}
+		return RandEnemyAttackDamageSniper;
+	}
+	if (weaponArray[2] == true)
+	{
+		if (IsPlayer)
+		{
+			return RandPlayerAttackDamagePistol;
+		}
+		return RandEnemyAttackDamagePistol;
+	}
+	if (weaponArray[3] == true)
+	{
+		if (IsPlayer)
+		{
+			return RandPlayerAttackDamageM249;
+		}
+		return RandEnemyAttackDamageM249;
 	}
 	return 0;
 }

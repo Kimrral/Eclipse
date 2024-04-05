@@ -136,6 +136,8 @@ public:
 	/** Called for zooming input */
 	void Zoom();
 	void ZoomRelease();
+	void ZoomInput();
+	void ZoomReleaseInput();
 
 	UFUNCTION(Reliable, Server, WithValidation)
 	void ZoomRPCServer();
@@ -632,6 +634,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = widget)
 	class ULevelSelection* levelSelectionUI;
 
+	UPROPERTY()
+	FTimerHandle ZoomFireHandle;
+
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* ShieldHitEmitter;
 
@@ -820,6 +825,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool isZooming = false;
+
+	UPROPERTY(EditAnywhere)
+	bool IsZoomKeyPressed = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool isRunning = false;

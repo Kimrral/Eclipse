@@ -8,13 +8,5 @@ void ACrunch::DropReward()
 {
 	Super::DropReward();
 
-	DropAmmo();
-	DropAmmo();
-	DropAmmo();
-	DropAmmo();	
-	DropMagazine();
-	DropMagazine();
-	DropGear();
-	DropGear();
 
 }

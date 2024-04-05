@@ -240,3 +240,46 @@ void UInformationWidget::UpdateAmmo_Secondary()
 		}
 	}
 }
+
+void UInformationWidget::ChargeAmmunitionInfoWidget()
+{
+	if (owner)
+	{
+		if (owner->weaponArray[0] == true)
+		{
+			ChargeAmmoText->SetText(FText::FromString("+ 20"));
+
+			rifleBulletImage_2->SetVisibility(ESlateVisibility::Visible);
+			sniperBulletImage_2->SetVisibility(ESlateVisibility::Hidden);
+			pistolBulletImage_2->SetVisibility(ESlateVisibility::Hidden);
+			M249BulletImage_2->SetVisibility(ESlateVisibility::Hidden);
+		}
+		else if (owner->weaponArray[1] == true)
+		{
+			ChargeAmmoText->SetText(FText::FromString("+ 4"));
+
+			rifleBulletImage_2->SetVisibility(ESlateVisibility::Hidden);
+			sniperBulletImage_2->SetVisibility(ESlateVisibility::Visible);
+			pistolBulletImage_2->SetVisibility(ESlateVisibility::Hidden);
+			M249BulletImage_2->SetVisibility(ESlateVisibility::Hidden);
+		}
+		else if (owner->weaponArray[2] == true)
+		{
+			ChargeAmmoText->SetText(FText::FromString("+ 6"));
+
+			rifleBulletImage_2->SetVisibility(ESlateVisibility::Hidden);
+			sniperBulletImage_2->SetVisibility(ESlateVisibility::Hidden);
+			pistolBulletImage_2->SetVisibility(ESlateVisibility::Visible);
+			M249BulletImage_2->SetVisibility(ESlateVisibility::Hidden);
+		}
+		else if (owner->weaponArray[3] == true)
+		{
+			ChargeAmmoText->SetText(FText::FromString("+ 30"));
+
+			rifleBulletImage_2->SetVisibility(ESlateVisibility::Hidden);
+			sniperBulletImage_2->SetVisibility(ESlateVisibility::Hidden);
+			pistolBulletImage_2->SetVisibility(ESlateVisibility::Hidden);
+			M249BulletImage_2->SetVisibility(ESlateVisibility::Visible);
+		}
+	}
+}

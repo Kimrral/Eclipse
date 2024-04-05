@@ -318,7 +318,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		//Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Jump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &APlayerCharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &APlayerCharacter::StopJumping);
 
 		//Moving
@@ -328,8 +328,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Look);
 
 		//Zooming
-		EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Started, this, &APlayerCharacter::Zoom);
-		EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Completed, this, &APlayerCharacter::ZoomRelease);
+		EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Started, this, &APlayerCharacter::ZoomInput);
+		EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Completed, this, &APlayerCharacter::ZoomReleaseInput);
 
 		//Running
 		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Started, this, &APlayerCharacter::Run);
@@ -346,7 +346,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &APlayerCharacter::FireRelease);
 
 		//Reload
-		EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Reload);
+		EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Started, this, &APlayerCharacter::Reload);
 
 		//Look Around
 		EnhancedInputComponent->BindAction(LookAroundAction, ETriggerEvent::Triggered, this, &APlayerCharacter::OnActionLookAroundPressed);
@@ -421,6 +421,18 @@ void APlayerCharacter::ZoomRelease()
 		return;
 	}
 	ZoomRPCReleaseServer();
+}
+
+void APlayerCharacter::ZoomInput()
+{
+	Zoom();
+	IsZoomKeyPressed = true;
+}
+
+void APlayerCharacter::ZoomReleaseInput()
+{
+	ZoomRelease();
+	IsZoomKeyPressed = false;
 }
 
 void APlayerCharacter::ZoomRPCMulticast_Implementation()
@@ -724,7 +736,7 @@ void APlayerCharacter::SwapFirstWeaponRPCMulticast_Implementation()
 	curWeaponSlotNumber = 1;
 
 	if (equippedWeaponStringArray[0] == FString("Rifle"))
-	{		
+	{
 		animInstance->bPistol = false;
 		PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
 		// Visibility 설정
@@ -2580,7 +2592,7 @@ void APlayerCharacter::ChangeWeaponToPistolRPCMulticast_Implementation(APistolAc
 	{
 		PistolActor->Destroy();
 	}
-	PlayAnimMontage(FullBodyMontage, 1, FName("PistolEquip"));
+	PlayAnimMontage(UpperOnlyMontage, 1, FName("PistolEquip"));
 	animInstance->bPistol = true;
 	const FVector spawnPosition = GetMesh()->GetSocketLocation(FName("hand_r"));
 	const FRotator spawnRotation = FRotator::ZeroRotator;
@@ -3269,6 +3281,11 @@ void APlayerCharacter::Fire()
 	{
 		return;
 	}
+	if (!isZooming && weaponArray[1] == false && weaponArray[2]==false)
+	{
+		GetWorldTimerManager().ClearTimer(ZoomFireHandle);
+		Zoom();
+	}
 	ServerRPCFire();
 	CanShoot = false;
 	GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()-> void
@@ -3458,6 +3475,13 @@ void APlayerCharacter::ProcessRifleFireSimulatedProxy()
 
 void APlayerCharacter::FireRelease()
 {
+	if (!IsZoomKeyPressed && weaponArray[1] == false && weaponArray[2]==false)
+	{
+		GetWorld()->GetTimerManager().SetTimer(ZoomFireHandle, FTimerDelegate::CreateLambda([this]()-> void
+		{
+			ZoomRelease();
+		}), 1.f, false);
+	}
 	EmptySoundBoolean = false;
 }
 

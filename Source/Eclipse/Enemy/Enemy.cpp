@@ -85,7 +85,10 @@ void AEnemy::OnPawnDetected(APawn* Pawn)
 {
 	if(APlayerCharacter* DetectedPawn = Cast<APlayerCharacter>(Pawn))
 	{
-		EnemyFSM->player=DetectedPawn;
+		if(EnemyFSM->player==nullptr)
+		{
+			EnemyFSM->player=DetectedPawn;			
+		}
 	}
 }
 

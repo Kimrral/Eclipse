@@ -181,7 +181,6 @@ void UEnemyFSM::TickDamage()
 
 void UEnemyFSM::TickDie()
 {
-	
 }
 
 void UEnemyFSM::DieProcess()

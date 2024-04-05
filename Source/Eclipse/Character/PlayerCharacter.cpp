@@ -3480,7 +3480,7 @@ void APlayerCharacter::FireRelease()
 		GetWorld()->GetTimerManager().SetTimer(ZoomFireHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
 			ZoomRelease();
-		}), 1.f, false);
+		}), 0.5f, false);
 	}
 	EmptySoundBoolean = false;
 }

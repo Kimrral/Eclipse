@@ -31,9 +31,6 @@ public:
 	void DropReward();
 
 	UFUNCTION()
-	void DropAmmo();
-
-	UFUNCTION()
 	void DropConsole();
 
 	UFUNCTION()
@@ -42,14 +39,6 @@ public:
 	UFUNCTION()
 	void BoxDestroyed();
 
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class APistolAmmoActor> pistolAmmoFactory;
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class ARifleAmmoActor> rifleAmmoFactory;
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class ASniperAmmoActor> sniperAmmoFactory;
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AM249AmmoActor> M249AmmoFactory;
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AHackingConsole> HackingConsoleFactory;	
 	UPROPERTY(EditAnywhere)

@@ -25,6 +25,9 @@ public:
 	UFUNCTION()
 	void UpdateAmmo_Secondary();
 
+	UFUNCTION()
+	void ChargeAmmunitionInfoWidget();
+
 	UPROPERTY()
 	class APlayerCharacter* owner;
 
@@ -102,6 +105,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, Transient, meta = (BindWidgetAnim))
 	class UWidgetAnimation* WeaponSwap;
 
+	UPROPERTY(BlueprintReadWrite, Transient, meta = (BindWidgetAnim))
+	class UWidgetAnimation* ChargeAmmunition;
+
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UTextBlock* GuardianCount;
 
@@ -110,4 +116,19 @@ public:
 
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UTextBlock* ConsoleCount;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UImage* rifleBulletImage_2;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UImage* sniperBulletImage_2;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UImage* pistolBulletImage_2;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UImage* M249BulletImage_2;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UTextBlock* ChargeAmmoText;
 };

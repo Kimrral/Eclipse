@@ -57,9 +57,6 @@ public:
 	virtual void DropReward();
 
 	UFUNCTION()
-	void DropAmmo();
-
-	UFUNCTION()
 	void DropMagazine();
 
 	UFUNCTION()
@@ -67,15 +64,6 @@ public:
 
 	UFUNCTION()
 	void GuardianFireProcess();
-
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class APistolAmmoActor> pistolAmmoFactory;
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class ARifleAmmoActor> rifleAmmoFactory;
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class ASniperAmmoActor> sniperAmmoFactory;
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AM249AmmoActor> M249AmmoFactory;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class ARifleMagActor> RifleMagActorFactory;

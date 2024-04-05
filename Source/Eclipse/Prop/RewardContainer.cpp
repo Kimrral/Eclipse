@@ -4,14 +4,10 @@
 #include "RewardContainer.h"
 
 #include "Eclipse/Item/HackingConsole.h"
-#include "Eclipse/Item/M249AmmoActor.h"
 #include "Eclipse/Item/M249MagActor.h"
-#include "Eclipse/Item/PistolAmmoActor.h"
 #include "Eclipse/Item/PistolMagActor.h"
 #include "Eclipse/Character/PlayerCharacter.h"
-#include "Eclipse/Item/RifleAmmoActor.h"
 #include "Eclipse/Item/RifleMagActor.h"
-#include "Eclipse/Item/SniperAmmoActor.h"
 #include "Eclipse/Item/SniperMagActor.h"
 #include "Components/SphereComponent.h"
 #include "GeometryCollection/GeometryCollectionComponent.h"
@@ -80,50 +76,10 @@ void ARewardContainer::SphereEndOverlap(UPrimitiveComponent* OverlappedComponent
 
 void ARewardContainer::DropReward()
 {
-	DropAmmo();
 	DropConsole();
 }
 
-void ARewardContainer::DropAmmo()
-{
-	auto randIndex = FMath::RandRange(0, 3);
-	if(randIndex==0)
-	{
-		auto rifleAmmo = GetWorld()->SpawnActor<ARifleAmmoActor>(rifleAmmoFactory, GetActorLocation(), GetActorRotation());
-		if(rifleAmmo)
-		{
-			//FVector loc = rifleAmmo->GetActorUpVector();
-			//rifleAmmo->ammoMesh->AddImpulseAtLocation(DropForce, loc);
-		}
-	}
-	else if(randIndex==1)
-	{
-		auto sniperAmmo = GetWorld()->SpawnActor<ASniperAmmoActor>(sniperAmmoFactory, GetActorLocation(), GetActorRotation());
-		if(sniperAmmo)
-		{
-			//FVector loc = sniperAmmo->GetActorUpVector();
-			//sniperAmmo->ammoMesh->AddImpulseAtLocation(DropForce, loc);
-		}
-	}
-	else if(randIndex==2)
-	{
-		auto pistolAmmo = GetWorld()->SpawnActor<APistolAmmoActor>(pistolAmmoFactory, GetActorLocation(), GetActorRotation());
-		if(pistolAmmo)
-		{
-			//FVector loc = pistolAmmo->GetActorUpVector();
-			//pistolAmmo->ammoMesh->AddImpulseAtLocation(DropForce, loc);
-		}
-	}
-	else if(randIndex==3)
-	{
-		auto m249Ammo = GetWorld()->SpawnActor<AM249AmmoActor>(M249AmmoFactory, GetActorLocation(), GetActorRotation());
-		if(m249Ammo)
-		{
-			//FVector loc = m249Ammo->GetActorUpVector();
-			//m249Ammo->ammoMesh->AddImpulseAtLocation(DropForce, loc);
-		}
-	}
-}
+
 
 void ARewardContainer::DropConsole()
 {

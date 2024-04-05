@@ -11,15 +11,11 @@
 #include "GuardianProjectile.h"
 #include "Eclipse/Item/HeadsetActor.h"
 #include "Eclipse/Item/HelmetActor.h"
-#include "Eclipse/Item/M249AmmoActor.h"
 #include "Eclipse/Item/M249MagActor.h"
 #include "Eclipse/Item/MaskActor.h"
-#include "Eclipse/Item/PistolAmmoActor.h"
 #include "Eclipse/Item/PistolMagActor.h"
 #include "Eclipse/Character/PlayerCharacter.h"
-#include "Eclipse/Item/RifleAmmoActor.h"
 #include "Eclipse/Item/RifleMagActor.h"
-#include "Eclipse/Item/SniperAmmoActor.h"
 #include "Eclipse/Item/SniperMagActor.h"
 #include "Components/CapsuleComponent.h"
 #include "Eclipse/AI/EclipseAIController.h"
@@ -168,29 +164,6 @@ void AEnemy::OnDestroy()
 
 void AEnemy::DropReward()
 {
-}
-
-void AEnemy::DropAmmo()
-{
-	FActorSpawnParameters param;
-	param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	auto randIndex = FMath::RandRange(0, 3);
-	if (randIndex == 0)
-	{
-		GetWorld()->SpawnActor<ARifleAmmoActor>(rifleAmmoFactory, GetActorLocation(), GetActorRotation(), param);
-	}
-	else if (randIndex == 1)
-	{
-		GetWorld()->SpawnActor<ASniperAmmoActor>(sniperAmmoFactory, GetActorLocation(), GetActorRotation(), param);
-	}
-	else if (randIndex == 2)
-	{
-		GetWorld()->SpawnActor<APistolAmmoActor>(pistolAmmoFactory, GetActorLocation(), GetActorRotation(), param);
-	}
-	else if (randIndex == 3)
-	{
-		GetWorld()->SpawnActor<AM249AmmoActor>(M249AmmoFactory, GetActorLocation(), GetActorRotation(), param);
-	}
 }
 
 void AEnemy::DropMagazine()

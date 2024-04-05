@@ -1082,10 +1082,20 @@ bool APlayerCharacter::OnEnemyKillRPCServer_Validate()
 
 void APlayerCharacter::OnEnemyKillRPCMulticast_Implementation()
 {
+	if(HasAuthority())
+	{
+		if (weaponArray[0])	maxRifleAmmo+=20;
+		else if (weaponArray[1]) maxSniperAmmo+=4;
+		else if (weaponArray[2]) maxPistolAmmo+=6;
+		else if (weaponArray[3]) maxM249Ammo+=30;
+	}
 	if (IsLocallyControlled())
 	{
 		crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
 		UGameplayStatics::PlaySound2D(GetWorld(), KillSound);
+		informationUI->ChargeAmmunitionInfoWidget();
+		informationUI->PlayAnimation(informationUI->ChargeAmmunition);
+		informationUI->UpdateAmmo_Secondary();
 	}
 }
 

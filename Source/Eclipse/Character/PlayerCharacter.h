@@ -555,6 +555,9 @@ public:
 	UFUNCTION()
 	void AmmoDepleted();
 
+	UFUNCTION()
+	void ExtractionSuccess();
+
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	/** Returns CameraBoom subobject **/
@@ -615,6 +618,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
 	TSubclassOf<class UBossHPWidget> bossHPWidgetFactory;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
+	TSubclassOf<class UExtractionCountdown> ExtractionCountdownWidgetFactory;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = widget)
+	class UExtractionCountdown* ExtractionCountdownUI;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = widget)
 	class UDamageWidget* damageWidgetUI;

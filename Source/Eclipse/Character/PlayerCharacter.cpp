@@ -52,6 +52,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Eclipse/CharacterStat/PlayerCharacterStatComponent.h"
 #include "Eclipse/Game/EclipsePlayerState.h"
+#include "Eclipse/UI/ExtractionCountdown.h"
 #include "GeometryCollection/GeometryCollectionComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -167,7 +168,7 @@ void APlayerCharacter::BeginPlay()
 		TimelineProgress.BindDynamic(this, &APlayerCharacter::SetZoomValue);
 		Timeline.AddInterpFloat(CurveFloat, TimelineProgress);
 	}
-
+	
 	// Widget Settings
 	crosshairUI = CreateWidget<UCrosshairWidget>(GetWorld(), crosshairFactory);
 	quitWidgetUI = CreateWidget<UQuitWidget>(GetWorld(), quitWidgetFactory);
@@ -177,6 +178,7 @@ void APlayerCharacter::BeginPlay()
 	bossHPUI = CreateWidget<UBossHPWidget>(GetWorld(), bossHPWidgetFactory);
 	informationUI = CreateWidget<UInformationWidget>(GetWorld(), informationWidgetFactory);
 	levelSelectionUI = CreateWidget<ULevelSelection>(GetWorld(), levelSelectionWidgetFactory);
+	ExtractionCountdownUI=CreateWidget<UExtractionCountdown>(GetWorld(), ExtractionCountdownWidgetFactory);	
 
 	if (IsLocallyControlled())
 	{
@@ -192,8 +194,9 @@ void APlayerCharacter::BeginPlay()
 		cameraManager->StartCameraFade(1.0, 0, 8.0, FColor::Black, false, true);
 	}
 
+	ExtractionCountdownUI->ExtractionSuccessDele.AddUObject(this, &APlayerCharacter::ExtractionSuccess);
+
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
-	//AEclipsePlayerController* PlayerController = Cast<AEclipsePlayerController>(GetController());
 
 	if (PC)
 	{
@@ -3449,6 +3452,11 @@ void APlayerCharacter::AmmoDepleted()
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletEmptySound, GetActorLocation());
 		}
 	}
+}
+
+void APlayerCharacter::ExtractionSuccess()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Extraction Success"))
 }
 
 void APlayerCharacter::ProcessRifleFireAnim()

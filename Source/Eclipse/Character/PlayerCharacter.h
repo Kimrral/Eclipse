@@ -18,6 +18,7 @@
 
 DECLARE_DYNAMIC_DELEGATE(FRewardContainerDestruct);
 DECLARE_MULTICAST_DELEGATE(FOnWeaponChange);
+DECLARE_DYNAMIC_DELEGATE(FOnDoorInteraction);
 
 //DECLARE_MULTICAST_DELEGATE_TwoParams(FPlayerHit, FHitResult, APlayerCharacter*)
 //DECLARE_MULTICAST_DELEGATE_TwoParams(FEnemyHit, FHitResult, AEnemy*)
@@ -118,12 +119,11 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FRewardContainerDestruct containerDele;
-
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FOnDoorInteraction DoorInteractionDele;
+	
 	FOnWeaponChange WeaponChangeDele;
-
-	//FPlayerHit PlayerHitDele;
-	//FEnemyHit EnemyHitDele;
-	//FGroundHit GroundHitDele;
 
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
@@ -407,6 +407,9 @@ public:
 
 	UFUNCTION()
 	void WeaponDetectionLineTrace();
+
+	UFUNCTION()
+	void DoorInteraction();
 
 	UFUNCTION()
 	void SetBossHPWidget(const AEnemy* enemy);
@@ -1021,6 +1024,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* levelSelectionSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* ExtractionSound;
 
 	UPROPERTY()
 	FTimerHandle shootEnableHandle;

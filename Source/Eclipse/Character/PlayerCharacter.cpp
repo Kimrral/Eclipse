@@ -343,6 +343,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 		//Change Weapon
 		EnhancedInputComponent->BindAction(ChangeWeaponAction, ETriggerEvent::Triggered, this, &APlayerCharacter::ChangeWeapon);
+		EnhancedInputComponent->BindAction(ChangeWeaponAction, ETriggerEvent::Started, this, &APlayerCharacter::DoorInteraction);
 
 		//Fire
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Fire);
@@ -2025,6 +2026,11 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 	}
 }
 
+void APlayerCharacter::DoorInteraction()
+{
+	DoorInteractionDele.ExecuteIfBound();
+}
+
 void APlayerCharacter::SetBossHPWidget(const AEnemy* enemy)
 {
 	if (enemy && bossHPUI)
@@ -2753,7 +2759,7 @@ void APlayerCharacter::InteractionProcess()
 			if (weaponArray[0] == false)
 			{
 				// 키다운 시간 동안 Radial Slider 게이지 상승
-				infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.025, 0, 1);
+				infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
 				// 게이지가 모두 채워졌을 때
 				if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 				{
@@ -2769,7 +2775,7 @@ void APlayerCharacter::InteractionProcess()
 			if (weaponArray[1] == false)
 			{
 				// 키다운 시간 동안 Radial Slider 게이지 상승
-				infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.025, 0, 1);
+				infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
 				if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 				{
 					infoWidgetUI->weaponHoldPercent = 0;
@@ -2784,7 +2790,7 @@ void APlayerCharacter::InteractionProcess()
 			if (weaponArray[2] == false)
 			{
 				// 키다운 시간 동안 Radial Slider 게이지 상승
-				infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.025, 0, 1);
+				infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
 				if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 				{
 					infoWidgetUI->weaponHoldPercent = 0;
@@ -2799,7 +2805,7 @@ void APlayerCharacter::InteractionProcess()
 			if (weaponArray[3] == false)
 			{
 				// 키다운 시간 동안 Radial Slider 게이지 상승
-				infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.025, 0, 1);
+				infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
 				if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 				{
 					infoWidgetUI->weaponHoldPercent = 0;
@@ -2810,7 +2816,7 @@ void APlayerCharacter::InteractionProcess()
 		else if (PickableItemActor)
 		{
 			// 키다운 시간 동안 Radial Slider 게이지 상승
-			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.025, 0, 1);
+			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
 			if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 			{
 				infoWidgetUI->weaponHoldPercent = 0;
@@ -2820,7 +2826,7 @@ void APlayerCharacter::InteractionProcess()
 		else if (MissionChecker)
 		{
 			// 키다운 시간 동안 Radial Slider 게이지 상승
-			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.025, 0, 1);
+			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
 			if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 			{
 				if (GuardianCount >= 7 && ConsoleCount >= 5 && BossCount >= 1)
@@ -2864,7 +2870,7 @@ void APlayerCharacter::InteractionProcess()
 		else if (StageBoard)
 		{
 			// 키다운 시간 동안 Radial Slider 게이지 상승
-			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.025, 0, 1);
+			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
 			if (levelSelectionUI && infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 			{
 				infoWidgetUI->weaponHoldPercent = 0;
@@ -2878,7 +2884,7 @@ void APlayerCharacter::InteractionProcess()
 		else if (Stash)
 		{
 			// 키다운 시간 동안 Radial Slider 게이지 상승
-			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.025, 0, 1);
+			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
 			if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 			{
 				infoWidgetUI->weaponHoldPercent = 0;
@@ -2895,7 +2901,7 @@ void APlayerCharacter::InteractionProcess()
 		else if (QuitGameActor)
 		{
 			// 키다운 시간 동안 Radial Slider 게이지 상승
-			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.025, 0, 1);
+			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
 			if (quitWidgetUI && infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 			{
 				infoWidgetUI->weaponHoldPercent = 0;
@@ -2912,7 +2918,7 @@ void APlayerCharacter::InteractionProcess()
 		else if (EnemyCharacter)
 		{
 			// 키다운 시간 동안 Radial Slider 게이지 상승
-			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.025, 0, 1);
+			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
 			if (EnemyCharacter->IsPlayerDead)
 			{
 				if (quitWidgetUI && infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
@@ -3457,6 +3463,12 @@ void APlayerCharacter::AmmoDepleted()
 void APlayerCharacter::ExtractionSuccess()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Extraction Success"))
+	UWidgetLayoutLibrary::RemoveAllWidgets(GetWorld());
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
+	UGameplayStatics::PlaySound2D(GetWorld(), ExtractionSound);
+	APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+	// 카메라 페이드 연출
+	playerCam->StartCameraFade(0, 1, 1.5f, FLinearColor::Black, false, true);
 }
 
 void APlayerCharacter::ProcessRifleFireAnim()

@@ -24,12 +24,12 @@ void UExtractionCountdown::SetCountdownTimer()
 {
 	if (Countdown == 0.0f)
 	{
-		if (bExtraction==false)
+		if (bExtraction == true)
 		{
-			ExtractionSuccessDele.Broadcast();
-			bExtraction = true;
 			return;
 		}
+		ExtractionSuccessDele.Broadcast();
+		bExtraction = true;
 	}
 	Countdown = FMath::Clamp(Countdown -= GetWorld()->GetDeltaSeconds(), 0.f, 10.f);
 	const FString CountdownString = UKismetStringLibrary::TimeSecondsToString(Countdown);

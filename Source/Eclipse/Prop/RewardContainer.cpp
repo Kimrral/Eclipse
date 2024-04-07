@@ -39,8 +39,6 @@ void ARewardContainer::BeginPlay()
 
 	containerMesh->SetRenderCustomDepth(false);
 	containerMesh->SetSimulatePhysics(true);
-
-	//DropForce=FVector(80);
 }
 
 // Called every frame

@@ -30,6 +30,7 @@ ARewardContainer::ARewardContainer()
 void ARewardContainer::OnRep_IsBoxDestroyed()
 {
 	containerDele.ExecuteIfBound(GetActorLocation());
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), containerBreakSound, this->GetActorLocation());
 }
 
 void ARewardContainer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -91,8 +92,6 @@ void ARewardContainer::DropMagazine()
 void ARewardContainer::BoxDestroyed()
 {
 	IsBoxDestroyed=true;		
-	containerDele.ExecuteIfBound(GetActorLocation());
-	UGameplayStatics::PlaySoundAtLocation(GetWorld(), containerBreakSound, this->GetActorLocation());
-	DropReward();		
-	
+	OnRep_IsBoxDestroyed();	
+	DropReward();			
 }

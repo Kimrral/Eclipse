@@ -17,7 +17,7 @@ class ECLIPSE_API UPlayerAnim : public UAnimInstance
 public:
 	virtual void NativeBeginPlay() override;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	class APlayerCharacter* me;
 
 	UFUNCTION()
@@ -25,12 +25,6 @@ public:
 
 	UFUNCTION()
 	void AnimNotify_ReloadEnd();
-
-	UFUNCTION()
-	void AnimNotify_LeftPlant();
-
-	UFUNCTION()
-	void AnimNotify_RightPlant();
 
 	UFUNCTION()
 	void UpdateWeaponEquipState();
@@ -49,7 +43,4 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bM249Zooming = false;
-
-	UPROPERTY(EditAnywhere, Category=Sound)
-	class USoundBase* walkSound;
 };

@@ -82,29 +82,6 @@ void UPlayerAnim::AnimNotify_ReloadEnd()
 	me->CanShoot = true;
 }
 
-void UPlayerAnim::AnimNotify_LeftPlant()
-{
-	if (me->IsLocallyControlled())
-	{
-		UGameplayStatics::PlaySound2D(GetWorld(), walkSound);
-	}
-	else
-	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), walkSound, me->GetActorLocation());
-	}
-}
-
-void UPlayerAnim::AnimNotify_RightPlant()
-{
-	if (me->IsLocallyControlled())
-	{
-		UGameplayStatics::PlaySound2D(GetWorld(), walkSound);
-	}
-	else
-	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), walkSound, me->GetActorLocation());
-	}
-}
 
 void UPlayerAnim::UpdateWeaponEquipState()
 {

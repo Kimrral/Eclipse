@@ -15,13 +15,13 @@ void UPlayerAnim::NativeBeginPlay()
 	me->WeaponChangeDele.AddUObject(this, &UPlayerAnim::UpdateWeaponEquipState);
 }
 
-void UPlayerAnim::AnimNotify_ReloadStart()
+void UPlayerAnim::AnimNotify_ReloadStart() const
 {
 	GetWorld()->GetTimerManager().ClearTimer(me->shootEnableHandle);
 	me->CanShoot = false;
 }
 
-void UPlayerAnim::AnimNotify_ReloadEnd()
+void UPlayerAnim::AnimNotify_ReloadEnd() const
 {
 	if (me->weaponArray[0] == true)
 	{

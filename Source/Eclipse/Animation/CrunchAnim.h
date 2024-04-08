@@ -16,5 +16,5 @@ class ECLIPSE_API UCrunchAnim : public UEnemyAnim
 
 public:
 	UFUNCTION()
-	void AnimNotify_HitPoint();
+	void AnimNotify_HitPoint() const;
 };

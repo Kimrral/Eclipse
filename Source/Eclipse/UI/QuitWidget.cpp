@@ -21,14 +21,12 @@ void UQuitWidget::NativeConstruct()
 	{
 		gi->IsWidgetOn = true;
 	}
-	//SelectQuitYes->OnClicked.AddDynamic(this, &UQuitWidget::QuitSelectYes);
-	//SelectQuitNo->OnClicked.AddDynamic(this, &UQuitWidget::QuitSelectNo);
 }
 
 void UQuitWidget::QuitSelectYes()
 {
-	TEnumAsByte<EQuitPreference::Type> types = EQuitPreference::Quit;
-	UKismetSystemLibrary::QuitGame(GetWorld(), pc, types, false);
+	const TEnumAsByte<EQuitPreference::Type> Types = EQuitPreference::Quit;
+	UKismetSystemLibrary::QuitGame(GetWorld(), pc, Types, false);
 }
 
 void UQuitWidget::QuitSelectNo()

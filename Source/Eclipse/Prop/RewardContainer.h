@@ -24,10 +24,10 @@ public:
 	void DropReward();
 
 	UFUNCTION()
-	void DropConsole();
+	void DropConsole() const;
 
 	UFUNCTION()
-	void DropMagazine();
+	void DropMagazine() const;
 
 	UFUNCTION()
 	void BoxDestroyed();

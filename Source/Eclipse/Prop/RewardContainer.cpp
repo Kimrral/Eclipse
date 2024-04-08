@@ -62,30 +62,45 @@ void ARewardContainer::DropReward()
 	DropMagazine();
 }
 
-void ARewardContainer::DropConsole()
+void ARewardContainer::DropConsole() const
 {
-	GetWorld()->SpawnActor<AHackingConsole>(HackingConsoleFactory, GetActorLocation(), GetActorRotation());	
+	if(const AHackingConsole* HackingConsole = GetWorld()->SpawnActor<AHackingConsole>(HackingConsoleFactory, GetActorLocation(), GetActorRotation()))
+	{
+		HackingConsole->RootMesh->SetRenderCustomDepth(true);
+	}
 }
 
-void ARewardContainer::DropMagazine()
+void ARewardContainer::DropMagazine() const
 {
 
-	auto randIndex = FMath::RandRange(0, 3);
+	const auto randIndex = FMath::RandRange(0, 3);
 	if(randIndex==0)
 	{
-		GetWorld()->SpawnActor<ARifleMagActor>(RifleMagActorFactory, GetActorLocation(), GetActorRotation());		
+		if(const ARifleMagActor* RifleMagActor = GetWorld()->SpawnActor<ARifleMagActor>(RifleMagActorFactory, GetActorLocation(), GetActorRotation()))
+		{
+			RifleMagActor->RootMesh->SetRenderCustomDepth(true);
+		}
 	}
 	else if(randIndex==1)
 	{
-		GetWorld()->SpawnActor<ASniperMagActor>(SniperMagActorFactory, GetActorLocation(), GetActorRotation());	
+		if(const ASniperMagActor* SniperMagActor = GetWorld()->SpawnActor<ASniperMagActor>(SniperMagActorFactory, GetActorLocation(), GetActorRotation()))
+		{
+			SniperMagActor->RootMesh->SetRenderCustomDepth(true);
+		}
 	}
 	else if(randIndex==2)
 	{
-		GetWorld()->SpawnActor<APistolMagActor>(PistolMagActorFactory, GetActorLocation(), GetActorRotation());	
+		if(const APistolMagActor* PistolMagActor = GetWorld()->SpawnActor<APistolMagActor>(PistolMagActorFactory, GetActorLocation(), GetActorRotation()))
+		{
+			PistolMagActor->RootMesh->SetRenderCustomDepth(true);
+		}
 	}
 	else if(randIndex==3)
 	{
-		GetWorld()->SpawnActor<AM249MagActor>(M249MagActorFactory, GetActorLocation(), GetActorRotation());
+		if(const AM249MagActor* M249MagActor = GetWorld()->SpawnActor<AM249MagActor>(M249MagActorFactory, GetActorLocation(), GetActorRotation()))
+		{
+			M249MagActor->RootMesh->SetRenderCustomDepth(true);
+		}
 	}
 }
 

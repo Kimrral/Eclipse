@@ -13,7 +13,7 @@ void UExtractionCountdown::NativeConstruct()
 	PlayAnimation(CountdownConstruct);
 }
 
-void UExtractionCountdown::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+void UExtractionCountdown::NativeTick(const FGeometry& MyGeometry, const float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 

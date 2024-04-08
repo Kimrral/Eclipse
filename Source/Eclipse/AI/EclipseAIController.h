@@ -19,7 +19,7 @@ public:
 	virtual void OnUnPossess() override;
 	void RandomMove();
 	void MoveToPlayer(const AActor* TargetPlayer);
-	void MoveToLocation(const FVector TargetLocation);
+	void MoveToLocation(const FVector& TargetLocation);
 
 	FTimerHandle RepeatTimerHandle;
 	float RepeatInterval = 15.0f;

@@ -18,8 +18,8 @@ void UInformationWidget::NativeConstruct()
 	UpdateAmmo();
 	UpdateAmmo_Secondary();
 
-	FTimerHandle ammoUpdateHandle;
-	GetWorld()->GetTimerManager().SetTimer(ammoUpdateHandle, this, &UInformationWidget::UpdateAmmo, 0.01f, true);
+	FTimerHandle AmmoUpdateHandle;
+	GetWorld()->GetTimerManager().SetTimer(AmmoUpdateHandle, this, &UInformationWidget::UpdateAmmo, 0.01f, true);
 }
 
 void UInformationWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -27,7 +27,7 @@ void UInformationWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTi
 	Super::NativeTick(MyGeometry, InDeltaTime);
 }
 
-void UInformationWidget::UpdateAmmo()
+void UInformationWidget::UpdateAmmo() const
 {
 	if (owner)
 	{
@@ -100,7 +100,7 @@ void UInformationWidget::UpdateAmmo()
 	}
 }
 
-void UInformationWidget::UpdateAmmo_Secondary()
+void UInformationWidget::UpdateAmmo_Secondary() const
 {
 	if (owner)
 	{
@@ -241,7 +241,7 @@ void UInformationWidget::UpdateAmmo_Secondary()
 	}
 }
 
-void UInformationWidget::ChargeAmmunitionInfoWidget()
+void UInformationWidget::ChargeAmmunitionInfoWidget() const
 {
 	if (owner)
 	{

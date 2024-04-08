@@ -49,7 +49,7 @@ void AEclipseAIController::MoveToPlayer(const AActor* TargetPlayer)
 	UAIBlueprintHelperLibrary::SimpleMoveToActor(this, TargetPlayer);
 }
 
-void AEclipseAIController::MoveToLocation(const FVector TargetLocation)
+void AEclipseAIController::MoveToLocation(const FVector& TargetLocation)
 {
 	UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, TargetLocation);
 }

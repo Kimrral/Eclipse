@@ -169,7 +169,7 @@ public:
 	UFUNCTION()
 	void ProcessRifleFireLocal();
 	UFUNCTION()
-	void ProcessRifleFireSimulatedProxy();
+	void ProcessRifleFireSimulatedProxy() const;
 
 	UFUNCTION()
 	void ProcessSniperFire();
@@ -178,7 +178,7 @@ public:
 	UFUNCTION()
 	void ProcessSniperFireLocal();
 	UFUNCTION()
-	void ProcessSniperFireSimulatedProxy();
+	void ProcessSniperFireSimulatedProxy() const;
 
 	UFUNCTION()
 	void ProcessPistolFire();
@@ -187,7 +187,7 @@ public:
 	UFUNCTION()
 	void ProcessPistolFireLocal();
 	UFUNCTION()
-	void ProcessPistolFireSimulatedProxy();
+	void ProcessPistolFireSimulatedProxy() const;
 
 
 	UFUNCTION()
@@ -197,7 +197,7 @@ public:
 	UFUNCTION()
 	void ProcessM249FireLocal();
 	UFUNCTION()
-	void ProcessM249FireSimulatedProxy();
+	void ProcessM249FireSimulatedProxy() const;
 
 	UFUNCTION()
 	float SetFireInterval();
@@ -333,13 +333,13 @@ public:
 	//=======================================//
 
 	UFUNCTION()
-	void Damaged(int damage, AActor* DamageCauser);
+	void Damaged(int Damage, AActor* DamageCauser);
 
 	UFUNCTION(Reliable, Server, WithValidation)
-	void DamagedRPCServer(int damage, AActor* DamageCauser);
+	void DamagedRPCServer(int Damage, AActor* DamageCauser);
 
 	UFUNCTION(Unreliable, NetMulticast)
-	void DamagedRPCMulticast(int damage, AActor* DamageCauser);
+	void DamagedRPCMulticast(int Damage, AActor* DamageCauser);
 
 	//=======================================//
 
@@ -427,25 +427,25 @@ public:
 
 
 	UFUNCTION()
-	void SetBossHPWidget(const AEnemy* enemy);
+	void SetBossHPWidget(const AEnemy* Enemy) const;
 
 	UFUNCTION()
-	void SetDamageWidget(int damage, FVector spawnLoc, bool isShieldIconEnable, FLinearColor DamageTextColor);
+	void SetDamageWidget(int Damage, const FVector& SpawnLoc, bool bIsShieldIconEnable, FLinearColor DamageTextColor);
 
 	UFUNCTION()
-	void RemoveBossHPWidget();
+	void RemoveBossHPWidget() const;
 
 	UFUNCTION()
 	void InfoWidgetUpdate();
 
 	UFUNCTION()
-	float DamageMultiplier();
+	float DamageMultiplier() const;
 
 	UFUNCTION()
-	float FireRateMultiplier();
+	float FireRateMultiplier() const;
 
 	UFUNCTION()
-	float RecoilRateMultiplier();
+	float RecoilRateMultiplier() const;
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void ClearInventoryCache();
@@ -496,7 +496,7 @@ public:
 	void SetZoomValue(float Value);
 
 	UFUNCTION()
-	void CachingValues();
+	void CachingValues() const;
 
 	UFUNCTION()
 	void ApplyCachingValues();
@@ -506,9 +506,6 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void StashCaching();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void InventoryCaching(APlayerCharacter* PlayerCharacterRef);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void GearCaching();
@@ -538,13 +535,13 @@ public:
 	void UpdateTabWidgetHP();
 
 	UFUNCTION()
-	int32 SetRifleAdditionalMagazine();
+	int32 SetRifleAdditionalMagazine() const;
 	UFUNCTION()
-	int32 SetSniperAdditionalMagazine();
+	int32 SetSniperAdditionalMagazine() const;
 	UFUNCTION()
-	int32 SetPistolAdditionalMagazine();
+	int32 SetPistolAdditionalMagazine() const;
 	UFUNCTION()
-	int32 SetM249AdditionalMagazine();
+	int32 SetM249AdditionalMagazine() const;
 
 	UFUNCTION(BlueprintCallable)
 	void SetRifleAdditionalMagazineSlot();
@@ -565,16 +562,16 @@ public:
 	void UnSetM249AdditionalMagazineSlot();
 	
 	UFUNCTION()
-	void OnRep_WeaponArrayChanged();
+	void OnRep_WeaponArrayChanged() const;
 
 	UFUNCTION()
-	int32 GenerateRandomDamage(float InDamage);
+	int32 GenerateRandomDamage(float InDamage) const;
 	
 	UFUNCTION()
 	void AmmoDepleted();
 
 	UFUNCTION()
-	void ExtractionSuccess();
+	void ExtractionSuccess() const;
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -963,6 +960,9 @@ public:
 	class USoundBase* KillSound;
 
 	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* AmmoPickupSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* PlayerKillSound;
 
 	UPROPERTY(EditAnywhere, Category="Sounds")
@@ -1008,7 +1008,7 @@ public:
 	class USoundBase* DamagedSound;
 
 	UPROPERTY(EditAnywhere, Category="Sounds")
-	class USoundBase* deathSound;
+	class USoundBase* DeathSound;
 
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* RifleBulletShellDropSound;

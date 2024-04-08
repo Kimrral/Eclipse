@@ -20,13 +20,13 @@ public:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 	UFUNCTION()
-	void UpdateAmmo();
+	void UpdateAmmo() const;
 
 	UFUNCTION()
-	void UpdateAmmo_Secondary();
+	void UpdateAmmo_Secondary() const;
 
 	UFUNCTION()
-	void ChargeAmmunitionInfoWidget();
+	void ChargeAmmunitionInfoWidget() const;
 
 	UPROPERTY()
 	class APlayerCharacter* owner;

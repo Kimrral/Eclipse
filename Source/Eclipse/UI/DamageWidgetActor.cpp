@@ -24,7 +24,7 @@ void ADamageWidgetActor::BeginPlay()
 }
 
 // Called every frame
-void ADamageWidgetActor::Tick(float DeltaTime)
+void ADamageWidgetActor::Tick(const float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }

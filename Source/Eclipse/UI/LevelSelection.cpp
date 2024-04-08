@@ -20,18 +20,7 @@ void ULevelSelection::NativeConstruct()
 	gi = Cast<UEclipseGameInstance>(GetWorld()->GetGameInstance());
 	gi->IsWidgetOn = true;
 
-	//SelectLevel1Yes->OnClicked.AddDynamic(this, &ULevelSelection::Level1Y);
-	//SelectLevel1No->OnClicked.AddDynamic(this, &ULevelSelection::Level1N);
-
-	//SelectLevel2Yes->OnClicked.AddDynamic(this, &ULevelSelection::Level2Y);
-	//SelectLevel2No->OnClicked.AddDynamic(this, &ULevelSelection::Level2N);
-
-	//ExitButton->OnClicked.AddDynamic(this, &ULevelSelection::SelectExitGame);
-
-	//IsolatedShipButton->OnClicked.AddDynamic(this, &ULevelSelection::OpenMoveIsolatedShipSelection);
-
 	WidgetSwitcher_Level->SetActiveWidgetIndex(0);
-
 
 	quitBool = false;
 }

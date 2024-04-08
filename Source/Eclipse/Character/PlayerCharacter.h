@@ -419,6 +419,13 @@ public:
 	UFUNCTION()
 	void DoorInteraction();
 
+	UFUNCTION(Reliable, Server, WithValidation)
+	void DoorInteractionRPCServer();
+
+	UFUNCTION(Unreliable, NetMulticast)
+	void DoorInteractionRPCMulticast();
+
+
 	UFUNCTION()
 	void SetBossHPWidget(const AEnemy* enemy);
 

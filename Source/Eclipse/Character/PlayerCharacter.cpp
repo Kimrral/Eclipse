@@ -2076,6 +2076,21 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 
 void APlayerCharacter::DoorInteraction()
 {
+	DoorInteractionRPCServer();
+}
+
+void APlayerCharacter::DoorInteractionRPCServer_Implementation()
+{
+	DoorInteractionRPCMulticast();
+}
+
+bool APlayerCharacter::DoorInteractionRPCServer_Validate()
+{
+	return true;
+}
+
+void APlayerCharacter::DoorInteractionRPCMulticast_Implementation()
+{
 	DoorInteractionDele.ExecuteIfBound();
 }
 

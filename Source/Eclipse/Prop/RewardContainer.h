@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "RewardContainer.generated.h"
 
+DECLARE_DYNAMIC_DELEGATE_OneParam(FRewardContainerDestruct, FVector, ContainerLocation);
+
 UCLASS()
 class ECLIPSE_API ARewardContainer : public AActor
 {
@@ -17,15 +19,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	class UGeometryCollectionComponent* containerMesh;
-
-	UPROPERTY(EditAnywhere)
-	class USphereComponent* playerDetectCollision;
-
-	UFUNCTION()
-	void SphereOnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) ;
-	UFUNCTION()
-	void SphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-
 	
 	UFUNCTION()
 	void DropReward();
@@ -49,12 +42,15 @@ public:
 	TSubclassOf<class APistolMagActor> PistolMagActorFactory;
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AM249MagActor> M249MagActorFactory;
-
+	
 	UPROPERTY(EditAnywhere)
 	class USoundBase* containerBreakSound;
 	
 	UPROPERTY()
 	FVector DropForce;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FRewardContainerDestruct containerDele;
 	
 	UPROPERTY()
 	int curBoxHP;
@@ -62,8 +58,13 @@ public:
 	UPROPERTY()
 	int maxBoxHP = 5;
 
-	UPROPERTY()
-	bool bDestroyed = false;
+	UPROPERTY(ReplicatedUsing=OnRep_IsBoxDestroyed)
+	bool IsBoxDestroyed = false;
+
+	UFUNCTION()
+	void OnRep_IsBoxDestroyed();
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
 	// Called when the game starts or when spawned

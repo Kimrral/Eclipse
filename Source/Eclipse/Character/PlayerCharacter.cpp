@@ -1443,6 +1443,52 @@ void APlayerCharacter::OnGroundHit(const FHitResult& HitResult)
 	OnGroundHitRPCServer(HitResult);
 }
 
+void APlayerCharacter::OnContainerHit(const FHitResult& HitResult, ARewardContainer* HitContainer)
+{
+	if (!HitContainer->IsBoxDestroyed)
+	{
+		OnContainerHitRPCServer(HitResult, HitContainer);
+	}
+}
+
+void APlayerCharacter::OnContainerHitRPCServer_Implementation(const FHitResult& HitResult, ARewardContainer* HitContainer)
+{
+	OnContainerHitRPCMulticast(HitResult, HitContainer);
+}
+
+bool APlayerCharacter::OnContainerHitRPCServer_Validate(const FHitResult& HitResult, ARewardContainer* HitContainer)
+{
+	return true;
+}
+
+void APlayerCharacter::OnContainerHitRPCMulticast_Implementation(const FHitResult& HitResult, ARewardContainer* HitContainer)
+{
+	if(HasAuthority())
+	{
+		if (HitContainer->curBoxHP <= 1)
+		{			
+			HitContainer->BoxDestroyed();			
+		}
+		else
+		{
+			HitContainer->curBoxHP = FMath::Clamp(HitContainer->curBoxHP - 1, 0, 5);
+		}
+	}
+	if(IsLocallyControlled())
+	{
+		const FRotator hitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
+		crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, hitRot, FVector(1.f));
+		UGameplayStatics::PlaySound2D(GetWorld(), BulletHitSound);
+	}
+	else
+	{
+		const FRotator hitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, hitRot, FVector(1.f));
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, HitContainer->GetActorLocation());
+	}
+}
+
 void APlayerCharacter::OnGroundHitRPCServer_Implementation(const FHitResult& HitResult)
 {
 	OnGroundHitRPCMulticast(HitResult);
@@ -1479,6 +1525,7 @@ int32 APlayerCharacter::GenerateRandomDamage(float InDamage)
 	const int32 RoundedRandDamage = FMath::RoundHalfToEven(DoubleRandDamage);
 	return RoundedRandDamage;
 }
+
 
 void APlayerCharacter::Tab()
 {
@@ -3564,23 +3611,7 @@ void APlayerCharacter::ProcessRifleFire()
 			ARewardContainer* rewardContainer = Cast<ARewardContainer>(rifleHitResult.GetActor());
 			if (rewardContainer)
 			{
-				if (!rewardContainer->bDestroyed)
-				{
-					FVector_NetQuantize hitLoc = rifleHitResult.Location;
-					crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
-					UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
-					if (rewardContainer->curBoxHP <= 1)
-					{
-						rewardContainer->BoxDestroyed();
-						rewardContainer->containerMesh->SetSimulatePhysics(true);
-						ContainerLoc = rewardContainer->GetActorLocation();
-						containerDele.ExecuteIfBound();
-					}
-					else
-					{
-						rewardContainer->curBoxHP = FMath::Clamp(rewardContainer->curBoxHP - 1, 0, 10);
-					}
-				}
+				OnContainerHit(rifleHitResult, rewardContainer);
 			}
 			// 지형지물에 적중
 			else
@@ -3841,23 +3872,7 @@ void APlayerCharacter::ProcessSniperFire()
 			ARewardContainer* rewardContainer = Cast<ARewardContainer>(sniperHitResult.GetActor());
 			if (rewardContainer)
 			{
-				if (!rewardContainer->bDestroyed)
-				{
-					FVector_NetQuantize hitLoc = sniperHitResult.Location;
-					crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
-					UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
-					if (rewardContainer->curBoxHP <= 5)
-					{
-						rewardContainer->BoxDestroyed();
-						rewardContainer->containerMesh->SetSimulatePhysics(true);
-						ContainerLoc = rewardContainer->GetActorLocation();
-						containerDele.ExecuteIfBound();
-					}
-					else
-					{
-						rewardContainer->curBoxHP = FMath::Clamp(rewardContainer->curBoxHP - 5, 0, 10);
-					}
-				}
+				OnContainerHit(sniperHitResult, rewardContainer);
 			}
 			else
 			{
@@ -4156,23 +4171,7 @@ void APlayerCharacter::ProcessPistolFire()
 			ARewardContainer* rewardContainer = Cast<ARewardContainer>(pistolHitResult.GetActor());
 			if (rewardContainer)
 			{
-				if (!rewardContainer->bDestroyed)
-				{
-					FVector_NetQuantize hitLoc = pistolHitResult.Location;
-					crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
-					UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
-					if (rewardContainer->curBoxHP <= 2)
-					{
-						rewardContainer->BoxDestroyed();
-						rewardContainer->containerMesh->SetSimulatePhysics(true);
-						ContainerLoc = rewardContainer->GetActorLocation();
-						containerDele.ExecuteIfBound();
-					}
-					else
-					{
-						rewardContainer->curBoxHP = FMath::Clamp(rewardContainer->curBoxHP - 2, 0, 10);
-					}
-				}
+				OnContainerHit(pistolHitResult, rewardContainer);
 			}
 			else
 			{
@@ -4467,23 +4466,7 @@ void APlayerCharacter::ProcessM249Fire()
 			ARewardContainer* rewardContainer = Cast<ARewardContainer>(M249HitResult.GetActor());
 			if (rewardContainer)
 			{
-				if (!rewardContainer->bDestroyed)
-				{
-					FVector_NetQuantize hitLoc = M249HitResult.Location;
-					crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
-					UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, hitLoc);
-					if (rewardContainer->curBoxHP <= 1)
-					{
-						rewardContainer->BoxDestroyed();
-						rewardContainer->containerMesh->SetSimulatePhysics(true);
-						ContainerLoc = rewardContainer->GetActorLocation();
-						containerDele.ExecuteIfBound();
-					}
-					else
-					{
-						rewardContainer->curBoxHP = FMath::Clamp(rewardContainer->curBoxHP - 1, 0, 10);
-					}
-				}
+				OnContainerHit(M249HitResult, rewardContainer);
 			}
 			else
 			{

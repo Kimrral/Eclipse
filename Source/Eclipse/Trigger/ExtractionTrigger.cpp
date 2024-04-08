@@ -39,7 +39,7 @@ void AExtractionTrigger::OnOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 	if (OtherActor)
 	{
 		const auto player = Cast<APlayerCharacter>(OtherActor);
-		if (player)
+		if (player&&player->IsLocallyControlled())
 		{
 			if (!player->ExtractionCountdownUI->IsInViewport())
 			{
@@ -55,7 +55,7 @@ void AExtractionTrigger::EndOverlap(UPrimitiveComponent* OverlappedComponent, AA
 	if (OtherActor)
 	{
 		const auto player = Cast<APlayerCharacter>(OtherActor);
-		if (player)
+		if (player&&player->IsLocallyControlled())
 		{
 			if (player->ExtractionCountdownUI->IsInViewport())
 			{

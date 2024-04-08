@@ -26,7 +26,7 @@ void AWeaponActor::BeginPlay()
 }
 
 // Called every frame
-void AWeaponActor::Tick(float DeltaTime)
+void AWeaponActor::Tick(const float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 

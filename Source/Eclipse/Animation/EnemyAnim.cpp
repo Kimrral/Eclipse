@@ -13,7 +13,6 @@ void UEnemyAnim::NativeBeginPlay()
 
 	me = Cast<AEnemy>(TryGetPawnOwner());
 	FSM = Cast<UEnemyFSM>(me->GetDefaultSubobjectByName(FName("enemyFSM")));
-
 	FSM->OnStateChanged.AddUObject(this, &UEnemyAnim::ReplicateChangedState);
 }
 

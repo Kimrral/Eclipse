@@ -21,10 +21,10 @@ public:
 	class APlayerCharacter* me;
 
 	UFUNCTION()
-	void AnimNotify_ReloadStart();
+	void AnimNotify_ReloadStart() const;
 
 	UFUNCTION()
-	void AnimNotify_ReloadEnd();
+	void AnimNotify_ReloadEnd() const;
 
 	UFUNCTION()
 	void UpdateWeaponEquipState();

@@ -39,13 +39,13 @@ public:
 	void OnPawnDetected(APawn* Pawn); 
 
 	UFUNCTION()
-	void Damaged(int damage, AActor* DamageCauser);
+	void Damaged(int Damage, AActor* DamageCauser);
 
 	UFUNCTION(Reliable, Server, WithValidation)
-	void DamagedRPCServer(int damage, AActor* DamageCauser);
+	void DamagedRPCServer(int Damage, AActor* DamageCauser);
 
 	UFUNCTION(Unreliable, NetMulticast)
-	void DamagedRPCMulticast(int damage, AActor* DamageCauser);
+	void DamagedRPCMulticast(int Damage, AActor* DamageCauser);
 
 	UFUNCTION()
 	void OnShieldDestroy();
@@ -57,13 +57,13 @@ public:
 	virtual void DropReward();
 
 	UFUNCTION()
-	void DropMagazine();
+	void DropMagazine() const;
 
 	UFUNCTION()
-	void DropGear();
+	void DropGear() const;
 
 	UFUNCTION()
-	void GuardianFireProcess();
+	void GuardianFireProcess() const;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class ARifleMagActor> RifleMagActorFactory;

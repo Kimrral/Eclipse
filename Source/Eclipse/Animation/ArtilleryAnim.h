@@ -16,6 +16,6 @@ class ECLIPSE_API UArtilleryAnim : public UEnemyAnim
 
 public:
 	UFUNCTION()
-	void AnimNotify_Fire();
+	void AnimNotify_Fire() const;
 
 };

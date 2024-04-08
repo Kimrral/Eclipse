@@ -70,7 +70,7 @@ public:
 	void FindAgressivePlayer();
 
 	UFUNCTION()
-	bool IsAttackAnimationPlaying();
+	bool IsAttackAnimationPlaying() const;
 
 	UFUNCTION()
 	APlayerCharacter* ReturnAgressivePlayer();
@@ -79,7 +79,7 @@ public:
 	void MoveBackToInitialPosition();
 
 	UFUNCTION()
-	void OnRep_EnemyState();
+	void OnRep_EnemyState() const;
 
 	UPROPERTY(EditAnywhere)
 	class USoundBase* ShieldBreakSound;

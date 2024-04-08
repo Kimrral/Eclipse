@@ -64,17 +64,17 @@ void AEnemy::BeginPlay()
 
 void AEnemy::OnDie()
 {
-	FTimerHandle destroyHandle;
+	FTimerHandle DestroyHandle;
 	EnemyFSM->Timeline.Stop();
 	EnemyStat->IsStunned = false;
 	StopAnimMontage();
 	GetWorld()->GetTimerManager().ClearTimer(StunHandle);
 	GetCharacterMovement()->SetMovementMode(MOVE_None);
 	GetCharacterMovement()->Deactivate();
-	UCapsuleComponent* const capsule = GetCapsuleComponent();
-	capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	UCapsuleComponent* const Capsule = GetCapsuleComponent();
+	Capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	GetWorldTimerManager().SetTimer(destroyHandle, this, &AEnemy::OnDestroy, 10.0f, false);
+	GetWorldTimerManager().SetTimer(DestroyHandle, this, &AEnemy::OnDestroy, 10.0f, false);
 }
 
 void AEnemy::OnPawnDetected(APawn* Pawn)
@@ -88,23 +88,23 @@ void AEnemy::OnPawnDetected(APawn* Pawn)
 	}
 }
 
-void AEnemy::Damaged(int damage, AActor* DamageCauser)
+void AEnemy::Damaged(const int Damage, AActor* DamageCauser)
 {
-	DamagedRPCServer(damage, DamageCauser);
-	EnemyStat->ApplyDamage(damage, DamageCauser);
+	DamagedRPCServer(Damage, DamageCauser);
+	EnemyStat->ApplyDamage(Damage, DamageCauser);
 }
 
-void AEnemy::DamagedRPCServer_Implementation(int damage, AActor* DamageCauser)
+void AEnemy::DamagedRPCServer_Implementation(const int Damage, AActor* DamageCauser)
 {
-	DamagedRPCMulticast(damage, DamageCauser);
+	DamagedRPCMulticast(Damage, DamageCauser);
 }
 
-bool AEnemy::DamagedRPCServer_Validate(int damage, AActor* DamageCauser)
+bool AEnemy::DamagedRPCServer_Validate(int Damage, AActor* DamageCauser)
 {
 	return true;
 }
 
-void AEnemy::DamagedRPCMulticast_Implementation(int damage, AActor* DamageCauser)
+void AEnemy::DamagedRPCMulticast_Implementation(int Damage, AActor* DamageCauser)
 {
 	if(EnemyStat->IsShieldBroken)
 	{
@@ -166,57 +166,55 @@ void AEnemy::DropReward()
 {
 }
 
-void AEnemy::DropMagazine()
+void AEnemy::DropMagazine() const
 {
 	FActorSpawnParameters param;
 	param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	auto randIndex = FMath::RandRange(0, 3);
-	if (randIndex == 0)
+	if (const auto RandIndex = FMath::RandRange(0, 3); RandIndex == 0)
 	{
 		GetWorld()->SpawnActor<ARifleMagActor>(RifleMagActorFactory, GetActorLocation(), GetActorRotation(), param);
 	}
-	else if (randIndex == 1)
+	else if (RandIndex == 1)
 	{
 		GetWorld()->SpawnActor<ASniperMagActor>(SniperMagActorFactory, GetActorLocation(), GetActorRotation(), param);
 	}
-	else if (randIndex == 2)
+	else if (RandIndex == 2)
 	{
 		GetWorld()->SpawnActor<APistolMagActor>(PistolMagActorFactory, GetActorLocation(), GetActorRotation(), param);
 	}
-	else if (randIndex == 3)
+	else if (RandIndex == 3)
 	{
 		GetWorld()->SpawnActor<AM249MagActor>(M249MagActorFactory, GetActorLocation(), GetActorRotation(), param);
 	}
 }
 
-void AEnemy::DropGear()
+void AEnemy::DropGear() const
 {
 	FActorSpawnParameters param;
 	param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	auto randIndex = FMath::RandRange(0, 4);
-	if (randIndex == 0)
+	if (const auto RandIndex = FMath::RandRange(0, 4); RandIndex == 0)
 	{
 		GetWorld()->SpawnActor<AHelmetActor>(HelmetActorFactory, GetActorLocation(), GetActorRotation(), param);
 	}
-	else if (randIndex == 1)
+	else if (RandIndex == 1)
 	{
 		GetWorld()->SpawnActor<AHeadsetActor>(HeadsetActorFactory, GetActorLocation(), GetActorRotation(), param);
 	}
-	else if (randIndex == 2)
+	else if (RandIndex == 2)
 	{
 		GetWorld()->SpawnActor<AMaskActor>(MaskActorFactory, GetActorLocation(), GetActorRotation(), param);
 	}
-	else if (randIndex == 3)
+	else if (RandIndex == 3)
 	{
 		GetWorld()->SpawnActor<AGoggleActor>(GoggleActorFactory, GetActorLocation(), GetActorRotation(), param);
 	}
-	else if (randIndex == 4)
+	else if (RandIndex == 4)
 	{
 		GetWorld()->SpawnActor<AArmorActor>(ArmorActorFactory, GetActorLocation(), GetActorRotation(), param);
 	}
 }
 
-void AEnemy::GuardianFireProcess()
+void AEnemy::GuardianFireProcess() const
 {
 	if (EnemyFSM->player)
 	{

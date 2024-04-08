@@ -16,7 +16,7 @@ class ECLIPSE_API UGuardianAnim : public UEnemyAnim
 
 public:
 	UFUNCTION()
-	void AnimNotify_Fire();
+	void AnimNotify_Fire() const;
 
 	
 };

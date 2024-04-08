@@ -199,7 +199,7 @@ void UEnemyFSM::SetState(EEnemyState next) // 상태 전이함수
 	}	
 }
 
-void UEnemyFSM::SetRotToPlayer(float Value)
+void UEnemyFSM::SetRotToPlayer(const float Value)
 {
 	if(state==EEnemyState::DIE)
 	{
@@ -211,26 +211,26 @@ void UEnemyFSM::SetRotToPlayer(float Value)
 		{
 			const FVector dir = InitialPosition - me->GetActorLocation();
 			// 벡터값에서 회전값 산출
-			const FRotator attackRot = UKismetMathLibrary::MakeRotFromXZ(dir, player->GetActorUpVector());
-			const FRotator startRot = me->GetActorRotation();
-			const FRotator endRot = attackRot;
+			const FRotator AttackRot = UKismetMathLibrary::MakeRotFromXZ(dir, player->GetActorUpVector());
+			const FRotator StartRot = me->GetActorRotation();
+			const FRotator EndRot = AttackRot;
 			// RLerp와 TimeLine Value 값을 통한 자연스러운 회전
-			const FRotator lerp = UKismetMathLibrary::RLerp(startRot, endRot, Value, true);
+			const FRotator Lerp = UKismetMathLibrary::RLerp(StartRot, EndRot, Value, true);
 			// 해당 회전값 Enemy에 할당
-			me->SetActorRotation(FRotator(0, lerp.Yaw, 0));
+			me->SetActorRotation(FRotator(0, Lerp.Yaw, 0));
 		}
 		else
 		{
 			// 플레이어를 바라보는 벡터값 산출
-			const FVector dir = player->GetActorLocation() - me->GetActorLocation();
+			const FVector Dir = player->GetActorLocation() - me->GetActorLocation();
 			// 벡터값에서 회전값 산출
-			const FRotator attackRot = UKismetMathLibrary::MakeRotFromXZ(dir, player->GetActorUpVector());
-			const FRotator startRot = me->GetActorRotation();
-			const FRotator endRot = attackRot;
+			const FRotator AttackRot = UKismetMathLibrary::MakeRotFromXZ(Dir, player->GetActorUpVector());
+			const FRotator StartRot = me->GetActorRotation();
+			const FRotator EndRot = AttackRot;
 			// RLerp와 TimeLine Value 값을 통한 자연스러운 회전
-			const FRotator lerp = UKismetMathLibrary::RLerp(startRot, endRot, Value, true);
+			const FRotator Lerp = UKismetMathLibrary::RLerp(StartRot, EndRot, Value, true);
 			// 해당 회전값 Enemy에 할당
-			me->SetActorRotation(FRotator(0, lerp.Yaw, 0));
+			me->SetActorRotation(FRotator(0, Lerp.Yaw, 0));
 		}
 	}
 }
@@ -296,12 +296,12 @@ void UEnemyFSM::MoveBackToInitialPosition()
 	}
 }
 
-void UEnemyFSM::OnRep_EnemyState()
+void UEnemyFSM::OnRep_EnemyState() const
 {
 	OnStateChanged.Broadcast();
 }
 
-bool UEnemyFSM::IsAttackAnimationPlaying()
+bool UEnemyFSM::IsAttackAnimationPlaying() const
 {
 	if (IsPlayingAttackAnimation)
 	{

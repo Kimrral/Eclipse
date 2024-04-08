@@ -6,7 +6,7 @@
 #include "Eclipse/Character/PlayerCharacter.h"
 #include "Eclipse/Enemy/Enemy.h"
 
-void USpiderAnim::AnimNotify_HitPoint()
+void USpiderAnim::AnimNotify_HitPoint() const
 {
 	if(me->HasAuthority())
 	{
@@ -15,20 +15,17 @@ void USpiderAnim::AnimNotify_HitPoint()
 		const FVector Center = me->GetActorLocation() + me->GetActorForwardVector() * 30.f;
 		// 충돌체크(구충돌)
 		// 충돌한 물체를 기억할 배열
-		TArray<FOverlapResult> HitObj;;
-		FCollisionQueryParams params;
-		params.AddIgnoredActor(me);
+		FCollisionQueryParams Params;
+		Params.AddIgnoredActor(me);
 		// Overlap Multi
-		bool bOverlapHit = GetWorld()->OverlapMultiByChannel(HitObj, Center, FQuat::Identity, ECC_Pawn, FCollisionShape::MakeSphere(50), params);
-		if (bOverlapHit)
+		if (TArray<FOverlapResult> HitObj; GetWorld()->OverlapMultiByChannel(HitObj, Center, FQuat::Identity, ECC_Pawn, FCollisionShape::MakeSphere(50), Params))
 		{
 			// 충돌 배열 순회
 			for (int i = 0; i < HitObj.Num(); ++i)
 			{
-				APlayerCharacter* player = Cast<APlayerCharacter>(HitObj[i].GetActor());
-				if (player&&player->HasAuthority()&&player->IsPlayerDeadImmediately==false)
+				if (APlayerCharacter* Player = Cast<APlayerCharacter>(HitObj[i].GetActor()); Player&&Player->HasAuthority()&&Player->IsPlayerDeadImmediately==false)
 				{
-					player->Damaged(10, GetOwningActor()); 
+					Player->Damaged(10, GetOwningActor()); 
 				}
 			}
 		}

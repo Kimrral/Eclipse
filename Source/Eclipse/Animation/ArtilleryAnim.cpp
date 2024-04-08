@@ -5,7 +5,7 @@
 
 #include "Eclipse/Enemy/Enemy.h"
 
-void UArtilleryAnim::AnimNotify_Fire()
+void UArtilleryAnim::AnimNotify_Fire() const
 {
 	if (me->HasAuthority())
 	{

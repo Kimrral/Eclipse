@@ -11,12 +11,12 @@
 #include "Components/TimelineComponent.h"
 #include "Eclipse/Game/EclipseGameInstance.h"
 #include "Eclipse/Item/ArmorActor.h"
+#include "Eclipse/Prop/RewardContainer.h"
 #include "Eclipse/Weapon/M249Actor.h"
 #include "Eclipse/Weapon/PistolActor.h"
 #include "Eclipse/Weapon/SniperActor.h"
 #include "PlayerCharacter.generated.h"
 
-DECLARE_DYNAMIC_DELEGATE(FRewardContainerDestruct);
 DECLARE_MULTICAST_DELEGATE(FOnWeaponChange);
 DECLARE_DYNAMIC_DELEGATE(FOnDoorInteraction);
 
@@ -116,9 +116,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* QAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FRewardContainerDestruct containerDele;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FOnDoorInteraction DoorInteractionDele;
@@ -398,6 +395,17 @@ public:
 
 	UFUNCTION(Unreliable, NetMulticast)
 	void OnGroundHitRPCMulticast(const FHitResult& HitResult);
+
+	//=======================================//
+
+	UFUNCTION()
+	void OnContainerHit(const FHitResult& HitResult, ARewardContainer* HitContainer);
+
+	UFUNCTION(Reliable, Server, WithValidation)
+	void OnContainerHitRPCServer(const FHitResult& HitResult, ARewardContainer* HitContainer);
+
+	UFUNCTION(Unreliable, NetMulticast)
+	void OnContainerHitRPCMulticast(const FHitResult& HitResult, ARewardContainer* HitContainer);
 
 	//=======================================//
 
@@ -759,9 +767,6 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* BuletTrailSystem;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	FVector ContainerLoc;
 
 	UPROPERTY(BlueprintReadOnly)
 	class UUserWidget* sniperScopeUI;

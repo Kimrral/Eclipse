@@ -24,8 +24,7 @@ void AEclipseAIController::OnUnPossess()
 
 void AEclipseAIController::RandomMove()
 {
-	const APawn* CurrentPawn = GetPawn();
-	if (nullptr == CurrentPawn)
+	if (const APawn* CurrentPawn = GetPawn(); nullptr == CurrentPawn)
 		return;
 
 	// 월드의 내비게이션 시스템을 가져온다

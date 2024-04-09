@@ -4,7 +4,6 @@
 #include "PlayerCharacterStatComponent.h"
 
 #include "Eclipse/Player/EclipsePlayerController.h"
-#include "Eclipse/UI/CrosshairWidget.h"
 #include "Net/UnrealNetwork.h"
 
 // Sets default values for this component's properties
@@ -22,7 +21,7 @@ void UPlayerCharacterStatComponent::InitializeComponent()
 }
 
 
-float UPlayerCharacterStatComponent::ApplyDamage(float InDamage, AActor* DamageCauser)
+float UPlayerCharacterStatComponent::ApplyDamage(const float InDamage, AActor* DamageCauser)
 {
 	const float PrevHp = CurrentHp;
 	const float ActualDamage = FMath::Clamp<float>(InDamage, 0, InDamage);
@@ -62,7 +61,7 @@ void UPlayerCharacterStatComponent::SetHp(float NewHp)
 }
 
 
-void UPlayerCharacterStatComponent::OnRep_CurrentHp()
+void UPlayerCharacterStatComponent::OnRep_CurrentHp() const
 {
 	OnHpChanged.Broadcast();
 	if (CurrentHp <= 0.0f)
@@ -71,7 +70,7 @@ void UPlayerCharacterStatComponent::OnRep_CurrentHp()
 	}
 }
 
-void UPlayerCharacterStatComponent::OnRep_MaxHp()
+void UPlayerCharacterStatComponent::OnRep_MaxHp() const
 {
 	OnHpChanged.Broadcast();
 }

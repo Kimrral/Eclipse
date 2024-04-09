@@ -54,8 +54,8 @@ protected:
 
 
 	UFUNCTION()
-	void OnRep_CurrentHp();
+	void OnRep_CurrentHp() const;
 
 	UFUNCTION()
-	void OnRep_MaxHp();
+	void OnRep_MaxHp() const;
 };

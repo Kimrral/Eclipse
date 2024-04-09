@@ -1226,11 +1226,6 @@ void APlayerCharacter::OnEnemyHitRPCMulticast_Implementation(const FHitResult& H
 }
 
 
-void APlayerCharacter::OnGroundHit(const FHitResult& HitResult)
-{
-	OnGroundHitRPCServer(HitResult);
-}
-
 void APlayerCharacter::OnContainerHit(const FHitResult& HitResult, ARewardContainer* HitContainer)
 {
 	if (!HitContainer->IsBoxDestroyed)
@@ -1264,17 +1259,20 @@ void APlayerCharacter::OnContainerHitRPCMulticast_Implementation(const FHitResul
 	}
 	if (IsLocallyControlled())
 	{
-		const FRotator hitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
 		crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, hitRot, FVector(1.f));
 		UGameplayStatics::PlaySound2D(GetWorld(), BulletHitSound);
 	}
 	else
 	{
-		const FRotator hitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, hitRot, FVector(1.f));
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, HitContainer->GetActorLocation());
 	}
+	const FRotator HitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(1.f));
+}
+
+void APlayerCharacter::OnGroundHit(const FHitResult& HitResult)
+{
+	OnGroundHitRPCServer(HitResult);
 }
 
 void APlayerCharacter::OnGroundHitRPCServer_Implementation(const FHitResult& HitResult)
@@ -1883,10 +1881,10 @@ void APlayerCharacter::SetBossHPWidget(const AEnemy* Enemy) const
 {
 	if (Enemy && bossHPUI)
 	{
-		const float bossHP = Enemy->EnemyStat->GetCurrentHp() * 0.0001;
-		bossHPUI->progressBar->SetPercent(bossHP);
-		const float bossShield = Enemy->EnemyStat->GetCurrentShield() * 0.01;
-		bossHPUI->shieldProgressBar->SetPercent(bossShield);
+		const float BossHP = Enemy->EnemyStat->GetCurrentHp() * 0.0001;
+		bossHPUI->progressBar->SetPercent(BossHP);
+		const float BossShield = Enemy->EnemyStat->GetCurrentShield() * 0.01;
+		bossHPUI->shieldProgressBar->SetPercent(BossShield);
 	}
 }
 

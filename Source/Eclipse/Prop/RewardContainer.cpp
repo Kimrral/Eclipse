@@ -15,19 +15,19 @@
 // Sets default values
 ARewardContainer::ARewardContainer()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = false;
 
-	containerMesh=CreateDefaultSubobject<UGeometryCollectionComponent>(TEXT("containerMesh"));
+	containerMesh = CreateDefaultSubobject<UGeometryCollectionComponent>(TEXT("containerMesh"));
 	SetRootComponent(containerMesh);
-	
-	curBoxHP=maxBoxHP;
+
+	curBoxHP = maxBoxHP;
 
 	SetReplicates(true);
-
 }
 
-void ARewardContainer::OnRep_IsBoxDestroyed()
+void ARewardContainer::OnRep_IsBoxDestroyed() const
 {
 	containerDele.ExecuteIfBound(GetActorLocation());
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), containerBreakSound, this->GetActorLocation());
@@ -53,10 +53,9 @@ void ARewardContainer::BeginPlay()
 void ARewardContainer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
-void ARewardContainer::DropReward()
+void ARewardContainer::DropReward() const
 {
 	DropConsole();
 	DropMagazine();
@@ -64,7 +63,7 @@ void ARewardContainer::DropReward()
 
 void ARewardContainer::DropConsole() const
 {
-	if(const AHackingConsole* HackingConsole = GetWorld()->SpawnActor<AHackingConsole>(HackingConsoleFactory, GetActorLocation(), GetActorRotation()))
+	if (const AHackingConsole* HackingConsole = GetWorld()->SpawnActor<AHackingConsole>(HackingConsoleFactory, GetActorLocation(), GetActorRotation()))
 	{
 		HackingConsole->RootMesh->SetRenderCustomDepth(true);
 	}
@@ -72,32 +71,30 @@ void ARewardContainer::DropConsole() const
 
 void ARewardContainer::DropMagazine() const
 {
-
-	const auto randIndex = FMath::RandRange(0, 3);
-	if(randIndex==0)
+	if (const auto RandIndex = FMath::RandRange(0, 3); RandIndex == 0)
 	{
-		if(const ARifleMagActor* RifleMagActor = GetWorld()->SpawnActor<ARifleMagActor>(RifleMagActorFactory, GetActorLocation(), GetActorRotation()))
+		if (const ARifleMagActor* RifleMagActor = GetWorld()->SpawnActor<ARifleMagActor>(RifleMagActorFactory, GetActorLocation(), GetActorRotation()))
 		{
 			RifleMagActor->RootMesh->SetRenderCustomDepth(true);
 		}
 	}
-	else if(randIndex==1)
+	else if (RandIndex == 1)
 	{
-		if(const ASniperMagActor* SniperMagActor = GetWorld()->SpawnActor<ASniperMagActor>(SniperMagActorFactory, GetActorLocation(), GetActorRotation()))
+		if (const ASniperMagActor* SniperMagActor = GetWorld()->SpawnActor<ASniperMagActor>(SniperMagActorFactory, GetActorLocation(), GetActorRotation()))
 		{
 			SniperMagActor->RootMesh->SetRenderCustomDepth(true);
 		}
 	}
-	else if(randIndex==2)
+	else if (RandIndex == 2)
 	{
-		if(const APistolMagActor* PistolMagActor = GetWorld()->SpawnActor<APistolMagActor>(PistolMagActorFactory, GetActorLocation(), GetActorRotation()))
+		if (const APistolMagActor* PistolMagActor = GetWorld()->SpawnActor<APistolMagActor>(PistolMagActorFactory, GetActorLocation(), GetActorRotation()))
 		{
 			PistolMagActor->RootMesh->SetRenderCustomDepth(true);
 		}
 	}
-	else if(randIndex==3)
+	else if (RandIndex == 3)
 	{
-		if(const AM249MagActor* M249MagActor = GetWorld()->SpawnActor<AM249MagActor>(M249MagActorFactory, GetActorLocation(), GetActorRotation()))
+		if (const AM249MagActor* M249MagActor = GetWorld()->SpawnActor<AM249MagActor>(M249MagActorFactory, GetActorLocation(), GetActorRotation()))
 		{
 			M249MagActor->RootMesh->SetRenderCustomDepth(true);
 		}
@@ -106,7 +103,7 @@ void ARewardContainer::DropMagazine() const
 
 void ARewardContainer::BoxDestroyed()
 {
-	IsBoxDestroyed=true;		
-	OnRep_IsBoxDestroyed();	
-	DropReward();			
+	IsBoxDestroyed = true;
+	OnRep_IsBoxDestroyed();
+	DropReward();
 }

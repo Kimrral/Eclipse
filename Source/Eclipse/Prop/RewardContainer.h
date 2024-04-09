@@ -16,12 +16,9 @@ class ECLIPSE_API ARewardContainer : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ARewardContainer();
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	class UGeometryCollectionComponent* containerMesh;
 	
 	UFUNCTION()
-	void DropReward();
+	void DropReward() const;
 
 	UFUNCTION()
 	void DropConsole() const;
@@ -31,6 +28,14 @@ public:
 
 	UFUNCTION()
 	void BoxDestroyed();
+
+	UFUNCTION()
+	void OnRep_IsBoxDestroyed() const;
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	class UGeometryCollectionComponent* containerMesh;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AHackingConsole> HackingConsoleFactory;	
@@ -59,12 +64,7 @@ public:
 	int maxBoxHP = 5;
 
 	UPROPERTY(ReplicatedUsing=OnRep_IsBoxDestroyed)
-	bool IsBoxDestroyed = false;
-
-	UFUNCTION()
-	void OnRep_IsBoxDestroyed();
-
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	bool IsBoxDestroyed = false;	
 
 protected:
 	// Called when the game starts or when spawned

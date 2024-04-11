@@ -18,6 +18,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UWidgetSwitcher* WidgetSwitcher_Level;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UWidgetSwitcher* WidgetSwitcher_LevelSelect;
 	
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UButton* SelectLevel1Yes;
@@ -26,22 +29,34 @@ public:
 	class UButton* SelectLevel1No;
 
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
-	class UButton* SelectLevel2Yes;
-
-	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UButton* SelectLevel2No;
 
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UButton* IsolatedShipButton;
 
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UButton* DesertedRoadButton;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UButton* ExitButton;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UButton* ShowSingleLevelInfo;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UButton* ShowMultiLevelInfo;
 	
 	UPROPERTY(BlueprintReadWrite, Transient, meta = (BindWidgetAnim))
 	class UWidgetAnimation* LevelSelectionStartAnim;
 
 	UPROPERTY(BlueprintReadWrite, Transient, meta = (BindWidgetAnim))
 	class UWidgetAnimation* LevelSelectionEndAnim;
+
+	UPROPERTY(BlueprintReadWrite, Transient, meta = (BindWidgetAnim))
+	class UWidgetAnimation* SingleLevelStartAnim;
+
+	UPROPERTY(BlueprintReadWrite, Transient, meta = (BindWidgetAnim))
+	class UWidgetAnimation* MultiLevelStartAnim;
 	
 	UPROPERTY()
 	class AEclipsePlayerController* pc;
@@ -62,16 +77,22 @@ public:
 	void Level1N();
 
 	UFUNCTION(BlueprintCallable)
-	void Level2Y();
+	void Level2N();
 
 	UFUNCTION(BlueprintCallable)
-	void Level2N();
+	void ShowSingleLevelInfoFunc();
+
+	UFUNCTION(BlueprintCallable)
+	void ShowMultiLevelInfoFunc();
 
 	UFUNCTION(BlueprintCallable)
 	void SelectExitGame();
 
 	UFUNCTION(BlueprintCallable)
 	void OpenMoveIsolatedShipSelection();
+
+	UFUNCTION(BlueprintCallable)
+	void OpenDesertedRoadSelection();
 
 	UPROPERTY(EditAnywhere, Category=Sound)
 	class USoundBase* QuitSound;

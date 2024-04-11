@@ -46,17 +46,32 @@ void ULevelSelection::Level1N()
 	PlayAnimation(LevelSelectionStartAnim);
 }
 
-void ULevelSelection::Level2Y()
-{
-	//Move to Battle Field
-}
-
 void ULevelSelection::Level2N()
 {
 	//Cancel Level Selection
 	UGameplayStatics::PlaySound2D(GetWorld(), QuitSound);
 	WidgetSwitcher_Level->SetActiveWidgetIndex(0);
 	PlayAnimation(LevelSelectionStartAnim);
+	FTimerHandle CursorHandle;
+	GetWorld()->GetTimerManager().SetTimer(CursorHandle, FTimerDelegate::CreateLambda([this]()-> void
+	{
+		pc->SetShowMouseCursor(true);
+		UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(pc, this);
+	}), 1.f, false);
+}
+
+void ULevelSelection::ShowSingleLevelInfoFunc()
+{
+	UGameplayStatics::PlaySound2D(GetWorld(), AskSound);
+	WidgetSwitcher_LevelSelect->SetActiveWidgetIndex(0);
+	PlayAnimation(SingleLevelStartAnim);
+}
+
+void ULevelSelection::ShowMultiLevelInfoFunc()
+{
+	UGameplayStatics::PlaySound2D(GetWorld(), AskSound);
+	WidgetSwitcher_LevelSelect->SetActiveWidgetIndex(1);
+	PlayAnimation(MultiLevelStartAnim);
 }
 
 void ULevelSelection::SelectExitGame()
@@ -78,6 +93,18 @@ void ULevelSelection::OpenMoveIsolatedShipSelection()
 	{
 		UGameplayStatics::PlaySound2D(GetWorld(), AskSound);
 		WidgetSwitcher_Level->SetActiveWidgetIndex(1);
+		PlayAnimation(LevelSelectionStartAnim);
+	}), 0.75f, false);
+}
+
+void ULevelSelection::OpenDesertedRoadSelection()
+{
+	PlayAnimation(LevelSelectionEndAnim);
+	FTimerHandle endHandle;
+	GetWorld()->GetTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()-> void
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), AskSound);
+		WidgetSwitcher_Level->SetActiveWidgetIndex(2);
 		PlayAnimation(LevelSelectionStartAnim);
 	}), 0.75f, false);
 }

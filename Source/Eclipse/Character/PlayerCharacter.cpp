@@ -214,7 +214,7 @@ void APlayerCharacter::BeginPlay()
 		{
 			animInstance->bArmed = false;
 		}
-		GetCharacterMovement()->MaxWalkSpeed = 180.f;
+		GetCharacterMovement()->MaxWalkSpeed = 360.f;
 		bUsingRifle = false;
 		bUsingSniper = false;
 		bUsingPistol = false;
@@ -613,18 +613,12 @@ void APlayerCharacter::ZoomRPCReleaseMulticast_Implementation()
 
 void APlayerCharacter::Run()
 {
-	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) != FString("Safe_House"))
-	{
-		RunRPCServer();
-	}
+	RunRPCServer();
 }
 
 void APlayerCharacter::RunRelease()
 {
-	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) != FString("Safe_House"))
-	{
-		RunRPCReleaseServer();
-	}
+	RunRPCReleaseServer();
 }
 
 void APlayerCharacter::RunRPCMulticast_Implementation()

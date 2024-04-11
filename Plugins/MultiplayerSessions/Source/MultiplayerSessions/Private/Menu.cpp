@@ -7,26 +7,19 @@
 #include "OnlineSessionSettings.h"
 #include "OnlineSubsystem.h"
 
+
+void UMenu::NativeConstruct()
+{
+	Super::NativeConstruct();
+
+	MenuSetup(4, FString("FreeForAll"), FString("/Game/Maps/Deserted_Road.Deserted_Road'"));
+}
+
 void UMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, FString LobbyPath)
 {
 	PathToLobby = FString::Printf(TEXT("%s?listen"), *LobbyPath);
 	NumPublicConnections = NumberOfPublicConnections;
 	MatchType = TypeOfMatch;
-	AddToViewport();
-	SetVisibility(ESlateVisibility::Visible);
-	bIsFocusable = true;
-
-	if (const UWorld* World = GetWorld())
-	{
-		if (APlayerController* PlayerController = World->GetFirstPlayerController())
-		{
-			FInputModeUIOnly InputModeData;
-			InputModeData.SetWidgetToFocus(TakeWidget());
-			InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-			PlayerController->SetInputMode(InputModeData);
-			PlayerController->SetShowMouseCursor(true);
-		}
-	}
 
 	if (const UGameInstance* GameInstance = GetGameInstance())
 	{
@@ -39,7 +32,7 @@ void UMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, FStr
 		MultiplayerSessionsSubsystem->MultiplayerOnFindSessionsComplete.AddUObject(this, &ThisClass::OnFindSessions);
 		MultiplayerSessionsSubsystem->MultiplayerOnJoinSessionComplete.AddUObject(this, &ThisClass::OnJoinSession);
 		MultiplayerSessionsSubsystem->MultiplayerOnDestroySessionComplete.AddDynamic(this, &ThisClass::OnDestroySession);
-		MultiplayerSessionsSubsystem->MultiplayerOnStartSessionComplete.AddDynamic(this, &ThisClass::OnStartSession);
+		MultiplayerSessionsSubsystem->MultiplayerOnStartSessionComplete.AddDynamic(this, &ThisClass::OnStartSession);	
 	}
 }
 
@@ -48,12 +41,7 @@ bool UMenu::Initialize()
 	if (!Super::Initialize())
 	{
 		return false;
-	}
-
-	if (HostButton)
-	{
-		HostButton->OnClicked.AddDynamic(this, &ThisClass::HostButtonClicked);
-	}
+	}	
 	if (JoinButton)
 	{
 		JoinButton->OnClicked.AddDynamic(this, &ThisClass::JoinButtonClicked);
@@ -61,6 +49,7 @@ bool UMenu::Initialize()
 
 	return true;
 }
+
 
 void UMenu::NativeDestruct()
 {
@@ -87,8 +76,7 @@ void UMenu::OnCreateSession(bool bWasSuccessful)
 				FColor::Red,
 				FString(TEXT("Failed to create session!"))
 			);
-		}
-		HostButton->SetIsEnabled(true);
+		}		
 	}
 }
 
@@ -111,14 +99,16 @@ void UMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionResu
 	}
 	if (!bWasSuccessful || SessionResults.Num() == 0)
 	{
-		JoinButton->SetIsEnabled(true);
+		if (MultiplayerSessionsSubsystem)
+		{
+			MultiplayerSessionsSubsystem->CreateSession(NumPublicConnections, MatchType);
+		}
 	}
 }
 
 void UMenu::OnJoinSession(EOnJoinSessionCompleteResult::Type Result)
 {
-	IOnlineSubsystem* Subsystem = IOnlineSubsystem::Get();
-	if (Subsystem)
+	if (const IOnlineSubsystem* Subsystem = IOnlineSubsystem::Get())
 	{
 		if (const IOnlineSessionPtr SessionInterface = Subsystem->GetSessionInterface(); SessionInterface.IsValid())
 		{
@@ -139,15 +129,6 @@ void UMenu::OnDestroySession(bool bWasSuccessful)
 
 void UMenu::OnStartSession(bool bWasSuccessful)
 {
-}
-
-void UMenu::HostButtonClicked()
-{
-	HostButton->SetIsEnabled(false);
-	if (MultiplayerSessionsSubsystem)
-	{
-		MultiplayerSessionsSubsystem->CreateSession(NumPublicConnections, MatchType);
-	}
 }
 
 void UMenu::JoinButtonClicked()

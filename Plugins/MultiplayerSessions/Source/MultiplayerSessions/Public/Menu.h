@@ -21,6 +21,7 @@ public:
 protected:
 
 	virtual bool Initialize() override;
+	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 
 	//
@@ -38,13 +39,7 @@ protected:
 private:
 
 	UPROPERTY(meta = (BindWidget))
-	class UButton* HostButton;
-
-	UPROPERTY(meta = (BindWidget))
-	UButton* JoinButton;
-
-	UFUNCTION()
-	void HostButtonClicked();
+	class UButton* JoinButton;
 
 	UFUNCTION()
 	void JoinButtonClicked();

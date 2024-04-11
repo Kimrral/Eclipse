@@ -20,10 +20,6 @@
 DECLARE_MULTICAST_DELEGATE(FOnWeaponChange);
 DECLARE_DYNAMIC_DELEGATE(FOnDoorInteraction);
 
-//DECLARE_MULTICAST_DELEGATE_TwoParams(FPlayerHit, FHitResult, APlayerCharacter*)
-//DECLARE_MULTICAST_DELEGATE_TwoParams(FEnemyHit, FHitResult, AEnemy*)
-//DECLARE_MULTICAST_DELEGATE_OneParam(FGroundHit, FHitResult)
-
 UCLASS()
 class ECLIPSE_API APlayerCharacter : public ACharacter
 {
@@ -116,10 +112,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* QAction;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FOnDoorInteraction DoorInteractionDele;
-	
+
 	FOnWeaponChange WeaponChangeDele;
 
 	/** Called for movement input */
@@ -409,13 +405,6 @@ public:
 
 	//=======================================//
 
-	void Tab();
-
-	void Q();
-
-	UFUNCTION()
-	void WeaponDetectionLineTrace();
-
 	UFUNCTION()
 	void DoorInteraction();
 
@@ -425,6 +414,14 @@ public:
 	UFUNCTION(Unreliable, NetMulticast)
 	void DoorInteractionRPCMulticast();
 
+	//=======================================//
+
+	void Tab();
+
+	void Q();
+
+	UFUNCTION()
+	void WeaponDetectionLineTrace();
 
 	UFUNCTION()
 	void SetBossHPWidget(const AEnemy* Enemy) const;
@@ -560,13 +557,13 @@ public:
 	void UnSetPistolAdditionalMagazineSlot();
 	UFUNCTION(BlueprintCallable)
 	void UnSetM249AdditionalMagazineSlot();
-	
+
 	UFUNCTION()
 	void OnRep_WeaponArrayChanged() const;
 
 	UFUNCTION()
 	int32 GenerateRandomDamage(float InDamage) const;
-	
+
 	UFUNCTION()
 	void AmmoDepleted();
 
@@ -1011,9 +1008,6 @@ public:
 	class USoundBase* DeathSound;
 
 	UPROPERTY(EditAnywhere, Category="Sounds")
-	class USoundBase* RifleBulletShellDropSound;
-
-	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* SniperZoomInSound;
 
 	UPROPERTY(EditAnywhere, Category="Sounds")
@@ -1064,14 +1058,10 @@ public:
 	//Particles
 	UPROPERTY(EditAnywhere, Transient, Category="Factory")
 	TSubclassOf<class AActor> ShotDecalFactory;
-	UPROPERTY(EditAnywhere, Transient, Category="Factory")
-	TSubclassOf<class AActor> BulletShellFactory;
 	UPROPERTY(EditAnywhere, Transient, Category="Particle")
 	class UParticleSystem* bulletMarksParticle;
 	UPROPERTY(EditAnywhere, Transient, Category="Particle")
 	class UParticleSystem* RifleFireParticle;
-	UPROPERTY(EditAnywhere, Transient, Category="Particle")
-	class UParticleSystem* RifleFireParticle2;
 	UPROPERTY(EditAnywhere, Transient, Category="Particle")
 	class UParticleSystem* PistolfireParticle;
 	UPROPERTY(EditAnywhere, Transient, Category="Particle")
@@ -1116,7 +1106,7 @@ public:
 
 	UPROPERTY(Replicated)
 	bool IsPlayerDeadImmediately = false;
-	
+
 	UPROPERTY(Replicated, BlueprintReadOnly)
 	bool IsPlayerDead = false;
 

@@ -151,12 +151,17 @@ void APlayerCharacter::BeginPlay()
 	gi = Cast<UEclipseGameInstance>(GetWorld()->GetGameInstance());
 	animInstance = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 
+	gi->IsWidgetOn=false;
+	
 	//Add Input Mapping Context
 	if (PC)
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
 		{
+			const FInputModeGameOnly InputModeData;
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
+			PC->SetInputMode(InputModeData);
+			PC->SetShowMouseCursor(false);
 		}
 	}
 
@@ -262,7 +267,7 @@ void APlayerCharacter::BeginPlay()
 
 	if (IsLocallyControlled())
 	{
-		if (informationUI)
+		if (informationUI && UGameplayStatics::GetCurrentLevelName(GetWorld()) != FString("Safe_House"))
 		{
 			FTimerHandle respawnTimer;
 			GetWorldTimerManager().SetTimer(respawnTimer, FTimerDelegate::CreateLambda([this]()-> void
@@ -428,14 +433,20 @@ void APlayerCharacter::ZoomRelease()
 
 void APlayerCharacter::ZoomInput()
 {
-	Zoom();
-	IsZoomKeyPressed = true;
+	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) != FString("Safe_House"))
+	{
+		Zoom();
+		IsZoomKeyPressed = true;
+	}
 }
 
 void APlayerCharacter::ZoomReleaseInput()
 {
-	ZoomRelease();
-	IsZoomKeyPressed = false;
+	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) != FString("Safe_House"))
+	{
+		ZoomRelease();
+		IsZoomKeyPressed = false;
+	}
 }
 
 void APlayerCharacter::ZoomRPCMulticast_Implementation()
@@ -444,10 +455,10 @@ void APlayerCharacter::ZoomRPCMulticast_Implementation()
 	isZooming = true;
 	CharacterWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
 	GetCharacterMovement()->MaxWalkSpeed = 180.f;
-	UPlayerAnim* const animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-	if (animInst)
+	UPlayerAnim* const AnimInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+	if (AnimInst)
 	{
-		animInst->bZooming = true;
+		AnimInst->bZooming = true;
 	}
 	// is using rifle
 	if (weaponArray[0] == true)
@@ -463,9 +474,9 @@ void APlayerCharacter::ZoomRPCMulticast_Implementation()
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), zoomSound, GetActorLocation());
 		}
 
-		if (animInst)
+		if (AnimInst)
 		{
-			animInst->bRifleZooming = true;
+			AnimInst->bRifleZooming = true;
 		}
 	}
 	// is using sniper
@@ -488,9 +499,9 @@ void APlayerCharacter::ZoomRPCMulticast_Implementation()
 		{
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), SniperZoomSound, GetActorLocation());
 		}
-		if (animInst)
+		if (AnimInst)
 		{
-			animInst->bRifleZooming = true;
+			AnimInst->bRifleZooming = true;
 		}
 	}
 	else if (weaponArray[2] == true)
@@ -518,9 +529,9 @@ void APlayerCharacter::ZoomRPCMulticast_Implementation()
 		{
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), zoomSound, GetActorLocation());
 		}
-		if (animInst)
+		if (AnimInst)
 		{
-			animInst->bM249Zooming = true;
+			AnimInst->bM249Zooming = true;
 		}
 	}
 }
@@ -2862,8 +2873,9 @@ bool APlayerCharacter::ServerRPCReload_Validate()
 void APlayerCharacter::MoveToIsolatedShip()
 {
 	bEnding = true;
-	APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
-	playerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
+	gi->IsWidgetOn=false;
+	APlayerCameraManager* PlayerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+	PlayerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
 	StopAnimMontage();
 	GetCharacterMovement()->StopActiveMovement();
 	GetCharacterMovement()->DisableMovement();
@@ -2875,8 +2887,8 @@ void APlayerCharacter::MoveToIsolatedShip()
 	infoWidgetUI->RemoveFromParent();
 	informationUI->RemoveFromParent();
 	crosshairUI->RemoveFromParent();
-	FTimerHandle endHandle;
-	GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()-> void
+	FTimerHandle EndHandle;
+	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
 		PouchCaching();
 		if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->InventoryCaching(this);
@@ -3328,7 +3340,7 @@ void APlayerCharacter::ProcessRifleFireLocal()
 	const FVector particleLoc = rifleComp->GetSocketLocation(FName("RifleFirePosition"));
 	const UE::Math::TRotator<double> particleRot = rifleComp->GetSocketRotation(FName("RifleFirePosition"));
 	const FTransform particleTrans = UKismetMathLibrary::MakeTransform(particleLoc, particleRot, FVector(0.4));
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle2, particleTrans);
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle, particleTrans);
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleFireSound, GetActorLocation());
 
 	const double RandF = UKismetMathLibrary::RandomFloatInRange(-0.3 * RecoilRateMultiplier(), -0.5 * RecoilRateMultiplier());
@@ -3343,12 +3355,12 @@ void APlayerCharacter::ProcessRifleFireSimulatedProxy() const
 	const FVector ParticleLoc = rifleComp->GetSocketLocation(FName("RifleFirePosition"));
 	const UE::Math::TRotator<double> particleRot = rifleComp->GetSocketRotation(FName("RifleFirePosition"));
 	const FTransform particleTrans = UKismetMathLibrary::MakeTransform(ParticleLoc, particleRot, FVector(0.4));
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle2, particleTrans);
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle, particleTrans);
 }
 
 void APlayerCharacter::FireRelease()
 {
-	if (!IsZoomKeyPressed && weaponArray[1] == false && weaponArray[2] == false)
+	if (!IsZoomKeyPressed && weaponArray[1] == false && weaponArray[2] == false&& UGameplayStatics::GetCurrentLevelName(GetWorld()) != FString("Safe_House"))
 	{
 		GetWorld()->GetTimerManager().SetTimer(ZoomFireHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{

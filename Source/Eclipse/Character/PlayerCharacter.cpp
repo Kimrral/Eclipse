@@ -140,6 +140,7 @@ void APlayerCharacter::BeginPlay()
 	this->SetActorEnableCollision(true);
 	GetMesh()->HideBoneByName(TEXT("bot_hand"), EPhysBodyOp::PBO_None);
 	GetMesh()->HideBoneByName(TEXT("shotgun_base"), EPhysBodyOp::PBO_None);
+	GetMesh()->HideBoneByName(TEXT("sniper_can_arm_01"), EPhysBodyOp::PBO_None);
 
 	IsPlayerDeadImmediately = false;
 	IsPlayerDead = false;

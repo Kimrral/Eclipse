@@ -135,22 +135,22 @@ public:
 	//=======================================//
 
 	/** Called for zooming input */
-	void Zoom();
-	void ZoomRelease();
+	void Zoom(const bool IsZoomInput);
+	void ZoomRelease(const bool IsZoomInput);
 	void ZoomInput();
 	void ZoomReleaseInput();
 
 	UFUNCTION(Reliable, Server, WithValidation)
-	void ZoomRPCServer();
+	void ZoomRPCServer(const bool IsZoomInput);
 
 	UFUNCTION(Unreliable, NetMulticast)
-	void ZoomRPCMulticast();
+	void ZoomRPCMulticast(const bool IsZoomInput);
 
 	UFUNCTION(Reliable, Server, WithValidation)
-	void ZoomRPCReleaseServer();
+	void ZoomRPCReleaseServer(const bool IsZoomInput);
 
 	UFUNCTION(Unreliable, NetMulticast)
-	void ZoomRPCReleaseMulticast();
+	void ZoomRPCReleaseMulticast(const bool IsZoomInput);
 
 	//=======================================//
 
@@ -579,7 +579,7 @@ public:
 	void ExtractionSuccess() const;
 
 	UFUNCTION()
-	void SetFirstPersonModeRifle(const bool IsFirstPerson) const;
+	void SetFirstPersonModeRifle(const bool IsFirstPerson);
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -737,6 +737,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
 	class UAnimMontage* RifleFireMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
+	class UAnimMontage* FirstPersonRifeZoomMontage;
 
 	UPROPERTY(EditAnywhere)
 	class USphereComponent* weaponDetectionCollision;

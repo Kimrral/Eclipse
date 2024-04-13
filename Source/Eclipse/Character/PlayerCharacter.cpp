@@ -430,22 +430,22 @@ void APlayerCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
-void APlayerCharacter::Zoom()
+void APlayerCharacter::Zoom(const bool IsZoomInput)
 {
 	if (gi->IsWidgetOn || IsPlayerDeadImmediately)
 	{
 		return;
 	}
-	ZoomRPCServer();
+	ZoomRPCServer(IsZoomInput);
 }
 
-void APlayerCharacter::ZoomRelease()
+void APlayerCharacter::ZoomRelease(const bool IsZoomInput)
 {
 	if (gi->IsWidgetOn || IsPlayerDeadImmediately)
 	{
 		return;
 	}
-	ZoomRPCReleaseServer();
+	ZoomRPCReleaseServer(IsZoomInput);
 }
 
 void APlayerCharacter::ZoomInput()
@@ -453,7 +453,7 @@ void APlayerCharacter::ZoomInput()
 	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) != FString("Safe_House"))
 	{
 		IsZoomKeyPressed = true;
-		Zoom();
+		Zoom(true);
 	}
 }
 
@@ -462,11 +462,11 @@ void APlayerCharacter::ZoomReleaseInput()
 	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) != FString("Safe_House"))
 	{
 		IsZoomKeyPressed = false;
-		ZoomRelease();
+		ZoomRelease(true);
 	}
 }
 
-void APlayerCharacter::ZoomRPCMulticast_Implementation()
+void APlayerCharacter::ZoomRPCMulticast_Implementation(const bool IsZoomInput)
 {
 	// Zooming Boolean
 	isZooming = true;
@@ -487,8 +487,11 @@ void APlayerCharacter::ZoomRPCMulticast_Implementation()
 			if (weaponArray[0] == true)
 			{
 				isZooming = true;
-				SetFirstPersonModeRifle(true);
-				return;
+				if(IsZoomInput)
+				{
+					SetFirstPersonModeRifle(true);
+					return;
+				}				
 			}
 			Timeline.PlayFromStart();
 		}
@@ -559,28 +562,28 @@ void APlayerCharacter::ZoomRPCMulticast_Implementation()
 	}
 }
 
-void APlayerCharacter::ZoomRPCServer_Implementation()
+void APlayerCharacter::ZoomRPCServer_Implementation(const bool IsZoomInput)
 {
-	ZoomRPCMulticast();
+	ZoomRPCMulticast(IsZoomInput);
 }
 
-bool APlayerCharacter::ZoomRPCServer_Validate()
-{
-	return true;
-}
-
-
-void APlayerCharacter::ZoomRPCReleaseServer_Implementation()
-{
-	ZoomRPCReleaseMulticast();
-}
-
-bool APlayerCharacter::ZoomRPCReleaseServer_Validate()
+bool APlayerCharacter::ZoomRPCServer_Validate(const bool IsZoomInput)
 {
 	return true;
 }
 
-void APlayerCharacter::ZoomRPCReleaseMulticast_Implementation()
+
+void APlayerCharacter::ZoomRPCReleaseServer_Implementation(const bool IsZoomInput)
+{
+	ZoomRPCReleaseMulticast(IsZoomInput);
+}
+
+bool APlayerCharacter::ZoomRPCReleaseServer_Validate(const bool IsZoomInput)
+{
+	return true;
+}
+
+void APlayerCharacter::ZoomRPCReleaseMulticast_Implementation(const bool IsZoomInput)
 {
 	// Zooming Boolean
 	isZooming = false;
@@ -601,8 +604,11 @@ void APlayerCharacter::ZoomRPCReleaseMulticast_Implementation()
 			if (weaponArray[0] == true)
 			{
 				isZooming = false;
-				SetFirstPersonModeRifle(false);
-				return;
+				if(IsZoomInput)
+				{
+					SetFirstPersonModeRifle(false);
+					return;
+				}				
 			}
 			Timeline.ReverseFromEnd();
 		}
@@ -3184,7 +3190,7 @@ void APlayerCharacter::Fire()
 	if (!isZooming && weaponArray[1] == false && weaponArray[2] == false)
 	{
 		GetWorldTimerManager().ClearTimer(ZoomFireHandle);
-		Zoom();
+		Zoom(false);
 	}
 	ServerRPCFire();
 	CanShoot = false;
@@ -3352,7 +3358,7 @@ void APlayerCharacter::ExtractionSuccess() const
 	PlayerCam->StartCameraFade(0, 1, 1.5f, FLinearColor::Black, false, true);
 }
 
-void APlayerCharacter::SetFirstPersonModeRifle(const bool IsFirstPerson) const
+void APlayerCharacter::SetFirstPersonModeRifle(const bool IsFirstPerson)
 {
 	if(IsFirstPerson)
 	{
@@ -3361,6 +3367,11 @@ void APlayerCharacter::SetFirstPersonModeRifle(const bool IsFirstPerson) const
 		FirstPersonCharacterMesh->SetVisibility(true);
 		FollowCamera->SetActive(false);
 		FirstPersonCamera->SetActive(true);
+		if(const auto FirstAnimInstance = FirstPersonCharacterMesh->GetAnimInstance())
+		{
+			FirstAnimInstance->Montage_Play(FirstPersonRifeZoomMontage, 1);
+		}
+		
 	}
 	else
 	{
@@ -3383,7 +3394,7 @@ void APlayerCharacter::ProcessRifleFireLocal()
 	UGameplayStatics::PlaySound2D(GetWorld(), RifleFireSound);
 	// 사격 카메라 셰이크 실행
 	PC->PlayerCameraManager->StartCameraShake(rifleFireShake);
-	if (isZooming)
+	if (FirstPersonCharacterMesh->IsVisible())
 	{
 		const FVector particleLoc = FirstPersonRifleComp->GetSocketLocation(FName("RifleFirePosition"));
 		const UE::Math::TRotator<double> particleRot = FirstPersonRifleComp->GetSocketRotation(FName("RifleFirePosition"));
@@ -3420,7 +3431,7 @@ void APlayerCharacter::FireRelease()
 	{
 		GetWorld()->GetTimerManager().SetTimer(ZoomFireHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
-			ZoomRelease();
+			ZoomRelease(false);
 		}), 0.5f, false);
 	}
 	EmptySoundBoolean = false;

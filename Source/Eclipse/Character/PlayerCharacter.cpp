@@ -470,39 +470,31 @@ void APlayerCharacter::ZoomRPCMulticast_Implementation(const bool IsZoomInput)
 {
 	// Zooming Boolean
 	isZooming = true;
-	CharacterWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
-	GetCharacterMovement()->MaxWalkSpeed = 180.f;
-
 	UPlayerAnim* const AnimInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 	if (AnimInst)
 	{
 		AnimInst->bZooming = true;
 	}
+	CharacterWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
+	GetCharacterMovement()->MaxWalkSpeed = 180.f;
+
 	// is using rifle
 	if (weaponArray[0] == true)
 	{
+		AnimInst->bRifleZooming = true;
 		if (IsLocallyControlled())
 		{
 			UGameplayStatics::PlaySound2D(GetWorld(), zoomSound);
-			if (weaponArray[0] == true)
+			if (IsZoomInput)
 			{
-				isZooming = true;
-				if(IsZoomInput)
-				{
-					SetFirstPersonModeRifle(true);
-					return;
-				}				
+				SetFirstPersonModeRifle(true);
+				return;
 			}
 			Timeline.PlayFromStart();
 		}
 		else
 		{
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), zoomSound, GetActorLocation());
-		}
-
-		if (AnimInst)
-		{
-			AnimInst->bRifleZooming = true;
 		}
 	}
 	// is using sniper
@@ -588,27 +580,20 @@ void APlayerCharacter::ZoomRPCReleaseMulticast_Implementation(const bool IsZoomI
 	// Zooming Boolean
 	isZooming = false;
 	GetCharacterMovement()->MaxWalkSpeed = CharacterWalkSpeed;
-	UPlayerAnim* const animInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-	if (animInst)
+	UPlayerAnim* const AnimInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+	if (AnimInst)
 	{
-		animInst->bZooming = false;
+		AnimInst->bZooming = false;
 	}
 	if (weaponArray[0] == true)
 	{
-		if (animInst)
-		{
-			animInst->bRifleZooming = false;
-		}
+		AnimInst->bRifleZooming = false;
 		if (IsLocallyControlled())
 		{
-			if (weaponArray[0] == true)
+			if (IsZoomInput)
 			{
-				isZooming = false;
-				if(IsZoomInput)
-				{
-					SetFirstPersonModeRifle(false);
-					return;
-				}				
+				SetFirstPersonModeRifle(false);
+				return;
 			}
 			Timeline.ReverseFromEnd();
 		}
@@ -629,16 +614,16 @@ void APlayerCharacter::ZoomRPCReleaseMulticast_Implementation(const bool IsZoomI
 			SniperZoomOutBool = false;
 			Timeline.ReverseFromEnd();
 		}
-		if (animInst)
+		if (AnimInst)
 		{
-			animInst->bRifleZooming = false;
+			AnimInst->bRifleZooming = false;
 		}
 	}
 	else if (weaponArray[3] == true)
 	{
-		if (animInst)
+		if (AnimInst)
 		{
-			animInst->bM249Zooming = false;
+			AnimInst->bM249Zooming = false;
 		}
 		Timeline.ReverseFromEnd();
 	}
@@ -3360,27 +3345,26 @@ void APlayerCharacter::ExtractionSuccess() const
 
 void APlayerCharacter::SetFirstPersonModeRifle(const bool IsFirstPerson)
 {
-	if(IsFirstPerson)
+	if (IsFirstPerson)
 	{
-		crosshairUI->SetVisibility(ESlateVisibility::Hidden);
+		crosshairUI->CrosshairImage->SetVisibility(ESlateVisibility::Hidden);
 		FirstPersonRifleComp->SetVisibility(true);
 		FirstPersonCharacterMesh->SetVisibility(true);
 		FollowCamera->SetActive(false);
 		FirstPersonCamera->SetActive(true);
-		if(const auto FirstAnimInstance = FirstPersonCharacterMesh->GetAnimInstance())
+		if (const auto FirstAnimInstance = FirstPersonCharacterMesh->GetAnimInstance())
 		{
 			FirstAnimInstance->Montage_Play(FirstPersonRifeZoomMontage, 1);
 		}
-		
 	}
 	else
 	{
-		crosshairUI->SetVisibility(ESlateVisibility::Visible);
+		crosshairUI->CrosshairImage->SetVisibility(ESlateVisibility::Visible);
 		FirstPersonRifleComp->SetVisibility(false);
 		FirstPersonCharacterMesh->SetVisibility(false);
 		FollowCamera->SetActive(true);
 		FirstPersonCamera->SetActive(false);
-	}	
+	}
 }
 
 void APlayerCharacter::ProcessRifleFireAnim()

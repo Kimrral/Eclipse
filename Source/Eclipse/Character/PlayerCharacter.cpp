@@ -86,6 +86,14 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer)
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
+	// Create a FirstPersonCamera
+	FirstPersonCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
+	FirstPersonCamera->SetupAttachment(RootComponent);
+	FirstPersonCamera->bUsePawnControlRotation = true;
+
+	FirstPersonCharacterMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FirstPersonCharacterMesh"));
+	FirstPersonCharacterMesh->SetupAttachment(FirstPersonCamera);
+
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = true;
@@ -104,6 +112,9 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer)
 
 	rifleComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("rifleComp"));
 	rifleComp->SetupAttachment(GetMesh(), FName("hand_r"));
+
+	FirstPersonRifleComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("FirstPersonRifleComp"));
+	FirstPersonRifleComp->SetupAttachment(FirstPersonCharacterMesh, FName("b_RightHand"));
 
 	pistolComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("pistolComp"));
 	pistolComp->SetupAttachment(GetMesh(), FName("hand_l"));
@@ -142,6 +153,11 @@ void APlayerCharacter::BeginPlay()
 	GetMesh()->HideBoneByName(TEXT("shotgun_base"), EPhysBodyOp::PBO_None);
 	GetMesh()->HideBoneByName(TEXT("sniper_can_arm_01"), EPhysBodyOp::PBO_None);
 
+	FirstPersonRifleComp->SetVisibility(false);
+	FirstPersonCharacterMesh->SetVisibility(false);
+	FirstPersonCamera->SetActive(false);
+	FollowCamera->SetActive(true);
+
 	IsPlayerDeadImmediately = false;
 	IsPlayerDead = false;
 
@@ -152,8 +168,8 @@ void APlayerCharacter::BeginPlay()
 	gi = Cast<UEclipseGameInstance>(GetWorld()->GetGameInstance());
 	animInstance = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 
-	gi->IsWidgetOn=false;
-	
+	gi->IsWidgetOn = false;
+
 	//Add Input Mapping Context
 	if (PC)
 	{
@@ -436,8 +452,8 @@ void APlayerCharacter::ZoomInput()
 {
 	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) != FString("Safe_House"))
 	{
-		Zoom();
 		IsZoomKeyPressed = true;
+		Zoom();
 	}
 }
 
@@ -445,8 +461,8 @@ void APlayerCharacter::ZoomReleaseInput()
 {
 	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) != FString("Safe_House"))
 	{
-		ZoomRelease();
 		IsZoomKeyPressed = false;
+		ZoomRelease();
 	}
 }
 
@@ -456,6 +472,7 @@ void APlayerCharacter::ZoomRPCMulticast_Implementation()
 	isZooming = true;
 	CharacterWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
 	GetCharacterMovement()->MaxWalkSpeed = 180.f;
+
 	UPlayerAnim* const AnimInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 	if (AnimInst)
 	{
@@ -466,9 +483,14 @@ void APlayerCharacter::ZoomRPCMulticast_Implementation()
 	{
 		if (IsLocallyControlled())
 		{
-			Timeline.PlayFromStart();
-
 			UGameplayStatics::PlaySound2D(GetWorld(), zoomSound);
+			if (weaponArray[0] == true)
+			{
+				isZooming = true;
+				SetFirstPersonModeRifle(true);
+				return;
+			}
+			Timeline.PlayFromStart();
 		}
 		else
 		{
@@ -574,7 +596,16 @@ void APlayerCharacter::ZoomRPCReleaseMulticast_Implementation()
 		{
 			animInst->bRifleZooming = false;
 		}
-		Timeline.ReverseFromEnd();
+		if (IsLocallyControlled())
+		{
+			if (weaponArray[0] == true)
+			{
+				isZooming = false;
+				SetFirstPersonModeRifle(false);
+				return;
+			}
+			Timeline.ReverseFromEnd();
+		}
 	}
 	else if (weaponArray[1] == true)
 	{
@@ -2800,13 +2831,13 @@ void APlayerCharacter::ServerRPCReload_Implementation()
 
 void APlayerCharacter::MulticastRPCReload_Implementation()
 {
-	const bool IsMontagePlaying = animInstance->IsAnyMontagePlaying();
-	if (!IsMontagePlaying)
+	if (const bool IsMontagePlaying = animInstance->IsAnyMontagePlaying(); !IsMontagePlaying)
 	{
 		if (weaponArray[0] == true && curRifleAmmo < 40 + SetRifleAdditionalMagazine() && maxRifleAmmo > 0)
 		{
 			if (IsLocallyControlled())
 			{
+				SetFirstPersonModeRifle(false);
 				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
 				UGameplayStatics::PlaySound2D(GetWorld(), RifleReloadSound);
 			}
@@ -2868,7 +2899,7 @@ bool APlayerCharacter::ServerRPCReload_Validate()
 void APlayerCharacter::MoveToIsolatedShip()
 {
 	bEnding = true;
-	gi->IsWidgetOn=false;
+	gi->IsWidgetOn = false;
 	APlayerCameraManager* PlayerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 	PlayerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
 	StopAnimMontage();
@@ -3321,6 +3352,26 @@ void APlayerCharacter::ExtractionSuccess() const
 	PlayerCam->StartCameraFade(0, 1, 1.5f, FLinearColor::Black, false, true);
 }
 
+void APlayerCharacter::SetFirstPersonModeRifle(const bool IsFirstPerson) const
+{
+	if(IsFirstPerson)
+	{
+		crosshairUI->SetVisibility(ESlateVisibility::Hidden);
+		FirstPersonRifleComp->SetVisibility(true);
+		FirstPersonCharacterMesh->SetVisibility(true);
+		FollowCamera->SetActive(false);
+		FirstPersonCamera->SetActive(true);
+	}
+	else
+	{
+		crosshairUI->SetVisibility(ESlateVisibility::Visible);
+		FirstPersonRifleComp->SetVisibility(false);
+		FirstPersonCharacterMesh->SetVisibility(false);
+		FollowCamera->SetActive(true);
+		FirstPersonCamera->SetActive(false);
+	}	
+}
+
 void APlayerCharacter::ProcessRifleFireAnim()
 {
 	StopAnimMontage();
@@ -3332,10 +3383,20 @@ void APlayerCharacter::ProcessRifleFireLocal()
 	UGameplayStatics::PlaySound2D(GetWorld(), RifleFireSound);
 	// 사격 카메라 셰이크 실행
 	PC->PlayerCameraManager->StartCameraShake(rifleFireShake);
-	const FVector particleLoc = rifleComp->GetSocketLocation(FName("RifleFirePosition"));
-	const UE::Math::TRotator<double> particleRot = rifleComp->GetSocketRotation(FName("RifleFirePosition"));
-	const FTransform particleTrans = UKismetMathLibrary::MakeTransform(particleLoc, particleRot, FVector(0.4));
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle, particleTrans);
+	if (isZooming)
+	{
+		const FVector particleLoc = FirstPersonRifleComp->GetSocketLocation(FName("RifleFirePosition"));
+		const UE::Math::TRotator<double> particleRot = FirstPersonRifleComp->GetSocketRotation(FName("RifleFirePosition"));
+		const FTransform particleTrans = UKismetMathLibrary::MakeTransform(particleLoc, particleRot, FVector(0.4));
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), FirstPersonRifleFireParticle, particleTrans);
+	}
+	else
+	{
+		const FVector particleLoc = rifleComp->GetSocketLocation(FName("RifleFirePosition"));
+		const UE::Math::TRotator<double> particleRot = rifleComp->GetSocketRotation(FName("RifleFirePosition"));
+		const FTransform particleTrans = UKismetMathLibrary::MakeTransform(particleLoc, particleRot, FVector(0.4));
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle, particleTrans);
+	}
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleFireSound, GetActorLocation());
 
 	const double RandF = UKismetMathLibrary::RandomFloatInRange(-0.3 * RecoilRateMultiplier(), -0.5 * RecoilRateMultiplier());
@@ -3355,7 +3416,7 @@ void APlayerCharacter::ProcessRifleFireSimulatedProxy() const
 
 void APlayerCharacter::FireRelease()
 {
-	if (!IsZoomKeyPressed && weaponArray[1] == false && weaponArray[2] == false&& UGameplayStatics::GetCurrentLevelName(GetWorld()) != FString("Safe_House"))
+	if (!IsZoomKeyPressed && weaponArray[1] == false && weaponArray[2] == false && UGameplayStatics::GetCurrentLevelName(GetWorld()) != FString("Safe_House"))
 	{
 		GetWorld()->GetTimerManager().SetTimer(ZoomFireHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
@@ -3371,49 +3432,57 @@ void APlayerCharacter::ProcessRifleFire()
 	{
 		// Clamp를 통한 탄약 수 차감
 		curRifleAmmo = FMath::Clamp(curRifleAmmo - 1, 0, 40 + SetRifleAdditionalMagazine());
-		FVector StartLoc = FollowCamera->GetComponentLocation();
-		FVector EndLoc = StartLoc + FollowCamera->GetForwardVector() * 10000.0f;
+		if (isZooming)
+		{
+			RifleLineTraceStart = FollowCamera->GetComponentLocation();
+			RifleLineTraceEnd = RifleLineTraceStart + FollowCamera->GetForwardVector() * 10000.0f;
+		}
+		else
+		{
+			RifleLineTraceStart = FirstPersonCamera->GetComponentLocation();
+			RifleLineTraceEnd = RifleLineTraceStart + FirstPersonCamera->GetForwardVector() * 10000.0f;
+		}
 		FCollisionQueryParams Params;
 		Params.AddIgnoredActor(this);
 		// Perform Linetrace
-		if (FHitResult rifleHitResult; GetWorld()->LineTraceSingleByChannel(rifleHitResult, StartLoc, EndLoc, ECC_Visibility, Params))
+		if (FHitResult RifleHitResult; GetWorld()->LineTraceSingleByChannel(RifleHitResult, RifleLineTraceStart, RifleLineTraceEnd, ECC_Visibility, Params))
 		{
 			// Player Character Casting
 			// 플레이어 적중
-			if (APlayerCharacter* Player = Cast<APlayerCharacter>(rifleHitResult.GetActor()))
+			if (APlayerCharacter* Player = Cast<APlayerCharacter>(RifleHitResult.GetActor()))
 			{
-				if (rifleHitResult.BoneName == FName("head"))
+				if (RifleHitResult.BoneName == FName("head"))
 				{
-					OnPlayerHit(rifleHitResult, Player, true);
+					OnPlayerHit(RifleHitResult, Player, true);
 				}
 				else
 				{
-					OnPlayerHit(rifleHitResult, Player, false);
+					OnPlayerHit(RifleHitResult, Player, false);
 				}
 				return;
 			}
 			// Enemy Casting
-			if (AEnemy* Enemy = Cast<AEnemy>(rifleHitResult.GetActor()))
+			if (AEnemy* Enemy = Cast<AEnemy>(RifleHitResult.GetActor()))
 			{
-				if (rifleHitResult.BoneName == FName("head"))
+				if (RifleHitResult.BoneName == FName("head"))
 				{
-					OnEnemyHit(rifleHitResult, Enemy, true);
+					OnEnemyHit(RifleHitResult, Enemy, true);
 				}
 				else
 				{
-					OnEnemyHit(rifleHitResult, Enemy, false);
+					OnEnemyHit(RifleHitResult, Enemy, false);
 				}
 				return;
 			}
 			// Reward Container Casting
-			if (ARewardContainer* RewardContainer = Cast<ARewardContainer>(rifleHitResult.GetActor()))
+			if (ARewardContainer* RewardContainer = Cast<ARewardContainer>(RifleHitResult.GetActor()))
 			{
-				OnContainerHit(rifleHitResult, RewardContainer);
+				OnContainerHit(RifleHitResult, RewardContainer);
 			}
 			// 지형지물에 적중
 			else
 			{
-				OnGroundHit(rifleHitResult);
+				OnGroundHit(RifleHitResult);
 			}
 		}
 	}
@@ -3854,6 +3923,7 @@ void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 	}
 	if (IsLocallyControlled())
 	{
+		SetFirstPersonModeRifle(false);
 		GetController()->SetIgnoreMoveInput(true);
 		GetController()->SetIgnoreLookInput(true);
 		if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->InventoryCaching(this);

@@ -36,6 +36,14 @@ public:
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
+	
+	/** First Person Mesh */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class USkeletalMeshComponent* FirstPersonCharacterMesh;
+
+	/** First Person Camera */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class UCameraComponent* FirstPersonCamera;
 
 protected:
 	// Called when the game starts or when spawned
@@ -570,6 +578,9 @@ public:
 	UFUNCTION()
 	void ExtractionSuccess() const;
 
+	UFUNCTION()
+	void SetFirstPersonModeRifle(const bool IsFirstPerson) const;
+
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	/** Returns CameraBoom subobject **/
@@ -582,6 +593,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
 	class UStaticMeshComponent* rifleComp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
+	class UStaticMeshComponent* FirstPersonRifleComp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
 	class UStaticMeshComponent* pistolComp;
@@ -780,6 +794,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Material)
 	class UMaterialInterface* overlayMatRed;
+
+	UPROPERTY()
+	FVector RifleLineTraceStart;
+
+	UPROPERTY()
+	FVector RifleLineTraceEnd;
 
 	UPROPERTY()
 	FVector DeathPosition;
@@ -1062,6 +1082,8 @@ public:
 	class UParticleSystem* bulletMarksParticle;
 	UPROPERTY(EditAnywhere, Transient, Category="Particle")
 	class UParticleSystem* RifleFireParticle;
+	UPROPERTY(EditAnywhere, Transient, Category="Particle")
+	class UParticleSystem* FirstPersonRifleFireParticle;
 	UPROPERTY(EditAnywhere, Transient, Category="Particle")
 	class UParticleSystem* PistolfireParticle;
 	UPROPERTY(EditAnywhere, Transient, Category="Particle")

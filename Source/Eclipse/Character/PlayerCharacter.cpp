@@ -284,10 +284,10 @@ void APlayerCharacter::BeginPlay()
 
 	if (IsLocallyControlled())
 	{
-		if (informationUI && UGameplayStatics::GetCurrentLevelName(GetWorld()) != FString("Safe_House"))
+		if (informationUI)
 		{
-			FTimerHandle respawnTimer;
-			GetWorldTimerManager().SetTimer(respawnTimer, FTimerDelegate::CreateLambda([this]()-> void
+			FTimerHandle RespawnTimer;
+			GetWorldTimerManager().SetTimer(RespawnTimer, FTimerDelegate::CreateLambda([this]()-> void
 			{
 				informationUI->owner = this;
 				informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));

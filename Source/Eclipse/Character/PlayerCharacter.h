@@ -580,6 +580,8 @@ public:
 
 	UFUNCTION()
 	void SetFirstPersonModeRifle(const bool IsFirstPerson);
+	UFUNCTION()
+	void SetFirstPersonModePistol(const bool IsFirstPerson);
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -599,6 +601,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
 	class UStaticMeshComponent* pistolComp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
+	class UStaticMeshComponent* FirstPersonPistolComp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
 	class UStaticMeshComponent* m249Comp;
@@ -741,6 +746,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
 	class UAnimMontage* FirstPersonRifeZoomMontage;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
+	class UAnimMontage* FirstPersonPistolZoomMontage;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
+	class UAnimMontage* FirstPersonPistolFireMontage;
+
 	UPROPERTY(EditAnywhere)
 	class USphereComponent* weaponDetectionCollision;
 
@@ -798,11 +809,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Material)
 	class UMaterialInterface* overlayMatRed;
 
-	UPROPERTY()
 	FVector RifleLineTraceStart;
 
-	UPROPERTY()
 	FVector RifleLineTraceEnd;
+
+	FVector PistolLineTraceStart;
+
+	FVector PistolLineTraceEnd;
 
 	UPROPERTY()
 	FVector DeathPosition;

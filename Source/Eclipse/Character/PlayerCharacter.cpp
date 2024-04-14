@@ -46,6 +46,7 @@
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "Components/WidgetComponent.h"
+#include "Eclipse/Animation/FirstPersonPlayerAnim.h"
 #include "Eclipse/CharacterStat/EnemyCharacterStatComponent.h"
 #include "Eclipse/Game/EclipseGameMode.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -119,6 +120,9 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer)
 	pistolComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("pistolComp"));
 	pistolComp->SetupAttachment(GetMesh(), FName("hand_l"));
 
+	FirstPersonPistolComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("FirstPersonPistolComp"));
+	FirstPersonPistolComp->SetupAttachment(FirstPersonCharacterMesh, FName("b_RightHand"));
+
 	m249Comp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("m249Comp"));
 	m249Comp->SetupAttachment(GetMesh(), FName("hand_r"));
 
@@ -154,6 +158,7 @@ void APlayerCharacter::BeginPlay()
 	GetMesh()->HideBoneByName(TEXT("sniper_can_arm_01"), EPhysBodyOp::PBO_None);
 
 	FirstPersonRifleComp->SetVisibility(false);
+	FirstPersonPistolComp->SetVisibility(false);
 	FirstPersonCharacterMesh->SetVisibility(false);
 	FirstPersonCamera->SetActive(false);
 	FollowCamera->SetActive(true);
@@ -526,9 +531,13 @@ void APlayerCharacter::ZoomRPCMulticast_Implementation(const bool IsZoomInput)
 	{
 		if (IsLocallyControlled())
 		{
-			Timeline.PlayFromStart();
-
 			UGameplayStatics::PlaySound2D(GetWorld(), zoomSound);
+			if (IsZoomInput)
+			{
+				SetFirstPersonModePistol(true);
+				return;
+			}
+			Timeline.PlayFromStart();
 		}
 		else
 		{
@@ -617,6 +626,18 @@ void APlayerCharacter::ZoomRPCReleaseMulticast_Implementation(const bool IsZoomI
 		if (AnimInst)
 		{
 			AnimInst->bRifleZooming = false;
+		}
+	}
+	else if (weaponArray[2] == true)
+	{
+		if (IsLocallyControlled())
+		{
+			if (IsZoomInput)
+			{
+				SetFirstPersonModePistol(false);
+				return;
+			}
+			Timeline.ReverseFromEnd();
 		}
 	}
 	else if (weaponArray[3] == true)
@@ -2856,6 +2877,7 @@ void APlayerCharacter::MulticastRPCReload_Implementation()
 		{
 			if (IsLocallyControlled())
 			{
+				SetFirstPersonModePistol(false);
 				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
 				UGameplayStatics::PlaySound2D(GetWorld(), PistolReloadSound);
 			}
@@ -3348,19 +3370,49 @@ void APlayerCharacter::SetFirstPersonModeRifle(const bool IsFirstPerson)
 	if (IsFirstPerson)
 	{
 		crosshairUI->CrosshairImage->SetVisibility(ESlateVisibility::Hidden);
+		rifleComp->SetVisibility(false);
 		FirstPersonRifleComp->SetVisibility(true);
 		FirstPersonCharacterMesh->SetVisibility(true);
 		FollowCamera->SetActive(false);
 		FirstPersonCamera->SetActive(true);
-		if (const auto FirstAnimInstance = FirstPersonCharacterMesh->GetAnimInstance())
+		if (const auto FirstAnimInstance = Cast<UFirstPersonPlayerAnim>(FirstPersonCharacterMesh->GetAnimInstance()))
 		{
+			FirstAnimInstance->bPistol = false;
 			FirstAnimInstance->Montage_Play(FirstPersonRifeZoomMontage, 1);
 		}
 	}
 	else
 	{
 		crosshairUI->CrosshairImage->SetVisibility(ESlateVisibility::Visible);
+		rifleComp->SetVisibility(true);
 		FirstPersonRifleComp->SetVisibility(false);
+		FirstPersonCharacterMesh->SetVisibility(false);
+		FollowCamera->SetActive(true);
+		FirstPersonCamera->SetActive(false);
+	}
+}
+
+void APlayerCharacter::SetFirstPersonModePistol(const bool IsFirstPerson)
+{
+	if (IsFirstPerson)
+	{
+		crosshairUI->CrosshairImage->SetVisibility(ESlateVisibility::Hidden);
+		pistolComp->SetVisibility(false);
+		FirstPersonPistolComp->SetVisibility(true);
+		FirstPersonCharacterMesh->SetVisibility(true);
+		FollowCamera->SetActive(false);
+		FirstPersonCamera->SetActive(true);
+		if (const auto FirstAnimInstance = Cast<UFirstPersonPlayerAnim>(FirstPersonCharacterMesh->GetAnimInstance()))
+		{
+			FirstAnimInstance->bPistol = true;
+			FirstAnimInstance->Montage_Play(FirstPersonPistolZoomMontage, 1);
+		}
+	}
+	else
+	{
+		crosshairUI->CrosshairImage->SetVisibility(ESlateVisibility::Visible);
+		pistolComp->SetVisibility(true);
+		FirstPersonPistolComp->SetVisibility(false);
 		FirstPersonCharacterMesh->SetVisibility(false);
 		FollowCamera->SetActive(true);
 		FirstPersonCamera->SetActive(false);
@@ -3427,15 +3479,15 @@ void APlayerCharacter::ProcessRifleFire()
 	{
 		// Clamp를 통한 탄약 수 차감
 		curRifleAmmo = FMath::Clamp(curRifleAmmo - 1, 0, 40 + SetRifleAdditionalMagazine());
-		if (isZooming)
-		{
-			RifleLineTraceStart = FollowCamera->GetComponentLocation();
-			RifleLineTraceEnd = RifleLineTraceStart + FollowCamera->GetForwardVector() * 10000.0f;
-		}
-		else
+		if (FirstPersonRifleComp->IsVisible())
 		{
 			RifleLineTraceStart = FirstPersonCamera->GetComponentLocation();
 			RifleLineTraceEnd = RifleLineTraceStart + FirstPersonCamera->GetForwardVector() * 10000.0f;
+		}
+		else
+		{
+			RifleLineTraceStart = FollowCamera->GetComponentLocation();
+			RifleLineTraceEnd = RifleLineTraceStart + FollowCamera->GetForwardVector() * 10000.0f;
 		}
 		FCollisionQueryParams Params;
 		Params.AddIgnoredActor(this);
@@ -3582,12 +3634,20 @@ void APlayerCharacter::ProcessPistolFire()
 	{
 		// Clamp를 통한 탄약 수 차감
 		curPistolAmmo = FMath::Clamp(curPistolAmmo - 1, 0, 8 + SetPistolAdditionalMagazine());
-		FVector StartLoc = FollowCamera->GetComponentLocation();
-		FVector EndLoc = StartLoc + FollowCamera->GetForwardVector() * 10000.0f;
-		FCollisionQueryParams params;
-		params.AddIgnoredActor(this);
+		if (FirstPersonPistolComp->IsVisible())
+		{
+			PistolLineTraceStart = FirstPersonCamera->GetComponentLocation();
+			PistolLineTraceEnd = PistolLineTraceStart + FirstPersonCamera->GetForwardVector() * 10000.0f;
+		}
+		else
+		{
+			PistolLineTraceStart = FollowCamera->GetComponentLocation();
+			PistolLineTraceEnd = PistolLineTraceStart + FollowCamera->GetForwardVector() * 10000.0f;
+		}
+		FCollisionQueryParams Params;
+		Params.AddIgnoredActor(this);
 		// Perform Linetrace
-		if (FHitResult PistolHitResult; GetWorld()->LineTraceSingleByChannel(PistolHitResult, StartLoc, EndLoc, ECC_Visibility, params))
+		if (FHitResult PistolHitResult; GetWorld()->LineTraceSingleByChannel(PistolHitResult, PistolLineTraceStart, PistolLineTraceEnd, ECC_Visibility, Params))
 		{
 			// Player Character Casting
 			// 플레이어 적중
@@ -3645,9 +3705,23 @@ void APlayerCharacter::ProcessPistolFireLocal()
 {
 	UGameplayStatics::PlaySound2D(GetWorld(), PistolFireSound);
 	PC->PlayerCameraManager->StartCameraShake(pistolFireShake);
-	FTransform ParticleTrans = pistolComp->GetSocketTransform(FName("PistolFirePosition"));
-	ParticleTrans.SetScale3D(FVector(0.7));
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PistolfireParticle, ParticleTrans);
+	if (FirstPersonCharacterMesh->IsVisible())
+	{
+		if (const auto FirstAnimInstance = Cast<UFirstPersonPlayerAnim>(FirstPersonCharacterMesh->GetAnimInstance()))
+		{
+			FirstAnimInstance->Montage_Play(FirstPersonPistolFireMontage, 1);
+		}
+		const FVector particleLoc = FirstPersonPistolComp->GetSocketLocation(FName("PistolFirePosition"));
+		const UE::Math::TRotator<double> particleRot = FirstPersonPistolComp->GetSocketRotation(FName("PistolFirePosition"));
+		const FTransform particleTrans = UKismetMathLibrary::MakeTransform(particleLoc, particleRot, FVector(0.4));
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), FirstPersonRifleFireParticle, particleTrans);
+	}
+	else
+	{
+		FTransform ParticleTrans = pistolComp->GetSocketTransform(FName("PistolFirePosition"));
+		ParticleTrans.SetScale3D(FVector(0.7));
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PistolfireParticle, ParticleTrans);
+	}
 
 	const double RandF = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), -1.2 * RecoilRateMultiplier());
 	const double RandF2 = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), 0.8 * RecoilRateMultiplier());
@@ -3919,6 +3993,7 @@ void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 	if (IsLocallyControlled())
 	{
 		SetFirstPersonModeRifle(false);
+		SetFirstPersonModePistol(false);
 		GetController()->SetIgnoreMoveInput(true);
 		GetController()->SetIgnoreLookInput(true);
 		if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->InventoryCaching(this);

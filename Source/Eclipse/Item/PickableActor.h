@@ -18,6 +18,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	class UStaticMeshComponent* RootMesh;
 
+	UPROPERTY()
+	bool IsAlreadyLooted = false;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

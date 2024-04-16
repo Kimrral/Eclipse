@@ -161,7 +161,7 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerRPCFire();
 
-	UFUNCTION(NetMulticast, UnReliable)
+	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPCFire();
 
 	void FireRelease();

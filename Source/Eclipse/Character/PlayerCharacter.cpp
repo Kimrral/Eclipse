@@ -144,7 +144,9 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer)
 	// Stat Component 
 	Stat = CreateDefaultSubobject<UPlayerCharacterStatComponent>(TEXT("Stat"));
 
-	bReplicates = true;
+	SetReplicates(true);
+	NetUpdateFrequency=200.f;
+	MinNetUpdateFrequency=10.f;
 }
 
 // Called when the game starts or when spawned

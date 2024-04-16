@@ -31,7 +31,7 @@ AEnemy::AEnemy()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	PrimaryActorTick.bStartWithTickEnabled = false;
+	PrimaryActorTick.bStartWithTickEnabled = true;
 
 	// Enemy FSM
 	EnemyFSM = CreateDefaultSubobject<UEnemyFSM>(TEXT("enemyFSM"));
@@ -60,6 +60,36 @@ void AEnemy::BeginPlay()
 	EnemyAnim = Cast<UEnemyAnim>(GetMesh()->GetAnimInstance());
 	gameMode = Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());
 	PC = Cast<AEclipsePlayerController>(GetWorld()->GetFirstPlayerController());
+
+	if(USkeletalMeshComponent* SkeletalMeshComponent = GetMesh())
+	{
+		TArray<UMaterialInterface*>Materials = SkeletalMeshComponent->GetMaterials();
+		uint32 MaterialIndex = 0;
+		for(UMaterialInterface* const Material : Materials)
+		{
+			if(UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(Material, this))
+			{
+				SkeletalMeshComponent->SetMaterial(MaterialIndex, DynamicMaterial);
+				DynamicMaterialIndices.Add(MaterialIndex);				
+			}
+			++MaterialIndex;
+		}
+	}	
+	
+	// Timeline Binding
+	if (DissolveCurveFloat)
+	{
+		FOnTimelineFloat TimelineProgress;
+		TimelineProgress.BindDynamic(this, &AEnemy::SetDissolveValue);
+		DissolveTimeline.AddInterpFloat(DissolveCurveFloat, TimelineProgress);
+	}
+}
+
+void AEnemy::Tick(const float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	DissolveTimeline.TickTimeline(DeltaSeconds);
 }
 
 void AEnemy::OnDie()
@@ -159,7 +189,7 @@ void AEnemy::OnShieldDestroy()
 
 void AEnemy::OnDestroy()
 {
-	this->Destroy();
+	DissolveTimeline.PlayFromStart();
 }
 
 void AEnemy::DropReward()
@@ -225,4 +255,18 @@ void AEnemy::GuardianFireProcess() const
 		const FRotator projectileRot = UKismetMathLibrary::MakeRotFromXZ(playerLoc, this->GetActorUpVector());
 		GetWorld()->SpawnActor<AGuardianProjectile>(GuardianProjectileFactory, muzzleTrans.GetLocation(), projectileRot);
 	}
+}
+
+void AEnemy::SetDissolveValue(const float Value)
+{	
+	const double Lerp = UKismetMathLibrary::Lerp(0, 1, Value);
+	for(const auto& DynamicMaterialIndex : DynamicMaterialIndices )
+	{
+		UMaterialInstanceDynamic* DynamicMaterial = Cast<UMaterialInstanceDynamic>(GetMesh()->GetMaterial(DynamicMaterialIndex));
+		DynamicMaterial->SetScalarParameterValue("DissolveParams", Lerp);
+	}
+	if(Lerp>=1.f)
+	{
+		this->Destroy();
+	}	
 }

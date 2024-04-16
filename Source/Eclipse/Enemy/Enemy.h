@@ -69,7 +69,10 @@ public:
 	void GuardianFireProcess() const;
 
 	UFUNCTION()
-	void SetDissolveValue(float Value);
+	virtual void SetDissolveValue(float Value);
+
+	UFUNCTION()
+	void SetDissolveMaterial();
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class ARifleMagActor> RifleMagActorFactory;

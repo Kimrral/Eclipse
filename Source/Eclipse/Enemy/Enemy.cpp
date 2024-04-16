@@ -50,7 +50,7 @@ AEnemy::AEnemy()
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	SetReplicateMovement(true);
 
 	PawnSensingComponent->OnSeePawn.AddDynamic(this, &AEnemy::OnPawnDetected);
@@ -61,21 +61,8 @@ void AEnemy::BeginPlay()
 	gameMode = Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());
 	PC = Cast<AEclipsePlayerController>(GetWorld()->GetFirstPlayerController());
 
-	if(USkeletalMeshComponent* SkeletalMeshComponent = GetMesh())
-	{
-		TArray<UMaterialInterface*>Materials = SkeletalMeshComponent->GetMaterials();
-		uint32 MaterialIndex = 0;
-		for(UMaterialInterface* const Material : Materials)
-		{
-			if(UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(Material, this))
-			{
-				SkeletalMeshComponent->SetMaterial(MaterialIndex, DynamicMaterial);
-				DynamicMaterialIndices.Add(MaterialIndex);				
-			}
-			++MaterialIndex;
-		}
-	}	
-	
+	SetDissolveMaterial();
+
 	// Timeline Binding
 	if (DissolveCurveFloat)
 	{
@@ -94,26 +81,27 @@ void AEnemy::Tick(const float DeltaSeconds)
 
 void AEnemy::OnDie()
 {
-	FTimerHandle DestroyHandle;
-	EnemyFSM->Timeline.Stop();
-	EnemyStat->IsStunned = false;
 	StopAnimMontage();
-	GetWorld()->GetTimerManager().ClearTimer(StunHandle);
+	EnemyStat->IsStunned = false;
+	EnemyFSM->Timeline.Stop();
+	EnemyFSM->SetComponentTickEnabled(false);
+	GetCharacterMovement()->bOrientRotationToMovement=false;
 	GetCharacterMovement()->SetMovementMode(MOVE_None);
 	GetCharacterMovement()->Deactivate();
+	GetWorld()->GetTimerManager().ClearTimer(StunHandle);
 	UCapsuleComponent* const Capsule = GetCapsuleComponent();
 	Capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	GetWorldTimerManager().SetTimer(DestroyHandle, this, &AEnemy::OnDestroy, 10.0f, false);
+	OnDestroy();
 }
 
 void AEnemy::OnPawnDetected(APawn* Pawn)
 {
-	if(APlayerCharacter* DetectedPawn = Cast<APlayerCharacter>(Pawn))
+	if (APlayerCharacter* DetectedPawn = Cast<APlayerCharacter>(Pawn))
 	{
-		if(EnemyFSM->player==nullptr)
+		if (EnemyFSM->player == nullptr)
 		{
-			EnemyFSM->player=DetectedPawn;			
+			EnemyFSM->player = DetectedPawn;
 		}
 	}
 }
@@ -136,7 +124,7 @@ bool AEnemy::DamagedRPCServer_Validate(int Damage, AActor* DamageCauser)
 
 void AEnemy::DamagedRPCMulticast_Implementation(int Damage, AActor* DamageCauser)
 {
-	if(EnemyStat->IsShieldBroken)
+	if (EnemyStat->IsShieldBroken)
 	{
 		FTimerHandle overlayMatHandle;
 		GetMesh()->SetOverlayMaterial(HitOverlayMat);
@@ -156,7 +144,6 @@ void AEnemy::DamagedRPCMulticast_Implementation(int Damage, AActor* DamageCauser
 			GetMesh()->SetOverlayMaterial(nullptr);
 		}), 0.3f, false);
 	}
-
 }
 
 void AEnemy::OnShieldDestroy()
@@ -258,15 +245,33 @@ void AEnemy::GuardianFireProcess() const
 }
 
 void AEnemy::SetDissolveValue(const float Value)
-{	
+{
 	const double Lerp = UKismetMathLibrary::Lerp(0, 1, Value);
-	for(const auto& DynamicMaterialIndex : DynamicMaterialIndices )
+	for (const auto& DynamicMaterialIndex : DynamicMaterialIndices)
 	{
 		UMaterialInstanceDynamic* DynamicMaterial = Cast<UMaterialInstanceDynamic>(GetMesh()->GetMaterial(DynamicMaterialIndex));
 		DynamicMaterial->SetScalarParameterValue("DissolveParams", Lerp);
 	}
-	if(Lerp>=1.f)
+	if (Lerp >= 1.f)
 	{
 		this->Destroy();
-	}	
+	}
+}
+
+void AEnemy::SetDissolveMaterial()
+{
+	if (USkeletalMeshComponent* SkeletalMeshComponent = GetMesh())
+	{
+		TArray<UMaterialInterface*> Materials = SkeletalMeshComponent->GetMaterials();
+		uint32 MaterialIndex = 0;
+		for (UMaterialInterface* const Material : Materials)
+		{
+			if (UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(Material, this))
+			{
+				SkeletalMeshComponent->SetMaterial(MaterialIndex, DynamicMaterial);
+				DynamicMaterialIndices.Add(MaterialIndex);
+			}
+			++MaterialIndex;
+		}
+	}
 }

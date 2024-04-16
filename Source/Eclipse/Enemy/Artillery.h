@@ -16,6 +16,10 @@ class ECLIPSE_API AArtillery : public AEnemy
 	
 public:
 	AArtillery();
+
+	virtual void BeginPlay() override;
+
+	virtual void SetDissolveValue(float Value) override;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
 	class USkeletalMeshComponent* LauncherComp;

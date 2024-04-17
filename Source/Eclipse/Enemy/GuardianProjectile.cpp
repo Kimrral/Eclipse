@@ -39,22 +39,16 @@ void AGuardianProjectile::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), explosionParticle, GetActorLocation());
 }
 
-// Called every frame
-void AGuardianProjectile::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
 
 void AGuardianProjectile::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor)
 	{
-		auto player = Cast<APlayerCharacter>(OtherActor);
-		if (player&&player->IsPlayerDead==false)
+		if (const auto Player = Cast<APlayerCharacter>(OtherActor); Player&&Player->IsPlayerDead==false)
 		{
-			if(player->HasAuthority()&&player->IsPlayerDeadImmediately==false)
+			if(Player->HasAuthority()&&Player->IsPlayerDeadImmediately==false)
 			{
-				player->Damaged(guardianDamageValue, this);
+				Player->Damaged(guardianDamageValue, this);
 				Explosion();
 			}
 		}

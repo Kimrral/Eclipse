@@ -20,7 +20,12 @@ public:
 	virtual void BeginPlay() override;
 
 	virtual void SetDissolveValue(float Value) override;
+
+	virtual void FireProcess() const override;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
 	class USkeletalMeshComponent* LauncherComp;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AGuardianProjectile> GuardianProjectileFactory;
 };

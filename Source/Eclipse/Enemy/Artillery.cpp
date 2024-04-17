@@ -3,6 +3,10 @@
 
 #include "Eclipse/Enemy/Artillery.h"
 
+#include "GuardianProjectile.h"
+#include "Eclipse/AI/EnemyFSM.h"
+#include "Eclipse/Character/PlayerCharacter.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
 AArtillery::AArtillery()
@@ -20,7 +24,6 @@ void AArtillery::BeginPlay()
 	{
 		LauncherComp->SetMaterial(0, DynamicMaterial);
 	}
-
 }
 
 void AArtillery::SetDissolveValue(const float Value)
@@ -29,5 +32,18 @@ void AArtillery::SetDissolveValue(const float Value)
 	const double Lerp = UKismetMathLibrary::Lerp(0, 1, Value);
 	UMaterialInstanceDynamic* DynamicMaterial = Cast<UMaterialInstanceDynamic>(LauncherComp->GetMaterial(0));
 	DynamicMaterial->SetScalarParameterValue("DissolveParams", Lerp);
+}
 
+void AArtillery::FireProcess() const
+{
+	if (EnemyFSM->player)
+	{
+		const FTransform MuzzleTrans = GetMesh()->GetSocketTransform(FName("ArtilleryMuzzle"));
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), fireParticle, MuzzleTrans);
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), GuardianFireSound, this->GetActorLocation());
+		const FVector PlayerLoc = (EnemyFSM->player->GetActorLocation() - MuzzleTrans.GetLocation());
+		const FRotator ProjectileRot = UKismetMathLibrary::MakeRotFromXZ(PlayerLoc, this->GetActorUpVector());
+		GetWorld()->SpawnActor<AGuardianProjectile>(GuardianProjectileFactory, MuzzleTrans.GetLocation(), ProjectileRot);
+	}
+	
 }

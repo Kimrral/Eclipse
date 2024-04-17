@@ -31,7 +31,7 @@ AEnemy::AEnemy()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	PrimaryActorTick.bStartWithTickEnabled = true;
+	PrimaryActorTick.bStartWithTickEnabled = false;
 
 	// Enemy FSM
 	EnemyFSM = CreateDefaultSubobject<UEnemyFSM>(TEXT("enemyFSM"));
@@ -92,6 +92,7 @@ void AEnemy::OnDie()
 	UCapsuleComponent* const Capsule = GetCapsuleComponent();
 	Capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	SetActorTickEnabled(true);
 	OnDestroy();
 }
 
@@ -231,17 +232,8 @@ void AEnemy::DropGear() const
 	}
 }
 
-void AEnemy::GuardianFireProcess() const
+void AEnemy::FireProcess() const
 {
-	if (EnemyFSM->player)
-	{
-		const FTransform muzzleTrans = GetMesh()->GetSocketTransform(FName("Muzzle"));
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), fireParticle, muzzleTrans);
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), GuardianFireSound, this->GetActorLocation());
-		const FVector playerLoc = (EnemyFSM->player->GetActorLocation() - muzzleTrans.GetLocation());
-		const FRotator projectileRot = UKismetMathLibrary::MakeRotFromXZ(playerLoc, this->GetActorUpVector());
-		GetWorld()->SpawnActor<AGuardianProjectile>(GuardianProjectileFactory, muzzleTrans.GetLocation(), projectileRot);
-	}
 }
 
 void AEnemy::SetDissolveValue(const float Value)

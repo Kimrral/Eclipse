@@ -66,7 +66,7 @@ public:
 	void DropGear() const;
 
 	UFUNCTION()
-	void GuardianFireProcess() const;
+	virtual void FireProcess() const;
 
 	UFUNCTION()
 	virtual void SetDissolveValue(float Value);
@@ -92,10 +92,7 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AArmorActor> ArmorActorFactory;
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AHeadsetActor> HeadsetActorFactory;
-
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AGuardianProjectile> GuardianProjectileFactory;
+	TSubclassOf<class AHeadsetActor> HeadsetActorFactory;	
 
 	// Stat Section
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))

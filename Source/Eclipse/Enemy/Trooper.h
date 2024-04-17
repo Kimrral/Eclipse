@@ -4,23 +4,34 @@
 
 #include "CoreMinimal.h"
 #include "Enemy.h"
-#include "Shadow.generated.h"
+#include "Trooper.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class ECLIPSE_API AShadow : public AEnemy
+class ECLIPSE_API ATrooper : public AEnemy
 {
 	GENERATED_BODY()
 public:
-	AShadow();
+	ATrooper();
 	
 	virtual void BeginPlay() override;
 
 	virtual void SetDissolveValue(float Value) override;
 	
+	virtual void FireProcess() const override;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AGuardianProjectile> GuardianProjectileFactory;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
 	class USkeletalMeshComponent* WeaponComp;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class ATrooperProjectile> TrooperProjectileFactory;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* TrooperFireSound;
 	
 };

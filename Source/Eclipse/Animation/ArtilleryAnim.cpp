@@ -9,6 +9,6 @@ void UArtilleryAnim::AnimNotify_Fire() const
 {
 	if (me->HasAuthority())
 	{
-		me->GuardianFireProcess();
+		me->FireProcess();
 	}
 }

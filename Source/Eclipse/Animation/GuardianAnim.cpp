@@ -9,6 +9,6 @@ void UGuardianAnim::AnimNotify_Fire() const
 {
 	if (me->HasAuthority())
 	{
-		me->GuardianFireProcess();
+		me->FireProcess();
 	}
 }

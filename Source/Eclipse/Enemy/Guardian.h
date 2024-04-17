@@ -16,4 +16,8 @@ class ECLIPSE_API AGuardian : public AEnemy
 
 public:
 	virtual void DropReward() override;
+	virtual void FireProcess() const override;
+	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AGuardianProjectile> GuardianProjectileFactory;
 };

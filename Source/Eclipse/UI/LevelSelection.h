@@ -29,6 +29,9 @@ public:
 	class UButton* SelectLevel1No;
 
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UButton* SelectLevel2Yes;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UButton* SelectLevel2No;
 
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
@@ -79,6 +82,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Level2N();
 
+	UFUNCTION(BlueprintCallable)
+	void Level2Y();
+	
 	UFUNCTION(BlueprintCallable)
 	void ShowSingleLevelInfoFunc();
 

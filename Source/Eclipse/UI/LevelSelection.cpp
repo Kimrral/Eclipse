@@ -60,6 +60,11 @@ void ULevelSelection::Level2N()
 	}), 1.f, false);
 }
 
+void ULevelSelection::Level2Y()
+{
+	UGameplayStatics::OpenLevel(GetWorld(), FName("192.168.0.3"));
+}
+
 void ULevelSelection::ShowSingleLevelInfoFunc()
 {
 	UGameplayStatics::PlaySound2D(GetWorld(), AskSound);

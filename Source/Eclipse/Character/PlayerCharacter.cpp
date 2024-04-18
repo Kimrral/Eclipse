@@ -3358,6 +3358,7 @@ void APlayerCharacter::SetFirstPersonModeRifle(const bool IsFirstPerson)
 	if (IsFirstPerson)
 	{
 		crosshairUI->CrosshairImage->SetVisibility(ESlateVisibility::Hidden);
+		GetMesh()->SetVisibility(false);
 		rifleComp->SetVisibility(false);
 		FirstPersonRifleComp->SetVisibility(true);
 		FirstPersonCharacterMesh->SetVisibility(true);
@@ -3372,6 +3373,7 @@ void APlayerCharacter::SetFirstPersonModeRifle(const bool IsFirstPerson)
 	else
 	{
 		crosshairUI->CrosshairImage->SetVisibility(ESlateVisibility::Visible);
+		GetMesh()->SetVisibility(true);
 		rifleComp->SetVisibility(true);
 		FirstPersonRifleComp->SetVisibility(false);
 		FirstPersonCharacterMesh->SetVisibility(false);
@@ -3385,6 +3387,7 @@ void APlayerCharacter::SetFirstPersonModePistol(const bool IsFirstPerson)
 	if (IsFirstPerson)
 	{
 		crosshairUI->CrosshairImage->SetVisibility(ESlateVisibility::Hidden);
+		GetMesh()->SetVisibility(false);
 		pistolComp->SetVisibility(false);
 		FirstPersonPistolComp->SetVisibility(true);
 		FirstPersonCharacterMesh->SetVisibility(true);
@@ -3399,6 +3402,7 @@ void APlayerCharacter::SetFirstPersonModePistol(const bool IsFirstPerson)
 	else
 	{
 		crosshairUI->CrosshairImage->SetVisibility(ESlateVisibility::Visible);
+		GetMesh()->SetVisibility(true);
 		pistolComp->SetVisibility(true);
 		FirstPersonPistolComp->SetVisibility(false);
 		FirstPersonCharacterMesh->SetVisibility(false);

@@ -926,7 +926,7 @@ public:
 	float BulletsPerSecPistol = 3.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float BulletsPerSecSniper = 1.f;
+	float BulletsPerSecSniper = 0.5f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float BulletsPerSecM249 = 8.f;

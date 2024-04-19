@@ -119,14 +119,9 @@ public:
 	UPROPERTY()
 	FTimerHandle HPWidgetInvisibleHandle;
 
-	UPROPERTY(EditAnywhere)
-	class UParticleSystem* fireParticle;
-
 	UPROPERTY()
 	class AEclipsePlayerController* PC;
-
-	UPROPERTY(EditAnywhere)
-	class USoundBase* GuardianFireSound;
+	
 
 	UPROPERTY()
 	FVector DropForce = FVector(50);

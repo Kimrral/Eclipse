@@ -42,10 +42,6 @@ void ATrooper::FireProcess() const
 		const FTransform MuzzleTrans = GetMesh()->GetSocketTransform(FName("TrooperMuzzle"));
 		const FRotator ProjectileRot = UKismetMathLibrary::FindLookAtRotation(MuzzleTrans.GetLocation(), EnemyFSM->player->GetActorLocation()+FVector(0, 0, 100));
 		const auto ProjectileTrans = UKismetMathLibrary::MakeTransform(MuzzleTrans.GetLocation(), ProjectileRot+FRotator(0, -90, 0));
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), fireParticle, MuzzleTrans);
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), TrooperFireSound, this->GetActorLocation());
-		const FVector PlayerLoc = (EnemyFSM->player->GetActorLocation() - MuzzleTrans.GetLocation());
-		//const FRotator ProjectileRot = UKismetMathLibrary::MakeRotFromXZ(PlayerLoc, this->GetActorUpVector());
 		GetWorld()->SpawnActor<ATrooperProjectile>(TrooperProjectileFactory, ProjectileTrans);
 	}
 }

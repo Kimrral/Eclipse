@@ -3,3 +3,9 @@
 
 #include "Eclipse/Enemy/Spider.h"
 
+void ASpider::BeginPlay()
+{
+	Super::BeginPlay();
+
+	PlayAnimMontage(SpiderSpawnMontage);
+}

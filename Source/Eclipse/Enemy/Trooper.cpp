@@ -36,11 +36,11 @@ void ATrooper::SetDissolveValue(const float Value)
 
 void ATrooper::FireProcess() const
 {
-	Super::FireProcess();
 	if (EnemyFSM->player)
 	{
 		const FTransform MuzzleTrans = GetMesh()->GetSocketTransform(FName("TrooperMuzzle"));
-		const FRotator ProjectileRot = UKismetMathLibrary::FindLookAtRotation(MuzzleTrans.GetLocation(), EnemyFSM->player->GetActorLocation()+FVector(0, 0, 100));
+		const FVector PlayerLoc = (EnemyFSM->player->GetActorLocation() - MuzzleTrans.GetLocation());
+		const FRotator ProjectileRot = UKismetMathLibrary::MakeRotFromXZ(PlayerLoc, this->GetActorUpVector());		
 		const auto ProjectileTrans = UKismetMathLibrary::MakeTransform(MuzzleTrans.GetLocation(), ProjectileRot+FRotator(0, -90, 0));
 		GetWorld()->SpawnActor<ATrooperProjectile>(TrooperProjectileFactory, ProjectileTrans);
 	}

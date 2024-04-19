@@ -13,5 +13,12 @@ UCLASS()
 class ECLIPSE_API ASpider : public AEnemy
 {
 	GENERATED_BODY()
+
+protected:
+	virtual void BeginPlay() override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
+	class UAnimMontage* SpiderSpawnMontage;
+
 	
 };

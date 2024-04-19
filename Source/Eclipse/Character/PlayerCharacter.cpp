@@ -10,7 +10,6 @@
 #include "Eclipse/Game/EclipseGameInstance.h"
 #include "Eclipse/Player/EclipsePlayerController.h"
 #include "Eclipse/Enemy/Enemy.h"
-#include "Eclipse/AI/EnemyFSM.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Eclipse/Item/GoggleActor.h"
@@ -210,7 +209,7 @@ void APlayerCharacter::BeginPlay()
 
 	if (IsLocallyControlled())
 	{
-		PC->SetAudioListenerOverride(GetMesh(), FVector::ZeroVector, FRotator::ZeroRotator);
+		//PC->SetAudioListenerOverride(GetMesh(), FVector::ZeroVector, FRotator::ZeroRotator);
 		UWidgetLayoutLibrary::RemoveAllWidgets(GetWorld());
 		if (!crosshairUI->IsInViewport())
 		{
@@ -435,6 +434,24 @@ void APlayerCharacter::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
+}
+
+void APlayerCharacter::Jump()
+{
+	if (IsPlayerDeadImmediately)
+	{
+		return;
+	}
+	Super::Jump();
+}
+
+void APlayerCharacter::StopJumping()
+{
+	if (IsPlayerDeadImmediately)
+	{
+		return;
+	}
+	Super::StopJumping();
 }
 
 void APlayerCharacter::Zoom(const bool IsZoomInput)
@@ -2925,6 +2942,37 @@ void APlayerCharacter::MoveToIsolatedShip()
 		UGameplayStatics::OpenLevel(GetWorld(), FName("Map_BigStarStation"));
 	}), 9.f, false);
 }
+
+void APlayerCharacter::MoveToBlockedIntersection()
+{
+	bEnding = true;
+	gi->IsWidgetOn = false;
+	APlayerCameraManager* PlayerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+	PlayerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
+	StopAnimMontage();
+	GetCharacterMovement()->StopActiveMovement();
+	GetCharacterMovement()->DisableMovement();
+	const FTransform SpawnTrans = this->GetTransform();
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), recallParticle, SpawnTrans);
+	PlayAnimMontage(FullBodyMontage, 1, FName("LevelEnd"));
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), PortalSound, GetActorLocation());
+	bUseControllerRotationYaw = false;
+	infoWidgetUI->RemoveFromParent();
+	informationUI->RemoveFromParent();
+	crosshairUI->RemoveFromParent();
+	FTimerHandle EndHandle;
+	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
+	{
+		PouchCaching();
+		if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->InventoryCaching(this);
+		StashCaching();
+		GearCaching();
+		MagCaching();
+		UGameplayStatics::OpenLevel(GetWorld(), FName("192.168.0.3"));
+	}), 9.f, false);
+}
+
+
 
 void APlayerCharacter::SetZoomValue(const float Value)
 {

@@ -132,6 +132,9 @@ public:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
+	virtual void Jump() override;
+	virtual void StopJumping() override;
+
 	//=======================================//
 
 	/** Called for zooming input */
@@ -496,6 +499,9 @@ public:
 
 	UFUNCTION()
 	void MoveToIsolatedShip();
+
+	UFUNCTION()
+	void MoveToBlockedIntersection();
 
 	UFUNCTION() // Bind function
 	void SetZoomValue(float Value);

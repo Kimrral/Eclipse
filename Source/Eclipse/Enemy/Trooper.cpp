@@ -36,6 +36,7 @@ void ATrooper::SetDissolveValue(const float Value)
 
 void ATrooper::FireProcess() const
 {
+	Super::FireProcess();
 	if (EnemyFSM->player)
 	{
 		const FTransform MuzzleTrans = GetMesh()->GetSocketTransform(FName("TrooperMuzzle"));

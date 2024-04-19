@@ -36,6 +36,7 @@ void AArtillery::SetDissolveValue(const float Value)
 
 void AArtillery::FireProcess() const
 {
+	Super::FireProcess();
 	if (EnemyFSM->player)
 	{
 		const FTransform MuzzleTrans = GetMesh()->GetSocketTransform(FName("ArtilleryMuzzle"));

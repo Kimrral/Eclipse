@@ -62,7 +62,15 @@ void ULevelSelection::Level2N()
 
 void ULevelSelection::Level2Y()
 {
-	UGameplayStatics::OpenLevel(GetWorld(), FName("192.168.0.3"));
+	//Move to Blocked Intersection
+	if (quitBool == false)
+	{
+		quitBool = true;
+		UWidgetBlueprintLibrary::SetInputMode_GameOnly(pc);
+		pc->SetShowMouseCursor(false);
+		this->RemoveFromParent();
+		player->MoveToBlockedIntersection();
+	}	
 }
 
 void ULevelSelection::ShowSingleLevelInfoFunc()

@@ -24,7 +24,7 @@ ARewardContainer::ARewardContainer()
 
 	curBoxHP = maxBoxHP;
 
-	SetReplicates(true);
+	bReplicates = true;
 }
 
 void ARewardContainer::OnRep_IsBoxDestroyed() const

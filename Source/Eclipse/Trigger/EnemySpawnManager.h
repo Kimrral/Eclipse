@@ -21,6 +21,9 @@ public:
 	void EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	UPROPERTY(EditAnywhere)
+	class USceneComponent* RootScene;
+
+	UPROPERTY(EditAnywhere)
 	class UBoxComponent* SpawnTriggerBoxCollision;
 
 	UPROPERTY(EditAnywhere)

@@ -29,7 +29,7 @@ void AExtractionTrigger::BeginPlay()
 }
 
 // Called every frame
-void AExtractionTrigger::Tick(float DeltaTime)
+void AExtractionTrigger::Tick(const float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
@@ -38,14 +38,10 @@ void AExtractionTrigger::OnOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 {
 	if (OtherActor)
 	{
-		const auto player = Cast<APlayerCharacter>(OtherActor);
-		if (player&&player->IsLocallyControlled())
+		if (const auto Player = Cast<APlayerCharacter>(OtherActor); Player&&Player->IsLocallyControlled() && !Player->ExtractionCountdownUI->IsInViewport())
 		{
-			if (!player->ExtractionCountdownUI->IsInViewport())
-			{
-				player->ExtractionCountdownUI->Countdown=10.f;
-				player->ExtractionCountdownUI->AddToViewport();
-			}
+			Player->ExtractionCountdownUI->Countdown=10.f;
+			Player->ExtractionCountdownUI->AddToViewport();
 		}
 	}
 }
@@ -54,13 +50,9 @@ void AExtractionTrigger::EndOverlap(UPrimitiveComponent* OverlappedComponent, AA
 {
 	if (OtherActor)
 	{
-		const auto player = Cast<APlayerCharacter>(OtherActor);
-		if (player&&player->IsLocallyControlled())
+		if (const auto Player = Cast<APlayerCharacter>(OtherActor); Player&&Player->IsLocallyControlled() && Player->ExtractionCountdownUI->IsInViewport())
 		{
-			if (player->ExtractionCountdownUI->IsInViewport())
-			{
-				player->ExtractionCountdownUI->RemoveFromParent();
-			}
+			Player->ExtractionCountdownUI->RemoveFromParent();
 		}
 	}
 }

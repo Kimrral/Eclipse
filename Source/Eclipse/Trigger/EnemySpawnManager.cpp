@@ -14,9 +14,12 @@ AEnemySpawnManager::AEnemySpawnManager()
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = false;
 
+	RootScene = CreateDefaultSubobject<USceneComponent>(TEXT("RootScene"));
+	SetRootComponent(RootScene);
+
 	SpawnTriggerBoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxCollision"));
 	SpawnTriggerBoxCollision->SetGenerateOverlapEvents(true);
-	SetRootComponent(SpawnTriggerBoxCollision);
+	SpawnTriggerBoxCollision->SetupAttachment(RootComponent);		
 	
 	SpawnPosition = CreateDefaultSubobject<USceneComponent>(TEXT("SpawnPosition"));
 	SpawnPosition->SetupAttachment(RootComponent);	

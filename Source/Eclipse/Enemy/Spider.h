@@ -19,6 +19,4 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
 	class UAnimMontage* SpiderSpawnMontage;
-
-	
 };

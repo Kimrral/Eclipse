@@ -53,6 +53,7 @@
 #include "Eclipse/CharacterStat/PlayerCharacterStatComponent.h"
 #include "Eclipse/Game/EclipsePlayerState.h"
 #include "Eclipse/UI/ExtractionCountdown.h"
+#include "Eclipse/UI/MenuWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
@@ -206,6 +207,7 @@ void APlayerCharacter::BeginPlay()
 	informationUI = CreateWidget<UInformationWidget>(GetWorld(), informationWidgetFactory);
 	levelSelectionUI = CreateWidget<ULevelSelection>(GetWorld(), levelSelectionWidgetFactory);
 	ExtractionCountdownUI = CreateWidget<UExtractionCountdown>(GetWorld(), ExtractionCountdownWidgetFactory);
+	MenuWidgetUI = CreateWidget<UMenuWidget>(GetWorld(), MenuWidgetFactory);
 
 	if (IsLocallyControlled())
 	{
@@ -389,6 +391,9 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 		//Tab
 		EnhancedInputComponent->BindAction(TabAction, ETriggerEvent::Started, this, &APlayerCharacter::Tab);
+
+		//Open Menu
+		EnhancedInputComponent->BindAction(MenuAction, ETriggerEvent::Started, this, &APlayerCharacter::OpenMenu);
 
 		//Q [Test]
 		EnhancedInputComponent->BindAction(QAction, ETriggerEvent::Started, this, &APlayerCharacter::Q);
@@ -1383,6 +1388,20 @@ int32 APlayerCharacter::GenerateRandomDamage(const float InDamage) const
 
 void APlayerCharacter::Tab()
 {
+}
+
+void APlayerCharacter::OpenMenu()
+{
+	if(MenuWidgetUI&&!MenuWidgetUI->IsInViewport())
+	{
+		UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(PC, MenuWidgetUI);
+		PC->SetShowMouseCursor(true);
+		MenuWidgetUI->AddToViewport();
+	}
+	else
+	{
+		MenuWidgetUI->CloseWidgetFunc();
+	}
 }
 
 void APlayerCharacter::Q()
@@ -2943,6 +2962,18 @@ void APlayerCharacter::MoveToIsolatedShip()
 	}), 9.f, false);
 }
 
+void APlayerCharacter::MoveToHideout()
+{
+	APlayerCameraManager* PlayerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+	PlayerCam->StartCameraFade(0, 1, 2.0, FLinearColor::Black, false, true);
+	if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->InventoryCaching(this);		
+	FTimerHandle EndHandle;
+	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
+	{
+		UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"));
+	}), 2.f, false);
+}
+
 void APlayerCharacter::MoveToBlockedIntersection()
 {
 	bEnding = true;
@@ -3392,13 +3423,18 @@ void APlayerCharacter::AmmoDepleted()
 
 void APlayerCharacter::ExtractionSuccess() const
 {
-	UE_LOG(LogTemp, Warning, TEXT("Extraction Success"))
 	UWidgetLayoutLibrary::RemoveAllWidgets(GetWorld());
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
 	UGameplayStatics::PlaySound2D(GetWorld(), ExtractionSound);
 	APlayerCameraManager* PlayerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 	// 카메라 페이드 연출
 	PlayerCam->StartCameraFade(0, 1, 1.5f, FLinearColor::Black, false, true);
+	FTimerHandle ExtractionHandle;
+	GetWorld()->GetTimerManager().SetTimer(ExtractionHandle, FTimerDelegate::CreateLambda([this]()-> void
+	{
+		UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"));
+	}), 1.5f, false);
+
 }
 
 void APlayerCharacter::SetFirstPersonModeRifle(const bool IsFirstPerson)

@@ -121,6 +121,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* QAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* MenuAction;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FOnDoorInteraction DoorInteractionDele;
 
@@ -429,6 +432,8 @@ public:
 
 	void Tab();
 
+	void OpenMenu();
+
 	void Q();
 
 	UFUNCTION()
@@ -499,6 +504,9 @@ public:
 
 	UFUNCTION()
 	void MoveToIsolatedShip();
+	
+	UFUNCTION()
+	void MoveToHideout();
 
 	UFUNCTION()
 	void MoveToBlockedIntersection();
@@ -659,6 +667,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
 	TSubclassOf<class UExtractionCountdown> ExtractionCountdownWidgetFactory;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = widget)
+	class UMenuWidget* MenuWidgetUI;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
+	TSubclassOf<class UMenuWidget> MenuWidgetFactory;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = widget)
 	class UExtractionCountdown* ExtractionCountdownUI;
 
@@ -921,6 +935,9 @@ public:
 
 	UPROPERTY()
 	bool isRifleShootable;
+
+	UPROPERTY()
+	bool OpenMenuBoolean = false;;
 
 	UPROPERTY(Replicated)
 	bool CanShoot = true;

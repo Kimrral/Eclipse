@@ -508,6 +508,19 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void EquipArmorInventorySlot(bool IsEquipping);
 
+	UFUNCTION(BlueprintCallable)
+	void EquipHelmetInventorySlot(bool IsEquipping);
+
+	UFUNCTION(BlueprintCallable)
+	void EquipGoggleInventorySlot(bool IsEquipping);
+
+	UFUNCTION(BlueprintCallable)
+	void EquipHeadsetInventorySlot(bool IsEquipping);
+
+	UFUNCTION(BlueprintCallable)
+	void EquipMaskInventorySlot(bool IsEquipping);
+
+
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	/** Returns CameraBoom subobject **/

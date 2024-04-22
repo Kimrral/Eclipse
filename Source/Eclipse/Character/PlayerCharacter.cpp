@@ -108,23 +108,23 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer)
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 
-	sniperComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("sniperComp"));
-	sniperComp->SetupAttachment(GetMesh(), FName("hand_r"));
+	SniperComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("sniperComp"));
+	SniperComp->SetupAttachment(GetMesh(), FName("hand_r"));
 
-	rifleComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("rifleComp"));
-	rifleComp->SetupAttachment(GetMesh(), FName("hand_r"));
+	RifleComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("rifleComp"));
+	RifleComp->SetupAttachment(GetMesh(), FName("hand_r"));
 
 	FirstPersonRifleComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("FirstPersonRifleComp"));
 	FirstPersonRifleComp->SetupAttachment(FirstPersonCharacterMesh, FName("b_RightHand"));
 
-	pistolComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("pistolComp"));
-	pistolComp->SetupAttachment(GetMesh(), FName("hand_l"));
+	PistolComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("pistolComp"));
+	PistolComp->SetupAttachment(GetMesh(), FName("hand_l"));
 
 	FirstPersonPistolComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("FirstPersonPistolComp"));
 	FirstPersonPistolComp->SetupAttachment(FirstPersonCharacterMesh, FName("b_RightHand"));
 
-	m249Comp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("m249Comp"));
-	m249Comp->SetupAttachment(GetMesh(), FName("hand_r"));
+	M249Comp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("m249Comp"));
+	M249Comp->SetupAttachment(GetMesh(), FName("hand_r"));
 
 	GoggleSlot = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("GoggleSlot"));
 	GoggleSlot->SetupAttachment(GetMesh(), FName("head"));
@@ -248,10 +248,10 @@ void APlayerCharacter::BeginPlay()
 		equippedWeaponStringArray.Add(FString("Empty")); //1
 
 		// Weapon Visibility Settings
-		rifleComp->SetVisibility(false);
-		sniperComp->SetVisibility(false);
-		pistolComp->SetVisibility(false);
-		m249Comp->SetVisibility(false);
+		RifleComp->SetVisibility(false);
+		SniperComp->SetVisibility(false);
+		PistolComp->SetVisibility(false);
+		M249Comp->SetVisibility(false);
 
 		// Gear Visibility Settings
 		GoggleSlot->SetVisibility(false);
@@ -277,10 +277,10 @@ void APlayerCharacter::BeginPlay()
 		equippedWeaponStringArray.Add(FString("Pistol")); //1
 
 		// Weapon Visibility Settings
-		rifleComp->SetVisibility(true);
-		sniperComp->SetVisibility(false);
-		pistolComp->SetVisibility(false);
-		m249Comp->SetVisibility(false);
+		RifleComp->SetVisibility(true);
+		SniperComp->SetVisibility(false);
+		PistolComp->SetVisibility(false);
+		M249Comp->SetVisibility(false);
 
 		// Gear Visibility Settings
 		GoggleSlot->SetVisibility(false);
@@ -809,10 +809,10 @@ void APlayerCharacter::SwapFirstWeaponRPCMulticast_Implementation()
 		animInstance->bPistol = false;
 		PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
 		// Visibility 설정
-		rifleComp->SetVisibility(true);
-		sniperComp->SetVisibility(false);
-		pistolComp->SetVisibility(false);
-		m249Comp->SetVisibility(false);
+		RifleComp->SetVisibility(true);
+		SniperComp->SetVisibility(false);
+		PistolComp->SetVisibility(false);
+		M249Comp->SetVisibility(false);
 		// 무기 배열 설정
 		weaponArray[0] = true;
 		weaponArray[1] = false;
@@ -830,10 +830,10 @@ void APlayerCharacter::SwapFirstWeaponRPCMulticast_Implementation()
 		animInstance->bPistol = false;
 		PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
 		// Visibility 설정
-		rifleComp->SetVisibility(false);
-		sniperComp->SetVisibility(true);
-		pistolComp->SetVisibility(false);
-		m249Comp->SetVisibility(false);
+		RifleComp->SetVisibility(false);
+		SniperComp->SetVisibility(true);
+		PistolComp->SetVisibility(false);
+		M249Comp->SetVisibility(false);
 		// 무기 배열 설정
 		weaponArray[0] = false;
 		weaponArray[1] = true;
@@ -851,10 +851,10 @@ void APlayerCharacter::SwapFirstWeaponRPCMulticast_Implementation()
 		animInstance->bPistol = true;
 		PlayAnimMontage(UpperOnlyMontage, 1, FName("PistolEquip"));
 		// Visibility 설정
-		rifleComp->SetVisibility(false);
-		sniperComp->SetVisibility(false);
-		pistolComp->SetVisibility(true);
-		m249Comp->SetVisibility(false);
+		RifleComp->SetVisibility(false);
+		SniperComp->SetVisibility(false);
+		PistolComp->SetVisibility(true);
+		M249Comp->SetVisibility(false);
 		// 무기 배열 설정
 		weaponArray[0] = false;
 		weaponArray[1] = false;
@@ -872,10 +872,10 @@ void APlayerCharacter::SwapFirstWeaponRPCMulticast_Implementation()
 		animInstance->bPistol = false;
 		PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
 		// Visibility 설정
-		rifleComp->SetVisibility(false);
-		sniperComp->SetVisibility(false);
-		pistolComp->SetVisibility(false);
-		m249Comp->SetVisibility(true);
+		RifleComp->SetVisibility(false);
+		SniperComp->SetVisibility(false);
+		PistolComp->SetVisibility(false);
+		M249Comp->SetVisibility(true);
 		// 무기 배열 설정
 		weaponArray[0] = false;
 		weaponArray[1] = false;
@@ -939,10 +939,10 @@ void APlayerCharacter::SwapSecondWeaponRPCMulticast_Implementation()
 		animInstance->bPistol = false;
 		PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
 		// Visibility 설정
-		rifleComp->SetVisibility(true);
-		sniperComp->SetVisibility(false);
-		pistolComp->SetVisibility(false);
-		m249Comp->SetVisibility(false);
+		RifleComp->SetVisibility(true);
+		SniperComp->SetVisibility(false);
+		PistolComp->SetVisibility(false);
+		M249Comp->SetVisibility(false);
 		// 무기 배열 설정
 		weaponArray[0] = true;
 		weaponArray[1] = false;
@@ -960,10 +960,10 @@ void APlayerCharacter::SwapSecondWeaponRPCMulticast_Implementation()
 		animInstance->bPistol = false;
 		PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
 		// Visibility 설정
-		rifleComp->SetVisibility(false);
-		sniperComp->SetVisibility(true);
-		pistolComp->SetVisibility(false);
-		m249Comp->SetVisibility(false);
+		RifleComp->SetVisibility(false);
+		SniperComp->SetVisibility(true);
+		PistolComp->SetVisibility(false);
+		M249Comp->SetVisibility(false);
 		// 무기 배열 설정
 		weaponArray[0] = false;
 		weaponArray[1] = true;
@@ -981,10 +981,10 @@ void APlayerCharacter::SwapSecondWeaponRPCMulticast_Implementation()
 		animInstance->bPistol = true;
 		PlayAnimMontage(UpperOnlyMontage, 1, FName("PistolEquip"));
 		// Visibility 설정
-		rifleComp->SetVisibility(false);
-		sniperComp->SetVisibility(false);
-		pistolComp->SetVisibility(true);
-		m249Comp->SetVisibility(false);
+		RifleComp->SetVisibility(false);
+		SniperComp->SetVisibility(false);
+		PistolComp->SetVisibility(true);
+		M249Comp->SetVisibility(false);
 		// 무기 배열 설정
 		weaponArray[0] = false;
 		weaponArray[1] = false;
@@ -1002,10 +1002,10 @@ void APlayerCharacter::SwapSecondWeaponRPCMulticast_Implementation()
 		animInstance->bPistol = false;
 		PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
 		// Visibility 설정
-		rifleComp->SetVisibility(false);
-		sniperComp->SetVisibility(false);
-		pistolComp->SetVisibility(false);
-		m249Comp->SetVisibility(true);
+		RifleComp->SetVisibility(false);
+		SniperComp->SetVisibility(false);
+		PistolComp->SetVisibility(false);
+		M249Comp->SetVisibility(true);
 		// 무기 배열 설정
 		weaponArray[0] = false;
 		weaponArray[1] = false;
@@ -1046,13 +1046,15 @@ void APlayerCharacter::OnPlayerHitRPCMulticast_Implementation(const FHitResult& 
 	{
 		if (IsHeadshot)
 		{
-			HitCharacter->Damaged(GetAttackDamage(true) * 2, this);
-			Stat->AccumulatedDamageToPlayer += GetAttackDamageCache(true) * 2;
+			DamageAmount = Stat->GetAttackDamage(weaponArray, true);
+			HitCharacter->Damaged(DamageAmount * 2, this);
+			Stat->AccumulatedDamageToPlayer += DamageAmount * 2;
 		}
 		else
 		{
-			HitCharacter->Damaged(GetAttackDamage(true), this);
-			Stat->AccumulatedDamageToPlayer += GetAttackDamageCache(true);
+			DamageAmount = Stat->GetAttackDamage(weaponArray, true);
+			HitCharacter->Damaged(DamageAmount, this);
+			Stat->AccumulatedDamageToPlayer += DamageAmount;
 		}
 	}
 	if (IsLocallyControlled())
@@ -1064,7 +1066,7 @@ void APlayerCharacter::OnPlayerHitRPCMulticast_Implementation(const FHitResult& 
 			// 적중 위젯 애니메이션 재생
 			crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
 			// 데미지 위젯에 피해 값과 적 위치벡터 할당
-			SetDamageWidget(GetAttackDamageCache(true) * 2, HitResult.Location, false, FLinearColor::Yellow);
+			SetDamageWidget(DamageAmount * 2, HitResult.Location, false, FLinearColor::Yellow);
 			// 적중 파티클 스폰
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodParticle, HitResult.Location, hitRot, FVector(1.f));
 		}
@@ -1074,7 +1076,7 @@ void APlayerCharacter::OnPlayerHitRPCMulticast_Implementation(const FHitResult& 
 			// 적중 위젯 애니메이션 재생
 			crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
 			// 데미지 위젯에 피해 값과 적 위치벡터 할당
-			SetDamageWidget(GetAttackDamageCache(true), HitResult.Location, false, FLinearColor::White);
+			SetDamageWidget(DamageAmount, HitResult.Location, false, FLinearColor::White);
 			// 적중 파티클 스폰
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodParticle, HitResult.Location, hitRot, FVector(1.f));
 		}
@@ -1182,24 +1184,26 @@ bool APlayerCharacter::OnEnemyHitRPCServer_Validate(const FHitResult& HitResult,
 	return true;
 }
 
-void APlayerCharacter::OnEnemyHitRPCMulticast_Implementation(const FHitResult& HitResult, AEnemy* HitEnemy, bool IsHeadshot)
+void APlayerCharacter::OnEnemyHitRPCMulticast_Implementation(const FHitResult& HitResult, AEnemy* HitEnemy, const bool IsHeadshot)
 {
 	if (HasAuthority())
 	{
 		if (IsHeadshot)
 		{
-			HitEnemy->Damaged(GetAttackDamage(false) * 2, this);
-			Stat->AccumulatedDamageToEnemy += GetAttackDamageCache(false) * 2;
+			DamageAmount = Stat->GetAttackDamage(weaponArray, false);
+			HitEnemy->Damaged(DamageAmount * 2, this);
+			Stat->AccumulatedDamageToEnemy += DamageAmount * 2;
 		}
 		else
 		{
-			HitEnemy->Damaged(GetAttackDamage(false), this);
-			Stat->AccumulatedDamageToEnemy += GetAttackDamageCache(false);
+			DamageAmount = Stat->GetAttackDamage(weaponArray, false);
+			HitEnemy->Damaged(DamageAmount, this);
+			Stat->AccumulatedDamageToEnemy += DamageAmount;
 		}
 	}
 	if (IsLocallyControlled())
 	{
-		const FRotator hitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
+		const FRotator HitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
 		if (HitEnemy->EnemyStat->IsStunned)
 		{
 			if (IsHeadshot)
@@ -1208,9 +1212,9 @@ void APlayerCharacter::OnEnemyHitRPCMulticast_Implementation(const FHitResult& H
 				// 적중 위젯 애니메이션 재생
 				crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
 				// 데미지 위젯에 피해 값과 적 위치벡터 할당
-				SetDamageWidget(GetAttackDamageCache(false) * 4, HitResult.Location, false, FLinearColor::Red);
+				SetDamageWidget(DamageAmount * 4, HitResult.Location, false, FLinearColor::Red);
 				// 적중 파티클 스폰
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, hitRot, FVector(2.f));
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(2.f));
 			}
 			else
 			{
@@ -1218,9 +1222,9 @@ void APlayerCharacter::OnEnemyHitRPCMulticast_Implementation(const FHitResult& H
 				// 적중 위젯 애니메이션 재생
 				crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
 				// 데미지 위젯에 피해 값과 적 위치벡터 할당
-				SetDamageWidget(GetAttackDamageCache(false) * 2, HitResult.Location, false, FLinearColor::Red);
+				SetDamageWidget(DamageAmount * 2, HitResult.Location, false, FLinearColor::Red);
 				// 적중 파티클 스폰
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, hitRot, FVector(1.f));
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(1.f));
 			}
 		}
 		else
@@ -1233,9 +1237,9 @@ void APlayerCharacter::OnEnemyHitRPCMulticast_Implementation(const FHitResult& H
 					// 적중 위젯 애니메이션 재생
 					crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
 					// 데미지 위젯에 피해 값과 적 위치벡터 할당
-					SetDamageWidget(GetAttackDamageCache(false) * 2, HitResult.Location, false, FLinearColor::Yellow);
+					SetDamageWidget(DamageAmount * 2, HitResult.Location, false, FLinearColor::Yellow);
 					// 적중 파티클 스폰
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, hitRot, FVector(2.f));
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(2.f));
 				}
 				else
 				{
@@ -1243,9 +1247,9 @@ void APlayerCharacter::OnEnemyHitRPCMulticast_Implementation(const FHitResult& H
 					// 적중 위젯 애니메이션 재생
 					crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
 					// 데미지 위젯에 피해 값과 적 위치벡터 할당
-					SetDamageWidget(GetAttackDamageCache(false), HitResult.Location, false, FLinearColor::White);
+					SetDamageWidget(DamageAmount, HitResult.Location, false, FLinearColor::White);
 					// 적중 파티클 스폰
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, hitRot, FVector(1.f));
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(1.f));
 				}
 			}
 			else
@@ -1256,9 +1260,9 @@ void APlayerCharacter::OnEnemyHitRPCMulticast_Implementation(const FHitResult& H
 					// 적중 위젯 애니메이션 재생
 					crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
 					// 데미지 위젯에 피해 값과 적 위치벡터 할당
-					SetDamageWidget(GetAttackDamageCache(false) * 0.1f, HitResult.Location, true, FLinearColor::Gray);
+					SetDamageWidget(DamageAmount * 0.1f, HitResult.Location, true, FLinearColor::Gray);
 					// 적중 파티클 스폰
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, hitRot, FVector(2.f));
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(2.f));
 				}
 				else
 				{
@@ -1266,9 +1270,9 @@ void APlayerCharacter::OnEnemyHitRPCMulticast_Implementation(const FHitResult& H
 					// 적중 위젯 애니메이션 재생
 					crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
 					// 데미지 위젯에 피해 값과 적 위치벡터 할당
-					SetDamageWidget(GetAttackDamageCache(false) * 0.05f, HitResult.Location, true, FLinearColor::Gray);
+					SetDamageWidget(DamageAmount * 0.05f, HitResult.Location, true, FLinearColor::Gray);
 					// 적중 파티클 스폰
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, hitRot, FVector(1.f));
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(1.f));
 				}
 			}
 		}
@@ -2397,10 +2401,10 @@ void APlayerCharacter::ChangeWeaponToRifleRPCMulticast_Implementation(ARifleActo
 		equippedWeaponStringArray[1] = FString("Rifle");
 	}
 	// Visibility 설정
-	rifleComp->SetVisibility(true);
-	sniperComp->SetVisibility(false);
-	pistolComp->SetVisibility(false);
-	m249Comp->SetVisibility(false);
+	RifleComp->SetVisibility(true);
+	SniperComp->SetVisibility(false);
+	PistolComp->SetVisibility(false);
+	M249Comp->SetVisibility(false);
 	// 무기 배열 설정
 	weaponArray[0] = true;
 	weaponArray[1] = false;
@@ -2467,10 +2471,10 @@ void APlayerCharacter::ChangeWeaponToSniperRPCMulticast_Implementation(ASniperAc
 	{
 		equippedWeaponStringArray[1] = FString("Sniper");
 	}
-	rifleComp->SetVisibility(false);
-	sniperComp->SetVisibility(true);
-	pistolComp->SetVisibility(false);
-	m249Comp->SetVisibility(false);
+	RifleComp->SetVisibility(false);
+	SniperComp->SetVisibility(true);
+	PistolComp->SetVisibility(false);
+	M249Comp->SetVisibility(false);
 
 	weaponArray[0] = false;
 	weaponArray[1] = true;
@@ -2536,10 +2540,10 @@ void APlayerCharacter::ChangeWeaponToPistolRPCMulticast_Implementation(APistolAc
 	{
 		equippedWeaponStringArray[1] = FString("Pistol");
 	}
-	rifleComp->SetVisibility(false);
-	sniperComp->SetVisibility(false);
-	pistolComp->SetVisibility(true);
-	m249Comp->SetVisibility(false);
+	RifleComp->SetVisibility(false);
+	SniperComp->SetVisibility(false);
+	PistolComp->SetVisibility(true);
+	M249Comp->SetVisibility(false);
 
 	weaponArray[0] = false;
 	weaponArray[1] = false;
@@ -2605,10 +2609,10 @@ void APlayerCharacter::ChangeWeaponToM249RPCMulticast_Implementation(AM249Actor*
 	{
 		equippedWeaponStringArray[1] = FString("M249");
 	}
-	rifleComp->SetVisibility(false);
-	sniperComp->SetVisibility(false);
-	pistolComp->SetVisibility(false);
-	m249Comp->SetVisibility(true);
+	RifleComp->SetVisibility(false);
+	SniperComp->SetVisibility(false);
+	PistolComp->SetVisibility(false);
+	M249Comp->SetVisibility(true);
 
 	weaponArray[0] = false;
 	weaponArray[1] = false;
@@ -2747,10 +2751,10 @@ void APlayerCharacter::InteractionProcess()
 					FTimerHandle endHandle;
 					GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()-> void
 					{
-						if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))
-						{
-							CachingPlayerState->InventoryCaching(this);
-						}
+						// if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))
+						// {
+						// 	CachingPlayerState->InventoryCaching(this);
+						// }
 						UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"));
 					}), 9.f, false);
 				}
@@ -2932,7 +2936,7 @@ void APlayerCharacter::MoveToIsolatedShip()
 	FTimerHandle EndHandle;
 	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
-		if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->InventoryCaching(this);
+		//if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->InventoryCaching(this);
 		UGameplayStatics::OpenLevel(GetWorld(), FName("Map_BigStarStation"));
 	}), 9.f, false);
 }
@@ -2941,7 +2945,7 @@ void APlayerCharacter::MoveToHideout()
 {
 	APlayerCameraManager* PlayerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 	PlayerCam->StartCameraFade(0, 1, 2.0, FLinearColor::Black, false, true);
-	if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->InventoryCaching(this);
+	//if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->InventoryCaching(this);
 	FTimerHandle EndHandle;
 	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
@@ -2969,7 +2973,7 @@ void APlayerCharacter::MoveToBlockedIntersection()
 	FTimerHandle EndHandle;
 	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
-		if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->InventoryCaching(this);
+		//if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->InventoryCaching(this);
 		UGameplayStatics::OpenLevel(GetWorld(), FName("192.168.0.3"));
 	}), 9.f, false);
 }
@@ -3128,14 +3132,72 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(APlayerCharacter, IsPlayerDead);
 	DOREPLIFETIME(APlayerCharacter, IsPlayerDeadImmediately);
 	DOREPLIFETIME(APlayerCharacter, weaponArray);
-	DOREPLIFETIME(APlayerCharacter, RandPlayerAttackDamageRifle);
-	DOREPLIFETIME(APlayerCharacter, RandPlayerAttackDamagePistol);
-	DOREPLIFETIME(APlayerCharacter, RandPlayerAttackDamageSniper);
-	DOREPLIFETIME(APlayerCharacter, RandPlayerAttackDamageM249);
-	DOREPLIFETIME(APlayerCharacter, RandEnemyAttackDamageRifle);
-	DOREPLIFETIME(APlayerCharacter, RandEnemyAttackDamagePistol);
-	DOREPLIFETIME(APlayerCharacter, RandEnemyAttackDamageSniper);
-	DOREPLIFETIME(APlayerCharacter, RandEnemyAttackDamageM249);
+	DOREPLIFETIME(APlayerCharacter, IsEquipArmor);
+	DOREPLIFETIME(APlayerCharacter, IsEquipHelmet);
+	DOREPLIFETIME(APlayerCharacter, IsEquipGoggle);
+	DOREPLIFETIME(APlayerCharacter, IsEquipMask);
+	DOREPLIFETIME(APlayerCharacter, IsEquipHeadset);
+	DOREPLIFETIME(APlayerCharacter, DamageAmount);
+}
+
+void APlayerCharacter::OnRep_IsEquipArmor() const
+{
+	if (IsEquipArmor)
+	{
+		ArmorSlot->SetVisibility(true);
+	}
+	else
+	{
+		ArmorSlot->SetVisibility(false);
+	}
+}
+
+void APlayerCharacter::OnRep_IsEquipHelmet() const
+{
+	if (IsEquipHelmet)
+	{
+		HelmetSlot->SetVisibility(true);
+	}
+	else
+	{
+		HelmetSlot->SetVisibility(false);
+	}
+}
+
+void APlayerCharacter::OnRep_IsEquipGoggle() const
+{
+	if (IsEquipGoggle)
+	{
+		GoggleSlot->SetVisibility(true);
+	}
+	else
+	{
+		GoggleSlot->SetVisibility(false);
+	}
+}
+
+void APlayerCharacter::OnRep_IsEquipMask() const
+{
+	if (IsEquipMask)
+	{
+		MaskSlot->SetVisibility(true);
+	}
+	else
+	{
+		MaskSlot->SetVisibility(false);
+	}
+}
+
+void APlayerCharacter::OnRep_IsEquipHeadset() const
+{
+	if (IsEquipHeadset)
+	{
+		HeadSetSlot->SetVisibility(true);
+	}
+	else
+	{
+		HeadSetSlot->SetVisibility(false);
+	}
 }
 
 void APlayerCharacter::Fire()
@@ -3326,7 +3388,7 @@ void APlayerCharacter::SetFirstPersonModeRifle(const bool IsFirstPerson)
 	{
 		crosshairUI->CrosshairImage->SetVisibility(ESlateVisibility::Hidden);
 		GetMesh()->SetVisibility(false);
-		rifleComp->SetVisibility(false);
+		RifleComp->SetVisibility(false);
 		FirstPersonRifleComp->SetVisibility(true);
 		FirstPersonCharacterMesh->SetVisibility(true);
 		FollowCamera->SetActive(false);
@@ -3341,7 +3403,7 @@ void APlayerCharacter::SetFirstPersonModeRifle(const bool IsFirstPerson)
 	{
 		crosshairUI->CrosshairImage->SetVisibility(ESlateVisibility::Visible);
 		GetMesh()->SetVisibility(true);
-		rifleComp->SetVisibility(true);
+		RifleComp->SetVisibility(true);
 		FirstPersonRifleComp->SetVisibility(false);
 		FirstPersonCharacterMesh->SetVisibility(false);
 		FollowCamera->SetActive(true);
@@ -3355,7 +3417,7 @@ void APlayerCharacter::SetFirstPersonModePistol(const bool IsFirstPerson)
 	{
 		crosshairUI->CrosshairImage->SetVisibility(ESlateVisibility::Hidden);
 		GetMesh()->SetVisibility(false);
-		pistolComp->SetVisibility(false);
+		PistolComp->SetVisibility(false);
 		FirstPersonPistolComp->SetVisibility(true);
 		FirstPersonCharacterMesh->SetVisibility(true);
 		FollowCamera->SetActive(false);
@@ -3370,11 +3432,25 @@ void APlayerCharacter::SetFirstPersonModePistol(const bool IsFirstPerson)
 	{
 		crosshairUI->CrosshairImage->SetVisibility(ESlateVisibility::Visible);
 		GetMesh()->SetVisibility(true);
-		pistolComp->SetVisibility(true);
+		PistolComp->SetVisibility(true);
 		FirstPersonPistolComp->SetVisibility(false);
 		FirstPersonCharacterMesh->SetVisibility(false);
 		FollowCamera->SetActive(true);
 		FirstPersonCamera->SetActive(false);
+	}
+}
+
+void APlayerCharacter::EquipArmorInventorySlot(const bool IsEquipping)
+{
+	if (IsEquipping)
+	{
+		IsEquipArmor = true;
+		OnRep_IsEquipArmor();
+	}
+	else
+	{
+		IsEquipArmor = false;
+		OnRep_IsEquipArmor();
 	}
 }
 
@@ -3398,8 +3474,8 @@ void APlayerCharacter::ProcessRifleFireLocal()
 	}
 	else
 	{
-		const FVector particleLoc = rifleComp->GetSocketLocation(FName("RifleFirePosition"));
-		const UE::Math::TRotator<double> particleRot = rifleComp->GetSocketRotation(FName("RifleFirePosition"));
+		const FVector particleLoc = RifleComp->GetSocketLocation(FName("RifleFirePosition"));
+		const UE::Math::TRotator<double> particleRot = RifleComp->GetSocketRotation(FName("RifleFirePosition"));
 		const FTransform particleTrans = UKismetMathLibrary::MakeTransform(particleLoc, particleRot, FVector(0.4));
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle, particleTrans);
 	}
@@ -3414,8 +3490,8 @@ void APlayerCharacter::ProcessRifleFireLocal()
 void APlayerCharacter::ProcessRifleFireSimulatedProxy() const
 {
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleFireSound, GetActorLocation());
-	const FVector ParticleLoc = rifleComp->GetSocketLocation(FName("RifleFirePosition"));
-	const UE::Math::TRotator<double> particleRot = rifleComp->GetSocketRotation(FName("RifleFirePosition"));
+	const FVector ParticleLoc = RifleComp->GetSocketLocation(FName("RifleFirePosition"));
+	const UE::Math::TRotator<double> particleRot = RifleComp->GetSocketRotation(FName("RifleFirePosition"));
 	const FTransform particleTrans = UKismetMathLibrary::MakeTransform(ParticleLoc, particleRot, FVector(0.4));
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle, particleTrans);
 }
@@ -3572,7 +3648,7 @@ void APlayerCharacter::ProcessSniperFireLocal()
 	}
 	else
 	{
-		FTransform particleTrans = sniperComp->GetSocketTransform(FName("SniperFirePosition"));
+		FTransform particleTrans = SniperComp->GetSocketTransform(FName("SniperFirePosition"));
 		particleTrans.SetScale3D(FVector(0.7));
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperFireParticle, particleTrans);
 		PC->PlayerCameraManager->StartCameraShake(sniperFireShake);
@@ -3582,7 +3658,7 @@ void APlayerCharacter::ProcessSniperFireLocal()
 void APlayerCharacter::ProcessSniperFireSimulatedProxy() const
 {
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), SniperFireSound, GetActorLocation());
-	FTransform ParticleTrans = sniperComp->GetSocketTransform(FName("SniperFirePosition"));
+	FTransform ParticleTrans = SniperComp->GetSocketTransform(FName("SniperFirePosition"));
 	ParticleTrans.SetScale3D(FVector(0.7));
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperFireParticle, ParticleTrans);
 }
@@ -3677,7 +3753,7 @@ void APlayerCharacter::ProcessPistolFireLocal()
 	}
 	else
 	{
-		FTransform ParticleTrans = pistolComp->GetSocketTransform(FName("PistolFirePosition"));
+		FTransform ParticleTrans = PistolComp->GetSocketTransform(FName("PistolFirePosition"));
 		ParticleTrans.SetScale3D(FVector(0.7));
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PistolfireParticle, ParticleTrans);
 	}
@@ -3691,7 +3767,7 @@ void APlayerCharacter::ProcessPistolFireLocal()
 void APlayerCharacter::ProcessPistolFireSimulatedProxy() const
 {
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), PistolFireSound, GetActorLocation());
-	FTransform ParticleTrans = pistolComp->GetSocketTransform(FName("PistolFirePosition"));
+	FTransform ParticleTrans = PistolComp->GetSocketTransform(FName("PistolFirePosition"));
 	ParticleTrans.SetScale3D(FVector(0.7));
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PistolfireParticle, ParticleTrans);
 }
@@ -3756,7 +3832,7 @@ void APlayerCharacter::ProcessM249FireAnim()
 
 void APlayerCharacter::ProcessM249FireLocal()
 {
-	FTransform particleTrans = m249Comp->GetSocketTransform(FName("M249FirePosition"));
+	FTransform particleTrans = M249Comp->GetSocketTransform(FName("M249FirePosition"));
 	particleTrans.SetScale3D(FVector(0.7));
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PistolfireParticle, particleTrans);
 	UGameplayStatics::PlaySound2D(GetWorld(), M249FireSound);
@@ -3779,7 +3855,7 @@ void APlayerCharacter::ProcessM249FireLocal()
 
 void APlayerCharacter::ProcessM249FireSimulatedProxy() const
 {
-	FTransform ParticleTrans = m249Comp->GetSocketTransform(FName("M249FirePosition"));
+	FTransform ParticleTrans = M249Comp->GetSocketTransform(FName("M249FirePosition"));
 	ParticleTrans.SetScale3D(FVector(0.7));
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PistolfireParticle, ParticleTrans);
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), M249FireSound, GetActorLocation());
@@ -3806,87 +3882,6 @@ float APlayerCharacter::SetFireInterval()
 	return 0;
 }
 
-float APlayerCharacter::GetAttackDamage(const bool IsPlayer)
-{
-	if (weaponArray[0] == true)
-	{
-		if (IsPlayer)
-		{
-			RandPlayerAttackDamageRifle = GenerateRandomDamage(PlayerAttackDamageRifle);
-			return RandPlayerAttackDamageRifle;
-		}
-		RandEnemyAttackDamageRifle = GenerateRandomDamage(EnemyAttackDamageRifle);
-		return RandEnemyAttackDamageRifle;
-	}
-	if (weaponArray[1] == true)
-	{
-		if (IsPlayer)
-		{
-			RandPlayerAttackDamageSniper = GenerateRandomDamage(PlayerAttackDamageSniper);
-			return RandPlayerAttackDamageSniper;
-		}
-		RandEnemyAttackDamageSniper = GenerateRandomDamage(EnemyAttackDamageSniper);
-		return RandEnemyAttackDamageSniper;
-	}
-	if (weaponArray[2] == true)
-	{
-		if (IsPlayer)
-		{
-			RandPlayerAttackDamagePistol = GenerateRandomDamage(PlayerAttackDamagePistol);
-			return RandPlayerAttackDamagePistol;
-		}
-		RandEnemyAttackDamagePistol = GenerateRandomDamage(EnemyAttackDamagePistol);
-		return RandEnemyAttackDamagePistol;
-	}
-	if (weaponArray[3] == true)
-	{
-		if (IsPlayer)
-		{
-			RandPlayerAttackDamageM249 = GenerateRandomDamage(PlayerAttackDamageM249);
-			return RandPlayerAttackDamageM249;
-		}
-		RandEnemyAttackDamageM249 = GenerateRandomDamage(EnemyAttackDamageM249);
-		return RandEnemyAttackDamageM249;
-	}
-	return 0;
-}
-
-int32 APlayerCharacter::GetAttackDamageCache(const bool IsPlayer)
-{
-	if (weaponArray[0] == true)
-	{
-		if (IsPlayer)
-		{
-			return RandPlayerAttackDamageRifle;
-		}
-		return RandEnemyAttackDamageRifle;
-	}
-	if (weaponArray[1] == true)
-	{
-		if (IsPlayer)
-		{
-			return RandPlayerAttackDamageSniper;
-		}
-		return RandEnemyAttackDamageSniper;
-	}
-	if (weaponArray[2] == true)
-	{
-		if (IsPlayer)
-		{
-			return RandPlayerAttackDamagePistol;
-		}
-		return RandEnemyAttackDamagePistol;
-	}
-	if (weaponArray[3] == true)
-	{
-		if (IsPlayer)
-		{
-			return RandPlayerAttackDamageM249;
-		}
-		return RandEnemyAttackDamageM249;
-	}
-	return 0;
-}
 
 void APlayerCharacter::PlayerDeath()
 {
@@ -3915,7 +3910,7 @@ void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 		SetFirstPersonModePistol(false);
 		GetController()->SetIgnoreMoveInput(true);
 		GetController()->SetIgnoreLookInput(true);
-		if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->InventoryCaching(this);
+		//if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->InventoryCaching(this);
 		UWidgetLayoutLibrary::RemoveAllWidgets(GetWorld());
 		APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 		// 카메라 페이드 연출

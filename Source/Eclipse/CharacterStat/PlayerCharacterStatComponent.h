@@ -9,6 +9,7 @@
 
 DECLARE_MULTICAST_DELEGATE(FOnHpZeroDelegate);
 DECLARE_MULTICAST_DELEGATE(FOnHpChangedDelegate);
+DECLARE_MULTICAST_DELEGATE(FOnStatChangedDelegate);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class ECLIPSE_API UPlayerCharacterStatComponent : public UActorComponent
@@ -18,8 +19,8 @@ class ECLIPSE_API UPlayerCharacterStatComponent : public UActorComponent
 public:
 	FOnHpZeroDelegate OnHpZero;
 	FOnHpChangedDelegate OnHpChanged;
-
-
+	FOnStatChangedDelegate OnStatChanged;
+	
 	// Sets default values for this component's properties
 	UPlayerCharacterStatComponent();
 	UFUNCTION(BlueprintCallable)
@@ -28,7 +29,18 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE float GetMaxHp() const { return MaxHp; }
 
-	float ApplyDamage(float InDamage, AActor* DamageCauser);
+	float ApplyDamage(float InDamage, AActor* DamageCauser);	
+	
+	FORCEINLINE void HealHp(const float InHealAmount) { CurrentHp = FMath::Clamp(CurrentHp + InHealAmount, 0, MaxHp); OnHpChanged.Broadcast(); }
+	
+	FORCEINLINE float GetRecoilRate() const {return RecoilRate;}
+	void SetRecoilRate(const TArray<bool>& WeaponArray);
+
+	double GenerateRandomFloat(const float InFloat) const;
+	int32 GenerateRandomInteger(const float InFloat) const;
+
+	float GetAttackDamage(const TArray<bool>& WeaponArray, const bool IsPlayer);	
+	
 	UFUNCTION(BlueprintCallable)
 	void SetHp(float NewHp);
 
@@ -52,6 +64,59 @@ protected:
 	UPROPERTY(ReplicatedUsing = OnRep_MaxHp, Transient, VisibleInstanceOnly, Category = Stat)
 	float MaxHp = 100.f;
 
+	UPROPERTY(VisibleInstanceOnly, Category = Stat)
+	float RecoilRate;
+
+	UPROPERTY(VisibleInstanceOnly, Category = Stat)
+	float BaseRifleRecoilRate;
+	
+	UPROPERTY(Replicated, VisibleDefaultsOnly)
+	float RandPlayerAttackDamageRifle;
+
+	UPROPERTY(Replicated, VisibleDefaultsOnly)
+	float RandPlayerAttackDamagePistol;
+
+	UPROPERTY(Replicated, VisibleDefaultsOnly)
+	float RandPlayerAttackDamageSniper;
+
+	UPROPERTY(Replicated, VisibleDefaultsOnly)
+	float RandPlayerAttackDamageM249;
+
+	UPROPERTY(Replicated, VisibleDefaultsOnly)
+	float RandEnemyAttackDamageRifle;
+
+	UPROPERTY(Replicated, VisibleDefaultsOnly)
+	float RandEnemyAttackDamagePistol;
+
+	UPROPERTY(Replicated, VisibleDefaultsOnly)
+	float RandEnemyAttackDamageSniper;
+
+	UPROPERTY(Replicated, VisibleDefaultsOnly)
+	float RandEnemyAttackDamageM249;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float PlayerAttackDamageRifle = 9.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float PlayerAttackDamagePistol = 15.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float PlayerAttackDamageSniper = 70.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float PlayerAttackDamageM249 = 8.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float EnemyAttackDamageRifle = 90.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float EnemyAttackDamagePistol = 150.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float EnemyAttackDamageSniper = 700.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float EnemyAttackDamageM249 = 80.f;
 
 	UFUNCTION()
 	void OnRep_CurrentHp() const;

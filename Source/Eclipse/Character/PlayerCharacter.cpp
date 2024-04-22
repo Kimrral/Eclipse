@@ -2330,9 +2330,9 @@ void APlayerCharacter::DeadBodyInteractionRPCMutlicast_Implementation(APlayerCha
 {
 	if (IsLocallyControlled())
 	{
-		if (AEclipsePlayerState* EcDeadPlayerState = Cast<AEclipsePlayerState>(DeadPlayerCharacter->GetPlayerState()))
+		if (AEclipsePlayerState* EcPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))
 		{
-			EcDeadPlayerState->DeadBodyWidgetSettings(this, EcDeadPlayerState);
+			EcPlayerState->DeadBodyWidgetSettings(DeadPlayerCharacter, this);
 		}
 		UGameplayStatics::PlaySound2D(GetWorld(), tabSound);
 		infoWidgetUI->RemoveFromParent();

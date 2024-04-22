@@ -3454,6 +3454,62 @@ void APlayerCharacter::EquipArmorInventorySlot(const bool IsEquipping)
 	}
 }
 
+void APlayerCharacter::EquipHelmetInventorySlot(const bool IsEquipping)
+{
+	if (IsEquipping)
+	{
+		IsEquipHelmet = true;
+		OnRep_IsEquipHelmet();
+	}
+	else
+	{
+		IsEquipHelmet = false;
+		OnRep_IsEquipHelmet();
+	}
+}
+
+void APlayerCharacter::EquipGoggleInventorySlot(const bool IsEquipping)
+{
+	if (IsEquipping)
+	{
+		IsEquipGoggle = true;
+		OnRep_IsEquipGoggle();
+	}
+	else
+	{
+		IsEquipGoggle = false;
+		OnRep_IsEquipGoggle();
+	}
+}
+
+void APlayerCharacter::EquipHeadsetInventorySlot(const bool IsEquipping)
+{
+	if (IsEquipping)
+	{
+		IsEquipHeadset = true;
+		OnRep_IsEquipHeadset();
+	}
+	else
+	{
+		IsEquipHeadset = false;
+		OnRep_IsEquipHeadset();
+	}
+}
+
+void APlayerCharacter::EquipMaskInventorySlot(const bool IsEquipping)
+{
+	if (IsEquipping)
+	{
+		IsEquipMask = true;
+		OnRep_IsEquipMask();
+	}
+	else
+	{
+		IsEquipMask = false;
+		OnRep_IsEquipMask();
+	}
+}
+
 void APlayerCharacter::ProcessRifleFireAnim()
 {
 	StopAnimMontage();

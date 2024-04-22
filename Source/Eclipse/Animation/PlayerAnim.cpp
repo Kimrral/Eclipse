@@ -25,57 +25,57 @@ void UPlayerAnim::AnimNotify_ReloadEnd() const
 {
 	if (me->weaponArray[0] == true)
 	{
-		if (me->maxRifleAmmo < (40 + me->SetRifleAdditionalMagazine()) - me->curRifleAmmo)
+		if (me->maxRifleAmmo < (40 - me->curRifleAmmo))
 		{
 			me->curRifleAmmo += me->maxRifleAmmo;
 			me->maxRifleAmmo = 0;
 		}
 		else
 		{
-			me->maxRifleAmmo -= ((40 + me->SetRifleAdditionalMagazine()) - me->curRifleAmmo);
-			me->curRifleAmmo += ((40 + me->SetRifleAdditionalMagazine()) - me->curRifleAmmo);
+			me->maxRifleAmmo -= (40 - me->curRifleAmmo);
+			me->curRifleAmmo += (40- me->curRifleAmmo);
 		}
 		UE_LOG(LogTemp, Warning, TEXT("MaxRifleAmmo:%d"), me->maxRifleAmmo)
 	}
 	else if (me->weaponArray[1] == true)
 	{
-		if (me->maxSniperAmmo < (5 + me->SetSniperAdditionalMagazine()) - me->curSniperAmmo)
+		if (me->maxSniperAmmo < (5  - me->curSniperAmmo))
 		{
 			me->curSniperAmmo += me->maxSniperAmmo;
 			me->maxSniperAmmo = 0;
 		}
 		else
 		{
-			me->maxSniperAmmo -= ((5 + me->SetSniperAdditionalMagazine()) - me->curSniperAmmo);
-			me->curSniperAmmo += ((5 + me->SetSniperAdditionalMagazine()) - me->curSniperAmmo);
+			me->maxSniperAmmo -= (5 - me->curSniperAmmo);
+			me->curSniperAmmo += (5- me->curSniperAmmo);
 		}
 		UE_LOG(LogTemp, Warning, TEXT("MaxSniperAmmo:%d"), me->maxSniperAmmo)
 	}
 	else if (me->weaponArray[2] == true)
 	{
-		if (me->maxPistolAmmo < (8 + me->SetPistolAdditionalMagazine()) - me->curPistolAmmo)
+		if (me->maxPistolAmmo < (8  - me->curPistolAmmo))
 		{
 			me->curPistolAmmo += me->maxPistolAmmo;
 			me->maxPistolAmmo = 0;
 		}
 		else
 		{
-			me->maxPistolAmmo -= ((8 + me->SetPistolAdditionalMagazine()) - me->curPistolAmmo);
-			me->curPistolAmmo += ((8 + me->SetPistolAdditionalMagazine()) - me->curPistolAmmo);
+			me->maxPistolAmmo -= (8 - me->curPistolAmmo);
+			me->curPistolAmmo += (8 - me->curPistolAmmo);
 		}
 		UE_LOG(LogTemp, Warning, TEXT("MaxPistolAmmo:%d"), me->maxPistolAmmo)
 	}
 	else if (me->weaponArray[3] == true)
 	{
-		if (me->maxM249Ammo < (100 + me->SetM249AdditionalMagazine()) - me->curM249Ammo)
+		if (me->maxM249Ammo < (100  - me->curM249Ammo))
 		{
 			me->curM249Ammo += me->maxPistolAmmo;
 			me->maxM249Ammo = 0;
 		}
 		else
 		{
-			me->maxM249Ammo -= ((100 + me->SetM249AdditionalMagazine()) - me->curM249Ammo);
-			me->curM249Ammo += ((100 + me->SetM249AdditionalMagazine()) - me->curM249Ammo);
+			me->maxM249Ammo -= (100 - me->curM249Ammo);
+			me->curM249Ammo += (100  - me->curM249Ammo);
 		}
 		UE_LOG(LogTemp, Warning, TEXT("MaxM249Ammo:%d"), me->maxM249Ammo)
 	}

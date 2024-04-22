@@ -21,5 +21,7 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void DeadBodyWidgetSettings(APlayerCharacter* DeadPlayerCharacterRef, AEclipsePlayerState* DeadPlayerState);
+
+	virtual  void CopyProperties(APlayerState* PlayerState) override;
 	
 };

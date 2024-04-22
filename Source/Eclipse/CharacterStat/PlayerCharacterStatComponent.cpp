@@ -53,9 +53,51 @@ void UPlayerCharacterStatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeP
 	DOREPLIFETIME(UPlayerCharacterStatComponent, MaxHp);
 	DOREPLIFETIME(UPlayerCharacterStatComponent, AccumulatedDamageToPlayer);
 	DOREPLIFETIME(UPlayerCharacterStatComponent, AccumulatedDamageToEnemy);
+	DOREPLIFETIME(UPlayerCharacterStatComponent, RandPlayerAttackDamageRifle);
+	DOREPLIFETIME(UPlayerCharacterStatComponent, RandPlayerAttackDamagePistol);
+	DOREPLIFETIME(UPlayerCharacterStatComponent, RandPlayerAttackDamageSniper);
+	DOREPLIFETIME(UPlayerCharacterStatComponent, RandPlayerAttackDamageM249);
+	DOREPLIFETIME(UPlayerCharacterStatComponent, RandEnemyAttackDamageRifle);
+	DOREPLIFETIME(UPlayerCharacterStatComponent, RandEnemyAttackDamagePistol);
+	DOREPLIFETIME(UPlayerCharacterStatComponent, RandEnemyAttackDamageSniper);
+	DOREPLIFETIME(UPlayerCharacterStatComponent, RandEnemyAttackDamageM249);
 }
 
-void UPlayerCharacterStatComponent::SetHp(float NewHp)
+void UPlayerCharacterStatComponent::SetRecoilRate(const TArray<bool>& WeaponArray)
+{
+	if (WeaponArray[0] == true)
+	{
+		RecoilRate = GenerateRandomFloat(BaseRifleRecoilRate);
+		return;
+	}
+	if (WeaponArray[1] == true)
+	{
+		return;
+	}
+	if (WeaponArray[2] == true)
+	{
+		return;
+	}
+	if (WeaponArray[3] == true)
+	{
+		return;
+	}
+}
+
+double UPlayerCharacterStatComponent::GenerateRandomFloat(const float InFloat) const
+{
+	const double DoubleRandFloat = FMath::FRandRange(InFloat * 0.8, InFloat * 1.2);
+	return DoubleRandFloat;
+}
+
+int32 UPlayerCharacterStatComponent::GenerateRandomInteger(const float InFloat) const
+{
+	const double DoubleRandInteger = FMath::FRandRange(InFloat * 0.8, InFloat * 1.2);
+	const int32 RoundedRandInteger = FMath::RoundHalfToEven(DoubleRandInteger);
+	return RoundedRandInteger;
+}
+
+void UPlayerCharacterStatComponent::SetHp(const float NewHp)
 {
 	CurrentHp = FMath::Clamp<float>(NewHp, 0.0f, MaxHp);
 }
@@ -73,4 +115,49 @@ void UPlayerCharacterStatComponent::OnRep_CurrentHp() const
 void UPlayerCharacterStatComponent::OnRep_MaxHp() const
 {
 	OnHpChanged.Broadcast();
+}
+
+float UPlayerCharacterStatComponent::GetAttackDamage(const TArray<bool>& WeaponArray, const bool IsPlayer)
+{
+	if (WeaponArray[0] == true)
+	{
+		if (IsPlayer)
+		{
+			RandPlayerAttackDamageRifle = GenerateRandomInteger(PlayerAttackDamageRifle);
+			return RandPlayerAttackDamageRifle;
+		}
+		RandEnemyAttackDamageRifle = GenerateRandomInteger(EnemyAttackDamageRifle);
+		return RandEnemyAttackDamageRifle;
+	}
+	if (WeaponArray[1] == true)
+	{
+		if (IsPlayer)
+		{
+			RandPlayerAttackDamageSniper = GenerateRandomInteger(PlayerAttackDamageSniper);
+			return RandPlayerAttackDamageSniper;
+		}
+		RandEnemyAttackDamageSniper = GenerateRandomInteger(EnemyAttackDamageSniper);
+		return RandEnemyAttackDamageSniper;
+	}
+	if (WeaponArray[2] == true)
+	{
+		if (IsPlayer)
+		{
+			RandPlayerAttackDamagePistol = GenerateRandomInteger(PlayerAttackDamagePistol);
+			return RandPlayerAttackDamagePistol;
+		}
+		RandEnemyAttackDamagePistol = GenerateRandomInteger(EnemyAttackDamagePistol);
+		return RandEnemyAttackDamagePistol;
+	}
+	if (WeaponArray[3] == true)
+	{
+		if (IsPlayer)
+		{
+			RandPlayerAttackDamageM249 = GenerateRandomInteger(PlayerAttackDamageM249);
+			return RandPlayerAttackDamageM249;
+		}
+		RandEnemyAttackDamageM249 = GenerateRandomInteger(EnemyAttackDamageM249);
+		return RandEnemyAttackDamageM249;
+	}
+	return 0;
 }

@@ -213,11 +213,6 @@ public:
 	float SetFireInterval();
 
 	UFUNCTION()
-	float GetAttackDamage(bool IsPlayer);
-	UFUNCTION()
-	int32 GetAttackDamageCache(bool IsPlayer);
-
-	UFUNCTION()
 	void ChangeWeaponToRifle(ARifleActor* RifleActor);
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ChangeWeaponToRifleRPCServer(ARifleActor* RifleActor);
@@ -480,6 +475,21 @@ public:
 
 	UFUNCTION()
 	void OnRep_WeaponArrayChanged() const;
+	
+	UFUNCTION()
+	void OnRep_IsEquipArmor() const;
+	
+	UFUNCTION()
+	void OnRep_IsEquipHelmet() const;
+
+	UFUNCTION()
+	void OnRep_IsEquipGoggle() const;
+
+	UFUNCTION()
+	void OnRep_IsEquipMask() const;
+
+	UFUNCTION()
+	void OnRep_IsEquipHeadset() const;
 
 	UFUNCTION()
 	int32 GenerateRandomDamage(float InDamage) const;
@@ -495,6 +505,9 @@ public:
 	UFUNCTION()
 	void SetFirstPersonModePistol(const bool IsFirstPerson);
 
+	UFUNCTION(BlueprintCallable)
+	void EquipArmorInventorySlot(bool IsEquipping);
+
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	/** Returns CameraBoom subobject **/
@@ -503,28 +516,22 @@ public:
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
-	class UStaticMeshComponent* sniperComp;
+	class UStaticMeshComponent* SniperComp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
-	class UStaticMeshComponent* rifleComp;
+	class UStaticMeshComponent* RifleComp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
 	class UStaticMeshComponent* FirstPersonRifleComp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
-	class UStaticMeshComponent* pistolComp;
+	class UStaticMeshComponent* PistolComp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
 	class UStaticMeshComponent* FirstPersonPistolComp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
-	class UStaticMeshComponent* m249Comp;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
-	class UStaticMeshComponent* grenade;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
-	class UStaticMeshComponent* rocketLauncher;
+	class UStaticMeshComponent* M249Comp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
 	class UStaticMeshComponent* HeadSetSlot;
@@ -840,6 +847,21 @@ public:
 	UPROPERTY(Replicated)
 	bool CanShoot = true;
 
+	UPROPERTY(ReplicatedUsing=OnRep_IsEquipArmor)
+	bool IsEquipArmor;
+	
+	UPROPERTY(ReplicatedUsing=OnRep_IsEquipHelmet)
+	bool IsEquipHelmet;
+
+	UPROPERTY(ReplicatedUsing=OnRep_IsEquipHeadset)
+	bool IsEquipHeadset;
+
+	UPROPERTY(ReplicatedUsing=OnRep_IsEquipGoggle)
+	bool IsEquipGoggle;
+
+	UPROPERTY(ReplicatedUsing=OnRep_IsEquipMask)
+	bool IsEquipMask;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float BulletsPerSecRifle = 11.f;
 
@@ -852,53 +874,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float BulletsPerSecM249 = 8.f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float PlayerAttackDamageRifle = 9.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float PlayerAttackDamagePistol = 15.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float PlayerAttackDamageSniper = 70.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float PlayerAttackDamageM249 = 8.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float EnemyAttackDamageRifle = 90.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float EnemyAttackDamagePistol = 150.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float EnemyAttackDamageSniper = 700.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float EnemyAttackDamageM249 = 80.f;
-
-	UPROPERTY(Replicated, VisibleDefaultsOnly)
-	float RandPlayerAttackDamageRifle;
-
-	UPROPERTY(Replicated, VisibleDefaultsOnly)
-	float RandPlayerAttackDamagePistol;
-
-	UPROPERTY(Replicated, VisibleDefaultsOnly)
-	float RandPlayerAttackDamageSniper;
-
-	UPROPERTY(Replicated, VisibleDefaultsOnly)
-	float RandPlayerAttackDamageM249;
-
-	UPROPERTY(Replicated, VisibleDefaultsOnly)
-	float RandEnemyAttackDamageRifle;
-
-	UPROPERTY(Replicated, VisibleDefaultsOnly)
-	float RandEnemyAttackDamagePistol;
-
-	UPROPERTY(Replicated, VisibleDefaultsOnly)
-	float RandEnemyAttackDamageSniper;
-
-	UPROPERTY(Replicated, VisibleDefaultsOnly)
-	float RandEnemyAttackDamageM249;
 
 	//Sounds
 	UPROPERTY(EditAnywhere, Category="Sounds")
@@ -1047,7 +1022,9 @@ public:
 	UPROPERTY()
 	FTimerHandle SniperZoomOutHandle;
 
-
+	UPROPERTY(Replicated)
+	float DamageAmount;
+	
 	UPROPERTY()
 	bool HelmetEquipped = false;
 

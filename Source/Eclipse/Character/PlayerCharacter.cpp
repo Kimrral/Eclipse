@@ -145,8 +145,8 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer)
 	Stat = CreateDefaultSubobject<UPlayerCharacterStatComponent>(TEXT("Stat"));
 
 	SetReplicates(true);
-	NetUpdateFrequency=200.f;
-	MinNetUpdateFrequency=10.f;
+	NetUpdateFrequency = 200.f;
+	MinNetUpdateFrequency = 10.f;
 }
 
 // Called when the game starts or when spawned
@@ -319,18 +319,13 @@ void APlayerCharacter::BeginPlay()
 
 	// Apply Inventory Cache [GameInstance]
 	ApplyCachingValues();
-	ApplyPouchCache();
-	ApplyInventoryCache();
-	ApplyStashCache();
-	ApplyGearCache();
-	ApplyMagCache();
 
 	// Update Tab Widget Before Widget Constructor
 	UpdateTabWidget();
 }
 
 // Called every frame
-void APlayerCharacter::Tick(float DeltaTime)
+void APlayerCharacter::Tick(const float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
@@ -1392,7 +1387,7 @@ void APlayerCharacter::Tab()
 
 void APlayerCharacter::OpenMenu()
 {
-	if(MenuWidgetUI&&!MenuWidgetUI->IsInViewport())
+	if (MenuWidgetUI && !MenuWidgetUI->IsInViewport())
 	{
 		UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(PC, MenuWidgetUI);
 		PC->SetShowMouseCursor(true);
@@ -1446,7 +1441,6 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 				if (TickOverlapBoolean == false)
 				{
 					TickOverlapBoolean = true;
-					isCursorOnRifle = true;
 					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
 					rifleActor->weaponMesh->SetRenderCustomDepth(true);
 					// Widget Switcher 이용한 무기 정보 위젯 스위칭
@@ -1463,7 +1457,6 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 				if (TickOverlapBoolean == false)
 				{
 					TickOverlapBoolean = true;
-					isCursorOnSniper = true;
 					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
 					sniperActor->weaponMesh->SetRenderCustomDepth(true);
 					// Widget Switcher 이용한 무기 정보 위젯 스위칭
@@ -1480,7 +1473,6 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 				if (TickOverlapBoolean == false)
 				{
 					TickOverlapBoolean = true;
-					isCursorOnPistol = true;
 					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
 					pistolActor->weaponMesh->SetRenderCustomDepth(true);
 					// Widget Switcher 이용한 무기 정보 위젯 스위칭
@@ -1497,7 +1489,6 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 				if (TickOverlapBoolean == false)
 				{
 					TickOverlapBoolean = true;
-					isCursorOnM249 = true;
 					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
 					m249Actor->weaponMesh->SetRenderCustomDepth(true);
 					// Widget Switcher 이용한 무기 정보 위젯 스위칭
@@ -2058,7 +2049,7 @@ bool APlayerCharacter::PickableItemActorInteractionRPCServer_Validate(APickableA
 
 void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(APickableActor* PickableActor)
 {
-	if (PickableActor&&!PickableActor->IsAlreadyLooted)
+	if (PickableActor && !PickableActor->IsAlreadyLooted)
 	{
 		if (IsLocallyControlled())
 		{
@@ -2075,10 +2066,11 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 		{
 			if (HasAuthority())
 			{
-				RifleMagActor->IsAlreadyLooted=true;
+				RifleMagActor->IsAlreadyLooted = true;
 				SetActorTickEnabled(false);
 				RifleMagActor->SetLifeSpan(1.f);
 				RifleMagActor->SetActorHiddenInGame(true);
+				RifleMagActor->AddInventory(this);
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					SetActorTickEnabled(true);
@@ -2087,7 +2079,6 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 			if (IsLocallyControlled())
 			{
 				if (infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
-				RifleMagActor->AddInventory(this);
 			}
 
 			return;
@@ -2097,10 +2088,11 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 		{
 			if (HasAuthority())
 			{
-				SniperMagActor->IsAlreadyLooted=true;
+				SniperMagActor->IsAlreadyLooted = true;
 				SetActorTickEnabled(false);
 				SniperMagActor->SetLifeSpan(1.f);
 				SniperMagActor->SetActorHiddenInGame(true);
+				SniperMagActor->AddInventory(this);
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					SetActorTickEnabled(true);
@@ -2109,8 +2101,6 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 			if (IsLocallyControlled())
 			{
 				if (infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
-
-				SniperMagActor->AddInventory(this);
 			}
 			return;
 		}
@@ -2119,10 +2109,11 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 		{
 			if (HasAuthority())
 			{
-				PistolMagActor->IsAlreadyLooted=true;
+				PistolMagActor->IsAlreadyLooted = true;
 				SetActorTickEnabled(false);
 				PistolMagActor->SetLifeSpan(1.f);
 				PistolMagActor->SetActorHiddenInGame(true);
+				PistolMagActor->AddInventory(this);
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					SetActorTickEnabled(true);
@@ -2131,8 +2122,6 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 			if (IsLocallyControlled())
 			{
 				if (infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
-
-				PistolMagActor->AddInventory(this);
 			}
 
 			return;
@@ -2142,10 +2131,11 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 		{
 			if (HasAuthority())
 			{
-				M249MagActor->IsAlreadyLooted=true;
+				M249MagActor->IsAlreadyLooted = true;
 				SetActorTickEnabled(false);
 				M249MagActor->SetLifeSpan(1.f);
 				M249MagActor->SetActorHiddenInGame(true);
+				M249MagActor->AddInventory(this);
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					SetActorTickEnabled(true);
@@ -2154,8 +2144,6 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 			if (IsLocallyControlled())
 			{
 				if (infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
-
-				M249MagActor->AddInventory(this);
 			}
 
 			return;
@@ -2165,10 +2153,11 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 		{
 			if (HasAuthority())
 			{
-				GoggleActor->IsAlreadyLooted=true;
+				GoggleActor->IsAlreadyLooted = true;
 				SetActorTickEnabled(false);
 				GoggleActor->SetLifeSpan(1.f);
 				GoggleActor->SetActorHiddenInGame(true);
+				GoggleActor->AddInventory(this);
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					SetActorTickEnabled(true);
@@ -2177,8 +2166,6 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 			if (IsLocallyControlled())
 			{
 				if (infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
-
-				GoggleActor->AddInventory(this);
 			}
 
 			return;
@@ -2188,10 +2175,11 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 		{
 			if (HasAuthority())
 			{
-				HelmetActor->IsAlreadyLooted=true;
+				HelmetActor->IsAlreadyLooted = true;
 				SetActorTickEnabled(false);
 				HelmetActor->SetLifeSpan(1.f);
 				HelmetActor->SetActorHiddenInGame(true);
+				HelmetActor->AddInventory(this);
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					SetActorTickEnabled(true);
@@ -2200,8 +2188,6 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 			if (IsLocallyControlled())
 			{
 				if (infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
-
-				HelmetActor->AddInventory(this);
 			}
 
 			return;
@@ -2211,10 +2197,11 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 		{
 			if (HasAuthority())
 			{
-				HeadsetActor->IsAlreadyLooted=true;
+				HeadsetActor->IsAlreadyLooted = true;
 				SetActorTickEnabled(false);
 				HeadsetActor->SetLifeSpan(1.f);
 				HeadsetActor->SetActorHiddenInGame(true);
+				HeadsetActor->AddInventory(this);
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					SetActorTickEnabled(true);
@@ -2223,8 +2210,6 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 			if (IsLocallyControlled())
 			{
 				if (infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
-
-				HeadsetActor->AddInventory(this);
 			}
 
 			return;
@@ -2234,10 +2219,11 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 		{
 			if (HasAuthority())
 			{
-				MaskActor->IsAlreadyLooted=true;
+				MaskActor->IsAlreadyLooted = true;
 				SetActorTickEnabled(false);
 				MaskActor->SetLifeSpan(1.f);
 				MaskActor->SetActorHiddenInGame(true);
+				MaskActor->AddInventory(this);
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					SetActorTickEnabled(true);
@@ -2246,8 +2232,6 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 			if (IsLocallyControlled())
 			{
 				if (infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
-
-				MaskActor->AddInventory(this);
 			}
 
 			return;
@@ -2257,10 +2241,11 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 		{
 			if (HasAuthority())
 			{
-				ArmorActor->IsAlreadyLooted=true;
+				ArmorActor->IsAlreadyLooted = true;
 				SetActorTickEnabled(false);
 				ArmorActor->SetLifeSpan(1.f);
 				ArmorActor->SetActorHiddenInGame(true);
+				ArmorActor->AddInventory(this);
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					SetActorTickEnabled(true);
@@ -2269,8 +2254,6 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 			if (IsLocallyControlled())
 			{
 				if (infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
-
-				ArmorActor->AddInventory(this);
 			}
 
 			return;
@@ -2280,10 +2263,11 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 		{
 			if (HasAuthority())
 			{
-				MedKitActor->IsAlreadyLooted=true;
+				MedKitActor->IsAlreadyLooted = true;
 				SetActorTickEnabled(false);
 				MedKitActor->SetLifeSpan(1.f);
 				MedKitActor->SetActorHiddenInGame(true);
+				MedKitActor->AddInventory(this);
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					SetActorTickEnabled(true);
@@ -2292,8 +2276,6 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 			if (IsLocallyControlled())
 			{
 				if (infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
-
-				MedKitActor->AddInventory(this);
 			}
 
 			return;
@@ -2303,10 +2285,11 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 		{
 			if (HasAuthority())
 			{
-				HackingConsole->IsAlreadyLooted=true;
+				HackingConsole->IsAlreadyLooted = true;
 				SetActorTickEnabled(false);
 				HackingConsole->SetLifeSpan(1.f);
 				HackingConsole->SetActorHiddenInGame(true);
+				HackingConsole->AddInventory(this);
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					SetActorTickEnabled(true);
@@ -2316,7 +2299,6 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 			{
 				if (infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
 
-				HackingConsole->AddInventory(this);
 				ConsoleCount++;
 				informationUI->ConsoleCount->SetText(FText::AsNumber(ConsoleCount));
 			}
@@ -2765,13 +2747,10 @@ void APlayerCharacter::InteractionProcess()
 					FTimerHandle endHandle;
 					GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()-> void
 					{
-						PouchCaching();
 						if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))
 						{
 							CachingPlayerState->InventoryCaching(this);
 						}
-						GearCaching();
-						MagCaching();
 						UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"));
 					}), 9.f, false);
 				}
@@ -2869,7 +2848,7 @@ void APlayerCharacter::MulticastRPCReload_Implementation()
 {
 	if (const bool IsMontagePlaying = animInstance->IsAnyMontagePlaying(); !IsMontagePlaying)
 	{
-		if (weaponArray[0] == true && curRifleAmmo < 40 + SetRifleAdditionalMagazine() && maxRifleAmmo > 0)
+		if (weaponArray[0] == true && curRifleAmmo < 40 && maxRifleAmmo > 0)
 		{
 			if (IsLocallyControlled())
 			{
@@ -2884,7 +2863,7 @@ void APlayerCharacter::MulticastRPCReload_Implementation()
 
 			PlayAnimMontage(UpperOnlyMontage, 1, FName("Reload"));
 		}
-		else if (weaponArray[1] == true && curSniperAmmo < 5 + SetSniperAdditionalMagazine() && maxSniperAmmo > 0)
+		else if (weaponArray[1] == true && curSniperAmmo < 5 && maxSniperAmmo > 0)
 		{
 			if (IsLocallyControlled())
 			{
@@ -2897,7 +2876,7 @@ void APlayerCharacter::MulticastRPCReload_Implementation()
 			}
 			PlayAnimMontage(UpperOnlyMontage, 1, FName("Reload"));
 		}
-		else if (weaponArray[2] == true && curPistolAmmo < 8 + SetPistolAdditionalMagazine() && maxPistolAmmo > 0)
+		else if (weaponArray[2] == true && curPistolAmmo < 8 && maxPistolAmmo > 0)
 		{
 			if (IsLocallyControlled())
 			{
@@ -2911,7 +2890,7 @@ void APlayerCharacter::MulticastRPCReload_Implementation()
 			}
 			PlayAnimMontage(UpperOnlyMontage, 1, FName("PistolReload"));
 		}
-		else if (weaponArray[3] == true && curM249Ammo < 100 + SetM249AdditionalMagazine() && maxM249Ammo > 0)
+		else if (weaponArray[3] == true && curM249Ammo < 100 && maxM249Ammo > 0)
 		{
 			if (IsLocallyControlled())
 			{
@@ -2953,11 +2932,7 @@ void APlayerCharacter::MoveToIsolatedShip()
 	FTimerHandle EndHandle;
 	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
-		PouchCaching();
 		if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->InventoryCaching(this);
-		StashCaching();
-		GearCaching();
-		MagCaching();
 		UGameplayStatics::OpenLevel(GetWorld(), FName("Map_BigStarStation"));
 	}), 9.f, false);
 }
@@ -2966,7 +2941,7 @@ void APlayerCharacter::MoveToHideout()
 {
 	APlayerCameraManager* PlayerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 	PlayerCam->StartCameraFade(0, 1, 2.0, FLinearColor::Black, false, true);
-	if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->InventoryCaching(this);		
+	if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->InventoryCaching(this);
 	FTimerHandle EndHandle;
 	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
@@ -2994,15 +2969,10 @@ void APlayerCharacter::MoveToBlockedIntersection()
 	FTimerHandle EndHandle;
 	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
-		PouchCaching();
 		if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->InventoryCaching(this);
-		StashCaching();
-		GearCaching();
-		MagCaching();
 		UGameplayStatics::OpenLevel(GetWorld(), FName("192.168.0.3"));
 	}), 9.f, false);
 }
-
 
 
 void APlayerCharacter::SetZoomValue(const float Value)
@@ -3137,92 +3107,6 @@ void APlayerCharacter::DamagedRPCMulticast_Implementation(int Damage, AActor* Da
 	}), 0.3f, false);
 }
 
-int32 APlayerCharacter::SetRifleAdditionalMagazine() const
-{
-	if (bRifleAdditionalMag)
-	{
-		return 15;
-	}
-	return 0;
-}
-
-int32 APlayerCharacter::SetSniperAdditionalMagazine() const
-{
-	if (bSniperAdditionalMag)
-	{
-		return 2;
-	}
-	return 0;
-}
-
-int32 APlayerCharacter::SetPistolAdditionalMagazine() const
-{
-	if (bPistolAdditionalMag)
-	{
-		return 4;
-	}
-	return 0;
-}
-
-int32 APlayerCharacter::SetM249AdditionalMagazine() const
-{
-	if (bM249AdditionalMag)
-	{
-		return 30;
-	}
-	return 0;
-}
-
-void APlayerCharacter::SetRifleAdditionalMagazineSlot()
-{
-	bRifleAdditionalMag = true;
-}
-
-void APlayerCharacter::SetSniperAdditionalMagazineSlot()
-{
-	bSniperAdditionalMag = true;
-}
-
-void APlayerCharacter::SetPistolAdditionalMagazineSlot()
-{
-	bPistolAdditionalMag = true;
-}
-
-void APlayerCharacter::SetM249AdditionalMagazineSlot()
-{
-	bM249AdditionalMag = true;
-}
-
-void APlayerCharacter::UnSetRifleAdditionalMagazineSlot()
-{
-	bRifleAdditionalMag = false;
-	if (curRifleAmmo >= 15)
-	{
-		curRifleAmmo -= 15;
-		maxRifleAmmo += 15;
-	}
-	else
-	{
-		curRifleAmmo = 0;
-		maxRifleAmmo += curRifleAmmo;
-	}
-}
-
-void APlayerCharacter::UnSetSniperAdditionalMagazineSlot()
-{
-	bSniperAdditionalMag = false;
-}
-
-void APlayerCharacter::UnSetPistolAdditionalMagazineSlot()
-{
-	bPistolAdditionalMag = false;
-}
-
-void APlayerCharacter::UnSetM249AdditionalMagazineSlot()
-{
-	bM249AdditionalMag = false;
-}
-
 void APlayerCharacter::OnRep_WeaponArrayChanged() const
 {
 	WeaponChangeDele.Broadcast();
@@ -3271,7 +3155,7 @@ void APlayerCharacter::Fire()
 	GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
 		CanShoot = true;
-	}), 1 / (SetFireInterval() * FireRateMultiplier()), false);
+	}), 1 / SetFireInterval(), false);
 }
 
 bool APlayerCharacter::ServerRPCFire_Validate()
@@ -3432,9 +3316,8 @@ void APlayerCharacter::ExtractionSuccess() const
 	FTimerHandle ExtractionHandle;
 	GetWorld()->GetTimerManager().SetTimer(ExtractionHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
-		UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"));
+		UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"), true);
 	}), 1.5f, false);
-
 }
 
 void APlayerCharacter::SetFirstPersonModeRifle(const bool IsFirstPerson)
@@ -3522,8 +3405,8 @@ void APlayerCharacter::ProcessRifleFireLocal()
 	}
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleFireSound, GetActorLocation());
 
-	const double RandF = UKismetMathLibrary::RandomFloatInRange(-0.3 * RecoilRateMultiplier(), -0.5 * RecoilRateMultiplier());
-	const double RandF2 = UKismetMathLibrary::RandomFloatInRange(-0.3 * RecoilRateMultiplier(), 0.3 * RecoilRateMultiplier());
+	const double RandF = UKismetMathLibrary::RandomFloatInRange(-0.3, -0.5);
+	const double RandF2 = UKismetMathLibrary::RandomFloatInRange(-0.3, 0.3);
 	AddControllerPitchInput(RandF);
 	AddControllerYawInput(RandF2);
 }
@@ -3554,7 +3437,7 @@ void APlayerCharacter::ProcessRifleFire()
 	if (curRifleAmmo > 0)
 	{
 		// Clamp를 통한 탄약 수 차감
-		curRifleAmmo = FMath::Clamp(curRifleAmmo - 1, 0, 40 + SetRifleAdditionalMagazine());
+		curRifleAmmo = FMath::Clamp(curRifleAmmo - 1, 0, 40);
 		if (FirstPersonRifleComp->IsVisible())
 		{
 			RifleLineTraceStart = FirstPersonCamera->GetComponentLocation();
@@ -3617,7 +3500,7 @@ void APlayerCharacter::ProcessSniperFire()
 	if (curSniperAmmo > 0)
 	{
 		// Clamp를 통한 탄약 수 차감
-		curSniperAmmo = FMath::Clamp(curSniperAmmo - 1, 0, 5 + SetSniperAdditionalMagazine());
+		curSniperAmmo = FMath::Clamp(curSniperAmmo - 1, 0, 5);
 		FVector StartLoc = FollowCamera->GetComponentLocation();
 		FVector EndLoc = StartLoc + FollowCamera->GetForwardVector() * 10000.0f;
 		FCollisionQueryParams params;
@@ -3677,8 +3560,8 @@ void APlayerCharacter::ProcessSniperFireAnim()
 void APlayerCharacter::ProcessSniperFireLocal()
 {
 	UGameplayStatics::PlaySound2D(GetWorld(), SniperFireSound);
-	const double RandF = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), -1.2 * RecoilRateMultiplier());
-	const double RandF2 = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), 0.8 * RecoilRateMultiplier());
+	const double RandF = UKismetMathLibrary::RandomFloatInRange(-0.7, -1.2);
+	const double RandF2 = UKismetMathLibrary::RandomFloatInRange(-0.7, 0.8);
 	AddControllerPitchInput(RandF);
 	AddControllerYawInput(RandF2);
 	if (isZooming)
@@ -3709,7 +3592,7 @@ void APlayerCharacter::ProcessPistolFire()
 	if (curPistolAmmo > 0)
 	{
 		// Clamp를 통한 탄약 수 차감
-		curPistolAmmo = FMath::Clamp(curPistolAmmo - 1, 0, 8 + SetPistolAdditionalMagazine());
+		curPistolAmmo = FMath::Clamp(curPistolAmmo - 1, 0, 8);
 		if (FirstPersonPistolComp->IsVisible())
 		{
 			PistolLineTraceStart = FirstPersonCamera->GetComponentLocation();
@@ -3799,8 +3682,8 @@ void APlayerCharacter::ProcessPistolFireLocal()
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PistolfireParticle, ParticleTrans);
 	}
 
-	const double RandF = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), -1.2 * RecoilRateMultiplier());
-	const double RandF2 = UKismetMathLibrary::RandomFloatInRange(-0.7 * RecoilRateMultiplier(), 0.8 * RecoilRateMultiplier());
+	const double RandF = UKismetMathLibrary::RandomFloatInRange(-0.7, -1.2);
+	const double RandF2 = UKismetMathLibrary::RandomFloatInRange(-0.7, 0.8);
 	AddControllerPitchInput(RandF);
 	AddControllerYawInput(RandF2);
 }
@@ -3818,7 +3701,7 @@ void APlayerCharacter::ProcessM249Fire()
 	if (curM249Ammo > 0)
 	{
 		// Clamp를 통한 탄약 수 차감
-		curM249Ammo = FMath::Clamp(curM249Ammo - 1, 0, 100 + SetM249AdditionalMagazine());
+		curM249Ammo = FMath::Clamp(curM249Ammo - 1, 0, 100);
 		FVector StartLoc = FollowCamera->GetComponentLocation();
 		FVector EndLoc = StartLoc + FollowCamera->GetForwardVector() * 10000.0f;
 		FCollisionQueryParams params;
@@ -3880,15 +3763,15 @@ void APlayerCharacter::ProcessM249FireLocal()
 	PC->PlayerCameraManager->StartCameraShake(rifleFireShake);
 	if (isZooming)
 	{
-		const double RandF = UKismetMathLibrary::RandomFloatInRange(-0.4 * RecoilRateMultiplier(), -0.7 * RecoilRateMultiplier());
-		const double RandF2 = UKismetMathLibrary::RandomFloatInRange(-0.4 * RecoilRateMultiplier(), 0.4 * RecoilRateMultiplier());
+		const double RandF = UKismetMathLibrary::RandomFloatInRange(-0.4, -0.7);
+		const double RandF2 = UKismetMathLibrary::RandomFloatInRange(-0.4, 0.4);
 		AddControllerPitchInput(RandF);
 		AddControllerYawInput(RandF2);
 	}
 	else
 	{
-		const double RandF = UKismetMathLibrary::RandomFloatInRange(-0.6 * RecoilRateMultiplier(), -1.1 * RecoilRateMultiplier());
-		const double RandF2 = UKismetMathLibrary::RandomFloatInRange(-0.5 * RecoilRateMultiplier(), 0.5 * RecoilRateMultiplier());
+		const double RandF = UKismetMathLibrary::RandomFloatInRange(-0.6, -1.1);
+		const double RandF2 = UKismetMathLibrary::RandomFloatInRange(-0.5, 0.5);
 		AddControllerPitchInput(RandF);
 		AddControllerYawInput(RandF2);
 	}
@@ -4005,46 +3888,6 @@ int32 APlayerCharacter::GetAttackDamageCache(const bool IsPlayer)
 	return 0;
 }
 
-
-void APlayerCharacter::RemoveBossHPWidget() const
-{
-	if (bossHPUI)
-	{
-		bossHPUI->RemoveFromParent();
-	}
-}
-
-void APlayerCharacter::InfoWidgetUpdate()
-{
-}
-
-float APlayerCharacter::DamageMultiplier() const
-{
-	if (HeadsetEquipped)
-	{
-		return 1.16f;
-	}
-	return 1.f;
-}
-
-float APlayerCharacter::FireRateMultiplier() const
-{
-	if (MaskEquipped)
-	{
-		return 1.23f;
-	}
-	return 1.f;
-}
-
-float APlayerCharacter::RecoilRateMultiplier() const
-{
-	if (GoggleEquipped)
-	{
-		return 1.2f;
-	}
-	return 1.f;
-}
-
 void APlayerCharacter::PlayerDeath()
 {
 	PlayerDeathRPCServer();
@@ -4120,107 +3963,4 @@ void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 	// 			PC->Possess(this);
 	// 		}
 	// }), 0.4f, false);
-}
-
-void APlayerCharacter::EquipHelmet(bool SoundBool)
-{
-	if (SoundBool)
-	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), gearEquipSound, GetActorLocation());
-	}
-	HelmetSlot->SetVisibility(true);
-	HelmetEquipped = true;
-}
-
-void APlayerCharacter::EquipHeadset(bool SoundBool)
-{
-	if (SoundBool)
-	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), gearEquipSound, GetActorLocation());
-	}
-	HeadSetSlot->SetVisibility(true);
-	HeadsetEquipped = true;
-}
-
-void APlayerCharacter::EquipMask(bool SoundBool)
-{
-	if (SoundBool)
-	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), gearEquipSound, GetActorLocation());
-	}
-	MaskSlot->SetVisibility(true);
-	MaskEquipped = true;
-}
-
-void APlayerCharacter::EquipGoggle(bool SoundBool)
-{
-	if (SoundBool)
-	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), gearEquipSound, GetActorLocation());
-	}
-	GoggleSlot->SetVisibility(true);
-	GoggleEquipped = true;
-}
-
-void APlayerCharacter::EquipArmor(bool SoundBool)
-{
-	if (SoundBool)
-	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), gearEquipSound, GetActorLocation());
-	}
-	ArmorSlot->SetVisibility(true);
-	ArmorEquipped = true;
-	//curHP=FMath::Clamp(curHP+35, 0, 135);
-	//maxHP=FMath::Clamp(maxHP+35, 0, 135);
-}
-
-void APlayerCharacter::UnEquipHelmet(bool SoundBool)
-{
-	if (SoundBool)
-	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), gearUnequipSound, GetActorLocation());
-	}
-	HelmetSlot->SetVisibility(false);
-	HelmetEquipped = false;
-}
-
-void APlayerCharacter::UnEquipHeadset(bool SoundBool)
-{
-	if (SoundBool)
-	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), gearUnequipSound, GetActorLocation());
-	}
-	HeadSetSlot->SetVisibility(false);
-	HeadsetEquipped = false;
-}
-
-void APlayerCharacter::UnEquipMask(bool SoundBool)
-{
-	if (SoundBool)
-	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), gearUnequipSound, GetActorLocation());
-	}
-	MaskSlot->SetVisibility(false);
-	MaskEquipped = false;
-}
-
-void APlayerCharacter::UnEquipGoggle(bool SoundBool)
-{
-	if (SoundBool)
-	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), gearUnequipSound, GetActorLocation());
-	}
-	GoggleSlot->SetVisibility(false);
-	GoggleEquipped = false;
-}
-
-
-void APlayerCharacter::UnEquipArmor(bool SoundBool)
-{
-	if (SoundBool)
-	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), gearUnequipSound, GetActorLocation());
-	}
-	ArmorSlot->SetVisibility(false);
-	ArmorEquipped = false;
 }

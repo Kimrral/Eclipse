@@ -445,54 +445,6 @@ public:
 	UFUNCTION()
 	void SetDamageWidget(int Damage, const FVector& SpawnLoc, bool bIsShieldIconEnable, FLinearColor DamageTextColor);
 
-	UFUNCTION()
-	void RemoveBossHPWidget() const;
-
-	UFUNCTION()
-	void InfoWidgetUpdate();
-
-	UFUNCTION()
-	float DamageMultiplier() const;
-
-	UFUNCTION()
-	float FireRateMultiplier() const;
-
-	UFUNCTION()
-	float RecoilRateMultiplier() const;
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void ClearInventoryCache();
-
-	UFUNCTION(BlueprintCallable)
-	void EquipHelmet(bool SoundBool);
-
-	UFUNCTION(BlueprintCallable)
-	void EquipHeadset(bool SoundBool);
-
-	UFUNCTION(BlueprintCallable)
-	void EquipMask(bool SoundBool);
-
-	UFUNCTION(BlueprintCallable)
-	void EquipGoggle(bool SoundBool);
-
-	UFUNCTION(BlueprintCallable)
-	void UnEquipHelmet(bool SoundBool);
-
-	UFUNCTION(BlueprintCallable)
-	void UnEquipHeadset(bool SoundBool);
-
-	UFUNCTION(BlueprintCallable)
-	void UnEquipMask(bool SoundBool);
-
-	UFUNCTION(BlueprintCallable)
-	void UnEquipGoggle(bool SoundBool);
-
-	UFUNCTION(BlueprintCallable)
-	void EquipArmor(bool SoundBool);
-
-	UFUNCTION(BlueprintCallable)
-	void UnEquipArmor(bool SoundBool);
-
 	UFUNCTION(BlueprintImplementableEvent)
 	void StashWidgetOnViewport();
 
@@ -521,64 +473,10 @@ public:
 	void ApplyCachingValues();
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void PouchCaching();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void StashCaching();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void GearCaching();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void MagCaching();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void ApplyStashCache();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void ApplyInventoryCache();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void ApplyPouchCache();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void ApplyGearCache();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void ApplyMagCache();
-
-	UFUNCTION(BlueprintImplementableEvent)
 	void UpdateTabWidget();
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void UpdateTabWidgetHP();
-
-	UFUNCTION()
-	int32 SetRifleAdditionalMagazine() const;
-	UFUNCTION()
-	int32 SetSniperAdditionalMagazine() const;
-	UFUNCTION()
-	int32 SetPistolAdditionalMagazine() const;
-	UFUNCTION()
-	int32 SetM249AdditionalMagazine() const;
-
-	UFUNCTION(BlueprintCallable)
-	void SetRifleAdditionalMagazineSlot();
-	UFUNCTION(BlueprintCallable)
-	void SetSniperAdditionalMagazineSlot();
-	UFUNCTION(BlueprintCallable)
-	void SetPistolAdditionalMagazineSlot();
-	UFUNCTION(BlueprintCallable)
-	void SetM249AdditionalMagazineSlot();
-
-	UFUNCTION(BlueprintCallable)
-	void UnSetRifleAdditionalMagazineSlot();
-	UFUNCTION(BlueprintCallable)
-	void UnSetSniperAdditionalMagazineSlot();
-	UFUNCTION(BlueprintCallable)
-	void UnSetPistolAdditionalMagazineSlot();
-	UFUNCTION(BlueprintCallable)
-	void UnSetM249AdditionalMagazineSlot();
 
 	UFUNCTION()
 	void OnRep_WeaponArrayChanged() const;
@@ -640,7 +538,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
 	class UStaticMeshComponent* HelmetSlot;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = weapon)
 	class UStaticMeshComponent* ArmorSlot;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)

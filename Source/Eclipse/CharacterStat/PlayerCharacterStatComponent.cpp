@@ -53,14 +53,6 @@ void UPlayerCharacterStatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeP
 	DOREPLIFETIME(UPlayerCharacterStatComponent, MaxHp);
 	DOREPLIFETIME(UPlayerCharacterStatComponent, AccumulatedDamageToPlayer);
 	DOREPLIFETIME(UPlayerCharacterStatComponent, AccumulatedDamageToEnemy);
-	DOREPLIFETIME(UPlayerCharacterStatComponent, RandPlayerAttackDamageRifle);
-	DOREPLIFETIME(UPlayerCharacterStatComponent, RandPlayerAttackDamagePistol);
-	DOREPLIFETIME(UPlayerCharacterStatComponent, RandPlayerAttackDamageSniper);
-	DOREPLIFETIME(UPlayerCharacterStatComponent, RandPlayerAttackDamageM249);
-	DOREPLIFETIME(UPlayerCharacterStatComponent, RandEnemyAttackDamageRifle);
-	DOREPLIFETIME(UPlayerCharacterStatComponent, RandEnemyAttackDamagePistol);
-	DOREPLIFETIME(UPlayerCharacterStatComponent, RandEnemyAttackDamageSniper);
-	DOREPLIFETIME(UPlayerCharacterStatComponent, RandEnemyAttackDamageM249);
 }
 
 void UPlayerCharacterStatComponent::SetRecoilRate(const TArray<bool>& WeaponArray)
@@ -117,47 +109,39 @@ void UPlayerCharacterStatComponent::OnRep_MaxHp() const
 	OnHpChanged.Broadcast();
 }
 
-float UPlayerCharacterStatComponent::GetAttackDamage(const TArray<bool>& WeaponArray, const bool IsPlayer)
+float UPlayerCharacterStatComponent::GetAttackDamage(const TArray<bool>& WeaponArray, const bool IsPlayer) const
 {
 	if (WeaponArray[0] == true)
 	{
 		if (IsPlayer)
 		{
-			RandPlayerAttackDamageRifle = GenerateRandomInteger(PlayerAttackDamageRifle);
-			return RandPlayerAttackDamageRifle;
+			return GenerateRandomInteger(PlayerAttackDamageRifle);
 		}
-		RandEnemyAttackDamageRifle = GenerateRandomInteger(EnemyAttackDamageRifle);
-		return RandEnemyAttackDamageRifle;
+		return GenerateRandomInteger(EnemyAttackDamageRifle);
 	}
 	if (WeaponArray[1] == true)
 	{
 		if (IsPlayer)
-		{
-			RandPlayerAttackDamageSniper = GenerateRandomInteger(PlayerAttackDamageSniper);
-			return RandPlayerAttackDamageSniper;
-		}
-		RandEnemyAttackDamageSniper = GenerateRandomInteger(EnemyAttackDamageSniper);
-		return RandEnemyAttackDamageSniper;
+		{			
+			return GenerateRandomInteger(PlayerAttackDamageSniper);
+		}		
+		return GenerateRandomInteger(EnemyAttackDamageSniper);
 	}
 	if (WeaponArray[2] == true)
 	{
 		if (IsPlayer)
-		{
-			RandPlayerAttackDamagePistol = GenerateRandomInteger(PlayerAttackDamagePistol);
-			return RandPlayerAttackDamagePistol;
+		{			
+			return GenerateRandomInteger(PlayerAttackDamagePistol);
 		}
-		RandEnemyAttackDamagePistol = GenerateRandomInteger(EnemyAttackDamagePistol);
-		return RandEnemyAttackDamagePistol;
+		return GenerateRandomInteger(EnemyAttackDamagePistol);
 	}
 	if (WeaponArray[3] == true)
 	{
 		if (IsPlayer)
 		{
-			RandPlayerAttackDamageM249 = GenerateRandomInteger(PlayerAttackDamageM249);
-			return RandPlayerAttackDamageM249;
+			return GenerateRandomInteger(PlayerAttackDamageM249);
 		}
-		RandEnemyAttackDamageM249 = GenerateRandomInteger(EnemyAttackDamageM249);
-		return RandEnemyAttackDamageM249;
+		return GenerateRandomInteger(EnemyAttackDamageM249);
 	}
 	return 0;
 }

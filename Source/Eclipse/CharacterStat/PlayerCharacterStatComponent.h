@@ -39,7 +39,7 @@ public:
 	double GenerateRandomFloat(const float InFloat) const;
 	int32 GenerateRandomInteger(const float InFloat) const;
 
-	float GetAttackDamage(const TArray<bool>& WeaponArray, const bool IsPlayer);	
+	float GetAttackDamage(const TArray<bool>& WeaponArray, const bool IsPlayer) const;	
 	
 	UFUNCTION(BlueprintCallable)
 	void SetHp(float NewHp);
@@ -69,30 +69,6 @@ protected:
 
 	UPROPERTY(VisibleInstanceOnly, Category = Stat)
 	float BaseRifleRecoilRate;
-	
-	UPROPERTY(Replicated, VisibleDefaultsOnly)
-	float RandPlayerAttackDamageRifle;
-
-	UPROPERTY(Replicated, VisibleDefaultsOnly)
-	float RandPlayerAttackDamagePistol;
-
-	UPROPERTY(Replicated, VisibleDefaultsOnly)
-	float RandPlayerAttackDamageSniper;
-
-	UPROPERTY(Replicated, VisibleDefaultsOnly)
-	float RandPlayerAttackDamageM249;
-
-	UPROPERTY(Replicated, VisibleDefaultsOnly)
-	float RandEnemyAttackDamageRifle;
-
-	UPROPERTY(Replicated, VisibleDefaultsOnly)
-	float RandEnemyAttackDamagePistol;
-
-	UPROPERTY(Replicated, VisibleDefaultsOnly)
-	float RandEnemyAttackDamageSniper;
-
-	UPROPERTY(Replicated, VisibleDefaultsOnly)
-	float RandEnemyAttackDamageM249;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float PlayerAttackDamageRifle = 9.f;

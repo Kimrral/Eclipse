@@ -177,11 +177,14 @@ void AEnemy::OnShieldDestroy()
 
 void AEnemy::OnDestroy()
 {
+	DropReward();
 	DissolveTimeline.PlayFromStart();
 }
 
 void AEnemy::DropReward()
 {
+	DropMagazine();
+	DropGear();
 }
 
 void AEnemy::DropMagazine() const

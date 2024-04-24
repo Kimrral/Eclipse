@@ -649,6 +649,9 @@ public:
 	class AMedKitActor* MedKitActor;
 
 	UPROPERTY()
+	class AFirstAidKitActor* FirstAidKitActor;
+
+	UPROPERTY()
 	class ARifleActor* rifleActor;
 
 	UPROPERTY()

@@ -52,6 +52,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Eclipse/CharacterStat/PlayerCharacterStatComponent.h"
 #include "Eclipse/Game/EclipsePlayerState.h"
+#include "Eclipse/Item/FirstAidKitActor.h"
 #include "Eclipse/UI/ExtractionCountdown.h"
 #include "Eclipse/UI/MenuWidget.h"
 #include "Kismet/GameplayStatics.h"
@@ -1516,6 +1517,7 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 				HeadsetActor = Cast<AHeadsetActor>(PickableItemActor);
 				ArmorActor = Cast<AArmorActor>(PickableItemActor);
 				MedKitActor = Cast<AMedKitActor>(PickableItemActor);
+				FirstAidKitActor = Cast<AFirstAidKitActor>(PickableItemActor);
 				if (RifleMagActor)
 				{
 					// 1회 실행 불리언
@@ -1676,6 +1678,22 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 						infoWidgetUI->AddToViewport();
 					}
 				}
+				else if(FirstAidKitActor)
+				{
+					// 1회 실행 불리언
+					if (TickOverlapBoolean == false)
+					{
+						TickOverlapBoolean = true;
+						// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+						FirstAidKitActor->RootMesh->SetRenderCustomDepth(true);
+						// Widget Switcher 이용한 무기 정보 위젯 스위칭
+						infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(20);
+						// Radial Slider Value 초기화
+						infoWidgetUI->weaponHoldPercent = 0;
+						// Weapon Info Widget 뷰포트에 배치
+						infoWidgetUI->AddToViewport();
+					}
+				}
 				else if (HackingConsole)
 				{
 					// 1회 실행 불리언
@@ -1823,6 +1841,7 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 							HeadsetActor = Cast<AHeadsetActor>(HitObj[i].GetActor());
 							ArmorActor = Cast<AArmorActor>(HitObj[i].GetActor());
 							MedKitActor = Cast<AMedKitActor>(HitObj[i].GetActor());
+							FirstAidKitActor = Cast<AFirstAidKitActor>(HitObj[i].GetActor());
 							StageBoard = Cast<AStageBoard>(HitObj[i].GetActor());
 							Stash = Cast<AStash>(HitObj[i].GetActor());
 							QuitGameActor = Cast<AQuitGameActor>(HitObj[i].GetActor());
@@ -1907,6 +1926,11 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 							{
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								MedKitActor->RootMesh->SetRenderCustomDepth(false);
+							}
+							else if(FirstAidKitActor)
+							{
+								// Render Custom Depth 활용한 무기 액터 외곽선 해제
+								FirstAidKitActor->RootMesh->SetRenderCustomDepth(false);
 							}
 							else if (StageBoard)
 							{
@@ -2272,6 +2296,28 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 				MedKitActor->SetLifeSpan(1.f);
 				MedKitActor->SetActorHiddenInGame(true);
 				MedKitActor->AddInventory(this);
+				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
+				{
+					SetActorTickEnabled(true);
+				}), 1.f, false);
+			}
+			if (IsLocallyControlled())
+			{
+				if (infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
+			}
+
+			return;
+		}
+		FirstAidKitActor = Cast<AFirstAidKitActor>(PickableActor);
+		if(FirstAidKitActor)
+		{
+			if (HasAuthority())
+			{
+				FirstAidKitActor->IsAlreadyLooted = true;
+				SetActorTickEnabled(false);
+				FirstAidKitActor->SetLifeSpan(1.f);
+				FirstAidKitActor->SetActorHiddenInGame(true);
+				FirstAidKitActor->AddInventory(this);
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					SetActorTickEnabled(true);

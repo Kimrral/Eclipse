@@ -85,7 +85,7 @@ void AEnemy::OnDie()
 	EnemyStat->IsStunned = false;
 	EnemyFSM->Timeline.Stop();
 	EnemyFSM->SetComponentTickEnabled(false);
-	GetCharacterMovement()->bOrientRotationToMovement=false;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GetCharacterMovement()->SetMovementMode(MOVE_None);
 	GetCharacterMovement()->Deactivate();
 	GetWorld()->GetTimerManager().ClearTimer(StunHandle);
@@ -177,7 +177,10 @@ void AEnemy::OnShieldDestroy()
 
 void AEnemy::OnDestroy()
 {
-	DropReward();
+	if (HasAuthority())
+	{
+		DropReward();
+	}
 	DissolveTimeline.PlayFromStart();
 }
 

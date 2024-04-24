@@ -30,7 +30,8 @@ public:
 	FORCEINLINE float GetMaxHp() const { return MaxHp; }
 
 	float ApplyDamage(float InDamage, AActor* DamageCauser);	
-	
+
+	UFUNCTION(BlueprintCallable)
 	FORCEINLINE void HealHp(const float InHealAmount) { CurrentHp = FMath::Clamp(CurrentHp + InHealAmount, 0, MaxHp); OnHpChanged.Broadcast(); }
 	
 	FORCEINLINE float GetRecoilRate() const {return RecoilRate;}

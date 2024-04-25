@@ -53,6 +53,9 @@
 #include "Eclipse/CharacterStat/PlayerCharacterStatComponent.h"
 #include "Eclipse/Game/EclipsePlayerState.h"
 #include "Eclipse/Item/FirstAidKitActor.h"
+#include "Eclipse/Item/MilitaryDevice.h"
+#include "Eclipse/Item/MilitaryLaptop.h"
+#include "Eclipse/Prop/DeadPlayerContainer.h"
 #include "Eclipse/UI/ExtractionCountdown.h"
 #include "Eclipse/UI/MenuWidget.h"
 #include "Kismet/GameplayStatics.h"
@@ -1438,6 +1441,7 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 			Stash = Cast<AStash>(ActorHitResult.GetActor());
 			QuitGameActor = Cast<AQuitGameActor>(ActorHitResult.GetActor());
 			PlayerCharacter = Cast<APlayerCharacter>(ActorHitResult.GetActor());
+			DeadPlayerContainer = Cast<ADeadPlayerContainer>(ActorHitResult.GetActor());
 
 			// 라이플 탐지
 			if (rifleActor)
@@ -1517,6 +1521,8 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 				HeadsetActor = Cast<AHeadsetActor>(PickableItemActor);
 				ArmorActor = Cast<AArmorActor>(PickableItemActor);
 				MedKitActor = Cast<AMedKitActor>(PickableItemActor);
+				MilitaryLaptop = Cast<AMilitaryLaptop>(PickableItemActor);
+				MilitaryDevice = Cast<AMilitaryDevice>(PickableItemActor);
 				FirstAidKitActor = Cast<AFirstAidKitActor>(PickableItemActor);
 				if (RifleMagActor)
 				{
@@ -1678,7 +1684,7 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 						infoWidgetUI->AddToViewport();
 					}
 				}
-				else if(FirstAidKitActor)
+				else if (FirstAidKitActor)
 				{
 					// 1회 실행 불리언
 					if (TickOverlapBoolean == false)
@@ -1688,6 +1694,38 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 						FirstAidKitActor->RootMesh->SetRenderCustomDepth(true);
 						// Widget Switcher 이용한 무기 정보 위젯 스위칭
 						infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(20);
+						// Radial Slider Value 초기화
+						infoWidgetUI->weaponHoldPercent = 0;
+						// Weapon Info Widget 뷰포트에 배치
+						infoWidgetUI->AddToViewport();
+					}
+				}
+				else if (MilitaryLaptop)
+				{
+					// 1회 실행 불리언
+					if (TickOverlapBoolean == false)
+					{
+						TickOverlapBoolean = true;
+						// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+						MilitaryLaptop->RootMesh->SetRenderCustomDepth(true);
+						// Widget Switcher 이용한 무기 정보 위젯 스위칭
+						infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(21);
+						// Radial Slider Value 초기화
+						infoWidgetUI->weaponHoldPercent = 0;
+						// Weapon Info Widget 뷰포트에 배치
+						infoWidgetUI->AddToViewport();
+					}
+				}
+				else if (MilitaryDevice)
+				{
+					// 1회 실행 불리언
+					if (TickOverlapBoolean == false)
+					{
+						TickOverlapBoolean = true;
+						// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+						MilitaryDevice->RootMesh->SetRenderCustomDepth(true);
+						// Widget Switcher 이용한 무기 정보 위젯 스위칭
+						infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(22);
 						// Radial Slider Value 초기화
 						infoWidgetUI->weaponHoldPercent = 0;
 						// Weapon Info Widget 뷰포트에 배치
@@ -1803,6 +1841,22 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 					}
 				}
 			}
+			else if (DeadPlayerContainer)
+			{
+				// 1회 실행 불리언
+				if (TickOverlapBoolean == false)
+				{
+					TickOverlapBoolean = true;
+					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+					DeadPlayerContainer->DeadBodyMesh->SetRenderCustomDepth(true);
+					// Widget Switcher 이용한 무기 정보 위젯 스위칭
+					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(19);
+					// Radial Slider Value 초기화
+					infoWidgetUI->weaponHoldPercent = 0;
+					// Weapon Info Widget 뷰포트에 배치
+					infoWidgetUI->AddToViewport();
+				}
+			}
 			else
 			{
 				// 1회 실행 불리언
@@ -1842,10 +1896,13 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 							ArmorActor = Cast<AArmorActor>(HitObj[i].GetActor());
 							MedKitActor = Cast<AMedKitActor>(HitObj[i].GetActor());
 							FirstAidKitActor = Cast<AFirstAidKitActor>(HitObj[i].GetActor());
+							MilitaryLaptop = Cast<AMilitaryLaptop>(HitObj[i].GetActor());
+							MilitaryDevice = Cast<AMilitaryDevice>(HitObj[i].GetActor());
 							StageBoard = Cast<AStageBoard>(HitObj[i].GetActor());
 							Stash = Cast<AStash>(HitObj[i].GetActor());
 							QuitGameActor = Cast<AQuitGameActor>(HitObj[i].GetActor());
 							PlayerCharacter = Cast<APlayerCharacter>(HitObj[i].GetActor());
+							DeadPlayerContainer = Cast<ADeadPlayerContainer>(HitObj[i].GetActor());
 
 							if (rifleActor)
 							{
@@ -1927,10 +1984,20 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								MedKitActor->RootMesh->SetRenderCustomDepth(false);
 							}
-							else if(FirstAidKitActor)
+							else if (FirstAidKitActor)
 							{
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								FirstAidKitActor->RootMesh->SetRenderCustomDepth(false);
+							}
+							else if (MilitaryLaptop)
+							{
+								// Render Custom Depth 활용한 무기 액터 외곽선 해제
+								MilitaryLaptop->RootMesh->SetRenderCustomDepth(false);
+							}
+							else if (MilitaryDevice)
+							{
+								// Render Custom Depth 활용한 무기 액터 외곽선 해제
+								MilitaryDevice->RootMesh->SetRenderCustomDepth(false);
 							}
 							else if (StageBoard)
 							{
@@ -1951,6 +2018,11 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 							{
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								PlayerCharacter->GetMesh()->SetRenderCustomDepth(false);
+							}
+							else if (DeadPlayerContainer)
+							{
+								// Render Custom Depth 활용한 무기 액터 외곽선 해제
+								DeadPlayerContainer->DeadBodyMesh->SetRenderCustomDepth(false);
 							}
 						}
 					}
@@ -2309,7 +2381,7 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 			return;
 		}
 		FirstAidKitActor = Cast<AFirstAidKitActor>(PickableActor);
-		if(FirstAidKitActor)
+		if (FirstAidKitActor)
 		{
 			if (HasAuthority())
 			{
@@ -2318,6 +2390,50 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 				FirstAidKitActor->SetLifeSpan(1.f);
 				FirstAidKitActor->SetActorHiddenInGame(true);
 				FirstAidKitActor->AddInventory(this);
+				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
+				{
+					SetActorTickEnabled(true);
+				}), 1.f, false);
+			}
+			if (IsLocallyControlled())
+			{
+				if (infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
+			}
+
+			return;
+		}
+		MilitaryLaptop = Cast<AMilitaryLaptop>(PickableActor);
+		if (MilitaryLaptop)
+		{
+			if (HasAuthority())
+			{
+				MilitaryLaptop->IsAlreadyLooted = true;
+				SetActorTickEnabled(false);
+				MilitaryLaptop->SetLifeSpan(1.f);
+				MilitaryLaptop->SetActorHiddenInGame(true);
+				MilitaryLaptop->AddInventory(this);
+				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
+				{
+					SetActorTickEnabled(true);
+				}), 1.f, false);
+			}
+			if (IsLocallyControlled())
+			{
+				if (infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
+			}
+
+			return;
+		}
+		MilitaryDevice = Cast<AMilitaryDevice>(PickableActor);
+		if (MilitaryDevice)
+		{
+			if (HasAuthority())
+			{
+				MilitaryDevice->IsAlreadyLooted = true;
+				SetActorTickEnabled(false);
+				MilitaryDevice->SetLifeSpan(1.f);
+				MilitaryDevice->SetActorHiddenInGame(true);
+				MilitaryDevice->AddInventory(this);
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					SetActorTickEnabled(true);
@@ -2699,6 +2815,7 @@ void APlayerCharacter::InteractionProcess()
 		QuitGameActor = Cast<AQuitGameActor>(actorHitResult.GetActor());
 
 		APlayerCharacter* EnemyCharacter = Cast<APlayerCharacter>(actorHitResult.GetActor());
+		DeadPlayerContainer = Cast<ADeadPlayerContainer>(actorHitResult.GetActor());
 
 		// 라이플로 교체
 		if (rifleActor)
@@ -2875,6 +2992,15 @@ void APlayerCharacter::InteractionProcess()
 						DeadBodyInteraction(EnemyCharacter);
 					}
 				}
+			}
+		}
+		else if (DeadPlayerContainer)
+		{
+			// 키다운 시간 동안 Radial Slider 게이지 상승
+			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
+			if (quitWidgetUI && infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
+			{
+				infoWidgetUI->weaponHoldPercent = 0;
 			}
 		}
 	}

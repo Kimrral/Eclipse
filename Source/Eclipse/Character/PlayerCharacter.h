@@ -11,6 +11,7 @@
 #include "Components/TimelineComponent.h"
 #include "Eclipse/Game/EclipseGameInstance.h"
 #include "Eclipse/Item/ArmorActor.h"
+#include "Eclipse/Prop/DeadPlayerContainer.h"
 #include "Eclipse/Prop/RewardContainer.h"
 #include "Eclipse/Weapon/M249Actor.h"
 #include "Eclipse/Weapon/PistolActor.h"
@@ -520,6 +521,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void EquipMaskInventorySlot(bool IsEquipping);
 
+	// UFUNCTION(BlueprintImplementableEvent)
+	// void DeadPlayerContainerSettings(ADeadPlayerContainer* DeadPlayerContainer);
+
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -584,6 +588,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
 	TSubclassOf<class UExtractionCountdown> ExtractionCountdownWidgetFactory;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
+	TSubclassOf<class ADeadPlayerContainer> DeadPlayerContainerFactory;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = widget)
 	class UMenuWidget* MenuWidgetUI;
@@ -662,6 +669,12 @@ public:
 
 	UPROPERTY()
 	class AM249Actor* m249Actor;
+
+	UPROPERTY()
+	class AMilitaryLaptop* MilitaryLaptop;
+
+	UPROPERTY()
+	class AMilitaryDevice* MilitaryDevice;
 
 	UPROPERTY()
 	class ARifleActor* OverlappedRifleActor;
@@ -1088,6 +1101,9 @@ public:
 
 	UPROPERTY()
 	class AStash* Stash;
+
+	UPROPERTY()
+	class ADeadPlayerContainer* DeadPlayerContainer;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	class ARifleMagActor* RifleMagActor;

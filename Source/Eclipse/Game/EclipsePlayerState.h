@@ -17,7 +17,7 @@ class ECLIPSE_API AEclipsePlayerState : public APlayerState
 
 public:
 	UFUNCTION(BlueprintImplementableEvent)
-	void DeadBodyWidgetSettings(APlayerCharacter* DeadPlayerCharacterRef, APlayerCharacter* InstigatorPlayerRef);
+	void DeadBodyWidgetSettings(ADeadPlayerContainer*  DeadPlayerContainer, APlayerCharacter* InstigatorPlayerRef);
 
 	virtual  void CopyProperties(APlayerState* PlayerState) override;
 	

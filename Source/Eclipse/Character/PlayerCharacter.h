@@ -659,6 +659,12 @@ public:
 	class AFirstAidKitActor* FirstAidKitActor;
 
 	UPROPERTY()
+	class AAdrenalineSyringe* AdrenalineSyringe;
+
+	UPROPERTY()
+	class APoisonOfSpider* PoisonOfSpider;
+
+	UPROPERTY()
 	class ARifleActor* rifleActor;
 
 	UPROPERTY()

@@ -52,9 +52,11 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Eclipse/CharacterStat/PlayerCharacterStatComponent.h"
 #include "Eclipse/Game/EclipsePlayerState.h"
+#include "Eclipse/Item/AdrenalineSyringe.h"
 #include "Eclipse/Item/FirstAidKitActor.h"
 #include "Eclipse/Item/MilitaryDevice.h"
 #include "Eclipse/Item/MilitaryLaptop.h"
+#include "Eclipse/Item/PoisonOfSpider.h"
 #include "Eclipse/Prop/DeadPlayerContainer.h"
 #include "Eclipse/UI/ExtractionCountdown.h"
 #include "Eclipse/UI/MenuWidget.h"
@@ -159,9 +161,12 @@ void APlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	this->SetActorEnableCollision(true);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	GetMesh()->HideBoneByName(TEXT("bot_hand"), EPhysBodyOp::PBO_None);
 	GetMesh()->HideBoneByName(TEXT("shotgun_base"), EPhysBodyOp::PBO_None);
 	GetMesh()->HideBoneByName(TEXT("sniper_can_arm_01"), EPhysBodyOp::PBO_None);
+	GetMesh()->SetVisibility(true);
 
 	FirstPersonRifleComp->SetVisibility(false);
 	FirstPersonPistolComp->SetVisibility(false);
@@ -1522,6 +1527,8 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 				MedKitActor = Cast<AMedKitActor>(PickableItemActor);
 				MilitaryLaptop = Cast<AMilitaryLaptop>(PickableItemActor);
 				MilitaryDevice = Cast<AMilitaryDevice>(PickableItemActor);
+				AdrenalineSyringe = Cast<AAdrenalineSyringe>(PickableItemActor);
+				PoisonOfSpider = Cast<APoisonOfSpider>(PickableItemActor);
 				FirstAidKitActor = Cast<AFirstAidKitActor>(PickableItemActor);
 				if (RifleMagActor)
 				{
@@ -1693,6 +1700,38 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 						FirstAidKitActor->RootMesh->SetRenderCustomDepth(true);
 						// Widget Switcher 이용한 무기 정보 위젯 스위칭
 						infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(20);
+						// Radial Slider Value 초기화
+						infoWidgetUI->weaponHoldPercent = 0;
+						// Weapon Info Widget 뷰포트에 배치
+						infoWidgetUI->AddToViewport();
+					}
+				}
+				else if(AdrenalineSyringe)
+				{
+					// 1회 실행 불리언
+					if (TickOverlapBoolean == false)
+					{
+						TickOverlapBoolean = true;
+						// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+						AdrenalineSyringe->RootMesh->SetRenderCustomDepth(true);
+						// Widget Switcher 이용한 무기 정보 위젯 스위칭
+						infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(23);
+						// Radial Slider Value 초기화
+						infoWidgetUI->weaponHoldPercent = 0;
+						// Weapon Info Widget 뷰포트에 배치
+						infoWidgetUI->AddToViewport();
+					}
+				}
+				else if(PoisonOfSpider)
+				{
+					// 1회 실행 불리언
+					if (TickOverlapBoolean == false)
+					{
+						TickOverlapBoolean = true;
+						// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+						PoisonOfSpider->RootMesh->SetRenderCustomDepth(true);
+						// Widget Switcher 이용한 무기 정보 위젯 스위칭
+						infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(24);
 						// Radial Slider Value 초기화
 						infoWidgetUI->weaponHoldPercent = 0;
 						// Weapon Info Widget 뷰포트에 배치
@@ -1876,6 +1915,8 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 							ArmorActor = Cast<AArmorActor>(HitObj[i].GetActor());
 							MedKitActor = Cast<AMedKitActor>(HitObj[i].GetActor());
 							FirstAidKitActor = Cast<AFirstAidKitActor>(HitObj[i].GetActor());
+							AdrenalineSyringe = Cast<AAdrenalineSyringe>(HitObj[i].GetActor());
+							PoisonOfSpider = Cast<APoisonOfSpider>(HitObj[i].GetActor());
 							MilitaryLaptop = Cast<AMilitaryLaptop>(HitObj[i].GetActor());
 							MilitaryDevice = Cast<AMilitaryDevice>(HitObj[i].GetActor());
 							StageBoard = Cast<AStageBoard>(HitObj[i].GetActor());
@@ -1967,6 +2008,16 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 							{
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								FirstAidKitActor->RootMesh->SetRenderCustomDepth(false);
+							}
+							else if(AdrenalineSyringe)
+							{
+								// Render Custom Depth 활용한 무기 액터 외곽선 해제
+								AdrenalineSyringe->RootMesh->SetRenderCustomDepth(false);
+							}
+							else if(PoisonOfSpider)
+							{
+								// Render Custom Depth 활용한 무기 액터 외곽선 해제
+								PoisonOfSpider->RootMesh->SetRenderCustomDepth(false);
 							}
 							else if (MilitaryLaptop)
 							{
@@ -2364,6 +2415,50 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 				FirstAidKitActor->SetLifeSpan(1.f);
 				FirstAidKitActor->SetActorHiddenInGame(true);
 				FirstAidKitActor->AddInventory(this);
+				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
+				{
+					SetActorTickEnabled(true);
+				}), 1.f, false);
+			}
+			if (IsLocallyControlled())
+			{
+				if (infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
+			}
+
+			return;
+		}
+		AdrenalineSyringe = Cast<AAdrenalineSyringe>(PickableActor);
+		if (AdrenalineSyringe)
+		{
+			if (HasAuthority())
+			{
+				AdrenalineSyringe->IsAlreadyLooted = true;
+				SetActorTickEnabled(false);
+				AdrenalineSyringe->SetLifeSpan(1.f);
+				AdrenalineSyringe->SetActorHiddenInGame(true);
+				AdrenalineSyringe->AddInventory(this);
+				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
+				{
+					SetActorTickEnabled(true);
+				}), 1.f, false);
+			}
+			if (IsLocallyControlled())
+			{
+				if (infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
+			}
+
+			return;
+		}
+		PoisonOfSpider = Cast<APoisonOfSpider>(PickableActor);
+		if (PoisonOfSpider)
+		{
+			if (HasAuthority())
+			{
+				PoisonOfSpider->IsAlreadyLooted = true;
+				SetActorTickEnabled(false);
+				PoisonOfSpider->SetLifeSpan(1.f);
+				PoisonOfSpider->SetActorHiddenInGame(true);
+				PoisonOfSpider->AddInventory(this);
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					SetActorTickEnabled(true);

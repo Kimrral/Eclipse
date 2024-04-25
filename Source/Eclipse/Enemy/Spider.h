@@ -16,6 +16,10 @@ class ECLIPSE_API ASpider : public AEnemy
 
 protected:
 	virtual void BeginPlay() override;
+	virtual  void DropReward() override;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class APoisonOfSpider> PoisonOfSpiderFactory;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
 	class UAnimMontage* SpiderSpawnMontage;

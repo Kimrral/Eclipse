@@ -27,10 +27,16 @@ public:
 	void DropMagazine() const;
 
 	UFUNCTION()
+	void DropConsumable() const;
+
+	UFUNCTION()
+	void DropETC() const;
+
+	UFUNCTION()
 	void BoxDestroyed();
 
 	UFUNCTION()
-	void OnRep_IsBoxDestroyed() const;
+	void OnRep_IsBoxDestroyed();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -47,6 +53,16 @@ public:
 	TSubclassOf<class APistolMagActor> PistolMagActorFactory;
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AM249MagActor> M249MagActorFactory;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AMilitaryDevice> MilitaryDeviceFactory;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AMilitaryLaptop> MilitaryLaptopFactory;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AMedKitActor> MedKitActorFactory;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AAdrenalineSyringe> AdrenalineSyringeFactory;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AFirstAidKitActor> FirstAidKitActorFactory;
 	
 	UPROPERTY(EditAnywhere)
 	class USoundBase* containerBreakSound;

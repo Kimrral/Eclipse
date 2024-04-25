@@ -282,11 +282,11 @@ public:
 	void PickableItemActorInteractionRPCMutlicast(APickableActor* PickableActor);
 
 	UFUNCTION()
-	void DeadBodyInteraction(APlayerCharacter* DeadPlayerCharacter);
+	void DeadBodyInteraction(ADeadPlayerContainer* DeadPlayerCharacterBox);
 	UFUNCTION(Reliable, Server, WithValidation)
-	void DeadBodyInteractionRPCServer(APlayerCharacter* DeadPlayerCharacter);
+	void DeadBodyInteractionRPCServer(ADeadPlayerContainer* DeadPlayerCharacterBox);
 	UFUNCTION(Unreliable, NetMulticast)
-	void DeadBodyInteractionRPCMutlicast(APlayerCharacter* DeadPlayerCharacter);
+	void DeadBodyInteractionRPCMutlicast(ADeadPlayerContainer* DeadPlayerCharacterBox);
 
 
 	//=======================================//
@@ -521,8 +521,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void EquipMaskInventorySlot(bool IsEquipping);
 
-	// UFUNCTION(BlueprintImplementableEvent)
-	// void DeadPlayerContainerSettings(ADeadPlayerContainer* DeadPlayerContainer);
+	UFUNCTION(BlueprintImplementableEvent)
+	void DeadPlayerContainerSettings(ADeadPlayerContainer* DeadPlayerContainers);
 
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;

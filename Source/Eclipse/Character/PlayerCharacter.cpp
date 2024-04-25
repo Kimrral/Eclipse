@@ -1440,7 +1440,6 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 			StageBoard = Cast<AStageBoard>(ActorHitResult.GetActor());
 			Stash = Cast<AStash>(ActorHitResult.GetActor());
 			QuitGameActor = Cast<AQuitGameActor>(ActorHitResult.GetActor());
-			PlayerCharacter = Cast<APlayerCharacter>(ActorHitResult.GetActor());
 			DeadPlayerContainer = Cast<ADeadPlayerContainer>(ActorHitResult.GetActor());
 
 			// 라이플 탐지
@@ -1822,25 +1821,6 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 					infoWidgetUI->AddToViewport();
 				}
 			}
-			else if (PlayerCharacter)
-			{
-				if (PlayerCharacter->IsPlayerDead)
-				{
-					// 1회 실행 불리언
-					if (TickOverlapBoolean == false)
-					{
-						TickOverlapBoolean = true;
-						// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-						PlayerCharacter->GetMesh()->SetRenderCustomDepth(true);
-						// Widget Switcher 이용한 무기 정보 위젯 스위칭
-						infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(19);
-						// Radial Slider Value 초기화
-						infoWidgetUI->weaponHoldPercent = 0;
-						// Weapon Info Widget 뷰포트에 배치
-						infoWidgetUI->AddToViewport();
-					}
-				}
-			}
 			else if (DeadPlayerContainer)
 			{
 				// 1회 실행 불리언
@@ -1901,7 +1881,6 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 							StageBoard = Cast<AStageBoard>(HitObj[i].GetActor());
 							Stash = Cast<AStash>(HitObj[i].GetActor());
 							QuitGameActor = Cast<AQuitGameActor>(HitObj[i].GetActor());
-							PlayerCharacter = Cast<APlayerCharacter>(HitObj[i].GetActor());
 							DeadPlayerContainer = Cast<ADeadPlayerContainer>(HitObj[i].GetActor());
 
 							if (rifleActor)
@@ -2013,11 +1992,6 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 							{
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								QuitGameActor->quitGameMesh->SetRenderCustomDepth(false);
-							}
-							else if (PlayerCharacter)
-							{
-								// Render Custom Depth 활용한 무기 액터 외곽선 해제
-								PlayerCharacter->GetMesh()->SetRenderCustomDepth(false);
 							}
 							else if (DeadPlayerContainer)
 							{
@@ -2473,28 +2447,28 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 }
 
 
-void APlayerCharacter::DeadBodyInteraction(APlayerCharacter* DeadPlayerCharacter)
+void APlayerCharacter::DeadBodyInteraction(ADeadPlayerContainer* DeadPlayerCharacterBox)
 {
-	DeadBodyInteractionRPCServer(DeadPlayerCharacter);
+	DeadBodyInteractionRPCServer(DeadPlayerCharacterBox);
 }
 
-void APlayerCharacter::DeadBodyInteractionRPCServer_Implementation(APlayerCharacter* DeadPlayerCharacter)
+void APlayerCharacter::DeadBodyInteractionRPCServer_Implementation(ADeadPlayerContainer* DeadPlayerCharacterBox)
 {
-	DeadBodyInteractionRPCMutlicast(DeadPlayerCharacter);
+	DeadBodyInteractionRPCMutlicast(DeadPlayerCharacterBox);
 }
 
-bool APlayerCharacter::DeadBodyInteractionRPCServer_Validate(APlayerCharacter* DeadPlayerCharacter)
+bool APlayerCharacter::DeadBodyInteractionRPCServer_Validate(ADeadPlayerContainer* DeadPlayerCharacterBox)
 {
 	return true;
 }
 
-void APlayerCharacter::DeadBodyInteractionRPCMutlicast_Implementation(APlayerCharacter* DeadPlayerCharacter)
+void APlayerCharacter::DeadBodyInteractionRPCMutlicast_Implementation(ADeadPlayerContainer* DeadPlayerCharacterBox)
 {
 	if (IsLocallyControlled())
 	{
 		if (AEclipsePlayerState* EcPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))
 		{
-			EcPlayerState->DeadBodyWidgetSettings(DeadPlayerCharacter, this);
+			EcPlayerState->DeadBodyWidgetSettings(DeadPlayerCharacterBox, this);
 		}
 		UGameplayStatics::PlaySound2D(GetWorld(), tabSound);
 		infoWidgetUI->RemoveFromParent();
@@ -2807,14 +2781,10 @@ void APlayerCharacter::InteractionProcess()
 		sniperActor = Cast<ASniperActor>(actorHitResult.GetActor());
 		pistolActor = Cast<APistolActor>(actorHitResult.GetActor());
 		m249Actor = Cast<AM249Actor>(actorHitResult.GetActor());
-
 		PickableItemActor = Cast<APickableActor>(actorHitResult.GetActor());
-
 		StageBoard = Cast<AStageBoard>(actorHitResult.GetActor());
 		Stash = Cast<AStash>(actorHitResult.GetActor());
 		QuitGameActor = Cast<AQuitGameActor>(actorHitResult.GetActor());
-
-		APlayerCharacter* EnemyCharacter = Cast<APlayerCharacter>(actorHitResult.GetActor());
 		DeadPlayerContainer = Cast<ADeadPlayerContainer>(actorHitResult.GetActor());
 
 		// 라이플로 교체
@@ -2977,23 +2947,6 @@ void APlayerCharacter::InteractionProcess()
 				}
 			}
 		}
-		else if (EnemyCharacter)
-		{
-			// 키다운 시간 동안 Radial Slider 게이지 상승
-			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
-			if (EnemyCharacter->IsPlayerDead)
-			{
-				if (quitWidgetUI && infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
-				{
-					infoWidgetUI->weaponHoldPercent = 0;
-					if (bDeadBodyWidgetOn == false)
-					{
-						bDeadBodyWidgetOn = true;
-						DeadBodyInteraction(EnemyCharacter);
-					}
-				}
-			}
-		}
 		else if (DeadPlayerContainer)
 		{
 			// 키다운 시간 동안 Radial Slider 게이지 상승
@@ -3001,6 +2954,11 @@ void APlayerCharacter::InteractionProcess()
 			if (quitWidgetUI && infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 			{
 				infoWidgetUI->weaponHoldPercent = 0;
+				if (bDeadBodyWidgetOn == false)
+				{
+					bDeadBodyWidgetOn = true;
+					DeadBodyInteraction(DeadPlayerContainer);
+				}
 			}
 		}
 	}
@@ -4128,17 +4086,40 @@ bool APlayerCharacter::PlayerDeathRPCServer_Validate()
 
 void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 {
-	if (HasAuthority())
+	// 몽타주 재생 중단
+	StopAnimMontage();
+	// 사망 몽타주 재생
+	PlayAnimMontage(FullBodyMontage, 1, FName("Death"));
+	IsPlayerDeadImmediately = true;
+	FTimerHandle PlayerDeadHandle;
+	GetWorld()->GetTimerManager().SetTimer(PlayerDeadHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
-		IsPlayerDeadImmediately = true;
-	}
+		if (HasAuthority())
+		{
+			IsPlayerDead = true;
+			GetMesh()->SetVisibility(false);
+			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			FActorSpawnParameters Params;
+			Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+			ADeadPlayerContainer* DeadPlayerBodyActor = GetWorld()->SpawnActor<ADeadPlayerContainer>(DeadPlayerContainerFactory, GetMesh()->GetComponentTransform(), Params);
+			DeadPlayerContainerSettings(DeadPlayerBodyActor);
+		}
+
+		if (IsLocallyControlled())
+		{
+			UGameplayStatics::PlaySound2D(GetWorld(), DeathSound);
+		}
+
+		GetMesh()->SetVisibility(false);
+	}), 3.f, false);
+
 	if (IsLocallyControlled())
 	{
 		SetFirstPersonModeRifle(false);
 		SetFirstPersonModePistol(false);
 		GetController()->SetIgnoreMoveInput(true);
 		GetController()->SetIgnoreLookInput(true);
-		//if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->InventoryCaching(this);
 		UWidgetLayoutLibrary::RemoveAllWidgets(GetWorld());
 		APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 		// 카메라 페이드 연출
@@ -4146,17 +4127,7 @@ void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 		// 사망지점 전역변수에 캐싱
 		DeathPosition = GetActorLocation();
 	}
-	FTimerHandle PlayerDeadHandle;
-	GetWorld()->GetTimerManager().SetTimer(PlayerDeadHandle, FTimerDelegate::CreateLambda([this]()-> void
-	{
-		UGameplayStatics::PlaySound2D(GetWorld(), DeathSound);
-		IsPlayerDead = true;
-	}), 3.f, false);
 
-	// 몽타주 재생 중단
-	StopAnimMontage();
-	// 사망 몽타주 재생
-	PlayAnimMontage(FullBodyMontage, 1, FName("Death"));
 
 	// FTimerHandle endHandle;
 	// // 7초 뒤 호출되는 함수 타이머

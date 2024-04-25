@@ -14,6 +14,8 @@ ADeadPlayerContainer::ADeadPlayerContainer()
 	SetRootComponent(DeadBodyMesh);
 	DeadBodyMesh->SetGenerateOverlapEvents(true);
 
+	bReplicates=true;
+
 }
 
 

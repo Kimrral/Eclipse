@@ -524,6 +524,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void DeadPlayerContainerSettings(ADeadPlayerContainer* DeadPlayerContainers);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void ApplyInventoryDataFromGameInstance();
+
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 

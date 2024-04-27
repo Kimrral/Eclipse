@@ -19,6 +19,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void DeadBodyWidgetSettings(ADeadPlayerContainer*  DeadPlayerContainer, APlayerCharacter* InstigatorPlayerRef);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void CacheInventoryDataToGameInstance();
+
 	virtual  void CopyProperties(APlayerState* PlayerState) override;
 	
 };

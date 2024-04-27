@@ -184,6 +184,8 @@ void APlayerCharacter::BeginPlay()
 	gi = Cast<UEclipseGameInstance>(GetWorld()->GetGameInstance());
 	animInstance = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 
+	ApplyInventoryDataFromGameInstance();
+
 	gi->IsWidgetOn = false;
 
 	//Add Input Mapping Context
@@ -3161,7 +3163,7 @@ void APlayerCharacter::MoveToIsolatedShip()
 	FTimerHandle EndHandle;
 	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
-		//if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->InventoryCaching(this);
+		if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->CacheInventoryDataToGameInstance();
 		UGameplayStatics::OpenLevel(GetWorld(), FName("Map_BigStarStation"));
 	}), 9.f, false);
 }
@@ -3170,10 +3172,10 @@ void APlayerCharacter::MoveToHideout()
 {
 	APlayerCameraManager* PlayerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 	PlayerCam->StartCameraFade(0, 1, 2.0, FLinearColor::Black, false, true);
-	//if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->InventoryCaching(this);
 	FTimerHandle EndHandle;
 	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
+		if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->CacheInventoryDataToGameInstance();
 		UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"));
 	}), 2.f, false);
 }
@@ -3198,7 +3200,7 @@ void APlayerCharacter::MoveToBlockedIntersection()
 	FTimerHandle EndHandle;
 	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
-		//if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->InventoryCaching(this);
+		if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->CacheInventoryDataToGameInstance();
 		UGameplayStatics::OpenLevel(GetWorld(), FName("192.168.0.3"));
 	}), 9.f, false);
 }

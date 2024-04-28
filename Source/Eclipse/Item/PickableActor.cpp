@@ -3,6 +3,9 @@
 
 #include "Eclipse/Item/PickableActor.h"
 
+#include "Eclipse/Character/PlayerCharacter.h"
+#include "Eclipse/Game/EclipsePlayerState.h"
+
 // Sets default values
 APickableActor::APickableActor()
 {
@@ -22,17 +25,16 @@ APickableActor::APickableActor()
 	bReplicates=true;
 }
 
-// Called when the game starts or when spawned
-void APickableActor::BeginPlay()
+void APickableActor::AddToInventory(APlayerCharacter* PlayerCharacter) const
 {
-	Super::BeginPlay();
-	
+	if(PlayerCharacter)
+	{
+		if(AEclipsePlayerState* EclipsePlayerState = Cast<AEclipsePlayerState>(PlayerCharacter->GetPlayerState()))
+		{
+			EclipsePlayerState->AddToInventory(PlayerCharacter, InventoryItemStruct);
+		}
+	}
 }
 
-// Called every frame
-void APickableActor::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 
-}
 

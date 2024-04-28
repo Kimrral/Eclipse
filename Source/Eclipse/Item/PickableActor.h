@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Eclipse/GameData/PlayerInventoryStruct.h"
 #include "GameFramework/Actor.h"
 #include "PickableActor.generated.h"
 
@@ -14,19 +15,17 @@ class ECLIPSE_API APickableActor : public AActor
 public:	
 	// Sets default values for this actor's properties
 	APickableActor();
+	
+	UFUNCTION()
+	virtual void AddToInventory(APlayerCharacter* PlayerCharacter) const;
 
 	UPROPERTY(EditAnywhere)
 	class UStaticMeshComponent* RootMesh;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Inventory)
+	FPlayerInventoryStruct InventoryItemStruct;
+
 	UPROPERTY()
 	bool IsAlreadyLooted = false;
-
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
 };

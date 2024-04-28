@@ -3,6 +3,8 @@
 
 #include "DeadPlayerContainer.h"
 
+#include "Net/UnrealNetwork.h"
+
 // Sets default values
 ADeadPlayerContainer::ADeadPlayerContainer()
 {
@@ -16,6 +18,21 @@ ADeadPlayerContainer::ADeadPlayerContainer()
 
 	bReplicates=true;
 
+}
+
+void ADeadPlayerContainer::BeginPlay()
+{
+	Super::BeginPlay();
+}
+	
+
+void ADeadPlayerContainer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ADeadPlayerContainer, DeadPlayerInventoryStructArray);
+	DOREPLIFETIME(ADeadPlayerContainer, DeadPlayerInventoryStackArray);
+	DOREPLIFETIME(ADeadPlayerContainer, DeadPlayerGearSlotArray);
 }
 
 

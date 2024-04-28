@@ -12,10 +12,5 @@
 UCLASS()
 class ECLIPSE_API AAdrenalineSyringe : public APickableActor
 {
-	GENERATED_BODY()
-
-public:
-	UFUNCTION(BlueprintImplementableEvent)
-	void AddInventory(APlayerCharacter* CachingPlayerCharacter);
-	
+	GENERATED_BODY()	
 };

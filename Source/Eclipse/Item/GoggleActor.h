@@ -13,8 +13,4 @@ UCLASS()
 class ECLIPSE_API AGoggleActor : public APickableActor
 {
 	GENERATED_BODY()
-
-public:
-	UFUNCTION(BlueprintImplementableEvent)
-	void AddInventory(APlayerCharacter* CachingPlayerCharacter);
 };

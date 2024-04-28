@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Eclipse/GameData/PlayerInventoryStruct.h"
 #include "GameFramework/Actor.h"
 #include "DeadPlayerContainer.generated.h"
 
@@ -14,8 +15,22 @@ class ECLIPSE_API ADeadPlayerContainer : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ADeadPlayerContainer();
+
+	virtual void BeginPlay() override;
 	
 	UPROPERTY(EditAnywhere)
 	class USkeletalMeshComponent* DeadBodyMesh;
+
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite)
+	TArray<FPlayerInventoryStruct> DeadPlayerInventoryStructArray;
+	
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite)
+	TArray<int32> DeadPlayerInventoryStackArray;
+	
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite)
+	TArray<FPlayerInventoryStruct> DeadPlayerGearSlotArray;
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 
 };

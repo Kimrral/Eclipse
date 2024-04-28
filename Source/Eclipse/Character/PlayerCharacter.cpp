@@ -199,39 +199,39 @@ void APlayerCharacter::BeginPlay()
 			PC->SetShowMouseCursor(false);
 		}
 	}
-
-	// Timeline Binding
-	if (CurveFloat)
-	{
-		FOnTimelineFloat TimelineProgress;
-		TimelineProgress.BindDynamic(this, &APlayerCharacter::SetZoomValue);
-		Timeline.AddInterpFloat(CurveFloat, TimelineProgress);
-	}
-
-	// Widget Settings
-	crosshairUI = CreateWidget<UCrosshairWidget>(GetWorld(), crosshairFactory);
-	quitWidgetUI = CreateWidget<UQuitWidget>(GetWorld(), quitWidgetFactory);
-	infoWidgetUI = CreateWidget<UWeaponInfoWidget>(GetWorld(), infoWidgetFactory);
-	sniperScopeUI = CreateWidget<UUserWidget>(GetWorld(), sniperScopeFactory);
-	damageWidgetUI = CreateWidget<UDamageWidget>(GetWorld(), damageWidgetUIFactory);
-	bossHPUI = CreateWidget<UBossHPWidget>(GetWorld(), bossHPWidgetFactory);
-	informationUI = CreateWidget<UInformationWidget>(GetWorld(), informationWidgetFactory);
-	levelSelectionUI = CreateWidget<ULevelSelection>(GetWorld(), levelSelectionWidgetFactory);
-	ExtractionCountdownUI = CreateWidget<UExtractionCountdown>(GetWorld(), ExtractionCountdownWidgetFactory);
-	MenuWidgetUI = CreateWidget<UMenuWidget>(GetWorld(), MenuWidgetFactory);
+	
+		// Timeline Binding
+		if (CurveFloat)
+		{
+			FOnTimelineFloat TimelineProgress;
+			TimelineProgress.BindDynamic(this, &APlayerCharacter::SetZoomValue);
+			Timeline.AddInterpFloat(CurveFloat, TimelineProgress);
+		}
+		
+		// Widget Settings
+		crosshairUI = CreateWidget<UCrosshairWidget>(GetWorld(), crosshairFactory);
+		quitWidgetUI = CreateWidget<UQuitWidget>(GetWorld(), quitWidgetFactory);
+		infoWidgetUI = CreateWidget<UWeaponInfoWidget>(GetWorld(), infoWidgetFactory);
+		sniperScopeUI = CreateWidget<UUserWidget>(GetWorld(), sniperScopeFactory);
+		damageWidgetUI = CreateWidget<UDamageWidget>(GetWorld(), damageWidgetUIFactory);
+		bossHPUI = CreateWidget<UBossHPWidget>(GetWorld(), bossHPWidgetFactory);
+		informationUI = CreateWidget<UInformationWidget>(GetWorld(), informationWidgetFactory);
+		levelSelectionUI = CreateWidget<ULevelSelection>(GetWorld(), levelSelectionWidgetFactory);
+		ExtractionCountdownUI = CreateWidget<UExtractionCountdown>(GetWorld(), ExtractionCountdownWidgetFactory);
+		MenuWidgetUI = CreateWidget<UMenuWidget>(GetWorld(), MenuWidgetFactory);
 
 	if (IsLocallyControlled())
 	{
-		//PC->SetAudioListenerOverride(GetMesh(), FVector::ZeroVector, FRotator::ZeroRotator);
+		
 		UWidgetLayoutLibrary::RemoveAllWidgets(GetWorld());
 		if (!crosshairUI->IsInViewport())
 		{
 			crosshairUI->AddToViewport();
 		}
 
-		APlayerCameraManager* const cameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0));
-		cameraManager->StopCameraFade();
-		cameraManager->StartCameraFade(1.0, 0, 8.0, FColor::Black, false, true);
+		APlayerCameraManager* const CameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0));
+		CameraManager->StopCameraFade();
+		CameraManager->StartCameraFade(1.0, 0, 8.0, FColor::Black, false, true);
 	}
 
 	ExtractionCountdownUI->ExtractionSuccessDele.AddUObject(this, &APlayerCharacter::ExtractionSuccess);
@@ -240,6 +240,7 @@ void APlayerCharacter::BeginPlay()
 
 	if (PC)
 	{
+		PC->SetAudioListenerOverride(GetMesh(), FVector::ZeroVector, FRotator::ZeroRotator);
 		PC->EnableInput(PC);
 	}
 
@@ -2197,7 +2198,7 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 				SetActorTickEnabled(false);
 				RifleMagActor->SetLifeSpan(1.f);
 				RifleMagActor->SetActorHiddenInGame(true);
-				RifleMagActor->AddInventory(this);
+				RifleMagActor->AddToInventory(this);
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					SetActorTickEnabled(true);
@@ -2219,7 +2220,7 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 				SetActorTickEnabled(false);
 				SniperMagActor->SetLifeSpan(1.f);
 				SniperMagActor->SetActorHiddenInGame(true);
-				SniperMagActor->AddInventory(this);
+				SniperMagActor->AddToInventory(this);
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					SetActorTickEnabled(true);
@@ -2240,7 +2241,7 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 				SetActorTickEnabled(false);
 				PistolMagActor->SetLifeSpan(1.f);
 				PistolMagActor->SetActorHiddenInGame(true);
-				PistolMagActor->AddInventory(this);
+				PistolMagActor->AddToInventory(this);
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					SetActorTickEnabled(true);
@@ -2262,7 +2263,7 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 				SetActorTickEnabled(false);
 				M249MagActor->SetLifeSpan(1.f);
 				M249MagActor->SetActorHiddenInGame(true);
-				M249MagActor->AddInventory(this);
+				M249MagActor->AddToInventory(this);
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					SetActorTickEnabled(true);
@@ -2284,7 +2285,7 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 				SetActorTickEnabled(false);
 				GoggleActor->SetLifeSpan(1.f);
 				GoggleActor->SetActorHiddenInGame(true);
-				GoggleActor->AddInventory(this);
+				GoggleActor->AddToInventory(this);
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					SetActorTickEnabled(true);
@@ -2306,7 +2307,7 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 				SetActorTickEnabled(false);
 				HelmetActor->SetLifeSpan(1.f);
 				HelmetActor->SetActorHiddenInGame(true);
-				HelmetActor->AddInventory(this);
+				HelmetActor->AddToInventory(this);
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					SetActorTickEnabled(true);
@@ -2328,7 +2329,7 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 				SetActorTickEnabled(false);
 				HeadsetActor->SetLifeSpan(1.f);
 				HeadsetActor->SetActorHiddenInGame(true);
-				HeadsetActor->AddInventory(this);
+				HeadsetActor->AddToInventory(this);
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					SetActorTickEnabled(true);
@@ -2350,7 +2351,7 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 				SetActorTickEnabled(false);
 				MaskActor->SetLifeSpan(1.f);
 				MaskActor->SetActorHiddenInGame(true);
-				MaskActor->AddInventory(this);
+				MaskActor->AddToInventory(this);
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					SetActorTickEnabled(true);
@@ -2372,7 +2373,7 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 				SetActorTickEnabled(false);
 				ArmorActor->SetLifeSpan(1.f);
 				ArmorActor->SetActorHiddenInGame(true);
-				ArmorActor->AddInventory(this);
+				ArmorActor->AddToInventory(this);
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					SetActorTickEnabled(true);
@@ -2394,7 +2395,7 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 				SetActorTickEnabled(false);
 				MedKitActor->SetLifeSpan(1.f);
 				MedKitActor->SetActorHiddenInGame(true);
-				MedKitActor->AddInventory(this);
+				MedKitActor->AddToInventory(this);
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					SetActorTickEnabled(true);
@@ -2416,7 +2417,7 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 				SetActorTickEnabled(false);
 				FirstAidKitActor->SetLifeSpan(1.f);
 				FirstAidKitActor->SetActorHiddenInGame(true);
-				FirstAidKitActor->AddInventory(this);
+				FirstAidKitActor->AddToInventory(this);
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					SetActorTickEnabled(true);
@@ -2438,7 +2439,7 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 				SetActorTickEnabled(false);
 				AdrenalineSyringe->SetLifeSpan(1.f);
 				AdrenalineSyringe->SetActorHiddenInGame(true);
-				AdrenalineSyringe->AddInventory(this);
+				AdrenalineSyringe->AddToInventory(this);
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					SetActorTickEnabled(true);
@@ -2460,7 +2461,7 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 				SetActorTickEnabled(false);
 				PoisonOfSpider->SetLifeSpan(1.f);
 				PoisonOfSpider->SetActorHiddenInGame(true);
-				PoisonOfSpider->AddInventory(this);
+				PoisonOfSpider->AddToInventory(this);
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					SetActorTickEnabled(true);
@@ -2482,7 +2483,7 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 				SetActorTickEnabled(false);
 				MilitaryLaptop->SetLifeSpan(1.f);
 				MilitaryLaptop->SetActorHiddenInGame(true);
-				MilitaryLaptop->AddInventory(this);
+				MilitaryLaptop->AddToInventory(this);
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					SetActorTickEnabled(true);
@@ -2504,7 +2505,7 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 				SetActorTickEnabled(false);
 				MilitaryDevice->SetLifeSpan(1.f);
 				MilitaryDevice->SetActorHiddenInGame(true);
-				MilitaryDevice->AddInventory(this);
+				MilitaryDevice->AddToInventory(this);
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					SetActorTickEnabled(true);
@@ -2526,7 +2527,7 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 				SetActorTickEnabled(false);
 				HackingConsole->SetLifeSpan(1.f);
 				HackingConsole->SetActorHiddenInGame(true);
-				HackingConsole->AddInventory(this);
+				HackingConsole->AddToInventory(this);
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					SetActorTickEnabled(true);

@@ -13,9 +13,5 @@ UCLASS()
 class ECLIPSE_API AHackingConsole : public APickableActor
 {
 	GENERATED_BODY()
-
-public:	
-	UFUNCTION(BlueprintImplementableEvent)
-	void AddInventory(APlayerCharacter* CachingPlayerCharacter);
 		
 };

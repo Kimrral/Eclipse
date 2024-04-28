@@ -13,10 +13,5 @@ UCLASS()
 class ECLIPSE_API AMedKitActor : public APickableActor
 {
 	GENERATED_BODY()
-
-	
-public:
-	UFUNCTION(BlueprintImplementableEvent)
-	void AddInventory(APlayerCharacter* CachingPlayerCharacter);
 	
 };

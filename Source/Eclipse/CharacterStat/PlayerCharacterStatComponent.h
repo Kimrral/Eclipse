@@ -10,6 +10,7 @@
 DECLARE_MULTICAST_DELEGATE(FOnHpZeroDelegate);
 DECLARE_MULTICAST_DELEGATE(FOnHpChangedDelegate);
 DECLARE_MULTICAST_DELEGATE(FOnStatChangedDelegate);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnRoubleChangedDelegate, float /*CurrentRouble*/);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class ECLIPSE_API UPlayerCharacterStatComponent : public UActorComponent
@@ -20,6 +21,7 @@ public:
 	FOnHpZeroDelegate OnHpZero;
 	FOnHpChangedDelegate OnHpChanged;
 	FOnStatChangedDelegate OnStatChanged;
+	FOnRoubleChangedDelegate OnRoubleChanged;
 	
 	// Sets default values for this component's properties
 	UPlayerCharacterStatComponent();
@@ -28,11 +30,20 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE float GetMaxHp() const { return MaxHp; }
-
-	float ApplyDamage(float InDamage, AActor* DamageCauser);	
-
+	
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE void HealHp(const float InHealAmount) { CurrentHp = FMath::Clamp(CurrentHp + InHealAmount, 0, MaxHp); OnHpChanged.Broadcast(); }
+
+	UFUNCTION(BlueprintCallable)
+	void SetHp(float NewHp);
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE float GetCurrentRouble() const {return CurrentRouble; }
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE void ModifyRouble(const float InRoubleAmount) { CurrentRouble = FMath::Clamp(CurrentRouble + InRoubleAmount, 0, 999999); OnRoubleChanged.Broadcast(CurrentRouble); }
+
+	float ApplyDamage(float InDamage, AActor* DamageCauser);	
 	
 	FORCEINLINE float GetRecoilRate() const {return RecoilRate;}
 	void SetRecoilRate(const TArray<bool>& WeaponArray);
@@ -42,8 +53,6 @@ public:
 
 	float GetAttackDamage(const TArray<bool>& WeaponArray, const bool IsPlayer) const;	
 	
-	UFUNCTION(BlueprintCallable)
-	void SetHp(float NewHp);
 
 	UPROPERTY()
 	class APlayerCharacter* PlayerCharacter;
@@ -64,6 +73,9 @@ protected:
 
 	UPROPERTY(ReplicatedUsing = OnRep_MaxHp, Transient, VisibleInstanceOnly, Category = Stat)
 	float MaxHp = 100.f;
+
+	UPROPERTY(VisibleInstanceOnly, Category = Stat)
+	float CurrentRouble;
 
 	UPROPERTY(VisibleInstanceOnly, Category = Stat)
 	float RecoilRate;

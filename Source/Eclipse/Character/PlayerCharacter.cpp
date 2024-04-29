@@ -58,8 +58,10 @@
 #include "Eclipse/Item/MilitaryLaptop.h"
 #include "Eclipse/Item/PoisonOfSpider.h"
 #include "Eclipse/Prop/DeadPlayerContainer.h"
+#include "Eclipse/Prop/Trader.h"
 #include "Eclipse/UI/ExtractionCountdown.h"
 #include "Eclipse/UI/MenuWidget.h"
+#include "Eclipse/UI/TradeWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
@@ -199,36 +201,36 @@ void APlayerCharacter::BeginPlay()
 			PC->SetShowMouseCursor(false);
 		}
 	}
-	
-		// Timeline Binding
-		if (CurveFloat)
-		{
-			FOnTimelineFloat TimelineProgress;
-			TimelineProgress.BindDynamic(this, &APlayerCharacter::SetZoomValue);
-			Timeline.AddInterpFloat(CurveFloat, TimelineProgress);
-		}
-		
-		// Widget Settings
-		crosshairUI = CreateWidget<UCrosshairWidget>(GetWorld(), crosshairFactory);
-		quitWidgetUI = CreateWidget<UQuitWidget>(GetWorld(), quitWidgetFactory);
-		infoWidgetUI = CreateWidget<UWeaponInfoWidget>(GetWorld(), infoWidgetFactory);
-		sniperScopeUI = CreateWidget<UUserWidget>(GetWorld(), sniperScopeFactory);
-		damageWidgetUI = CreateWidget<UDamageWidget>(GetWorld(), damageWidgetUIFactory);
-		bossHPUI = CreateWidget<UBossHPWidget>(GetWorld(), bossHPWidgetFactory);
-		informationUI = CreateWidget<UInformationWidget>(GetWorld(), informationWidgetFactory);
-		levelSelectionUI = CreateWidget<ULevelSelection>(GetWorld(), levelSelectionWidgetFactory);
-		ExtractionCountdownUI = CreateWidget<UExtractionCountdown>(GetWorld(), ExtractionCountdownWidgetFactory);
-		MenuWidgetUI = CreateWidget<UMenuWidget>(GetWorld(), MenuWidgetFactory);
+
+	// Timeline Binding
+	if (CurveFloat)
+	{
+		FOnTimelineFloat TimelineProgress;
+		TimelineProgress.BindDynamic(this, &APlayerCharacter::SetZoomValue);
+		Timeline.AddInterpFloat(CurveFloat, TimelineProgress);
+	}
+
+	// Widget Settings
+	crosshairUI = CreateWidget<UCrosshairWidget>(GetWorld(), crosshairFactory);
+	quitWidgetUI = CreateWidget<UQuitWidget>(GetWorld(), quitWidgetFactory);
+	infoWidgetUI = CreateWidget<UWeaponInfoWidget>(GetWorld(), infoWidgetFactory);
+	sniperScopeUI = CreateWidget<UUserWidget>(GetWorld(), sniperScopeFactory);
+	damageWidgetUI = CreateWidget<UDamageWidget>(GetWorld(), damageWidgetUIFactory);
+	bossHPUI = CreateWidget<UBossHPWidget>(GetWorld(), bossHPWidgetFactory);
+	informationUI = CreateWidget<UInformationWidget>(GetWorld(), informationWidgetFactory);
+	levelSelectionUI = CreateWidget<ULevelSelection>(GetWorld(), levelSelectionWidgetFactory);
+	ExtractionCountdownUI = CreateWidget<UExtractionCountdown>(GetWorld(), ExtractionCountdownWidgetFactory);
+	MenuWidgetUI = CreateWidget<UMenuWidget>(GetWorld(), MenuWidgetFactory);
+	TradeWidgetUI = CreateWidget<UTradeWidget>(GetWorld(), TradeWidgetFactory);
 
 	if (IsLocallyControlled())
 	{
-		
 		UWidgetLayoutLibrary::RemoveAllWidgets(GetWorld());
 		if (!crosshairUI->IsInViewport())
 		{
 			crosshairUI->AddToViewport();
 		}
-
+		TradeWidgetUI->Construction(this);
 		APlayerCameraManager* const CameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0));
 		CameraManager->StopCameraFade();
 		CameraManager->StartCameraFade(1.0, 0, 8.0, FColor::Black, false, true);
@@ -240,7 +242,7 @@ void APlayerCharacter::BeginPlay()
 
 	if (PC)
 	{
-		PC->SetAudioListenerOverride(GetMesh(), FVector::ZeroVector, FRotator::ZeroRotator);
+		//PC->SetAudioListenerOverride(GetMesh(), FVector::ZeroVector, FRotator::ZeroRotator);
 		PC->EnableInput(PC);
 	}
 
@@ -1447,6 +1449,7 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 			PickableItemActor = Cast<APickableActor>(ActorHitResult.GetActor());
 			StageBoard = Cast<AStageBoard>(ActorHitResult.GetActor());
 			Stash = Cast<AStash>(ActorHitResult.GetActor());
+			Trader = Cast<ATrader>(ActorHitResult.GetActor());
 			QuitGameActor = Cast<AQuitGameActor>(ActorHitResult.GetActor());
 			DeadPlayerContainer = Cast<ADeadPlayerContainer>(ActorHitResult.GetActor());
 
@@ -1709,7 +1712,7 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 						infoWidgetUI->AddToViewport();
 					}
 				}
-				else if(AdrenalineSyringe)
+				else if (AdrenalineSyringe)
 				{
 					// 1회 실행 불리언
 					if (TickOverlapBoolean == false)
@@ -1725,7 +1728,7 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 						infoWidgetUI->AddToViewport();
 					}
 				}
-				else if(PoisonOfSpider)
+				else if (PoisonOfSpider)
 				{
 					// 1회 실행 불리언
 					if (TickOverlapBoolean == false)
@@ -1847,6 +1850,22 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 					infoWidgetUI->AddToViewport();
 				}
 			}
+			else if (Trader)
+			{
+				// 1회 실행 불리언
+				if (TickOverlapBoolean == false)
+				{
+					TickOverlapBoolean = true;
+					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+					Trader->TraderCharacterMesh->SetRenderCustomDepth(true);
+					// Widget Switcher 이용한 무기 정보 위젯 스위칭
+					infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(25);
+					// Radial Slider Value 초기화
+					infoWidgetUI->weaponHoldPercent = 0;
+					// Weapon Info Widget 뷰포트에 배치
+					infoWidgetUI->AddToViewport();
+				}
+			}
 			else if (QuitGameActor)
 			{
 				// 1회 실행 불리언
@@ -1924,6 +1943,7 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 							MilitaryDevice = Cast<AMilitaryDevice>(HitObj[i].GetActor());
 							StageBoard = Cast<AStageBoard>(HitObj[i].GetActor());
 							Stash = Cast<AStash>(HitObj[i].GetActor());
+							Trader = Cast<ATrader>(HitObj[i].GetActor());
 							QuitGameActor = Cast<AQuitGameActor>(HitObj[i].GetActor());
 							DeadPlayerContainer = Cast<ADeadPlayerContainer>(HitObj[i].GetActor());
 
@@ -2012,12 +2032,12 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								FirstAidKitActor->RootMesh->SetRenderCustomDepth(false);
 							}
-							else if(AdrenalineSyringe)
+							else if (AdrenalineSyringe)
 							{
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								AdrenalineSyringe->RootMesh->SetRenderCustomDepth(false);
 							}
-							else if(PoisonOfSpider)
+							else if (PoisonOfSpider)
 							{
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								PoisonOfSpider->RootMesh->SetRenderCustomDepth(false);
@@ -2041,6 +2061,11 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 							{
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								Stash->stashMesh->SetRenderCustomDepth(false);
+							}
+							else if (Trader)
+							{
+								// Render Custom Depth 활용한 무기 액터 외곽선 해제
+								Trader->TraderCharacterMesh->SetRenderCustomDepth(false);
 							}
 							else if (QuitGameActor)
 							{
@@ -2882,6 +2907,7 @@ void APlayerCharacter::InteractionProcess()
 		PickableItemActor = Cast<APickableActor>(actorHitResult.GetActor());
 		StageBoard = Cast<AStageBoard>(actorHitResult.GetActor());
 		Stash = Cast<AStash>(actorHitResult.GetActor());
+		Trader = Cast<ATrader>(actorHitResult.GetActor());
 		QuitGameActor = Cast<AQuitGameActor>(actorHitResult.GetActor());
 		DeadPlayerContainer = Cast<ADeadPlayerContainer>(actorHitResult.GetActor());
 
@@ -3026,6 +3052,21 @@ void APlayerCharacter::InteractionProcess()
 					PC->SetShowMouseCursor(true);
 					StashWidgetOnViewport();
 				}
+			}
+		}
+		else if (Trader)
+		{
+			// 키다운 시간 동안 Radial Slider 게이지 상승
+			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
+			if (TradeWidgetUI && infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
+			{
+				infoWidgetUI->weaponHoldPercent = 0;
+				gi->IsWidgetOn = true;
+				UGameplayStatics::PlaySound2D(GetWorld(), quitGameSound);
+				infoWidgetUI->RemoveFromParent();
+				UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(PC, TradeWidgetUI);
+				PC->SetShowMouseCursor(true);
+				TradeWidgetUI->AddToViewport();
 			}
 		}
 		else if (QuitGameActor)

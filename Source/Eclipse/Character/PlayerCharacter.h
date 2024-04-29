@@ -596,6 +596,12 @@ public:
 	TSubclassOf<class ADeadPlayerContainer> DeadPlayerContainerFactory;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = widget)
+	class UTradeWidget* TradeWidgetUI;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
+	TSubclassOf<class UTradeWidget> TradeWidgetFactory;	
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = widget)
 	class UMenuWidget* MenuWidgetUI;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
@@ -1110,6 +1116,9 @@ public:
 
 	UPROPERTY()
 	class AStash* Stash;
+
+	UPROPERTY()
+	class ATrader* Trader;
 
 	UPROPERTY()
 	class ADeadPlayerContainer* DeadPlayerContainer;

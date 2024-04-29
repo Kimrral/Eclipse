@@ -93,7 +93,10 @@ public:
 	class URadialSlider* progressSlider_23;
 
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
-	class URadialSlider* progressSlider_24;	
+	class URadialSlider* progressSlider_24;
+	
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class URadialSlider* progressSlider_25;	
 	
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UWidgetSwitcher* WidgetSwitcher_Weapon;

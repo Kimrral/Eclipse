@@ -3,3 +3,9 @@
 
 #include "TradeWidget.h"
 
+#include "Components/TextBlock.h"
+
+void UTradeWidget::UpdateRoubleText(const int32 CurrentRoubles) const
+{
+	CurrentRouble->SetText(FText::AsNumber(CurrentRoubles));
+}

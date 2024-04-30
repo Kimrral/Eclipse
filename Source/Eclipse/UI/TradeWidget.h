@@ -18,11 +18,17 @@ class ECLIPSE_API UTradeWidget : public UUserWidget
 public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void Construction(APlayerCharacter* PlayerCharacter);
-	
-	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
-	class UTextBlock* CurrentRouble;
+
+	UFUNCTION()
+	void UpdateRoubleText(const int32 CurrentRoubles) const;
 
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UButton* SellButton;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	class UTextBlock* CurrentRouble;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	class UTextBlock* IncomeRouble;
 	
 };

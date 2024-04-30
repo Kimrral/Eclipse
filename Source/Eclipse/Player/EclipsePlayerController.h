@@ -27,9 +27,9 @@ public:
 	// void Respawn(APlayerCharacter* me);
 
 	UFUNCTION()
-	void PlayerDeath();
+	void PlayerDeath() const;
 	UFUNCTION()
-	void UpdateTabWidget();
+	void UpdateTabWidget() const;	
 
 	UPROPERTY()
 	class APlayerCharacter* PlayerCharacter;

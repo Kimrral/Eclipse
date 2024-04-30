@@ -57,7 +57,7 @@ void AEclipsePlayerController::BeginPlay()
 // 	}
 // }
 
-void AEclipsePlayerController::PlayerDeath()
+void AEclipsePlayerController::PlayerDeath() const
 {
 	if (PlayerCharacter)
 	{
@@ -65,10 +65,12 @@ void AEclipsePlayerController::PlayerDeath()
 	}
 }
 
-void AEclipsePlayerController::UpdateTabWidget()
+void AEclipsePlayerController::UpdateTabWidget() const
 {
 	if (PlayerCharacter)
 	{
 		PlayerCharacter->UpdateTabWidgetHP();
 	}
 }
+
+

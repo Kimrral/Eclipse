@@ -53,6 +53,7 @@ void UPlayerCharacterStatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeP
 	DOREPLIFETIME(UPlayerCharacterStatComponent, MaxHp);
 	DOREPLIFETIME(UPlayerCharacterStatComponent, AccumulatedDamageToPlayer);
 	DOREPLIFETIME(UPlayerCharacterStatComponent, AccumulatedDamageToEnemy);
+	DOREPLIFETIME(UPlayerCharacterStatComponent, CurrentRouble);
 }
 
 void UPlayerCharacterStatComponent::SetRecoilRate(const TArray<bool>& WeaponArray)

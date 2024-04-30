@@ -41,7 +41,7 @@ public:
 	FORCEINLINE float GetCurrentRouble() const {return CurrentRouble; }
 
 	UFUNCTION(BlueprintCallable)
-	FORCEINLINE void ModifyRouble(const float InRoubleAmount) { CurrentRouble = FMath::Clamp(CurrentRouble + InRoubleAmount, 0, 999999); OnRoubleChanged.Broadcast(CurrentRouble); }
+	FORCEINLINE void AddRouble(const float InRoubleAmount) { CurrentRouble = FMath::Clamp(CurrentRouble + InRoubleAmount, 0, 999999); OnRoubleChanged.Broadcast(CurrentRouble); }
 
 	float ApplyDamage(float InDamage, AActor* DamageCauser);	
 	
@@ -74,7 +74,7 @@ protected:
 	UPROPERTY(ReplicatedUsing = OnRep_MaxHp, Transient, VisibleInstanceOnly, Category = Stat)
 	float MaxHp = 100.f;
 
-	UPROPERTY(VisibleInstanceOnly, Category = Stat)
+	UPROPERTY(Replicated, VisibleInstanceOnly, Category = Stat)
 	float CurrentRouble;
 
 	UPROPERTY(VisibleInstanceOnly, Category = Stat)

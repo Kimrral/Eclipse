@@ -441,3 +441,27 @@ void AEclipsePlayerState::DeadBodyWidgetSettingsMulticast_Implementation(ADeadPl
 		DeadBodySettingsOnWidgetClass(InstigatorPlayerRef, DeadPlayerInventoryStructs, DeadPlayerInventoryStacks, DeadPlayerGearSlotStructs);
 	}
 }
+
+
+void AEclipsePlayerState::RemoveSoldInventoryIndex(APlayerCharacter* PlayerCharacterRef, const TArray<int32>& SoldInventoryIndexArray, const int32 SoldRoubleAmount)
+{
+	RemoveSoldInventoryIndexServer(PlayerCharacterRef, SoldInventoryIndexArray, SoldRoubleAmount);
+}
+
+void AEclipsePlayerState::RemoveSoldInventoryIndexServer_Implementation(APlayerCharacter* PlayerCharacterRef, const TArray<int32>& SoldInventoryIndexArray, const int32 SoldRoubleAmount)
+{
+	for (int i = 0; i < SoldInventoryIndexArray.Num(); ++i)
+	{
+		PlayerInventoryStructs[SoldInventoryIndexArray[i]]=InventoryStructDefault;
+		PlayerInventoryStacks[SoldInventoryIndexArray[i]]=0;
+	}
+	if(PlayerCharacterRef)
+	{
+		PlayerCharacterRef->Stat->AddRouble(SoldRoubleAmount);
+	}	
+}
+
+bool AEclipsePlayerState::RemoveSoldInventoryIndexServer_Validate(APlayerCharacter* PlayerCharacterRef, const TArray<int32>& SoldInventoryIndexArray, const int32 SoldRoubleAmount)
+{
+	return true;
+}

@@ -92,6 +92,12 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void GroundDetectAndDestroy(FVector PlayerCharacterLocation, const FString &InputItemString);
 
+	UFUNCTION(BlueprintCallable)
+	void RemoveSoldInventoryIndex(APlayerCharacter* PlayerCharacterRef, const TArray<int32>& SoldInventoryIndexArray, const int32 SoldRoubleAmount);
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void RemoveSoldInventoryIndexServer(APlayerCharacter* PlayerCharacterRef, const TArray<int32>& SoldInventoryIndexArray, const int32 SoldRoubleAmount);
+
 	virtual void CopyProperties(APlayerState* PlayerState) override;
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;

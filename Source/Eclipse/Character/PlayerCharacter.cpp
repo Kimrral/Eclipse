@@ -3481,12 +3481,49 @@ void APlayerCharacter::Fire()
 		GetWorldTimerManager().ClearTimer(ZoomFireHandle);
 		Zoom(false);
 	}
+	FireLocal();
 	ServerRPCFire();
 	CanShoot = false;
 	GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
 		CanShoot = true;
 	}), 1 / SetFireInterval(), false);
+}
+
+void APlayerCharacter::FireLocal()
+{
+	// Rifle
+	if (weaponArray[0] == true)
+	{
+		if (curRifleAmmo > 0)
+		{
+			ProcessRifleFireLocal();
+		}
+	}
+	// Sniper
+	else if (weaponArray[1] == true)
+	{
+		if (curSniperAmmo > 0)
+		{
+			ProcessSniperFireLocal();
+		}
+	}
+	// Pistol
+	else if (weaponArray[2] == true)
+	{
+		if (curPistolAmmo > 0)
+		{
+			ProcessPistolFireLocal();
+		}
+	}
+	// M249
+	else if (weaponArray[3] == true)
+	{
+		if (curM249Ammo > 0)
+		{
+			ProcessM249FireLocal();
+		}
+	}
 }
 
 bool APlayerCharacter::ServerRPCFire_Validate()
@@ -3507,21 +3544,16 @@ void APlayerCharacter::MulticastRPCFire_Implementation()
 		if (curRifleAmmo > 0)
 		{
 			ProcessRifleFireAnim();
+			
+			if (!IsLocallyControlled())
+			{
+				ProcessRifleFireSimulatedProxy();
+			}			
 
 			// 서버 로직 (핵심 프로세스 처리)
 			if (HasAuthority())
 			{
 				ProcessRifleFire();
-			}
-			// 실행하는 주체 (서버 / 클라 무관, 자신에게만 실행되는 로직 구현)
-			if (IsLocallyControlled())
-			{
-				ProcessRifleFireLocal();
-			}
-			// Simulated Proxy
-			else
-			{
-				ProcessRifleFireSimulatedProxy();
 			}
 		}
 		// No Ammo
@@ -3538,20 +3570,15 @@ void APlayerCharacter::MulticastRPCFire_Implementation()
 		{
 			ProcessSniperFireAnim();
 
+			if (!IsLocallyControlled())
+			{
+				ProcessSniperFireSimulatedProxy();
+			}
+			
 			// 서버 로직 (핵심 프로세스 처리)
 			if (HasAuthority())
 			{
 				ProcessSniperFire();
-			}
-			// 실행하는 주체 (서버 / 클라 무관, 자신에게만 실행되는 로직 구현)
-			if (IsLocallyControlled())
-			{
-				ProcessSniperFireLocal();
-			}
-			// Simulated Proxy
-			else
-			{
-				ProcessSniperFireSimulatedProxy();
 			}
 		}
 		// No Ammo
@@ -3568,20 +3595,15 @@ void APlayerCharacter::MulticastRPCFire_Implementation()
 		{
 			ProcessPistolFireAnim();
 
+			if (!IsLocallyControlled())
+			{
+				ProcessPistolFireSimulatedProxy();
+			}			
+			
 			// 서버 로직 (핵심 프로세스 처리)
 			if (HasAuthority())
 			{
 				ProcessPistolFire();
-			}
-			// 실행하는 주체 (서버 / 클라 무관, 자신에게만 실행되는 로직 구현)
-			if (IsLocallyControlled())
-			{
-				ProcessPistolFireLocal();
-			}
-			// Simulated Proxy
-			else
-			{
-				ProcessPistolFireSimulatedProxy();
 			}
 		}
 		else
@@ -3596,21 +3618,16 @@ void APlayerCharacter::MulticastRPCFire_Implementation()
 		if (curM249Ammo > 0)
 		{
 			ProcessM249FireAnim();
-
+			
+			if (!IsLocallyControlled())
+			{
+				ProcessM249FireSimulatedProxy();
+			}
+			
 			// 서버 로직 (핵심 프로세스 처리)
 			if (HasAuthority())
 			{
 				ProcessM249Fire();
-			}
-			// 실행하는 주체 (서버 / 클라 무관, 자신에게만 실행되는 로직 구현)
-			if (IsLocallyControlled())
-			{
-				ProcessM249FireLocal();
-			}
-			// Simulated Proxy
-			else
-			{
-				ProcessM249FireSimulatedProxy();
 			}
 		}
 		else

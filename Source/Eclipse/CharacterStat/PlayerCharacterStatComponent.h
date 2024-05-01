@@ -10,7 +10,6 @@
 DECLARE_MULTICAST_DELEGATE(FOnHpZeroDelegate);
 DECLARE_MULTICAST_DELEGATE(FOnHpChangedDelegate);
 DECLARE_MULTICAST_DELEGATE(FOnStatChangedDelegate);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnRoubleChangedDelegate, float /*CurrentRouble*/);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class ECLIPSE_API UPlayerCharacterStatComponent : public UActorComponent
@@ -21,7 +20,6 @@ public:
 	FOnHpZeroDelegate OnHpZero;
 	FOnHpChangedDelegate OnHpChanged;
 	FOnStatChangedDelegate OnStatChanged;
-	FOnRoubleChangedDelegate OnRoubleChanged;
 	
 	// Sets default values for this component's properties
 	UPlayerCharacterStatComponent();
@@ -41,7 +39,7 @@ public:
 	FORCEINLINE float GetCurrentRouble() const {return CurrentRouble; }
 
 	UFUNCTION(BlueprintCallable)
-	FORCEINLINE void AddRouble(const float InRoubleAmount) { CurrentRouble = FMath::Clamp(CurrentRouble + InRoubleAmount, 0, 999999); OnRoubleChanged.Broadcast(CurrentRouble); }
+	FORCEINLINE void AddRouble(const float InRoubleAmount) { CurrentRouble+=InRoubleAmount; }
 
 	float ApplyDamage(float InDamage, AActor* DamageCauser);	
 	

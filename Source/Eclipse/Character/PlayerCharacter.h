@@ -165,6 +165,9 @@ public:
 	UFUNCTION()
 	void Fire();
 
+	UFUNCTION()
+	void FireLocal();
+
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerRPCFire();
 

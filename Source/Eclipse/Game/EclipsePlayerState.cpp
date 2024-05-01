@@ -8,6 +8,15 @@
 #include "Net/UnrealNetwork.h"
 
 
+AEclipsePlayerState::AEclipsePlayerState()
+{
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bStartWithTickEnabled = false;
+
+	NetUpdateFrequency = 5.f;
+}
+
 void AEclipsePlayerState::BeginPlay()
 {
 	Super::BeginPlay();
@@ -15,7 +24,7 @@ void AEclipsePlayerState::BeginPlay()
 	IsAlreadyAccessed = false;
 	PlayerInventoryStructs.Init(InventoryStructDefault, 30);
 	PlayerInventoryStacks.Init(0, 30);
-	PlayerGearSlotStructs.Init(InventoryStructDefault,5);
+	PlayerGearSlotStructs.Init(InventoryStructDefault, 5);
 }
 
 void AEclipsePlayerState::CopyProperties(APlayerState* PlayerState)
@@ -270,7 +279,7 @@ void AEclipsePlayerState::DragFromInventoryMulticast_Implementation(APlayerChara
 	{
 		if (DropArrayIndex == 38)
 		{
-			if(PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Helmet"))
+			if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Helmet"))
 			{
 				PlayerCharacterRef->EquipHelmetInventorySlot(true);
 				if (PlayerInventoryStacks[DragArrayIndex] > 1)
@@ -289,7 +298,7 @@ void AEclipsePlayerState::DragFromInventoryMulticast_Implementation(APlayerChara
 		}
 		if (DropArrayIndex == 39)
 		{
-			if(PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Goggle"))
+			if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Goggle"))
 			{
 				PlayerCharacterRef->EquipGoggleInventorySlot(true);
 				if (PlayerInventoryStacks[DragArrayIndex] > 1)
@@ -308,7 +317,7 @@ void AEclipsePlayerState::DragFromInventoryMulticast_Implementation(APlayerChara
 		}
 		if (DropArrayIndex == 40)
 		{
-			if(PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Armor"))
+			if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Armor"))
 			{
 				PlayerCharacterRef->EquipArmorInventorySlot(true);
 				if (PlayerInventoryStacks[DragArrayIndex] > 1)
@@ -327,7 +336,7 @@ void AEclipsePlayerState::DragFromInventoryMulticast_Implementation(APlayerChara
 		}
 		if (DropArrayIndex == 41)
 		{
-			if(PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Mask"))
+			if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Mask"))
 			{
 				PlayerCharacterRef->EquipMaskInventorySlot(true);
 				if (PlayerInventoryStacks[DragArrayIndex] > 1)
@@ -346,7 +355,7 @@ void AEclipsePlayerState::DragFromInventoryMulticast_Implementation(APlayerChara
 		}
 		if (DropArrayIndex == 42)
 		{
-			if(PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Headset"))
+			if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Headset"))
 			{
 				PlayerCharacterRef->EquipHeadsetInventorySlot(true);
 				if (PlayerInventoryStacks[DragArrayIndex] > 1)
@@ -383,7 +392,7 @@ void AEclipsePlayerState::DragFromInventoryMulticast_Implementation(APlayerChara
 			return;
 		}
 		// Move Item
-		if(PlayerInventoryStacks[DropArrayIndex]==0)
+		if (PlayerInventoryStacks[DropArrayIndex] == 0)
 		{
 			PlayerInventoryStructs[DropArrayIndex] = PlayerInventoryStructs[DragArrayIndex];
 			PlayerInventoryStacks[DropArrayIndex] = PlayerInventoryStacks[DragArrayIndex];
@@ -399,7 +408,7 @@ void AEclipsePlayerState::DragFromInventoryMulticast_Implementation(APlayerChara
 			return;
 		}
 		//Swap Item
-		if(PlayerInventoryStructs[DragArrayIndex].Name != PlayerInventoryStructs[DropArrayIndex].Name)
+		if (PlayerInventoryStructs[DragArrayIndex].Name != PlayerInventoryStructs[DropArrayIndex].Name)
 		{
 			InventoryDropStructCache = PlayerInventoryStructs[DropArrayIndex];
 			InventoryDropStackCache = PlayerInventoryStacks[DropArrayIndex];
@@ -452,16 +461,34 @@ void AEclipsePlayerState::RemoveSoldInventoryIndexServer_Implementation(APlayerC
 {
 	for (int i = 0; i < SoldInventoryIndexArray.Num(); ++i)
 	{
-		PlayerInventoryStructs[SoldInventoryIndexArray[i]]=InventoryStructDefault;
-		PlayerInventoryStacks[SoldInventoryIndexArray[i]]=0;
+		PlayerInventoryStructs[SoldInventoryIndexArray[i]] = InventoryStructDefault;
+		PlayerInventoryStacks[SoldInventoryIndexArray[i]] = 0;
 	}
-	if(PlayerCharacterRef)
+	if (PlayerCharacterRef)
 	{
 		PlayerCharacterRef->Stat->AddRouble(SoldRoubleAmount);
-	}	
+	}
 }
 
 bool AEclipsePlayerState::RemoveSoldInventoryIndexServer_Validate(APlayerCharacter* PlayerCharacterRef, const TArray<int32>& SoldInventoryIndexArray, const int32 SoldRoubleAmount)
+{
+	return true;
+}
+
+void AEclipsePlayerState::ModifyRouble(APlayerCharacter* PlayerCharacterRef, const float RoubleAmount)
+{
+	ModifyRoubleServer(PlayerCharacterRef, RoubleAmount);
+}
+
+void AEclipsePlayerState::ModifyRoubleServer_Implementation(APlayerCharacter* PlayerCharacterRef, const float RoubleAmount)
+{
+	if(PlayerCharacterRef)
+	{
+		PlayerCharacterRef->Stat->AddRouble(RoubleAmount);
+	}
+}
+
+bool AEclipsePlayerState::ModifyRoubleServer_Validate(APlayerCharacter* PlayerCharacterRef, const float RoubleAmount)
 {
 	return true;
 }

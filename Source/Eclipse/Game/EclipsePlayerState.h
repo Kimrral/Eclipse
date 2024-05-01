@@ -15,7 +15,9 @@ UCLASS()
 class ECLIPSE_API AEclipsePlayerState : public APlayerState
 {
 	GENERATED_BODY()
-
+public:
+	AEclipsePlayerState();
+	
 protected:
 	virtual void BeginPlay() override;
 
@@ -97,6 +99,12 @@ public:
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void RemoveSoldInventoryIndexServer(APlayerCharacter* PlayerCharacterRef, const TArray<int32>& SoldInventoryIndexArray, const int32 SoldRoubleAmount);
+
+	UFUNCTION(BlueprintCallable)
+	void ModifyRouble(APlayerCharacter* PlayerCharacterRef, const float RoubleAmount);
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ModifyRoubleServer(APlayerCharacter* PlayerCharacterRef, const float RoubleAmount);
 
 	virtual void CopyProperties(APlayerState* PlayerState) override;
 

@@ -37,7 +37,7 @@ public:
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
-	
+
 	/** First Person Mesh */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USkeletalMeshComponent* FirstPersonCharacterMesh;
@@ -455,7 +455,7 @@ public:
 
 	UFUNCTION()
 	void MoveToIsolatedShip();
-	
+
 	UFUNCTION()
 	void MoveToHideout();
 
@@ -472,6 +472,9 @@ public:
 	void ApplyCachingValues();
 
 	UFUNCTION(BlueprintImplementableEvent)
+	void UpdateAmmunition();
+
+	UFUNCTION(BlueprintImplementableEvent)
 	void UpdateTabWidget();
 
 	UFUNCTION(BlueprintImplementableEvent)
@@ -479,10 +482,10 @@ public:
 
 	UFUNCTION()
 	void OnRep_WeaponArrayChanged() const;
-	
+
 	UFUNCTION()
 	void OnRep_IsEquipArmor() const;
-	
+
 	UFUNCTION()
 	void OnRep_IsEquipHelmet() const;
 
@@ -494,6 +497,18 @@ public:
 
 	UFUNCTION()
 	void OnRep_IsEquipHeadset() const;
+
+	UFUNCTION()
+	void OnRep_MaxRifleAmmo();
+
+	UFUNCTION()
+	void OnRep_MaxSniperAmmo();
+
+	UFUNCTION()
+	void OnRep_MaxPistolAmmo();
+
+	UFUNCTION()
+	void OnRep_MaxM249Ammo();
 
 	UFUNCTION()
 	int32 GenerateRandomDamage(float InDamage) const;
@@ -529,6 +544,9 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void ApplyInventoryDataFromGameInstance();
+
+	UFUNCTION()
+	void AddAmmunitionByInputString(const FString& InventoryStructName);
 
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
@@ -602,14 +620,14 @@ public:
 	class UTradeWidget* TradeWidgetUI;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
-	TSubclassOf<class UTradeWidget> TradeWidgetFactory;	
+	TSubclassOf<class UTradeWidget> TradeWidgetFactory;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = widget)
 	class UMenuWidget* MenuWidgetUI;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
 	TSubclassOf<class UMenuWidget> MenuWidgetFactory;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = widget)
 	class UExtractionCountdown* ExtractionCountdownUI;
 
@@ -695,6 +713,18 @@ public:
 	class AMilitaryDevice* MilitaryDevice;
 
 	UPROPERTY()
+	class ARifleAmmoPack* RifleAmmoPack;
+
+	UPROPERTY()
+	class ASniperAmmoPack* SniperAmmoPack;
+
+	UPROPERTY()
+	class APistolAmmoPack* PistolAmmoPack;
+
+	UPROPERTY()
+	class AM249AmmoPack* M249AmmoPack;
+
+	UPROPERTY()
 	class ARifleActor* OverlappedRifleActor;
 
 	UPROPERTY()
@@ -720,7 +750,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
 	class UAnimMontage* FirstPersonPistolZoomMontage;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
 	class UAnimMontage* FirstPersonPistolFireMontage;
 
@@ -825,16 +855,16 @@ public:
 	UPROPERTY()
 	bool EmptySoundBoolean = false;
 
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing=OnRep_MaxRifleAmmo)
 	int maxRifleAmmo;
 
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing=OnRep_MaxSniperAmmo)
 	int maxSniperAmmo;
 
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing=OnRep_MaxPistolAmmo)
 	int maxPistolAmmo;
 
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing=OnRep_MaxM249Ammo)
 	int maxM249Ammo;
 
 	UPROPERTY()
@@ -896,7 +926,7 @@ public:
 
 	UPROPERTY(ReplicatedUsing=OnRep_IsEquipArmor)
 	bool IsEquipArmor;
-	
+
 	UPROPERTY(ReplicatedUsing=OnRep_IsEquipHelmet)
 	bool IsEquipHelmet;
 
@@ -1071,7 +1101,7 @@ public:
 
 	UPROPERTY(Replicated)
 	float DamageAmount;
-	
+
 	UPROPERTY()
 	bool HelmetEquipped = false;
 

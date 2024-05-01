@@ -188,6 +188,14 @@ void UTabWidget::SetTabWidget()
 	}
 }
 
+void UTabWidget::UpdateAmmunition()
+{
+	MaxBulletText1->SetText(FText::AsNumber(player->maxRifleAmmo));
+	MaxBulletText2->SetText(FText::AsNumber(player->maxSniperAmmo));
+	MaxBulletText3->SetText(FText::AsNumber(player->maxPistolAmmo));
+	MaxBulletText4->SetText(FText::AsNumber(player->maxM249Ammo));
+}
+
 void UTabWidget::UpdateHealthPoint()
 {
 	if (player)

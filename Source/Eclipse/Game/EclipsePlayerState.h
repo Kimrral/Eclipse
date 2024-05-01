@@ -74,13 +74,13 @@ public:
 	void DragFromGearSlotMulticast(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex);
 
 	UFUNCTION(BlueprintCallable)
-	void DragFromGround(APlayerCharacter* PlayerCharacterRef,  const FPlayerInventoryStruct& PlayerInventoryStruct, const int32 DropArrayIndex);
+	void DragFromGround(APlayerCharacter* PlayerCharacterRef,  const FPlayerInventoryStruct& PlayerInventoryStruct, const int32 DropArrayIndex, const bool IsAmmunition);
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void DragFromGroundServer(APlayerCharacter* PlayerCharacterRef,  const FPlayerInventoryStruct& PlayerInventoryStruct, const int32 DropArrayIndex);
+	void DragFromGroundServer(APlayerCharacter* PlayerCharacterRef,  const FPlayerInventoryStruct& PlayerInventoryStruct, const int32 DropArrayIndex, const bool IsAmmunition);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void DragFromGroundMulticast(APlayerCharacter* PlayerCharacterRef,  const FPlayerInventoryStruct& PlayerInventoryStruct, const int32 DropArrayIndex);
+	void DragFromGroundMulticast(APlayerCharacter* PlayerCharacterRef,  const FPlayerInventoryStruct& PlayerInventoryStruct, const int32 DropArrayIndex, const bool IsAmmunition);
 
 	UFUNCTION(BlueprintCallable)
 	void DragFromInventory(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex);

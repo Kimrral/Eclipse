@@ -54,9 +54,13 @@
 #include "Eclipse/Game/EclipsePlayerState.h"
 #include "Eclipse/Item/AdrenalineSyringe.h"
 #include "Eclipse/Item/FirstAidKitActor.h"
+#include "Eclipse/Item/M249AmmoPack.h"
 #include "Eclipse/Item/MilitaryDevice.h"
 #include "Eclipse/Item/MilitaryLaptop.h"
+#include "Eclipse/Item/PistolAmmoPack.h"
 #include "Eclipse/Item/PoisonOfSpider.h"
+#include "Eclipse/Item/RifleAmmoPack.h"
+#include "Eclipse/Item/SniperAmmoPack.h"
 #include "Eclipse/Prop/DeadPlayerContainer.h"
 #include "Eclipse/Prop/Trader.h"
 #include "Eclipse/UI/ExtractionCountdown.h"
@@ -1533,6 +1537,10 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 				MedKitActor = Cast<AMedKitActor>(PickableItemActor);
 				MilitaryLaptop = Cast<AMilitaryLaptop>(PickableItemActor);
 				MilitaryDevice = Cast<AMilitaryDevice>(PickableItemActor);
+				RifleAmmoPack = Cast<ARifleAmmoPack>(PickableItemActor);
+				SniperAmmoPack = Cast<ASniperAmmoPack>(PickableItemActor);
+				PistolAmmoPack = Cast<APistolAmmoPack>(PickableItemActor);
+				M249AmmoPack = Cast<AM249AmmoPack>(PickableItemActor);
 				AdrenalineSyringe = Cast<AAdrenalineSyringe>(PickableItemActor);
 				PoisonOfSpider = Cast<APoisonOfSpider>(PickableItemActor);
 				FirstAidKitActor = Cast<AFirstAidKitActor>(PickableItemActor);
@@ -1776,6 +1784,70 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 						infoWidgetUI->AddToViewport();
 					}
 				}
+				else if (RifleAmmoPack)
+				{
+					// 1회 실행 불리언
+					if (TickOverlapBoolean == false)
+					{
+						TickOverlapBoolean = true;
+						// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+						RifleAmmoPack->RootMesh->SetRenderCustomDepth(true);
+						// Widget Switcher 이용한 무기 정보 위젯 스위칭
+						infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(26);
+						// Radial Slider Value 초기화
+						infoWidgetUI->weaponHoldPercent = 0;
+						// Weapon Info Widget 뷰포트에 배치
+						infoWidgetUI->AddToViewport();
+					}
+				}
+				else if (SniperAmmoPack)
+				{
+					// 1회 실행 불리언
+					if (TickOverlapBoolean == false)
+					{
+						TickOverlapBoolean = true;
+						// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+						SniperAmmoPack->RootMesh->SetRenderCustomDepth(true);
+						// Widget Switcher 이용한 무기 정보 위젯 스위칭
+						infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(27);
+						// Radial Slider Value 초기화
+						infoWidgetUI->weaponHoldPercent = 0;
+						// Weapon Info Widget 뷰포트에 배치
+						infoWidgetUI->AddToViewport();
+					}
+				}
+				else if (PistolAmmoPack)
+				{
+					// 1회 실행 불리언
+					if (TickOverlapBoolean == false)
+					{
+						TickOverlapBoolean = true;
+						// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+						PistolAmmoPack->RootMesh->SetRenderCustomDepth(true);
+						// Widget Switcher 이용한 무기 정보 위젯 스위칭
+						infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(28);
+						// Radial Slider Value 초기화
+						infoWidgetUI->weaponHoldPercent = 0;
+						// Weapon Info Widget 뷰포트에 배치
+						infoWidgetUI->AddToViewport();
+					}
+				}
+				else if (M249AmmoPack)
+				{
+					// 1회 실행 불리언
+					if (TickOverlapBoolean == false)
+					{
+						TickOverlapBoolean = true;
+						// Render Custom Depth 활용한 무기 액터 외곽선 활성화
+						M249AmmoPack->RootMesh->SetRenderCustomDepth(true);
+						// Widget Switcher 이용한 무기 정보 위젯 스위칭
+						infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(29);
+						// Radial Slider Value 초기화
+						infoWidgetUI->weaponHoldPercent = 0;
+						// Weapon Info Widget 뷰포트에 배치
+						infoWidgetUI->AddToViewport();
+					}
+				}
 				else if (HackingConsole)
 				{
 					// 1회 실행 불리언
@@ -1941,6 +2013,10 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 							PoisonOfSpider = Cast<APoisonOfSpider>(HitObj[i].GetActor());
 							MilitaryLaptop = Cast<AMilitaryLaptop>(HitObj[i].GetActor());
 							MilitaryDevice = Cast<AMilitaryDevice>(HitObj[i].GetActor());
+							RifleAmmoPack = Cast<ARifleAmmoPack>(HitObj[i].GetActor());
+							SniperAmmoPack = Cast<ASniperAmmoPack>(HitObj[i].GetActor());
+							PistolAmmoPack = Cast<APistolAmmoPack>(HitObj[i].GetActor());
+							M249AmmoPack = Cast<AM249AmmoPack>(HitObj[i].GetActor());
 							StageBoard = Cast<AStageBoard>(HitObj[i].GetActor());
 							Stash = Cast<AStash>(HitObj[i].GetActor());
 							Trader = Cast<ATrader>(HitObj[i].GetActor());
@@ -2051,6 +2127,26 @@ void APlayerCharacter::WeaponDetectionLineTrace()
 							{
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								MilitaryDevice->RootMesh->SetRenderCustomDepth(false);
+							}
+							else if (RifleAmmoPack)
+							{
+								// Render Custom Depth 활용한 무기 액터 외곽선 해제
+								RifleAmmoPack->RootMesh->SetRenderCustomDepth(false);
+							}
+							else if (SniperAmmoPack)
+							{
+								// Render Custom Depth 활용한 무기 액터 외곽선 해제
+								SniperAmmoPack->RootMesh->SetRenderCustomDepth(false);
+							}
+							else if (PistolAmmoPack)
+							{
+								// Render Custom Depth 활용한 무기 액터 외곽선 해제
+								PistolAmmoPack->RootMesh->SetRenderCustomDepth(false);
+							}
+							else if (M249AmmoPack)
+							{
+								// Render Custom Depth 활용한 무기 액터 외곽선 해제
+								M249AmmoPack->RootMesh->SetRenderCustomDepth(false);
 							}
 							else if (StageBoard)
 							{
@@ -2531,6 +2627,94 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 				MilitaryDevice->SetLifeSpan(1.f);
 				MilitaryDevice->SetActorHiddenInGame(true);
 				MilitaryDevice->AddToInventory(this);
+				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
+				{
+					SetActorTickEnabled(true);
+				}), 1.f, false);
+			}
+			if (IsLocallyControlled())
+			{
+				if (infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
+			}
+
+			return;
+		}
+		RifleAmmoPack = Cast<ARifleAmmoPack>(PickableActor);
+		if (RifleAmmoPack)
+		{
+			if (HasAuthority())
+			{
+				RifleAmmoPack->IsAlreadyLooted = true;
+				SetActorTickEnabled(false);
+				RifleAmmoPack->SetLifeSpan(1.f);
+				RifleAmmoPack->SetActorHiddenInGame(true);
+				maxRifleAmmo += 40;
+				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
+				{
+					SetActorTickEnabled(true);
+				}), 1.f, false);
+			}
+			if (IsLocallyControlled())
+			{
+				if (infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
+			}
+
+			return;
+		}
+		SniperAmmoPack = Cast<ASniperAmmoPack>(PickableActor);
+		if (SniperAmmoPack)
+		{
+			if (HasAuthority())
+			{
+				SniperAmmoPack->IsAlreadyLooted = true;
+				SetActorTickEnabled(false);
+				SniperAmmoPack->SetLifeSpan(1.f);
+				SniperAmmoPack->SetActorHiddenInGame(true);
+				maxSniperAmmo += 5;
+				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
+				{
+					SetActorTickEnabled(true);
+				}), 1.f, false);
+			}
+			if (IsLocallyControlled())
+			{
+				if (infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
+			}
+
+			return;
+		}
+		PistolAmmoPack = Cast<APistolAmmoPack>(PickableActor);
+		if (PistolAmmoPack)
+		{
+			if (HasAuthority())
+			{
+				PistolAmmoPack->IsAlreadyLooted = true;
+				SetActorTickEnabled(false);
+				PistolAmmoPack->SetLifeSpan(1.f);
+				PistolAmmoPack->SetActorHiddenInGame(true);
+				maxPistolAmmo += 8;
+				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
+				{
+					SetActorTickEnabled(true);
+				}), 1.f, false);
+			}
+			if (IsLocallyControlled())
+			{
+				if (infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
+			}
+
+			return;
+		}
+		M249AmmoPack = Cast<AM249AmmoPack>(PickableActor);
+		if (M249AmmoPack)
+		{
+			if (HasAuthority())
+			{
+				M249AmmoPack->IsAlreadyLooted = true;
+				SetActorTickEnabled(false);
+				M249AmmoPack->SetLifeSpan(1.f);
+				M249AmmoPack->SetActorHiddenInGame(true);
+				maxM249Ammo += 100;
 				GetWorldTimerManager().SetTimer(DestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 				{
 					SetActorTickEnabled(true);
@@ -3385,6 +3569,26 @@ void APlayerCharacter::OnRep_WeaponArrayChanged() const
 	WeaponChangeDele.Broadcast();
 }
 
+void APlayerCharacter::AddAmmunitionByInputString(const FString& InventoryStructName)
+{
+	if (InventoryStructName.Contains(TEXT("Rifle")))
+	{
+		maxRifleAmmo += 40;
+	}
+	else if (InventoryStructName.Contains(TEXT("Sniper")))
+	{
+		maxSniperAmmo += 5;
+	}
+	else if (InventoryStructName.Contains(TEXT("Pistol")))
+	{
+		maxPistolAmmo += 8;
+	}
+	else if (InventoryStructName.Contains(TEXT("M249")))
+	{
+		maxM249Ammo += 50;
+	}
+}
+
 void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -3469,6 +3673,26 @@ void APlayerCharacter::OnRep_IsEquipHeadset() const
 	}
 }
 
+void APlayerCharacter::OnRep_MaxRifleAmmo()
+{
+	UpdateAmmunition();
+}
+
+void APlayerCharacter::OnRep_MaxSniperAmmo()
+{
+	UpdateAmmunition();
+}
+
+void APlayerCharacter::OnRep_MaxPistolAmmo()
+{
+	UpdateAmmunition();
+}
+
+void APlayerCharacter::OnRep_MaxM249Ammo()
+{
+	UpdateAmmunition();
+}
+
 void APlayerCharacter::Fire()
 {
 	// 사격 가능 상태가 아니거나, 뛰고 있거나, 위젯이 켜져 있거나, 엔딩 연출 중이라면 리턴
@@ -3544,11 +3768,11 @@ void APlayerCharacter::MulticastRPCFire_Implementation()
 		if (curRifleAmmo > 0)
 		{
 			ProcessRifleFireAnim();
-			
+
 			if (!IsLocallyControlled())
 			{
 				ProcessRifleFireSimulatedProxy();
-			}			
+			}
 
 			// 서버 로직 (핵심 프로세스 처리)
 			if (HasAuthority())
@@ -3574,7 +3798,7 @@ void APlayerCharacter::MulticastRPCFire_Implementation()
 			{
 				ProcessSniperFireSimulatedProxy();
 			}
-			
+
 			// 서버 로직 (핵심 프로세스 처리)
 			if (HasAuthority())
 			{
@@ -3598,8 +3822,8 @@ void APlayerCharacter::MulticastRPCFire_Implementation()
 			if (!IsLocallyControlled())
 			{
 				ProcessPistolFireSimulatedProxy();
-			}			
-			
+			}
+
 			// 서버 로직 (핵심 프로세스 처리)
 			if (HasAuthority())
 			{
@@ -3618,12 +3842,12 @@ void APlayerCharacter::MulticastRPCFire_Implementation()
 		if (curM249Ammo > 0)
 		{
 			ProcessM249FireAnim();
-			
+
 			if (!IsLocallyControlled())
 			{
 				ProcessM249FireSimulatedProxy();
 			}
-			
+
 			// 서버 로직 (핵심 프로세스 처리)
 			if (HasAuthority())
 			{

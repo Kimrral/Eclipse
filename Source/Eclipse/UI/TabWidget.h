@@ -22,6 +22,9 @@ public:
 	void SetTabWidget();
 
 	UFUNCTION(BlueprintCallable)
+	void UpdateAmmunition();
+
+	UFUNCTION(BlueprintCallable)
 	void UpdateHealthPoint();
 
 	UPROPERTY()

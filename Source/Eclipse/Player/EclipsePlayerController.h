@@ -28,6 +28,7 @@ public:
 
 	UFUNCTION()
 	void PlayerDeath() const;
+	
 	UFUNCTION()
 	void UpdateTabWidget() const;	
 

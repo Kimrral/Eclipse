@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Eclipse/GameData/PlayerInventoryStruct.h"
 #include "Engine/GameInstance.h"
 #include "EclipseGameInstance.generated.h"
 
@@ -16,6 +17,21 @@ class ECLIPSE_API UEclipseGameInstance : public UGameInstance
 
 public:
 	UEclipseGameInstance();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	TArray<FPlayerInventoryStruct> PlayerInventoryStructs;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	TArray<int32> PlayerInventoryStacks;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	TArray<FPlayerInventoryStruct> PlayerGearSlotStructs;
+
+	UPROPERTY()
+	FPlayerInventoryStruct InventoryStructDefault;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	float CachedRouble;
 
 	UPROPERTY()
 	int ConsoleCount;

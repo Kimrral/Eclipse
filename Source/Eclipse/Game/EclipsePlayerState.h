@@ -32,10 +32,7 @@ public:
 	void DeadBodyWidgetSettingsMulticast(ADeadPlayerContainer* DeadPlayerContainer, APlayerCharacter* InstigatorPlayerRef);
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void DeadBodySettingsOnWidgetClass(APlayerCharacter* PlayerCharacterRef, const TArray<FPlayerInventoryStruct> &DeadPlayerInventoryArrayRef, const TArray<int32> &DeadPlayerStackArrayRef, const TArray<FPlayerInventoryStruct> &DeadPlayerGearArrayRef);
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void CacheInventoryDataToGameInstance();
+	void DeadBodySettingsOnWidgetClass(APlayerCharacter* PlayerCharacterRef, const TArray<FPlayerInventoryStruct> &DeadPlayerInventoryArrayRef, const TArray<int32> &DeadPlayerStackArrayRef, const TArray<FPlayerInventoryStruct> &DeadPlayerGearArrayRef);	
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void AddToInventoryWidget(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct);
@@ -105,6 +102,15 @@ public:
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ModifyRoubleServer(APlayerCharacter* PlayerCharacterRef, const float RoubleAmount);
+
+	UFUNCTION()
+	void MoveInventoryDataToGameInstance() const;
+
+	UFUNCTION()
+	void GetInventoryDataFromGameInstance();
+
+	UFUNCTION()
+	void ApplyGearInventoryEquipState(APlayerCharacter* PlayerCharacterRef);
 
 	virtual void CopyProperties(APlayerState* PlayerState) override;
 

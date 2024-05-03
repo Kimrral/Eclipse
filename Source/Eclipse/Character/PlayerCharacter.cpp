@@ -189,9 +189,13 @@ void APlayerCharacter::BeginPlay()
 	gm = Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());
 	gi = Cast<UEclipseGameInstance>(GetWorld()->GetGameInstance());
 	animInstance = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-
-	ApplyInventoryDataFromGameInstance();
-
+	
+	if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))
+	{
+		CachingPlayerState->GetInventoryDataFromGameInstance();
+		CachingPlayerState->ApplyGearInventoryEquipState(this);
+	}
+	Stat->AddRouble(gi->CachedRouble);
 	gi->IsWidgetOn = false;
 
 	//Add Input Mapping Context
@@ -246,7 +250,6 @@ void APlayerCharacter::BeginPlay()
 
 	if (PC)
 	{
-		//PC->SetAudioListenerOverride(GetMesh(), FVector::ZeroVector, FRotator::ZeroRotator);
 		PC->EnableInput(PC);
 	}
 
@@ -270,13 +273,6 @@ void APlayerCharacter::BeginPlay()
 		SniperComp->SetVisibility(false);
 		PistolComp->SetVisibility(false);
 		M249Comp->SetVisibility(false);
-
-		// Gear Visibility Settings
-		GoggleSlot->SetVisibility(false);
-		HelmetSlot->SetVisibility(false);
-		HeadSetSlot->SetVisibility(false);
-		MaskSlot->SetVisibility(false);
-		ArmorSlot->SetVisibility(false);
 	}
 	// Non Hideout
 	else
@@ -299,15 +295,8 @@ void APlayerCharacter::BeginPlay()
 		SniperComp->SetVisibility(false);
 		PistolComp->SetVisibility(false);
 		M249Comp->SetVisibility(false);
-
-		// Gear Visibility Settings
-		GoggleSlot->SetVisibility(false);
-		HelmetSlot->SetVisibility(false);
-		HeadSetSlot->SetVisibility(false);
-		MaskSlot->SetVisibility(false);
-		ArmorSlot->SetVisibility(false);
 	}
-
+	
 	if (IsLocallyControlled())
 	{
 		if (informationUI)
@@ -340,6 +329,13 @@ void APlayerCharacter::BeginPlay()
 
 	// Update Tab Widget Before Widget Constructor
 	UpdateTabWidget();
+}
+
+void APlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	gi->CachedRouble = Stat->GetCurrentRouble();
 }
 
 // Called every frame
@@ -3389,21 +3385,32 @@ void APlayerCharacter::MoveToIsolatedShip()
 	FTimerHandle EndHandle;
 	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
-		if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->CacheInventoryDataToGameInstance();
+		if (const AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->MoveInventoryDataToGameInstance();
 		UGameplayStatics::OpenLevel(GetWorld(), FName("Map_BigStarStation"));
 	}), 9.f, false);
 }
 
-void APlayerCharacter::MoveToHideout()
+void APlayerCharacter::MoveToHideout(const bool SaveInventory) const
 {
 	APlayerCameraManager* PlayerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 	PlayerCam->StartCameraFade(0, 1, 2.0, FLinearColor::Black, false, true);
-	FTimerHandle EndHandle;
-	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
+	if (SaveInventory==true)
 	{
-		if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->CacheInventoryDataToGameInstance();
-		UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"));
-	}), 2.f, false);
+		FTimerHandle EndHandle;
+		GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
+		{
+			if (const AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->MoveInventoryDataToGameInstance();
+			UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"));
+		}), 2.f, false);
+	}
+	else
+	{
+		FTimerHandle EndHandle;
+		GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
+		{
+			UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"));
+		}), 2.f, false);
+	}
 }
 
 void APlayerCharacter::MoveToBlockedIntersection()
@@ -3426,7 +3433,7 @@ void APlayerCharacter::MoveToBlockedIntersection()
 	FTimerHandle EndHandle;
 	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
-		if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->CacheInventoryDataToGameInstance();
+		if (const AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->MoveInventoryDataToGameInstance();
 		UGameplayStatics::OpenLevel(GetWorld(), FName("192.168.0.3"));
 	}), 9.f, false);
 }
@@ -3882,14 +3889,7 @@ void APlayerCharacter::ExtractionSuccess() const
 	UWidgetLayoutLibrary::RemoveAllWidgets(GetWorld());
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
 	UGameplayStatics::PlaySound2D(GetWorld(), ExtractionSound);
-	APlayerCameraManager* PlayerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
-	// 카메라 페이드 연출
-	PlayerCam->StartCameraFade(0, 1, 1.5f, FLinearColor::Black, false, true);
-	FTimerHandle ExtractionHandle;
-	GetWorld()->GetTimerManager().SetTimer(ExtractionHandle, FTimerDelegate::CreateLambda([this]()-> void
-	{
-		UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"), true);
-	}), 1.5f, false);
+	MoveToHideout(true);
 }
 
 void APlayerCharacter::SetFirstPersonModeRifle(const bool IsFirstPerson)
@@ -4398,9 +4398,9 @@ void APlayerCharacter::ProcessM249FireAnim()
 
 void APlayerCharacter::ProcessM249FireLocal()
 {
-	FTransform particleTrans = M249Comp->GetSocketTransform(FName("M249FirePosition"));
-	particleTrans.SetScale3D(FVector(0.7));
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PistolfireParticle, particleTrans);
+	FTransform ParticleTrans = M249Comp->GetSocketTransform(FName("M249FirePosition"));
+	ParticleTrans.SetScale3D(FVector(0.7));
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PistolfireParticle, ParticleTrans);
 	UGameplayStatics::PlaySound2D(GetWorld(), M249FireSound);
 	PC->PlayerCameraManager->StartCameraShake(rifleFireShake);
 	if (isZooming)
@@ -4457,6 +4457,11 @@ void APlayerCharacter::PlayerDeath()
 void APlayerCharacter::PlayerDeathRPCServer_Implementation()
 {
 	PlayerDeathRPCMulticast();
+	FTimerHandle EndHandle;
+	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
+	{
+		UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"));
+	}), 9.f, false);
 }
 
 bool APlayerCharacter::PlayerDeathRPCServer_Validate()
@@ -4492,7 +4497,7 @@ void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 		}
 
 		GetMesh()->SetVisibility(false);
-	}), 3.f, false);
+	}), 2.f, false);
 
 	if (IsLocallyControlled())
 	{
@@ -4507,34 +4512,4 @@ void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 		// 사망지점 전역변수에 캐싱
 		DeathPosition = GetActorLocation();
 	}
-
-
-	// FTimerHandle endHandle;
-	// // 7초 뒤 호출되는 함수 타이머
-	// GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()->void
-	// {
-	// 	// 사망 변수 활성화
-	// 	bPlayerDeath=true;
-	// 	// 현재 주요 변수 값들을 GameInstance의 변수에 캐싱
-	// 	CachingValues();
-	// 	PouchCaching();
-	// 	StashCaching();
-	// 	GearCaching();
-	// 	MagCaching();
-	// 	ClearInventoryCache();
-	// 	// 자신 제거
-	// 	this->Destroy();
-	// 	// 컨트롤러의 리스폰 함수 호출
-	// 	PC->Respawn(this);	
-	// 	}), 7.0f, false);
-	// 	FTimerHandle possesHandle;
-	// 	// 0.4초 뒤 호출되는 함수 타이머
-	// 	GetWorld()->GetTimerManager().SetTimer(possesHandle, FTimerDelegate::CreateLambda([this]()->void
-	// 	{
-	// 		if (PC != nullptr)
-	// 		{
-	// 			// 리스폰 된 플레이어에 새롭게 빙의
-	// 			PC->Possess(this);
-	// 		}
-	// }), 0.4f, false);
 }

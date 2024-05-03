@@ -5,6 +5,10 @@
 
 UEclipseGameInstance::UEclipseGameInstance()
 {
+	PlayerInventoryStructs.Init(InventoryStructDefault, 30);
+	PlayerInventoryStacks.Init(0, 30);
+	PlayerGearSlotStructs.Init(InventoryStructDefault, 5);
+
 	curRifleAmmo = 40;
 	curSniperAmmo = 5;
 	curPistolAmmo = 8;

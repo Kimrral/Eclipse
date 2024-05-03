@@ -48,7 +48,7 @@ void UMenuWidget::ReturnToHideoutYesFunc()
 		UWidgetBlueprintLibrary::SetInputMode_GameOnly(pc);
 		pc->SetShowMouseCursor(false);
 		this->RemoveFromParent();
-		player->MoveToHideout();
+		player->MoveToHideout(false);
 	}	
 }
 

@@ -49,6 +49,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:
 	// Called every frame
@@ -457,7 +458,7 @@ public:
 	void MoveToIsolatedShip();
 
 	UFUNCTION()
-	void MoveToHideout();
+	void MoveToHideout(const bool SaveInventory) const;
 
 	UFUNCTION()
 	void MoveToBlockedIntersection();
@@ -542,12 +543,8 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void DeadPlayerContainerSettings(ADeadPlayerContainer* DeadPlayerContainers);
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void ApplyInventoryDataFromGameInstance();
-
 	UFUNCTION()
-	void AddAmmunitionByInputString(const FString& InventoryStructName);
-
+	void AddAmmunitionByInputString(const FString& InventoryStructName);	
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 

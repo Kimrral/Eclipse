@@ -516,3 +516,68 @@ bool AEclipsePlayerState::ModifyRoubleServer_Validate(APlayerCharacter* PlayerCh
 {
 	return true;
 }
+
+
+void AEclipsePlayerState::MoveInventoryDataToGameInstance() const
+{
+	if (UEclipseGameInstance* const GameInstance = Cast<UEclipseGameInstance>(GetGameInstance()))
+	{
+		GameInstance->PlayerInventoryStructs = PlayerInventoryStructs;
+		GameInstance->PlayerInventoryStacks = PlayerInventoryStacks;
+		GameInstance->PlayerGearSlotStructs = PlayerGearSlotStructs;
+	}
+}
+
+void AEclipsePlayerState::GetInventoryDataFromGameInstance()
+{
+	if (const UEclipseGameInstance* const GameInstance = Cast<UEclipseGameInstance>(GetGameInstance()))
+	{
+		PlayerInventoryStructs = GameInstance->PlayerInventoryStructs;
+		PlayerInventoryStacks = GameInstance->PlayerInventoryStacks;
+		PlayerGearSlotStructs = GameInstance->PlayerGearSlotStructs;
+	}
+}
+
+void AEclipsePlayerState::ApplyGearInventoryEquipState(APlayerCharacter* PlayerCharacterRef)
+{
+	if (PlayerGearSlotStructs[0].Price>0)
+	{
+		PlayerCharacterRef->EquipHelmetInventorySlot(true);
+	}
+	else
+	{
+		PlayerCharacterRef->EquipHelmetInventorySlot(false);
+	}
+	if (PlayerGearSlotStructs[1].Price>0)
+	{
+		PlayerCharacterRef->EquipGoggleInventorySlot(true);
+	}
+	else
+	{
+		PlayerCharacterRef->EquipGoggleInventorySlot(false);
+	}
+	if (PlayerGearSlotStructs[2].Price>0)
+	{
+		PlayerCharacterRef->EquipArmorInventorySlot(true);
+	}
+	else
+	{
+		PlayerCharacterRef->EquipArmorInventorySlot(false);
+	}
+	if (PlayerGearSlotStructs[3].Price>0)
+	{
+		PlayerCharacterRef->EquipMaskInventorySlot(true);
+	}
+	else
+	{
+		PlayerCharacterRef->EquipMaskInventorySlot(false);
+	}
+	if (PlayerGearSlotStructs[4].Price>0)
+	{
+		PlayerCharacterRef->EquipHeadsetInventorySlot(true);
+	}
+	else
+	{
+		PlayerCharacterRef->EquipHeadsetInventorySlot(false);
+	}
+}

@@ -189,7 +189,7 @@ void APlayerCharacter::BeginPlay()
 	gm = Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());
 	gi = Cast<UEclipseGameInstance>(GetWorld()->GetGameInstance());
 	animInstance = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
-	
+
 	if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))
 	{
 		CachingPlayerState->GetInventoryDataFromGameInstance();
@@ -216,6 +216,16 @@ void APlayerCharacter::BeginPlay()
 		FOnTimelineFloat TimelineProgress;
 		TimelineProgress.BindDynamic(this, &APlayerCharacter::SetZoomValue);
 		Timeline.AddInterpFloat(CurveFloat, TimelineProgress);
+	}
+	// Tilting Timeline Binding
+	if (TiltingCurveFloat)
+	{
+		FOnTimelineFloat TiltLeftTimelineProgress;
+		FOnTimelineFloat TiltRightTimelineProgress;
+		TiltLeftTimelineProgress.BindDynamic(this, &APlayerCharacter::SetTiltingLeftValue);
+		TiltRightTimelineProgress.BindDynamic(this, &APlayerCharacter::SetTiltingRightValue);
+		TiltingLeftTimeline.AddInterpFloat(TiltingCurveFloat, TiltLeftTimelineProgress);
+		TiltingRightTimeline.AddInterpFloat(TiltingCurveFloat, TiltRightTimelineProgress);
 	}
 
 	// Widget Settings
@@ -296,7 +306,7 @@ void APlayerCharacter::BeginPlay()
 		PistolComp->SetVisibility(false);
 		M249Comp->SetVisibility(false);
 	}
-	
+
 	if (IsLocallyControlled())
 	{
 		if (informationUI)
@@ -344,7 +354,11 @@ void APlayerCharacter::Tick(const float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	Timeline.TickTimeline(DeltaTime);
-
+	if (FirstPersonCharacterMesh->IsVisible())
+	{
+		TiltingLeftTimeline.TickTimeline(DeltaTime);
+		TiltingRightTimeline.TickTimeline(DeltaTime);
+	}
 	WeaponDetectionLineTrace();
 }
 
@@ -404,8 +418,13 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		//Open Menu
 		EnhancedInputComponent->BindAction(MenuAction, ETriggerEvent::Started, this, &APlayerCharacter::OpenMenu);
 
-		//Q [Test]
-		EnhancedInputComponent->BindAction(QAction, ETriggerEvent::Started, this, &APlayerCharacter::Q);
+		//Tilting Left
+		EnhancedInputComponent->BindAction(QAction, ETriggerEvent::Started, this, &APlayerCharacter::TiltingLeft);
+		EnhancedInputComponent->BindAction(QAction, ETriggerEvent::Completed, this, &APlayerCharacter::TiltingLeftRelease);
+
+		//Tilting Right
+		EnhancedInputComponent->BindAction(EAction, ETriggerEvent::Started, this, &APlayerCharacter::TiltingRight);
+		EnhancedInputComponent->BindAction(EAction, ETriggerEvent::Completed, this, &APlayerCharacter::TiltingRightRelease);
 	}
 }
 
@@ -500,6 +519,16 @@ void APlayerCharacter::ZoomReleaseInput()
 	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) != FString("Safe_House"))
 	{
 		IsZoomKeyPressed = false;
+		if (TiltingLeftTimeline.IsPlaying())
+		{
+			TiltingLeftTimeline.Stop();
+		}
+		if (TiltingRightTimeline.IsPlaying())
+		{
+			TiltingRightTimeline.Stop();
+		}
+		FirstPersonCamera->SetRelativeRotation(FRotator::ZeroRotator);
+		FirstPersonCamera->SetRelativeLocation(FVector(26.9,77.4,82));
 		ZoomRelease(true);
 	}
 }
@@ -1417,10 +1446,77 @@ void APlayerCharacter::OpenMenu()
 	}
 }
 
-void APlayerCharacter::Q()
+void APlayerCharacter::TiltingLeft()
 {
+	if (FirstPersonCharacterMesh->IsVisible())
+	{
+		TiltReleaseLeft = false;
+		TiltReleaseRight = false;
+		if (TiltingLeftTimeline.IsPlaying())
+		{
+			TiltingLeftTimeline.Stop();
+		}
+		if (TiltingRightTimeline.IsPlaying())
+		{
+			TiltingRightTimeline.Stop();
+		}
+		TiltingLeftTimeline.PlayFromStart();
+	}
 }
 
+void APlayerCharacter::TiltingLeftRelease()
+{
+	if (FirstPersonCharacterMesh->IsVisible())
+	{
+		TiltReleaseLeft = true;
+		TiltReleaseRight = true;
+		if (TiltingLeftTimeline.IsPlaying())
+		{
+			TiltingLeftTimeline.Stop();
+		}
+		if (TiltingRightTimeline.IsPlaying())
+		{
+			TiltingRightTimeline.Stop();
+		}
+		TiltingLeftTimeline.PlayFromStart();
+	}
+}
+
+void APlayerCharacter::TiltingRight()
+{
+	if (FirstPersonCharacterMesh->IsVisible())
+	{
+		TiltReleaseLeft = false;
+		TiltReleaseRight = false;
+		if (TiltingLeftTimeline.IsPlaying())
+		{
+			TiltingLeftTimeline.Stop();
+		}
+		if (TiltingRightTimeline.IsPlaying())
+		{
+			TiltingRightTimeline.Stop();
+		}
+		TiltingRightTimeline.PlayFromStart();
+	}
+}
+
+void APlayerCharacter::TiltingRightRelease()
+{
+	if (FirstPersonCharacterMesh->IsVisible())
+	{
+		TiltReleaseLeft = true;
+		TiltReleaseRight = true;
+		if (TiltingLeftTimeline.IsPlaying())
+		{
+			TiltingLeftTimeline.Stop();
+		}
+		if (TiltingRightTimeline.IsPlaying())
+		{
+			TiltingRightTimeline.Stop();
+		}
+		TiltingRightTimeline.PlayFromStart();
+	}
+}
 
 void APlayerCharacter::WeaponDetectionLineTrace()
 {
@@ -3382,35 +3478,27 @@ void APlayerCharacter::MoveToIsolatedShip()
 	infoWidgetUI->RemoveFromParent();
 	informationUI->RemoveFromParent();
 	crosshairUI->RemoveFromParent();
+	if (const AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->MoveInventoryDataToGameInstance();
 	FTimerHandle EndHandle;
 	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
-		if (const AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->MoveInventoryDataToGameInstance();
 		UGameplayStatics::OpenLevel(GetWorld(), FName("Map_BigStarStation"));
 	}), 9.f, false);
 }
 
 void APlayerCharacter::MoveToHideout(const bool SaveInventory) const
 {
+	if (SaveInventory == true)
+	{
+		if (const AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->MoveInventoryDataToGameInstance();
+	}
 	APlayerCameraManager* PlayerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 	PlayerCam->StartCameraFade(0, 1, 2.0, FLinearColor::Black, false, true);
-	if (SaveInventory==true)
+	FTimerHandle EndHandle;
+	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
-		FTimerHandle EndHandle;
-		GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
-		{
-			if (const AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->MoveInventoryDataToGameInstance();
-			UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"));
-		}), 2.f, false);
-	}
-	else
-	{
-		FTimerHandle EndHandle;
-		GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
-		{
-			UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"));
-		}), 2.f, false);
-	}
+		UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"));
+	}), 2.f, false);
 }
 
 void APlayerCharacter::MoveToBlockedIntersection()
@@ -3430,10 +3518,10 @@ void APlayerCharacter::MoveToBlockedIntersection()
 	infoWidgetUI->RemoveFromParent();
 	informationUI->RemoveFromParent();
 	crosshairUI->RemoveFromParent();
+	if (const AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->MoveInventoryDataToGameInstance();
 	FTimerHandle EndHandle;
 	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
-		if (const AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->MoveInventoryDataToGameInstance();
 		UGameplayStatics::OpenLevel(GetWorld(), FName("192.168.0.3"));
 	}), 9.f, false);
 }
@@ -3473,6 +3561,56 @@ void APlayerCharacter::SetZoomValue(const float Value)
 			SniperZoomOutBool = false;
 		}), 1.0f, false);
 	}
+}
+
+void APlayerCharacter::SetTiltingLeftValue(const float Value)
+{
+	if (TiltReleaseLeft)
+	{
+		CameraCurrentPosition = FirstPersonCamera->GetRelativeLocation();
+		CameraDesiredPosition = FVector(26.9,77.4,82);
+		CameraCurrentRotation = FirstPersonCamera->GetRelativeRotation();
+		CameraDesiredRotation = FRotator::ZeroRotator;
+	}
+	else
+	{
+		CameraCurrentPosition = FirstPersonCamera->GetRelativeLocation();
+		CameraDesiredPosition = FVector(26.9,57.4,82);
+		CameraCurrentRotation = FirstPersonCamera->GetRelativeRotation();
+		CameraDesiredRotation = FRotator(0, 0, -15);
+	}
+
+	// RLerp와 TimeLine Value 값을 통한 자연스러운 기울이기
+	const FRotator RLerp = UKismetMathLibrary::RLerp(CameraCurrentRotation, CameraDesiredRotation, Value, true);
+	const FVector VLerp = UKismetMathLibrary::VLerp(CameraCurrentPosition, CameraDesiredPosition, Value);
+	const FTransform TLerp = UKismetMathLibrary::MakeTransform(VLerp, RLerp);
+	// 해당 트랜스폼 할당
+	FirstPersonCamera->SetRelativeTransform(TLerp);
+}
+
+void APlayerCharacter::SetTiltingRightValue(const float Value)
+{
+	if (TiltReleaseRight)
+	{
+		CameraCurrentPosition = FirstPersonCamera->GetRelativeLocation();
+		CameraDesiredPosition = FVector(26.9,77.4,82);
+		CameraCurrentRotation = FirstPersonCamera->GetRelativeRotation();
+		CameraDesiredRotation = FRotator::ZeroRotator;
+	}
+	else
+	{
+		CameraCurrentPosition = FirstPersonCamera->GetRelativeLocation();
+		CameraDesiredPosition = FVector(26.9,97.4,82);
+		CameraCurrentRotation = FirstPersonCamera->GetRelativeRotation();
+		CameraDesiredRotation = FRotator(0, 0, 15);
+	}
+
+	// RLerp와 TimeLine Value 값을 통한 자연스러운 기울이기
+	const FRotator RLerp = UKismetMathLibrary::RLerp(CameraCurrentRotation, CameraDesiredRotation, Value, true);
+	const FVector VLerp = UKismetMathLibrary::VLerp(CameraCurrentPosition, CameraDesiredPosition, Value);
+	const FTransform TLerp = UKismetMathLibrary::MakeTransform(VLerp, RLerp);
+	// 해당 트랜스폼 할당
+	FirstPersonCamera->SetRelativeTransform(TLerp);
 }
 
 void APlayerCharacter::CachingValues() const
@@ -4452,16 +4590,16 @@ float APlayerCharacter::SetFireInterval()
 void APlayerCharacter::PlayerDeath()
 {
 	PlayerDeathRPCServer();
-}
-
-void APlayerCharacter::PlayerDeathRPCServer_Implementation()
-{
-	PlayerDeathRPCMulticast();
 	FTimerHandle EndHandle;
 	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
 		UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"));
 	}), 9.f, false);
+}
+
+void APlayerCharacter::PlayerDeathRPCServer_Implementation()
+{
+	PlayerDeathRPCMulticast();
 }
 
 bool APlayerCharacter::PlayerDeathRPCServer_Validate()

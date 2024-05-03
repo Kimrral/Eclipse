@@ -124,6 +124,9 @@ public:
 	class UInputAction* QAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* EAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* MenuAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -434,7 +437,11 @@ public:
 
 	void OpenMenu();
 
-	void Q();
+	void TiltingLeft();
+	void TiltingLeftRelease();
+	
+	void TiltingRight();
+	void TiltingRightRelease();
 
 	UFUNCTION()
 	void WeaponDetectionLineTrace();
@@ -465,6 +472,12 @@ public:
 
 	UFUNCTION() // Bind function
 	void SetZoomValue(float Value);
+
+	UFUNCTION() // Bind function
+	void SetTiltingLeftValue(float Value);
+
+	UFUNCTION() // Bind function
+	void SetTiltingRightValue(float Value);
 
 	UFUNCTION()
 	void CachingValues() const;
@@ -819,6 +832,18 @@ public:
 	UPROPERTY()
 	FVector DeathPosition;
 
+	UPROPERTY()
+	FRotator CameraCurrentRotation;
+
+	UPROPERTY()
+	FRotator CameraDesiredRotation;
+
+	UPROPERTY()
+	FVector CameraCurrentPosition;
+
+	UPROPERTY()
+	FVector CameraDesiredPosition;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	int curWeaponSlotNumber = 1;
 
@@ -907,13 +932,16 @@ public:
 	bool isCursorOnM249;
 
 	UPROPERTY()
+	bool TiltReleaseRight = false;
+
+	UPROPERTY()
+	bool TiltReleaseLeft = false;
+
+	UPROPERTY()
 	bool IsHideOut = true;
 
 	UPROPERTY()
 	bool TickOverlapBoolean = false;
-
-	UPROPERTY()
-	bool isRifleShootable;
 
 	UPROPERTY()
 	bool OpenMenuBoolean = false;;
@@ -1084,6 +1112,15 @@ public:
 
 	UPROPERTY(EditAnywhere) // Timeline 커브
 	UCurveFloat* CurveFloat;
+
+	UPROPERTY(EditAnywhere) // Timeline 생성
+	FTimeline TiltingLeftTimeline;
+	
+	UPROPERTY(EditAnywhere) // Timeline 생성
+	FTimeline TiltingRightTimeline;
+
+	UPROPERTY(EditAnywhere) // Timeline 커브
+	UCurveFloat* TiltingCurveFloat;
 
 	UPROPERTY()
 	class AEclipseGameMode* gm;

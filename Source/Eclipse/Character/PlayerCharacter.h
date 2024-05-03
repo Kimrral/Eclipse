@@ -438,10 +438,36 @@ public:
 	void OpenMenu();
 
 	void TiltingLeft();
+
+	UFUNCTION(Reliable, Server, WithValidation)
+	void TiltingLeftRPCServer();
+
+	UFUNCTION(Unreliable, NetMulticast)
+	void TiltingLeftRPCMulticast();
+	
 	void TiltingLeftRelease();
+
+	UFUNCTION(Reliable, Server, WithValidation)
+	void TiltingLeftReleaseRPCServer();
+
+	UFUNCTION(Unreliable, NetMulticast)
+	void TiltingLeftReleaseRPCMulticast();
 	
 	void TiltingRight();
+
+	UFUNCTION(Reliable, Server, WithValidation)
+	void TiltingRightRPCServer();
+
+	UFUNCTION(Unreliable, NetMulticast)
+	void TiltingRightRPCMulticast();
+	
 	void TiltingRightRelease();
+
+	UFUNCTION(Reliable, Server, WithValidation)
+	void TiltingRightReleaseRPCServer();
+
+	UFUNCTION(Unreliable, NetMulticast)
+	void TiltingRightReleaseRPCMulticast();
 
 	UFUNCTION()
 	void WeaponDetectionLineTrace();

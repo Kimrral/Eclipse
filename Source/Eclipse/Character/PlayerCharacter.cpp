@@ -528,7 +528,7 @@ void APlayerCharacter::ZoomReleaseInput()
 			TiltingRightTimeline.Stop();
 		}
 		FirstPersonCamera->SetRelativeRotation(FRotator::ZeroRotator);
-		FirstPersonCamera->SetRelativeLocation(FVector(26.9,77.4,82));
+		FirstPersonCamera->SetRelativeLocation(FVector(26.9, 77.4, 82));
 		ZoomRelease(true);
 	}
 }
@@ -1448,6 +1448,7 @@ void APlayerCharacter::OpenMenu()
 
 void APlayerCharacter::TiltingLeft()
 {
+	TiltingLeftRPCServer();
 	if (FirstPersonCharacterMesh->IsVisible())
 	{
 		TiltReleaseLeft = false;
@@ -1462,10 +1463,26 @@ void APlayerCharacter::TiltingLeft()
 		}
 		TiltingLeftTimeline.PlayFromStart();
 	}
+}
+
+void APlayerCharacter::TiltingLeftRPCServer_Implementation()
+{
+	TiltingLeftRPCMulticast();
+}
+
+bool APlayerCharacter::TiltingLeftRPCServer_Validate()
+{
+	return true;
+}
+
+void APlayerCharacter::TiltingLeftRPCMulticast_Implementation()
+{
+	if(!HasAuthority()) animInstance->bTiltingLeft = true;
 }
 
 void APlayerCharacter::TiltingLeftRelease()
 {
+	TiltingLeftReleaseRPCServer();
 	if (FirstPersonCharacterMesh->IsVisible())
 	{
 		TiltReleaseLeft = true;
@@ -1482,8 +1499,24 @@ void APlayerCharacter::TiltingLeftRelease()
 	}
 }
 
+void APlayerCharacter::TiltingLeftReleaseRPCServer_Implementation()
+{
+	TiltingLeftReleaseRPCMulticast();
+}
+
+bool APlayerCharacter::TiltingLeftReleaseRPCServer_Validate()
+{
+	return true;
+}
+
+void APlayerCharacter::TiltingLeftReleaseRPCMulticast_Implementation()
+{
+	if(!HasAuthority()) animInstance->bTiltingLeft = false;
+}
+
 void APlayerCharacter::TiltingRight()
 {
+	TiltingRightRPCServer();
 	if (FirstPersonCharacterMesh->IsVisible())
 	{
 		TiltReleaseLeft = false;
@@ -1500,8 +1533,24 @@ void APlayerCharacter::TiltingRight()
 	}
 }
 
+void APlayerCharacter::TiltingRightRPCServer_Implementation()
+{
+	TiltingRightRPCMulticast();
+}
+
+bool APlayerCharacter::TiltingRightRPCServer_Validate()
+{
+	return true;
+}
+
+void APlayerCharacter::TiltingRightRPCMulticast_Implementation()
+{
+	if(!HasAuthority()) animInstance->bTiltingRight = true;
+}
+
 void APlayerCharacter::TiltingRightRelease()
 {
+	TiltingRightReleaseRPCServer();
 	if (FirstPersonCharacterMesh->IsVisible())
 	{
 		TiltReleaseLeft = true;
@@ -1516,6 +1565,21 @@ void APlayerCharacter::TiltingRightRelease()
 		}
 		TiltingRightTimeline.PlayFromStart();
 	}
+}
+
+void APlayerCharacter::TiltingRightReleaseRPCServer_Implementation()
+{
+	TiltingRightReleaseRPCMulticast();
+}
+
+bool APlayerCharacter::TiltingRightReleaseRPCServer_Validate()
+{
+	return true;
+}
+
+void APlayerCharacter::TiltingRightReleaseRPCMulticast_Implementation()
+{
+	if(!HasAuthority()) animInstance->bTiltingRight = false;
 }
 
 void APlayerCharacter::WeaponDetectionLineTrace()
@@ -3568,14 +3632,14 @@ void APlayerCharacter::SetTiltingLeftValue(const float Value)
 	if (TiltReleaseLeft)
 	{
 		CameraCurrentPosition = FirstPersonCamera->GetRelativeLocation();
-		CameraDesiredPosition = FVector(26.9,77.4,82);
+		CameraDesiredPosition = FVector(26.9, 77.4, 82);
 		CameraCurrentRotation = FirstPersonCamera->GetRelativeRotation();
 		CameraDesiredRotation = FRotator::ZeroRotator;
 	}
 	else
 	{
 		CameraCurrentPosition = FirstPersonCamera->GetRelativeLocation();
-		CameraDesiredPosition = FVector(26.9,57.4,82);
+		CameraDesiredPosition = FVector(26.9, 57.4, 82);
 		CameraCurrentRotation = FirstPersonCamera->GetRelativeRotation();
 		CameraDesiredRotation = FRotator(0, 0, -15);
 	}
@@ -3584,6 +3648,7 @@ void APlayerCharacter::SetTiltingLeftValue(const float Value)
 	const FRotator RLerp = UKismetMathLibrary::RLerp(CameraCurrentRotation, CameraDesiredRotation, Value, true);
 	const FVector VLerp = UKismetMathLibrary::VLerp(CameraCurrentPosition, CameraDesiredPosition, Value);
 	const FTransform TLerp = UKismetMathLibrary::MakeTransform(VLerp, RLerp);
+
 	// 해당 트랜스폼 할당
 	FirstPersonCamera->SetRelativeTransform(TLerp);
 }
@@ -3593,14 +3658,14 @@ void APlayerCharacter::SetTiltingRightValue(const float Value)
 	if (TiltReleaseRight)
 	{
 		CameraCurrentPosition = FirstPersonCamera->GetRelativeLocation();
-		CameraDesiredPosition = FVector(26.9,77.4,82);
+		CameraDesiredPosition = FVector(26.9, 77.4, 82);
 		CameraCurrentRotation = FirstPersonCamera->GetRelativeRotation();
 		CameraDesiredRotation = FRotator::ZeroRotator;
 	}
 	else
 	{
 		CameraCurrentPosition = FirstPersonCamera->GetRelativeLocation();
-		CameraDesiredPosition = FVector(26.9,97.4,82);
+		CameraDesiredPosition = FVector(26.9, 97.4, 82);
 		CameraCurrentRotation = FirstPersonCamera->GetRelativeRotation();
 		CameraDesiredRotation = FRotator(0, 0, 15);
 	}
@@ -4034,6 +4099,8 @@ void APlayerCharacter::SetFirstPersonModeRifle(const bool IsFirstPerson)
 {
 	if (IsFirstPerson)
 	{
+		bUseControllerRotationPitch = true;
+		bUseControllerRotationRoll = true;
 		crosshairUI->CrosshairImage->SetVisibility(ESlateVisibility::Hidden);
 		GetMesh()->SetVisibility(false);
 		RifleComp->SetVisibility(false);
@@ -4049,6 +4116,9 @@ void APlayerCharacter::SetFirstPersonModeRifle(const bool IsFirstPerson)
 	}
 	else
 	{
+		bUseControllerRotationPitch = false;
+		bUseControllerRotationRoll = false;
+		SetActorRotation(FRotator(0, GetActorRotation().Yaw, 0));
 		crosshairUI->CrosshairImage->SetVisibility(ESlateVisibility::Visible);
 		GetMesh()->SetVisibility(true);
 		RifleComp->SetVisibility(true);
@@ -4063,6 +4133,8 @@ void APlayerCharacter::SetFirstPersonModePistol(const bool IsFirstPerson)
 {
 	if (IsFirstPerson)
 	{
+		bUseControllerRotationPitch = true;
+		bUseControllerRotationRoll = true;
 		crosshairUI->CrosshairImage->SetVisibility(ESlateVisibility::Hidden);
 		GetMesh()->SetVisibility(false);
 		PistolComp->SetVisibility(false);
@@ -4078,6 +4150,9 @@ void APlayerCharacter::SetFirstPersonModePistol(const bool IsFirstPerson)
 	}
 	else
 	{
+		bUseControllerRotationPitch = false;
+		bUseControllerRotationRoll = false;
+		SetActorRotation(FRotator(0, GetActorRotation().Yaw, 0));
 		crosshairUI->CrosshairImage->SetVisibility(ESlateVisibility::Visible);
 		GetMesh()->SetVisibility(true);
 		PistolComp->SetVisibility(true);

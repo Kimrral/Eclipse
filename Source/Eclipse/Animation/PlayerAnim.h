@@ -43,4 +43,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bM249Zooming = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bTiltingLeft = true;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bTiltingRight = true;
 };

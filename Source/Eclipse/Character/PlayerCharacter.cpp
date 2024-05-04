@@ -166,7 +166,8 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	this->SetActorEnableCollision(true);
+	SetActorEnableCollision(true);
+	SetActorHiddenInGame(false);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	GetMesh()->HideBoneByName(TEXT("bot_hand"), EPhysBodyOp::PBO_None);
@@ -184,10 +185,9 @@ void APlayerCharacter::BeginPlay()
 	IsPlayerDead = false;
 
 	// Casting
-	const UGameInstance* GI = GetGameInstance();
-	PC = Cast<AEclipsePlayerController>(GI->GetFirstLocalPlayerController());
+	gi = Cast<UEclipseGameInstance>(GetGameInstance());
+	PC = Cast<AEclipsePlayerController>(gi->GetFirstLocalPlayerController());
 	gm = Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());
-	gi = Cast<UEclipseGameInstance>(GetWorld()->GetGameInstance());
 	animInstance = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 
 	if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))
@@ -195,6 +195,7 @@ void APlayerCharacter::BeginPlay()
 		CachingPlayerState->GetInventoryDataFromGameInstance();
 		CachingPlayerState->ApplyGearInventoryEquipState(this);
 	}
+	
 	Stat->AddRouble(gi->CachedRouble);
 	gi->IsWidgetOn = false;
 
@@ -266,6 +267,10 @@ void APlayerCharacter::BeginPlay()
 	// Hideout
 	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) == FString("Safe_House"))
 	{
+		if(!IsLocallyControlled())
+		{
+			SetActorHiddenInGame(true);
+		}
 		if (animInstance)
 		{
 			animInstance->bArmed = false;
@@ -345,7 +350,6 @@ void APlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
 
-	gi->CachedRouble = Stat->GetCurrentRouble();
 }
 
 // Called every frame
@@ -3543,6 +3547,7 @@ void APlayerCharacter::MoveToIsolatedShip()
 	informationUI->RemoveFromParent();
 	crosshairUI->RemoveFromParent();
 	if (const AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->MoveInventoryDataToGameInstance();
+	gi->CachedRouble = Stat->GetCurrentRouble();
 	FTimerHandle EndHandle;
 	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
@@ -3556,6 +3561,7 @@ void APlayerCharacter::MoveToHideout(const bool SaveInventory) const
 	{
 		if (const AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->MoveInventoryDataToGameInstance();
 	}
+	gi->CachedRouble = Stat->GetCurrentRouble();
 	APlayerCameraManager* PlayerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 	PlayerCam->StartCameraFade(0, 1, 2.0, FLinearColor::Black, false, true);
 	FTimerHandle EndHandle;
@@ -3583,6 +3589,7 @@ void APlayerCharacter::MoveToBlockedIntersection()
 	informationUI->RemoveFromParent();
 	crosshairUI->RemoveFromParent();
 	if (const AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->MoveInventoryDataToGameInstance();
+	gi->CachedRouble = Stat->GetCurrentRouble();
 	FTimerHandle EndHandle;
 	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
@@ -3752,26 +3759,24 @@ bool APlayerCharacter::DamagedRPCServer_Validate(int Damage, AActor* DamageCause
 
 void APlayerCharacter::DamagedRPCMulticast_Implementation(int Damage, AActor* DamageCauser)
 {
-	if (HasAuthority())
-	{
-		//Stat->ApplyDamage(damage, DamageCauser);
-	}
 	if (IsLocallyControlled())
 	{
 		crosshairUI->PlayAnimation(crosshairUI->DamagedAnimation);
 		UGameplayStatics::PlaySound2D(GetWorld(), DamagedSound);
 		PC->PlayerCameraManager->StartCameraShake(PlayerDamagedShake);
 	}
-	UpdateTabWidget();
-	StopAnimMontage();
-	PlayAnimMontage(FullBodyMontage, 1, FName("Damaged"));
-	FTimerHandle overlayMatHandle;
-	GetMesh()->SetOverlayMaterial(overlayMatRed);
-	GetWorldTimerManager().ClearTimer(overlayMatHandle);
-	GetWorldTimerManager().SetTimer(overlayMatHandle, FTimerDelegate::CreateLambda([this]()-> void
+	if(!HasAuthority())
 	{
-		GetMesh()->SetOverlayMaterial(nullptr);
-	}), 0.3f, false);
+		UpdateTabWidget();
+		PlayAnimMontage(FullBodyMontage, 1, FName("Damaged"));
+		FTimerHandle overlayMatHandle;
+		GetMesh()->SetOverlayMaterial(overlayMatRed);
+		GetWorldTimerManager().ClearTimer(overlayMatHandle);
+		GetWorldTimerManager().SetTimer(overlayMatHandle, FTimerDelegate::CreateLambda([this]()-> void
+		{
+			GetMesh()->SetOverlayMaterial(nullptr);
+		}), 0.3f, false);
+	}
 }
 
 void APlayerCharacter::OnRep_WeaponArrayChanged() const
@@ -4665,9 +4670,10 @@ float APlayerCharacter::SetFireInterval()
 void APlayerCharacter::PlayerDeath()
 {
 	PlayerDeathRPCServer();
+	gi->CachedRouble = Stat->GetCurrentRouble();
 	FTimerHandle EndHandle;
 	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
-	{
+	{		
 		UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"));
 	}), 9.f, false);
 }
@@ -4684,11 +4690,14 @@ bool APlayerCharacter::PlayerDeathRPCServer_Validate()
 
 void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 {
-	// 몽타주 재생 중단
-	StopAnimMontage();
-	// 사망 몽타주 재생
-	PlayAnimMontage(FullBodyMontage, 1, FName("Death"));
 	IsPlayerDeadImmediately = true;
+	if(!HasAuthority())
+	{
+		// 몽타주 재생 중단
+		StopAnimMontage();
+		// 사망 몽타주 재생
+		PlayAnimMontage(FullBodyMontage, 1, FName("Death"));
+	}
 	FTimerHandle PlayerDeadHandle;
 	GetWorld()->GetTimerManager().SetTimer(PlayerDeadHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{

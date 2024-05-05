@@ -555,7 +555,7 @@ void AEclipsePlayerState::ApplyGearInventoryEquipState(APlayerCharacter* PlayerC
 	}
 	else
 	{
-		PlayerCharacterRef->EquipArmorInventorySlot(false, 1);
+		PlayerCharacterRef->EquipArmorInventorySlot(false, 0);
 	}
 	if (PlayerGearSlotStructs[3].Price>0)
 	{

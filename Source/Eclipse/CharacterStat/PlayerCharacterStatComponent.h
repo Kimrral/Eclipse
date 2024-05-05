@@ -95,6 +95,9 @@ public:
 
 	UPROPERTY(Replicated, VisibleInstanceOnly, Category = Stat)
 	float FireIntervalStatMultiplier = 1.f;
+	
+	UPROPERTY(Replicated, VisibleInstanceOnly, Category = Stat)
+	float DamageStatMultiplier = 1.f;
 
 protected:
 	virtual void InitializeComponent() override;
@@ -117,19 +120,19 @@ protected:
 	float YawRecoilRate;
 
 	UPROPERTY(VisibleInstanceOnly, Category = Stat)
-	float BaseRiflePitchRecoilRate = -0.4f;
+	float BaseRiflePitchRecoilRate = -0.5f;
 
 	UPROPERTY(VisibleInstanceOnly, Category = Stat)
-	float BaseSniperPitchRecoilRate = -0.95f;
+	float BaseSniperPitchRecoilRate = -1.1f;
 
 	UPROPERTY(VisibleInstanceOnly, Category = Stat)
-	float BasePistolPitchRecoilRate = -0.95f;
+	float BasePistolPitchRecoilRate = -1.1f;
 
 	UPROPERTY(VisibleInstanceOnly, Category = Stat)
-	float BaseM249PitchRecoilRate = -0.5f;
+	float BaseM249PitchRecoilRate = -0.6f;
 
 	UPROPERTY(VisibleInstanceOnly, Category = Stat)
-	float BaseRifleYawRecoilRate = 0.3f;
+	float BaseRifleYawRecoilRate = 0.4f;
 
 	UPROPERTY(VisibleInstanceOnly, Category = Stat)
 	float BaseSniperYawRecoilRate = 0.7f;

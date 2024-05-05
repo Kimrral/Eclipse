@@ -50,12 +50,13 @@ void UPlayerCharacterStatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeP
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(UPlayerCharacterStatComponent, CurrentHp);
-	DOREPLIFETIME(UPlayerCharacterStatComponent, MaxHp);
-	DOREPLIFETIME(UPlayerCharacterStatComponent, AccumulatedDamageToPlayer);
-	DOREPLIFETIME(UPlayerCharacterStatComponent, AccumulatedDamageToEnemy);
+	DOREPLIFETIME(UPlayerCharacterStatComponent, MaxHp);	
 	DOREPLIFETIME(UPlayerCharacterStatComponent, CurrentRouble);
 	DOREPLIFETIME(UPlayerCharacterStatComponent, RecoilStatMultiplier);
 	DOREPLIFETIME(UPlayerCharacterStatComponent, FireIntervalStatMultiplier);
+	DOREPLIFETIME(UPlayerCharacterStatComponent, DamageStatMultiplier);
+	DOREPLIFETIME(UPlayerCharacterStatComponent, AccumulatedDamageToPlayer);
+	DOREPLIFETIME(UPlayerCharacterStatComponent, AccumulatedDamageToEnemy);
 }
 
 void UPlayerCharacterStatComponent::SetRecoilRate(const TArray<bool>& WeaponArray)
@@ -87,9 +88,8 @@ void UPlayerCharacterStatComponent::SetRecoilRate(const TArray<bool>& WeaponArra
 
 int32 UPlayerCharacterStatComponent::GenerateRandomInteger(const float InFloat) const
 {
-	const double DoubleRandInteger = FMath::FRandRange(InFloat * 0.8, InFloat * 1.2);
-	const int32 RoundedRandInteger = FMath::RoundHalfToEven(DoubleRandInteger);
-	return RoundedRandInteger;
+	const double DoubleRandInteger = FMath::FRandRange(InFloat * 0.8, InFloat * 1.2);	
+	return DoubleRandInteger;
 }
 
 void UPlayerCharacterStatComponent::SetHp(const float NewHp)
@@ -133,33 +133,33 @@ float UPlayerCharacterStatComponent::GetAttackDamage(const TArray<bool>& WeaponA
 	{
 		if (IsPlayer)
 		{
-			return GenerateRandomInteger(PlayerAttackDamageRifle);
+			return FMath::RoundHalfToEven(GenerateRandomInteger(PlayerAttackDamageRifle) * DamageStatMultiplier);
 		}
-		return GenerateRandomInteger(EnemyAttackDamageRifle);
+		return FMath::RoundHalfToEven(GenerateRandomInteger(EnemyAttackDamageRifle) * DamageStatMultiplier);
 	}
 	if (WeaponArray[1] == true)
 	{
 		if (IsPlayer)
 		{			
-			return GenerateRandomInteger(PlayerAttackDamageSniper);
+			return FMath::RoundHalfToEven(GenerateRandomInteger(PlayerAttackDamageSniper) * DamageStatMultiplier);
 		}		
-		return GenerateRandomInteger(EnemyAttackDamageSniper);
+		return FMath::RoundHalfToEven(GenerateRandomInteger(EnemyAttackDamageSniper) * DamageStatMultiplier);
 	}
 	if (WeaponArray[2] == true)
 	{
 		if (IsPlayer)
 		{			
-			return GenerateRandomInteger(PlayerAttackDamagePistol);
+			return FMath::RoundHalfToEven(GenerateRandomInteger(PlayerAttackDamagePistol) * DamageStatMultiplier);
 		}
-		return GenerateRandomInteger(EnemyAttackDamagePistol);
+		return FMath::RoundHalfToEven(GenerateRandomInteger(EnemyAttackDamagePistol) * DamageStatMultiplier);
 	}
 	if (WeaponArray[3] == true)
 	{
 		if (IsPlayer)
 		{
-			return GenerateRandomInteger(PlayerAttackDamageM249);
+			return FMath::RoundHalfToEven(GenerateRandomInteger(PlayerAttackDamageM249) * DamageStatMultiplier);
 		}
-		return GenerateRandomInteger(EnemyAttackDamageM249);
+		return FMath::RoundHalfToEven(GenerateRandomInteger(EnemyAttackDamageM249) * DamageStatMultiplier);
 	}
 	return 0;
 }

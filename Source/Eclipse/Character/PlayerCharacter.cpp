@@ -4218,11 +4218,13 @@ void APlayerCharacter::EquipHeadsetInventorySlot(const bool IsEquipping, const f
 {
 	if (IsEquipping)
 	{
+		Stat->DamageStatMultiplier = EquipGearStat;
 		IsEquipHeadset = true;
 		OnRep_IsEquipHeadset();
 	}
 	else
 	{
+		Stat->DamageStatMultiplier = EquipGearStat;
 		IsEquipHeadset = false;
 		OnRep_IsEquipHeadset();
 	}

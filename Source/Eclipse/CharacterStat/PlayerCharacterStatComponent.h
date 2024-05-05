@@ -20,7 +20,7 @@ public:
 	FOnHpZeroDelegate OnHpZero;
 	FOnHpChangedDelegate OnHpChanged;
 	FOnStatChangedDelegate OnStatChanged;
-	
+
 	// Sets default values for this component's properties
 	UPlayerCharacterStatComponent();
 	UFUNCTION(BlueprintCallable)
@@ -28,29 +28,58 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE float GetMaxHp() const { return MaxHp; }
-	
+
 	UFUNCTION(BlueprintCallable)
-	FORCEINLINE void HealHp(const float InHealAmount) { CurrentHp = FMath::Clamp(CurrentHp + InHealAmount, 0, MaxHp); OnHpChanged.Broadcast(); }
+	FORCEINLINE void HealHp(const float InHealAmount)
+	{
+		CurrentHp = FMath::Clamp(CurrentHp + InHealAmount, 0, MaxHp);
+		OnHpChanged.Broadcast();
+	}
 
 	UFUNCTION(BlueprintCallable)
 	void SetHp(float NewHp);
 
 	UFUNCTION(BlueprintCallable)
-	FORCEINLINE float GetCurrentRouble() const {return CurrentRouble; }
+	FORCEINLINE void AddMaxHp(const float AddMaxHpAmount)
+	{
+		MaxHp = FMath::Clamp(MaxHp + AddMaxHpAmount, 0, MaxHp + AddMaxHpAmount);
+		HealHp(AddMaxHpAmount);
+		OnHpChanged.Broadcast();
+	}
 
 	UFUNCTION(BlueprintCallable)
-	FORCEINLINE void AddRouble(const float InRoubleAmount) { CurrentRouble+=InRoubleAmount; }
+	void SubtractMaxHp(const float SubtractMaxHpAmount);
 
-	float ApplyDamage(float InDamage, AActor* DamageCauser);	
-	
-	FORCEINLINE float GetRecoilRate() const {return RecoilRate;}
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE float GetCurrentRouble() const { return CurrentRouble; }
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE void AddRouble(const float InRoubleAmount) { CurrentRouble += InRoubleAmount; }
+
+	float ApplyDamage(float InDamage, AActor* DamageCauser);
+
+	FORCEINLINE float GetPitchRecoilRate() const { return PitchRecoilRate; }
+	FORCEINLINE float GetYawRecoilRate() const { return YawRecoilRate; }
+
 	void SetRecoilRate(const TArray<bool>& WeaponArray);
 
-	double GenerateRandomFloat(const float InFloat) const;
+	FORCEINLINE double GenerateRandomPitchRecoilRate(const float InFloat) const
+	{
+		const double DoubleRandFloat = FMath::FRandRange(InFloat * 0.8, InFloat * 1.2);
+		return DoubleRandFloat;
+	}
+
+	FORCEINLINE double GenerateRandomYawRecoilRate(const float InFloat) const
+	{
+		const double DoubleRandFloat = FMath::FRandRange(InFloat * -1, InFloat);
+		return DoubleRandFloat;
+	}
+
 	int32 GenerateRandomInteger(const float InFloat) const;
 
-	float GetAttackDamage(const TArray<bool>& WeaponArray, const bool IsPlayer) const;	
-	
+	float GetFireInterval(const TArray<bool>& WeaponArray) const;
+
+	float GetAttackDamage(const TArray<bool>& WeaponArray, const bool IsPlayer) const;
 
 	UPROPERTY()
 	class APlayerCharacter* PlayerCharacter;
@@ -60,6 +89,12 @@ public:
 
 	UPROPERTY(Replicated, VisibleInstanceOnly, Category = Score)
 	float AccumulatedDamageToPlayer;
+
+	UPROPERTY(Replicated, VisibleInstanceOnly, Category = Stat)
+	float RecoilStatMultiplier = 1.f;
+
+	UPROPERTY(Replicated, VisibleInstanceOnly, Category = Stat)
+	float FireIntervalStatMultiplier = 1.f;
 
 protected:
 	virtual void InitializeComponent() override;
@@ -76,10 +111,34 @@ protected:
 	float CurrentRouble;
 
 	UPROPERTY(VisibleInstanceOnly, Category = Stat)
-	float RecoilRate;
+	float PitchRecoilRate;
 
 	UPROPERTY(VisibleInstanceOnly, Category = Stat)
-	float BaseRifleRecoilRate;
+	float YawRecoilRate;
+
+	UPROPERTY(VisibleInstanceOnly, Category = Stat)
+	float BaseRiflePitchRecoilRate = -0.4f;
+
+	UPROPERTY(VisibleInstanceOnly, Category = Stat)
+	float BaseSniperPitchRecoilRate = -0.95f;
+
+	UPROPERTY(VisibleInstanceOnly, Category = Stat)
+	float BasePistolPitchRecoilRate = -0.95f;
+
+	UPROPERTY(VisibleInstanceOnly, Category = Stat)
+	float BaseM249PitchRecoilRate = -0.5f;
+
+	UPROPERTY(VisibleInstanceOnly, Category = Stat)
+	float BaseRifleYawRecoilRate = 0.3f;
+
+	UPROPERTY(VisibleInstanceOnly, Category = Stat)
+	float BaseSniperYawRecoilRate = 0.7f;
+
+	UPROPERTY(VisibleInstanceOnly, Category = Stat)
+	float BasePistolYawRecoilRate = 0.7f;
+
+	UPROPERTY(VisibleInstanceOnly, Category = Stat)
+	float BaseM249YawRecoilRate = 0.5f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float PlayerAttackDamageRifle = 9.f;
@@ -104,6 +163,18 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float EnemyAttackDamageM249 = 80.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float BulletsPerSecRifle = 11.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float BulletsPerSecPistol = 3.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float BulletsPerSecSniper = 0.5f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float BulletsPerSecM249 = 8.f;
 
 	UFUNCTION()
 	void OnRep_CurrentHp() const;

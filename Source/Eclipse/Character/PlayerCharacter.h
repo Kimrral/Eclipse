@@ -218,9 +218,6 @@ public:
 	void ProcessM249FireSimulatedProxy() const;
 
 	UFUNCTION()
-	float SetFireInterval();
-
-	UFUNCTION()
 	void ChangeWeaponToRifle(ARifleActor* RifleActor);
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ChangeWeaponToRifleRPCServer(ARifleActor* RifleActor);
@@ -565,19 +562,19 @@ public:
 	void SetFirstPersonModePistol(const bool IsFirstPerson);
 
 	UFUNCTION(BlueprintCallable)
-	void EquipArmorInventorySlot(bool IsEquipping);
+	void EquipArmorInventorySlot(bool IsEquipping, const float EquipGearStat);
 
 	UFUNCTION(BlueprintCallable)
-	void EquipHelmetInventorySlot(bool IsEquipping);
+	void EquipHelmetInventorySlot(bool IsEquipping, const float EquipGearStat);
 
 	UFUNCTION(BlueprintCallable)
-	void EquipGoggleInventorySlot(bool IsEquipping);
+	void EquipGoggleInventorySlot(bool IsEquipping, const float EquipGearStat);
 
 	UFUNCTION(BlueprintCallable)
-	void EquipHeadsetInventorySlot(bool IsEquipping);
+	void EquipHeadsetInventorySlot(bool IsEquipping, const float EquipGearStat);
 
 	UFUNCTION(BlueprintCallable)
-	void EquipMaskInventorySlot(bool IsEquipping);
+	void EquipMaskInventorySlot(bool IsEquipping, const float EquipGearStat);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void DeadPlayerContainerSettings(ADeadPlayerContainer* DeadPlayerContainers);
@@ -990,17 +987,6 @@ public:
 	UPROPERTY(ReplicatedUsing=OnRep_IsEquipMask)
 	bool IsEquipMask;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float BulletsPerSecRifle = 11.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float BulletsPerSecPistol = 3.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float BulletsPerSecSniper = 0.5f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float BulletsPerSecM249 = 8.f;
 
 
 	//Sounds

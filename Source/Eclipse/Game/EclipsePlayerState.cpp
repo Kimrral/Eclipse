@@ -27,13 +27,6 @@ void AEclipsePlayerState::BeginPlay()
 	PlayerGearSlotStructs.Init(InventoryStructDefault, 5);
 }
 
-void AEclipsePlayerState::CopyProperties(APlayerState* PlayerState)
-{
-	Super::CopyProperties(PlayerState);
-
-	UE_LOG(LogTemp, Warning, TEXT("CopyProperties C++!"))
-}
-
 void AEclipsePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -193,35 +186,35 @@ void AEclipsePlayerState::DragFromGearSlotMulticast_Implementation(APlayerCharac
 		{
 			if (DragArrayIndex == 38 && PlayerInventoryStacks[DropArrayIndex] == 0)
 			{
-				PlayerCharacterRef->EquipHelmetInventorySlot(false);
+				PlayerCharacterRef->EquipHelmetInventorySlot(false, 1);
 				PlayerInventoryStructs[DropArrayIndex] = PlayerGearSlotStructs[DragArrayIndex - 38];
 				PlayerInventoryStacks[DropArrayIndex]++;
 				PlayerGearSlotStructs[DragArrayIndex - 38] = InventoryStructDefault;
 			}
 			else if (DragArrayIndex == 39 && PlayerInventoryStacks[DropArrayIndex] == 0)
 			{
-				PlayerCharacterRef->EquipGoggleInventorySlot(false);
+				PlayerCharacterRef->EquipGoggleInventorySlot(false, 1);
 				PlayerInventoryStructs[DropArrayIndex] = PlayerGearSlotStructs[DragArrayIndex - 38];
 				PlayerInventoryStacks[DropArrayIndex]++;
 				PlayerGearSlotStructs[DragArrayIndex - 38] = InventoryStructDefault;
 			}
 			else if (DragArrayIndex == 40 && PlayerInventoryStacks[DropArrayIndex] == 0)
 			{
-				PlayerCharacterRef->EquipArmorInventorySlot(false);
+				PlayerCharacterRef->EquipArmorInventorySlot(false, PlayerGearSlotStructs[DragArrayIndex - 38].Stat);
 				PlayerInventoryStructs[DropArrayIndex] = PlayerGearSlotStructs[DragArrayIndex - 38];
 				PlayerInventoryStacks[DropArrayIndex]++;
 				PlayerGearSlotStructs[DragArrayIndex - 38] = InventoryStructDefault;
 			}
 			else if (DragArrayIndex == 41 && PlayerInventoryStacks[DropArrayIndex] == 0)
 			{
-				PlayerCharacterRef->EquipMaskInventorySlot(false);
+				PlayerCharacterRef->EquipMaskInventorySlot(false, 1);
 				PlayerInventoryStructs[DropArrayIndex] = PlayerGearSlotStructs[DragArrayIndex - 38];
 				PlayerInventoryStacks[DropArrayIndex]++;
 				PlayerGearSlotStructs[DragArrayIndex - 38] = InventoryStructDefault;
 			}
 			else if (DragArrayIndex == 42 && PlayerInventoryStacks[DropArrayIndex] == 0)
 			{
-				PlayerCharacterRef->EquipHeadsetInventorySlot(false);
+				PlayerCharacterRef->EquipHeadsetInventorySlot(false, 1);
 				PlayerInventoryStructs[DropArrayIndex] = PlayerGearSlotStructs[DragArrayIndex - 38];
 				PlayerInventoryStacks[DropArrayIndex]++;
 				PlayerGearSlotStructs[DragArrayIndex - 38] = InventoryStructDefault;
@@ -305,7 +298,7 @@ void AEclipsePlayerState::DragFromInventoryMulticast_Implementation(APlayerChara
 		{
 			if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Helmet"))
 			{
-				PlayerCharacterRef->EquipHelmetInventorySlot(true);
+				PlayerCharacterRef->EquipHelmetInventorySlot(true, PlayerInventoryStructs[DragArrayIndex].Stat);
 				if (PlayerInventoryStacks[DragArrayIndex] > 1)
 				{
 					PlayerGearSlotStructs[0] = PlayerInventoryStructs[DragArrayIndex];
@@ -324,7 +317,7 @@ void AEclipsePlayerState::DragFromInventoryMulticast_Implementation(APlayerChara
 		{
 			if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Goggle"))
 			{
-				PlayerCharacterRef->EquipGoggleInventorySlot(true);
+				PlayerCharacterRef->EquipGoggleInventorySlot(true, PlayerInventoryStructs[DragArrayIndex].Stat);
 				if (PlayerInventoryStacks[DragArrayIndex] > 1)
 				{
 					PlayerGearSlotStructs[1] = PlayerInventoryStructs[DragArrayIndex];
@@ -343,7 +336,7 @@ void AEclipsePlayerState::DragFromInventoryMulticast_Implementation(APlayerChara
 		{
 			if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Armor"))
 			{
-				PlayerCharacterRef->EquipArmorInventorySlot(true);
+				PlayerCharacterRef->EquipArmorInventorySlot(true, PlayerInventoryStructs[DragArrayIndex].Stat);
 				if (PlayerInventoryStacks[DragArrayIndex] > 1)
 				{
 					PlayerGearSlotStructs[2] = PlayerInventoryStructs[DragArrayIndex];
@@ -362,7 +355,7 @@ void AEclipsePlayerState::DragFromInventoryMulticast_Implementation(APlayerChara
 		{
 			if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Mask"))
 			{
-				PlayerCharacterRef->EquipMaskInventorySlot(true);
+				PlayerCharacterRef->EquipMaskInventorySlot(true, PlayerInventoryStructs[DragArrayIndex].Stat);
 				if (PlayerInventoryStacks[DragArrayIndex] > 1)
 				{
 					PlayerGearSlotStructs[3] = PlayerInventoryStructs[DragArrayIndex];
@@ -381,7 +374,7 @@ void AEclipsePlayerState::DragFromInventoryMulticast_Implementation(APlayerChara
 		{
 			if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Headset"))
 			{
-				PlayerCharacterRef->EquipHeadsetInventorySlot(true);
+				PlayerCharacterRef->EquipHeadsetInventorySlot(true, PlayerInventoryStructs[DragArrayIndex].Stat);
 				if (PlayerInventoryStacks[DragArrayIndex] > 1)
 				{
 					PlayerGearSlotStructs[4] = PlayerInventoryStructs[DragArrayIndex];
@@ -542,42 +535,42 @@ void AEclipsePlayerState::ApplyGearInventoryEquipState(APlayerCharacter* PlayerC
 {
 	if (PlayerGearSlotStructs[0].Price>0)
 	{
-		PlayerCharacterRef->EquipHelmetInventorySlot(true);
+		PlayerCharacterRef->EquipHelmetInventorySlot(true, PlayerGearSlotStructs[0].Stat);
 	}
 	else
 	{
-		PlayerCharacterRef->EquipHelmetInventorySlot(false);
+		PlayerCharacterRef->EquipHelmetInventorySlot(false, 1);
 	}
 	if (PlayerGearSlotStructs[1].Price>0)
 	{
-		PlayerCharacterRef->EquipGoggleInventorySlot(true);
+		PlayerCharacterRef->EquipGoggleInventorySlot(true, PlayerGearSlotStructs[1].Stat);
 	}
 	else
 	{
-		PlayerCharacterRef->EquipGoggleInventorySlot(false);
+		PlayerCharacterRef->EquipGoggleInventorySlot(false, 1);
 	}
 	if (PlayerGearSlotStructs[2].Price>0)
 	{
-		PlayerCharacterRef->EquipArmorInventorySlot(true);
+		PlayerCharacterRef->EquipArmorInventorySlot(true, PlayerGearSlotStructs[2].Stat);
 	}
 	else
 	{
-		PlayerCharacterRef->EquipArmorInventorySlot(false);
+		PlayerCharacterRef->EquipArmorInventorySlot(false, 1);
 	}
 	if (PlayerGearSlotStructs[3].Price>0)
 	{
-		PlayerCharacterRef->EquipMaskInventorySlot(true);
+		PlayerCharacterRef->EquipMaskInventorySlot(true, PlayerGearSlotStructs[3].Stat);
 	}
 	else
 	{
-		PlayerCharacterRef->EquipMaskInventorySlot(false);
+		PlayerCharacterRef->EquipMaskInventorySlot(false, 1);
 	}
 	if (PlayerGearSlotStructs[4].Price>0)
 	{
-		PlayerCharacterRef->EquipHeadsetInventorySlot(true);
+		PlayerCharacterRef->EquipHeadsetInventorySlot(true, PlayerGearSlotStructs[4].Stat);
 	}
 	else
 	{
-		PlayerCharacterRef->EquipHeadsetInventorySlot(false);
+		PlayerCharacterRef->EquipHeadsetInventorySlot(false, 1);
 	}
 }

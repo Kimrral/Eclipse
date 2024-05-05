@@ -3926,7 +3926,7 @@ void APlayerCharacter::Fire()
 	GetWorldTimerManager().SetTimer(shootEnableHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
 		CanShoot = true;
-	}), 1 / SetFireInterval(), false);
+	}), Stat->GetFireInterval(weaponArray), false);
 }
 
 void APlayerCharacter::FireLocal()
@@ -4168,21 +4168,23 @@ void APlayerCharacter::SetFirstPersonModePistol(const bool IsFirstPerson)
 	}
 }
 
-void APlayerCharacter::EquipArmorInventorySlot(const bool IsEquipping)
+void APlayerCharacter::EquipArmorInventorySlot(const bool IsEquipping, const float EquipGearStat)
 {
 	if (IsEquipping)
 	{
+		Stat->AddMaxHp(EquipGearStat);
 		IsEquipArmor = true;
 		OnRep_IsEquipArmor();
 	}
 	else
 	{
+		Stat->SubtractMaxHp(EquipGearStat);
 		IsEquipArmor = false;
 		OnRep_IsEquipArmor();
 	}
 }
 
-void APlayerCharacter::EquipHelmetInventorySlot(const bool IsEquipping)
+void APlayerCharacter::EquipHelmetInventorySlot(const bool IsEquipping, const float EquipGearStat)
 {
 	if (IsEquipping)
 	{
@@ -4196,21 +4198,23 @@ void APlayerCharacter::EquipHelmetInventorySlot(const bool IsEquipping)
 	}
 }
 
-void APlayerCharacter::EquipGoggleInventorySlot(const bool IsEquipping)
+void APlayerCharacter::EquipGoggleInventorySlot(const bool IsEquipping, const float EquipGearStat)
 {
 	if (IsEquipping)
 	{
+		Stat->RecoilStatMultiplier = EquipGearStat;
 		IsEquipGoggle = true;
 		OnRep_IsEquipGoggle();
 	}
 	else
 	{
+		Stat->RecoilStatMultiplier = EquipGearStat;
 		IsEquipGoggle = false;
 		OnRep_IsEquipGoggle();
 	}
 }
 
-void APlayerCharacter::EquipHeadsetInventorySlot(const bool IsEquipping)
+void APlayerCharacter::EquipHeadsetInventorySlot(const bool IsEquipping, const float EquipGearStat)
 {
 	if (IsEquipping)
 	{
@@ -4224,15 +4228,17 @@ void APlayerCharacter::EquipHeadsetInventorySlot(const bool IsEquipping)
 	}
 }
 
-void APlayerCharacter::EquipMaskInventorySlot(const bool IsEquipping)
+void APlayerCharacter::EquipMaskInventorySlot(const bool IsEquipping, const float EquipGearStat)
 {
 	if (IsEquipping)
 	{
+		Stat->FireIntervalStatMultiplier = EquipGearStat;
 		IsEquipMask = true;
 		OnRep_IsEquipMask();
 	}
 	else
 	{
+		Stat->FireIntervalStatMultiplier = EquipGearStat;
 		IsEquipMask = false;
 		OnRep_IsEquipMask();
 	}
@@ -4252,23 +4258,22 @@ void APlayerCharacter::ProcessRifleFireLocal()
 	if (FirstPersonCharacterMesh->IsVisible())
 	{
 		const FVector particleLoc = FirstPersonRifleComp->GetSocketLocation(FName("RifleFirePosition"));
-		const UE::Math::TRotator<double> particleRot = FirstPersonRifleComp->GetSocketRotation(FName("RifleFirePosition"));
-		const FTransform particleTrans = UKismetMathLibrary::MakeTransform(particleLoc, particleRot, FVector(0.4));
+		const UE::Math::TRotator<double> ParticleRot = FirstPersonRifleComp->GetSocketRotation(FName("RifleFirePosition"));
+		const FTransform particleTrans = UKismetMathLibrary::MakeTransform(particleLoc, ParticleRot, FVector(0.4));
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), FirstPersonRifleFireParticle, particleTrans);
 	}
 	else
 	{
 		const FVector particleLoc = RifleComp->GetSocketLocation(FName("RifleFirePosition"));
-		const UE::Math::TRotator<double> particleRot = RifleComp->GetSocketRotation(FName("RifleFirePosition"));
-		const FTransform particleTrans = UKismetMathLibrary::MakeTransform(particleLoc, particleRot, FVector(0.4));
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle, particleTrans);
+		const UE::Math::TRotator<double> ParticleRot = RifleComp->GetSocketRotation(FName("RifleFirePosition"));
+		const FTransform ParticleTrans = UKismetMathLibrary::MakeTransform(particleLoc, ParticleRot, FVector(0.4));
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle, ParticleTrans);
 	}
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleFireSound, GetActorLocation());
 
-	const double RandF = UKismetMathLibrary::RandomFloatInRange(-0.3, -0.5);
-	const double RandF2 = UKismetMathLibrary::RandomFloatInRange(-0.3, 0.3);
-	AddControllerPitchInput(RandF);
-	AddControllerYawInput(RandF2);
+	Stat->SetRecoilRate(weaponArray);
+	AddControllerPitchInput(Stat->GetPitchRecoilRate());
+	AddControllerYawInput(Stat->GetYawRecoilRate());
 }
 
 void APlayerCharacter::ProcessRifleFireSimulatedProxy() const
@@ -4420,10 +4425,11 @@ void APlayerCharacter::ProcessSniperFireAnim()
 void APlayerCharacter::ProcessSniperFireLocal()
 {
 	UGameplayStatics::PlaySound2D(GetWorld(), SniperFireSound);
-	const double RandF = UKismetMathLibrary::RandomFloatInRange(-0.7, -1.2);
-	const double RandF2 = UKismetMathLibrary::RandomFloatInRange(-0.7, 0.8);
-	AddControllerPitchInput(RandF);
-	AddControllerYawInput(RandF2);
+
+	Stat->SetRecoilRate(weaponArray);
+	AddControllerPitchInput(Stat->GetPitchRecoilRate());
+	AddControllerYawInput(Stat->GetYawRecoilRate());
+	
 	if (isZooming)
 	{
 		const UE::Math::TVector<double> particleTrans = FollowCamera->GetComponentLocation() + FollowCamera->GetUpVector() * -70.0f;
@@ -4542,10 +4548,9 @@ void APlayerCharacter::ProcessPistolFireLocal()
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PistolfireParticle, ParticleTrans);
 	}
 
-	const double RandF = UKismetMathLibrary::RandomFloatInRange(-0.7, -1.2);
-	const double RandF2 = UKismetMathLibrary::RandomFloatInRange(-0.7, 0.8);
-	AddControllerPitchInput(RandF);
-	AddControllerYawInput(RandF2);
+	Stat->SetRecoilRate(weaponArray);
+	AddControllerPitchInput(Stat->GetPitchRecoilRate());
+	AddControllerYawInput(Stat->GetYawRecoilRate());
 }
 
 void APlayerCharacter::ProcessPistolFireSimulatedProxy() const
@@ -4621,20 +4626,9 @@ void APlayerCharacter::ProcessM249FireLocal()
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PistolfireParticle, ParticleTrans);
 	UGameplayStatics::PlaySound2D(GetWorld(), M249FireSound);
 	PC->PlayerCameraManager->StartCameraShake(rifleFireShake);
-	if (isZooming)
-	{
-		const double RandF = UKismetMathLibrary::RandomFloatInRange(-0.4, -0.7);
-		const double RandF2 = UKismetMathLibrary::RandomFloatInRange(-0.4, 0.4);
-		AddControllerPitchInput(RandF);
-		AddControllerYawInput(RandF2);
-	}
-	else
-	{
-		const double RandF = UKismetMathLibrary::RandomFloatInRange(-0.6, -1.1);
-		const double RandF2 = UKismetMathLibrary::RandomFloatInRange(-0.5, 0.5);
-		AddControllerPitchInput(RandF);
-		AddControllerYawInput(RandF2);
-	}
+	Stat->SetRecoilRate(weaponArray);
+	AddControllerPitchInput(Stat->GetPitchRecoilRate());
+	AddControllerYawInput(Stat->GetYawRecoilRate());
 }
 
 void APlayerCharacter::ProcessM249FireSimulatedProxy() const
@@ -4643,27 +4637,6 @@ void APlayerCharacter::ProcessM249FireSimulatedProxy() const
 	ParticleTrans.SetScale3D(FVector(0.7));
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PistolfireParticle, ParticleTrans);
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), M249FireSound, GetActorLocation());
-}
-
-float APlayerCharacter::SetFireInterval()
-{
-	if (weaponArray[0] == true)
-	{
-		return BulletsPerSecRifle;
-	}
-	if (weaponArray[1] == true)
-	{
-		return BulletsPerSecSniper;
-	}
-	if (weaponArray[2] == true)
-	{
-		return BulletsPerSecPistol;
-	}
-	if (weaponArray[3] == true)
-	{
-		return BulletsPerSecM249;
-	}
-	return 0;
 }
 
 

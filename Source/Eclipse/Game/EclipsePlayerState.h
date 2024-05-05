@@ -112,8 +112,6 @@ public:
 	UFUNCTION()
 	void ApplyGearInventoryEquipState(APlayerCharacter* PlayerCharacterRef);
 
-	virtual void CopyProperties(APlayerState* PlayerState) override;
-
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
 	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite)

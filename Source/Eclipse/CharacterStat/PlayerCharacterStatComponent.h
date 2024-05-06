@@ -168,16 +168,16 @@ protected:
 	float EnemyAttackDamageM249 = 80.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float BulletsPerSecRifle = 11.f;
+	float BulletsPerSecRifle = 0.09f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float BulletsPerSecPistol = 3.f;
+	float BulletsPerSecPistol = 0.33f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float BulletsPerSecSniper = 0.5f;
+	float BulletsPerSecSniper = 2.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float BulletsPerSecM249 = 8.f;
+	float BulletsPerSecM249 = 0.125f;
 
 	UFUNCTION()
 	void OnRep_CurrentHp() const;

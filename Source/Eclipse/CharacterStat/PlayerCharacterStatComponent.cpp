@@ -169,19 +169,19 @@ float UPlayerCharacterStatComponent::GetFireInterval(const TArray<bool>& WeaponA
 {
 	if (WeaponArray[0] == true)
 	{
-		return 1 / BulletsPerSecRifle * FireIntervalStatMultiplier;
+		return BulletsPerSecRifle * FireIntervalStatMultiplier;
 	}
 	if (WeaponArray[1] == true)
 	{
-		return 1 / BulletsPerSecSniper * FireIntervalStatMultiplier;
+		return BulletsPerSecSniper * FireIntervalStatMultiplier;
 	}
 	if (WeaponArray[2] == true)
 	{
-		return 1 / BulletsPerSecPistol * FireIntervalStatMultiplier;
+		return BulletsPerSecPistol * FireIntervalStatMultiplier;
 	}
 	if (WeaponArray[3] == true)
 	{
-		return 1 / BulletsPerSecM249 * FireIntervalStatMultiplier;
+		return BulletsPerSecM249 * FireIntervalStatMultiplier;
 	}
 	return 0;
 }

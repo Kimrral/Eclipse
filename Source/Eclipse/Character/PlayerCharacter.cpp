@@ -190,13 +190,6 @@ void APlayerCharacter::BeginPlay()
 	gm = Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());
 	animInstance = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 
-	if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))
-	{
-		CachingPlayerState->GetInventoryDataFromGameInstance();
-		CachingPlayerState->ApplyGearInventoryEquipState(this);
-	}
-	
-	Stat->AddRouble(gi->CachedRouble);
 	gi->IsWidgetOn = false;
 
 	//Add Input Mapping Context
@@ -258,6 +251,7 @@ void APlayerCharacter::BeginPlay()
 	ExtractionCountdownUI->ExtractionSuccessDele.AddUObject(this, &APlayerCharacter::ExtractionSuccess);
 
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
+	UGameplayStatics::PlaySound2D(GetWorld(), PlayerSpawnSound, 0.6, 1, 0.25);
 
 	if (PC)
 	{
@@ -267,7 +261,7 @@ void APlayerCharacter::BeginPlay()
 	// Hideout
 	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) == FString("Safe_House"))
 	{
-		if(!IsLocallyControlled())
+		if (!IsLocallyControlled())
 		{
 			SetActorHiddenInGame(true);
 		}
@@ -349,7 +343,6 @@ void APlayerCharacter::BeginPlay()
 void APlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
-
 }
 
 // Called every frame
@@ -1481,7 +1474,7 @@ bool APlayerCharacter::TiltingLeftRPCServer_Validate()
 
 void APlayerCharacter::TiltingLeftRPCMulticast_Implementation()
 {
-	if(!HasAuthority()) animInstance->bTiltingLeft = true;
+	if (!HasAuthority()) animInstance->bTiltingLeft = true;
 }
 
 void APlayerCharacter::TiltingLeftRelease()
@@ -1515,7 +1508,7 @@ bool APlayerCharacter::TiltingLeftReleaseRPCServer_Validate()
 
 void APlayerCharacter::TiltingLeftReleaseRPCMulticast_Implementation()
 {
-	if(!HasAuthority()) animInstance->bTiltingLeft = false;
+	if (!HasAuthority()) animInstance->bTiltingLeft = false;
 }
 
 void APlayerCharacter::TiltingRight()
@@ -1549,7 +1542,7 @@ bool APlayerCharacter::TiltingRightRPCServer_Validate()
 
 void APlayerCharacter::TiltingRightRPCMulticast_Implementation()
 {
-	if(!HasAuthority()) animInstance->bTiltingRight = true;
+	if (!HasAuthority()) animInstance->bTiltingRight = true;
 }
 
 void APlayerCharacter::TiltingRightRelease()
@@ -1583,7 +1576,7 @@ bool APlayerCharacter::TiltingRightReleaseRPCServer_Validate()
 
 void APlayerCharacter::TiltingRightReleaseRPCMulticast_Implementation()
 {
-	if(!HasAuthority()) animInstance->bTiltingRight = false;
+	if (!HasAuthority()) animInstance->bTiltingRight = false;
 }
 
 void APlayerCharacter::WeaponDetectionLineTrace()
@@ -3352,10 +3345,6 @@ void APlayerCharacter::InteractionProcess()
 					FTimerHandle endHandle;
 					GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()-> void
 					{
-						// if (AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))
-						// {
-						// 	CachingPlayerState->InventoryCaching(this);
-						// }
 						UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"));
 					}), 9.f, false);
 				}
@@ -3588,13 +3577,32 @@ void APlayerCharacter::MoveToBlockedIntersection()
 	infoWidgetUI->RemoveFromParent();
 	informationUI->RemoveFromParent();
 	crosshairUI->RemoveFromParent();
-	if (const AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->MoveInventoryDataToGameInstance();
-	gi->CachedRouble = Stat->GetCurrentRouble();
+
 	FTimerHandle EndHandle;
 	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
-		UGameplayStatics::OpenLevel(GetWorld(), FName("192.168.0.3"));
+		MoveToBlockedIntersectionServer();
 	}), 9.f, false);
+}
+
+void APlayerCharacter::MoveToBlockedIntersectionServer_Implementation()
+{
+	const FName LevelToLoad = FName("Deserted_Road");
+	const FName LevelToUnload = FName("Safe_House");
+	const FName OnLevelLoadFinishedFunc = FName("OnStreamingLevelLoadFinished");
+	const FLatentActionInfo UnloadLatentInfo;
+	FLatentActionInfo LoadLatentInfo;
+	LoadLatentInfo.CallbackTarget = this;
+	LoadLatentInfo.Linkage = 0;
+	LoadLatentInfo.ExecutionFunction = OnLevelLoadFinishedFunc;
+	
+	UGameplayStatics::LoadStreamLevel(this, LevelToLoad, true, true, LoadLatentInfo);
+	UGameplayStatics::UnloadStreamLevel(this, LevelToUnload, UnloadLatentInfo, true);
+}
+
+bool APlayerCharacter::MoveToBlockedIntersectionServer_Validate()
+{
+	return true;
 }
 
 
@@ -3765,14 +3773,14 @@ void APlayerCharacter::DamagedRPCMulticast_Implementation(int Damage, AActor* Da
 		UGameplayStatics::PlaySound2D(GetWorld(), DamagedSound);
 		PC->PlayerCameraManager->StartCameraShake(PlayerDamagedShake);
 	}
-	if(!HasAuthority())
+	if (!HasAuthority())
 	{
 		UpdateTabWidget();
 		PlayAnimMontage(FullBodyMontage, 1, FName("Damaged"));
-		FTimerHandle overlayMatHandle;
+		FTimerHandle OverlayMatHandle;
 		GetMesh()->SetOverlayMaterial(overlayMatRed);
-		GetWorldTimerManager().ClearTimer(overlayMatHandle);
-		GetWorldTimerManager().SetTimer(overlayMatHandle, FTimerDelegate::CreateLambda([this]()-> void
+		GetWorldTimerManager().ClearTimer(OverlayMatHandle);
+		GetWorldTimerManager().SetTimer(OverlayMatHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
 			GetMesh()->SetOverlayMaterial(nullptr);
 		}), 0.3f, false);
@@ -3803,6 +3811,47 @@ void APlayerCharacter::AddAmmunitionByInputString(const FString& InventoryStruct
 		maxM249Ammo += 50;
 	}
 }
+
+void APlayerCharacter::OnStreamingLevelLoadFinished()
+{
+	OnStreamingLevelLoadFinishedClient();
+	const FVector TargetLoc = FVector(7317.601004, -5039.254026, 800.626289);
+	SetActorLocation(TargetLoc, false, nullptr);
+	//OnStreamingLevelLoadFinishedServer();
+	// TArray<class AActor*> OutActors;
+	// UGameplayStatics::GetAllActorsOfClass(GetWorld(), PlayerStartFactory, OutActors);
+	// for (const auto PlayerStarts : OutActors)
+	// {
+	// 	if (const auto PlayerStart = Cast<APlayerStart>(PlayerStarts))
+	// 	{
+	// 		if(PlayerStart && PlayerStart->PlayerStartTag==FName("Intersection"))
+	// 		{
+	// 			const FTransform TargetPlayerStartTrans = PlayerStart->GetActorTransform();
+	// 			SetActorTransform(TargetPlayerStartTrans, false);				
+	// 			return;
+	//
+	// 		}
+	// 	}
+	// }
+}
+
+void APlayerCharacter::OnStreamingLevelLoadFinishedClient_Implementation()
+{
+	if (IsLocallyControlled())
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
+		UGameplayStatics::PlaySound2D(GetWorld(), PlayerSpawnSound, 0.6, 1, 0.25);
+		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+		bUseControllerRotationYaw = true;
+		bEnding = false;
+		if (APlayerCameraManager* const CameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)))
+		{
+			CameraManager->StopCameraFade();
+			CameraManager->StartCameraFade(1.0, 0, 8.0, FColor::Black, false, true);
+		}
+	}
+}
+
 
 void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -4431,7 +4480,7 @@ void APlayerCharacter::ProcessSniperFireLocal()
 	Stat->SetRecoilRate(weaponArray);
 	AddControllerPitchInput(Stat->GetPitchRecoilRate());
 	AddControllerYawInput(Stat->GetYawRecoilRate());
-	
+
 	if (isZooming)
 	{
 		const UE::Math::TVector<double> particleTrans = FollowCamera->GetComponentLocation() + FollowCamera->GetUpVector() * -70.0f;
@@ -4648,7 +4697,7 @@ void APlayerCharacter::PlayerDeath()
 	gi->CachedRouble = Stat->GetCurrentRouble();
 	FTimerHandle EndHandle;
 	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
-	{		
+	{
 		UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"));
 	}), 9.f, false);
 }
@@ -4666,7 +4715,7 @@ bool APlayerCharacter::PlayerDeathRPCServer_Validate()
 void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 {
 	IsPlayerDeadImmediately = true;
-	if(!HasAuthority())
+	if (!HasAuthority())
 	{
 		// 몽타주 재생 중단
 		StopAnimMontage();

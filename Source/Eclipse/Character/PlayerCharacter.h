@@ -16,6 +16,7 @@
 #include "Eclipse/Weapon/M249Actor.h"
 #include "Eclipse/Weapon/PistolActor.h"
 #include "Eclipse/Weapon/SniperActor.h"
+#include "GameFramework/PlayerStart.h"
 #include "PlayerCharacter.generated.h"
 
 DECLARE_MULTICAST_DELEGATE(FOnWeaponChange);
@@ -493,6 +494,9 @@ public:
 	UFUNCTION()
 	void MoveToBlockedIntersection();
 
+	UFUNCTION(Server, WithValidation, Reliable)
+	void MoveToBlockedIntersectionServer();
+
 	UFUNCTION() // Bind function
 	void SetZoomValue(float Value);
 
@@ -580,7 +584,13 @@ public:
 	void DeadPlayerContainerSettings(ADeadPlayerContainer* DeadPlayerContainers);
 
 	UFUNCTION()
-	void AddAmmunitionByInputString(const FString& InventoryStructName);	
+	void AddAmmunitionByInputString(const FString& InventoryStructName);
+
+	UFUNCTION()
+	void OnStreamingLevelLoadFinished();
+
+	UFUNCTION(Client, Reliable)
+	void OnStreamingLevelLoadFinishedClient();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -768,6 +778,9 @@ public:
 
 	UPROPERTY()
 	class UPlayerAnim* animInstance;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<APlayerStart> PlayerStartFactory;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
 	class UAnimMontage* UpperOnlyMontage;
@@ -1001,6 +1014,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* KillSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* PlayerSpawnSound;
 
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* AmmoPickupSound;

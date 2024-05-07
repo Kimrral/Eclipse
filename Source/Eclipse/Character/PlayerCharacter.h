@@ -490,20 +490,8 @@ public:
 	UFUNCTION()
 	void MoveToHideout(const bool SaveInventory) const;
 
-	UFUNCTION(Server, Reliable, WithValidation)
-	void MoveToHideoutServer(const bool SaveInventory) const;
-
-	UFUNCTION(Client, Reliable)
-	void MoveToHideoutClient(const bool SaveInventory) const;
-	
 	UFUNCTION()
 	void MoveToBlockedIntersection();
-
-	UFUNCTION(Server, Reliable, WithValidation)
-	void MoveToBlockedIntersectionServer();
-
-	UFUNCTION(Client, Reliable)
-	void MoveToBlockedIntersectionClient();
 
 	UFUNCTION() // Bind function
 	void SetZoomValue(float Value);

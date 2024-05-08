@@ -183,7 +183,7 @@ void APlayerCharacter::BeginPlay()
 
 	IsPlayerDeadImmediately = false;
 	IsPlayerDead = false;
-
+	
 	// Casting
 	gi = Cast<UEclipseGameInstance>(GetGameInstance());
 	PC = Cast<AEclipsePlayerController>(gi->GetFirstLocalPlayerController());
@@ -246,6 +246,9 @@ void APlayerCharacter::BeginPlay()
 		APlayerCameraManager* const CameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0));
 		CameraManager->StopCameraFade();
 		CameraManager->StartCameraFade(1.0, 0, 8.0, FColor::Black, false, true);
+		const FName LevelToUnload = FName("Deserted_Road");	
+		const FLatentActionInfo UnloadLatentInfo;		
+		UGameplayStatics::UnloadStreamLevel(this, LevelToUnload, UnloadLatentInfo, true);
 	}
 
 	ExtractionCountdownUI->ExtractionSuccessDele.AddUObject(this, &APlayerCharacter::ExtractionSuccess);
@@ -3581,30 +3584,27 @@ void APlayerCharacter::MoveToBlockedIntersection()
 	FTimerHandle EndHandle;
 	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
-		MoveToBlockedIntersectionServer();
+		MoveToBlockedIntersectionClient();
 	}), 9.f, false);
 }
 
-void APlayerCharacter::MoveToBlockedIntersectionServer_Implementation()
+void APlayerCharacter::MoveToBlockedIntersectionClient()
 {
-	const FName LevelToLoad = FName("Deserted_Road");
-	const FName LevelToUnload = FName("Safe_House");
-	const FName OnLevelLoadFinishedFunc = FName("OnStreamingLevelLoadFinished");
-	const FLatentActionInfo UnloadLatentInfo;
-	FLatentActionInfo LoadLatentInfo;
-	LoadLatentInfo.CallbackTarget = this;
-	LoadLatentInfo.Linkage = 0;
-	LoadLatentInfo.ExecutionFunction = OnLevelLoadFinishedFunc;
+	if(IsLocallyControlled())
+	{
+		const FName LevelToLoad = FName("Deserted_Road");
+		const FName LevelToUnload = FName("Safe_House");
+		const FName OnLevelLoadFinishedFunc = FName("OnStreamingLevelLoadFinished");
+		const FLatentActionInfo UnloadLatentInfo;
+		FLatentActionInfo LoadLatentInfo;
+		LoadLatentInfo.CallbackTarget = this;
+		LoadLatentInfo.Linkage = 0;
+		LoadLatentInfo.ExecutionFunction = OnLevelLoadFinishedFunc;
 	
-	UGameplayStatics::LoadStreamLevel(this, LevelToLoad, true, true, LoadLatentInfo);
-	UGameplayStatics::UnloadStreamLevel(this, LevelToUnload, UnloadLatentInfo, true);
+		UGameplayStatics::LoadStreamLevel(this, LevelToLoad, true, true, LoadLatentInfo);
+		UGameplayStatics::UnloadStreamLevel(this, LevelToUnload, UnloadLatentInfo, true);
+	}
 }
-
-bool APlayerCharacter::MoveToBlockedIntersectionServer_Validate()
-{
-	return true;
-}
-
 
 void APlayerCharacter::SetZoomValue(const float Value)
 {
@@ -3814,10 +3814,17 @@ void APlayerCharacter::AddAmmunitionByInputString(const FString& InventoryStruct
 
 void APlayerCharacter::OnStreamingLevelLoadFinished()
 {
-	OnStreamingLevelLoadFinishedClient();
-	const FVector TargetLoc = FVector(7317.601004, -5039.254026, 800.626289);
-	SetActorLocation(TargetLoc, false, nullptr);
-	//OnStreamingLevelLoadFinishedServer();
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
+	UGameplayStatics::PlaySound2D(GetWorld(), PlayerSpawnSound, 0.6, 1, 0.25);
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	bUseControllerRotationYaw = true;
+	bEnding = false;
+	if (APlayerCameraManager* const CameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)))
+	{
+		CameraManager->StopCameraFade();
+		CameraManager->StartCameraFade(1.0, 0, 8.0, FColor::Black, false, true);
+	}
+	OnStreamingLevelLoadFinishedServer();
 	// TArray<class AActor*> OutActors;
 	// UGameplayStatics::GetAllActorsOfClass(GetWorld(), PlayerStartFactory, OutActors);
 	// for (const auto PlayerStarts : OutActors)
@@ -3835,22 +3842,17 @@ void APlayerCharacter::OnStreamingLevelLoadFinished()
 	// }
 }
 
-void APlayerCharacter::OnStreamingLevelLoadFinishedClient_Implementation()
+void APlayerCharacter::OnStreamingLevelLoadFinishedServer_Implementation()
 {
-	if (IsLocallyControlled())
-	{
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
-		UGameplayStatics::PlaySound2D(GetWorld(), PlayerSpawnSound, 0.6, 1, 0.25);
-		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-		bUseControllerRotationYaw = true;
-		bEnding = false;
-		if (APlayerCameraManager* const CameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)))
-		{
-			CameraManager->StopCameraFade();
-			CameraManager->StartCameraFade(1.0, 0, 8.0, FColor::Black, false, true);
-		}
-	}
+	const FVector TargetLoc = FVector(7317.601004, -5039.254026, 800.626289);
+	SetActorLocation(TargetLoc, false, nullptr);
 }
+
+bool APlayerCharacter::OnStreamingLevelLoadFinishedServer_Validate()
+{
+	return true;
+}
+
 
 
 void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

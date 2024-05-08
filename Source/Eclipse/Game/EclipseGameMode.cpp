@@ -9,7 +9,6 @@
 AEclipseGameMode::AEclipseGameMode()
 {
 	GameStateClass = AEclipseGameState::StaticClass();
-	bUseSeamlessTravel=true;
 }
 
 // // 첫 실행 시 스폰될 플레이어 스타트 지점 오버라이딩

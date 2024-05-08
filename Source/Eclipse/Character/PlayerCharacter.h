@@ -494,8 +494,8 @@ public:
 	UFUNCTION()
 	void MoveToBlockedIntersection();
 
-	UFUNCTION(Server, WithValidation, Reliable)
-	void MoveToBlockedIntersectionServer();
+	UFUNCTION()
+	void MoveToBlockedIntersectionClient();
 
 	UFUNCTION() // Bind function
 	void SetZoomValue(float Value);
@@ -589,8 +589,8 @@ public:
 	UFUNCTION()
 	void OnStreamingLevelLoadFinished();
 
-	UFUNCTION(Client, Reliable)
-	void OnStreamingLevelLoadFinishedClient();
+	UFUNCTION(Server, Reliable, WithValidation)
+	void OnStreamingLevelLoadFinishedServer();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 

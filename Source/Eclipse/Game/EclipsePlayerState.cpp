@@ -510,25 +510,11 @@ bool AEclipsePlayerState::ModifyRoubleServer_Validate(APlayerCharacter* PlayerCh
 	return true;
 }
 
-
-void AEclipsePlayerState::MoveInventoryDataToGameInstance() const
+void AEclipsePlayerState::ResetPlayerInventoryData()
 {
-	if (UEclipseGameInstance* const GameInstance = Cast<UEclipseGameInstance>(GetGameInstance()))
-	{
-		GameInstance->PlayerInventoryStructs = PlayerInventoryStructs;
-		GameInstance->PlayerInventoryStacks = PlayerInventoryStacks;
-		GameInstance->PlayerGearSlotStructs = PlayerGearSlotStructs;
-	}
-}
-
-void AEclipsePlayerState::GetInventoryDataFromGameInstance()
-{
-	if (const UEclipseGameInstance* const GameInstance = Cast<UEclipseGameInstance>(GetGameInstance()))
-	{
-		PlayerInventoryStructs = GameInstance->PlayerInventoryStructs;
-		PlayerInventoryStacks = GameInstance->PlayerInventoryStacks;
-		PlayerGearSlotStructs = GameInstance->PlayerGearSlotStructs;
-	}
+	PlayerInventoryStructs.Init(InventoryStructDefault, 30);
+	PlayerInventoryStacks.Init(0, 30);
+	PlayerGearSlotStructs.Init(InventoryStructDefault, 5);
 }
 
 void AEclipsePlayerState::ApplyGearInventoryEquipState(APlayerCharacter* PlayerCharacterRef)

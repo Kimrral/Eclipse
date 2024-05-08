@@ -174,6 +174,7 @@ void APlayerCharacter::BeginPlay()
 	GetMesh()->HideBoneByName(TEXT("shotgun_base"), EPhysBodyOp::PBO_None);
 	GetMesh()->HideBoneByName(TEXT("sniper_can_arm_01"), EPhysBodyOp::PBO_None);
 	GetMesh()->SetVisibility(true);
+	GetCharacterMovement()->MaxWalkSpeed = 360.f;
 
 	FirstPersonRifleComp->SetVisibility(false);
 	FirstPersonPistolComp->SetVisibility(false);
@@ -183,7 +184,7 @@ void APlayerCharacter::BeginPlay()
 
 	IsPlayerDeadImmediately = false;
 	IsPlayerDead = false;
-	
+
 	// Casting
 	gi = Cast<UEclipseGameInstance>(GetGameInstance());
 	PC = Cast<AEclipsePlayerController>(gi->GetFirstLocalPlayerController());
@@ -201,6 +202,7 @@ void APlayerCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 			PC->SetInputMode(InputModeData);
 			PC->SetShowMouseCursor(false);
+			PC->EnableInput(PC);
 		}
 	}
 
@@ -222,6 +224,8 @@ void APlayerCharacter::BeginPlay()
 		TiltingRightTimeline.AddInterpFloat(TiltingCurveFloat, TiltRightTimelineProgress);
 	}
 
+	Stat->OnHpZero.AddUObject(this, &APlayerCharacter::PlayerDeath);
+
 	// Widget Settings
 	crosshairUI = CreateWidget<UCrosshairWidget>(GetWorld(), crosshairFactory);
 	quitWidgetUI = CreateWidget<UQuitWidget>(GetWorld(), quitWidgetFactory);
@@ -242,75 +246,6 @@ void APlayerCharacter::BeginPlay()
 		{
 			crosshairUI->AddToViewport();
 		}
-		TradeWidgetUI->Construction(this);
-		APlayerCameraManager* const CameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0));
-		CameraManager->StopCameraFade();
-		CameraManager->StartCameraFade(1.0, 0, 8.0, FColor::Black, false, true);
-		const FName LevelToUnload = FName("Deserted_Road");	
-		const FLatentActionInfo UnloadLatentInfo;		
-		UGameplayStatics::UnloadStreamLevel(this, LevelToUnload, UnloadLatentInfo, true);
-	}
-
-	ExtractionCountdownUI->ExtractionSuccessDele.AddUObject(this, &APlayerCharacter::ExtractionSuccess);
-
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
-	UGameplayStatics::PlaySound2D(GetWorld(), PlayerSpawnSound, 0.6, 1, 0.25);
-
-	if (PC)
-	{
-		PC->EnableInput(PC);
-	}
-
-	// Hideout
-	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) == FString("Safe_House"))
-	{
-		if (!IsLocallyControlled())
-		{
-			SetActorHiddenInGame(true);
-		}
-		if (animInstance)
-		{
-			animInstance->bArmed = false;
-		}
-		GetCharacterMovement()->MaxWalkSpeed = 360.f;
-		bUsingRifle = false;
-		bUsingSniper = false;
-		bUsingPistol = false;
-		bUsingM249 = false;
-		equippedWeaponStringArray.Add(FString("Empty")); //0
-		equippedWeaponStringArray.Add(FString("Empty")); //1
-
-		// Weapon Visibility Settings
-		RifleComp->SetVisibility(false);
-		SniperComp->SetVisibility(false);
-		PistolComp->SetVisibility(false);
-		M249Comp->SetVisibility(false);
-	}
-	// Non Hideout
-	else
-	{
-		if (animInstance)
-		{
-			animInstance->bArmed = true;
-		}
-		GetCharacterMovement()->MaxWalkSpeed = 360.f;
-		bUsingRifle = true;
-		bUsingSniper = false;
-		bUsingPistol = false;
-		bUsingM249 = false;
-
-		equippedWeaponStringArray.Add(FString("Rifle")); //0
-		equippedWeaponStringArray.Add(FString("Pistol")); //1
-
-		// Weapon Visibility Settings
-		RifleComp->SetVisibility(true);
-		SniperComp->SetVisibility(false);
-		PistolComp->SetVisibility(false);
-		M249Comp->SetVisibility(false);
-	}
-
-	if (IsLocallyControlled())
-	{
 		if (informationUI)
 		{
 			FTimerHandle RespawnTimer;
@@ -328,16 +263,44 @@ void APlayerCharacter::BeginPlay()
 				}
 			}), 0.5, false);
 		}
+		TradeWidgetUI->Construction(this);
+		APlayerCameraManager* const CameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0));
+		CameraManager->StopCameraFade();
+		CameraManager->StartCameraFade(1.0, 0, 8.0, FColor::Black, false, true);
+		const FName LevelToUnload = FName("Deserted_Road");
+		const FLatentActionInfo UnloadLatentInfo;
+		UGameplayStatics::UnloadStreamLevel(this, LevelToUnload, UnloadLatentInfo, true);
 	}
+
+
+	if (animInstance)
+	{
+		animInstance->bArmed = true;
+	}
+	bUsingRifle = true;
+	bUsingSniper = false;
+	bUsingPistol = false;
+	bUsingM249 = false;
+
+	equippedWeaponStringArray.Empty();
+	equippedWeaponStringArray.Add(FString("Rifle")); //0
+	equippedWeaponStringArray.Add(FString("Pistol")); //1
+
+	// Weapon Visibility Settings
+	RifleComp->SetVisibility(true);
+	SniperComp->SetVisibility(false);
+	PistolComp->SetVisibility(false);
+	M249Comp->SetVisibility(false);
 
 	// Set Weapon Array
 	weaponArray.Add(bUsingRifle); //0
 	weaponArray.Add(bUsingSniper); //1
 	weaponArray.Add(bUsingPistol); //2
 	weaponArray.Add(bUsingM249); //3	
+	ExtractionCountdownUI->ExtractionSuccessDele.AddUObject(this, &APlayerCharacter::ExtractionSuccess);
 
-	// Apply Inventory Cache [GameInstance]
-	ApplyCachingValues();
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
+	UGameplayStatics::PlaySound2D(GetWorld(), PlayerSpawnSound, 0.6, 1, 0.25);
 
 	// Update Tab Widget Before Widget Constructor
 	UpdateTabWidget();
@@ -471,7 +434,7 @@ void APlayerCharacter::Look(const FInputActionValue& Value)
 
 void APlayerCharacter::Jump()
 {
-	if (IsPlayerDeadImmediately)
+	if (IsPlayerDeadImmediately || bEnding)
 	{
 		return;
 	}
@@ -480,7 +443,7 @@ void APlayerCharacter::Jump()
 
 void APlayerCharacter::StopJumping()
 {
-	if (IsPlayerDeadImmediately)
+	if (IsPlayerDeadImmediately || bEnding)
 	{
 		return;
 	}
@@ -489,7 +452,7 @@ void APlayerCharacter::StopJumping()
 
 void APlayerCharacter::Zoom(const bool IsZoomInput)
 {
-	if (gi->IsWidgetOn || IsPlayerDeadImmediately)
+	if (gi->IsWidgetOn || IsPlayerDeadImmediately || bEnding)
 	{
 		return;
 	}
@@ -498,7 +461,7 @@ void APlayerCharacter::Zoom(const bool IsZoomInput)
 
 void APlayerCharacter::ZoomRelease(const bool IsZoomInput)
 {
-	if (gi->IsWidgetOn || IsPlayerDeadImmediately)
+	if (gi->IsWidgetOn || IsPlayerDeadImmediately || bEnding)
 	{
 		return;
 	}
@@ -507,30 +470,24 @@ void APlayerCharacter::ZoomRelease(const bool IsZoomInput)
 
 void APlayerCharacter::ZoomInput()
 {
-	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) != FString("Safe_House"))
-	{
-		IsZoomKeyPressed = true;
-		Zoom(true);
-	}
+	IsZoomKeyPressed = true;
+	Zoom(true);
 }
 
 void APlayerCharacter::ZoomReleaseInput()
 {
-	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) != FString("Safe_House"))
+	IsZoomKeyPressed = false;
+	if (TiltingLeftTimeline.IsPlaying())
 	{
-		IsZoomKeyPressed = false;
-		if (TiltingLeftTimeline.IsPlaying())
-		{
-			TiltingLeftTimeline.Stop();
-		}
-		if (TiltingRightTimeline.IsPlaying())
-		{
-			TiltingRightTimeline.Stop();
-		}
-		FirstPersonCamera->SetRelativeRotation(FRotator::ZeroRotator);
-		FirstPersonCamera->SetRelativeLocation(FVector(26.9, 77.4, 82));
-		ZoomRelease(true);
+		TiltingLeftTimeline.Stop();
 	}
+	if (TiltingRightTimeline.IsPlaying())
+	{
+		TiltingRightTimeline.Stop();
+	}
+	FirstPersonCamera->SetRelativeRotation(FRotator::ZeroRotator);
+	FirstPersonCamera->SetRelativeLocation(FVector(26.9, 77.4, 82));
+	ZoomRelease(true);
 }
 
 void APlayerCharacter::ZoomRPCMulticast_Implementation(const bool IsZoomInput)
@@ -806,10 +763,7 @@ void APlayerCharacter::OnActionLookAroundReleased()
 
 void APlayerCharacter::SwapFirstWeapon()
 {
-	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) != FString("Safe_House"))
-	{
-		SwapFirstWeaponRPCServer();
-	}
+	SwapFirstWeaponRPCServer();
 }
 
 void APlayerCharacter::SwapFirstWeaponRPCServer_Implementation()
@@ -935,10 +889,7 @@ void APlayerCharacter::SwapFirstWeaponRPCMulticast_Implementation()
 
 void APlayerCharacter::SwapSecondWeapon()
 {
-	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) != FString("Safe_House"))
-	{
-		SwapSecondWeaponRPCServer();
-	}
+	SwapSecondWeaponRPCServer();
 }
 
 void APlayerCharacter::SwapSecondWeaponRPCServer_Implementation()
@@ -3348,7 +3299,7 @@ void APlayerCharacter::InteractionProcess()
 					FTimerHandle endHandle;
 					GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()-> void
 					{
-						UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"));
+						UGameplayStatics::OpenLevel(GetWorld(), FName("127.0.0.1"));
 					}), 9.f, false);
 				}
 				else
@@ -3442,10 +3393,7 @@ void APlayerCharacter::InteractionProcess()
 
 void APlayerCharacter::Reload()
 {
-	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) != FString("Safe_House"))
-	{
-		ServerRPCReload();
-	}
+	ServerRPCReload();
 }
 
 void APlayerCharacter::ServerRPCReload_Implementation()
@@ -3525,57 +3473,78 @@ void APlayerCharacter::MoveToIsolatedShip()
 {
 	bEnding = true;
 	gi->IsWidgetOn = false;
+	IsPlayerDeadImmediately = true;
+
 	APlayerCameraManager* PlayerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 	PlayerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
-	StopAnimMontage();
-	GetCharacterMovement()->StopActiveMovement();
-	GetCharacterMovement()->DisableMovement();
+
 	const FTransform SpawnTrans = this->GetTransform();
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), recallParticle, SpawnTrans);
 	PlayAnimMontage(FullBodyMontage, 1, FName("LevelEnd"));
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), PortalSound, GetActorLocation());
+
 	bUseControllerRotationYaw = false;
 	infoWidgetUI->RemoveFromParent();
 	informationUI->RemoveFromParent();
 	crosshairUI->RemoveFromParent();
-	if (const AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->MoveInventoryDataToGameInstance();
-	gi->CachedRouble = Stat->GetCurrentRouble();
-	FTimerHandle EndHandle;
-	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
+
+	FTimerHandle TimerHandle;
+	GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
 		UGameplayStatics::OpenLevel(GetWorld(), FName("Map_BigStarStation"));
 	}), 9.f, false);
 }
 
-void APlayerCharacter::MoveToHideout(const bool SaveInventory) const
+void APlayerCharacter::MoveToHideout(const bool IsPlayerDeath)
 {
-	if (SaveInventory == true)
+	if (IsPlayerDeath)
 	{
-		if (const AEclipsePlayerState* CachingPlayerState = Cast<AEclipsePlayerState>(GetPlayerState())) CachingPlayerState->MoveInventoryDataToGameInstance();
+		IsPlayerDead = false;
+		IsPlayerDeadImmediately = false;
+		StopAnimMontage();
+		GetMesh()->SetVisibility(true);
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		GetController()->SetIgnoreMoveInput(false);
+		GetController()->SetIgnoreLookInput(false);
+	
+		if (const auto ResetPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))
+		{
+			ResetPlayerState->ResetPlayerInventoryData();
+			ResetPlayerState->ApplyGearInventoryEquipState(this);
+			UpdateTabWidget();
+		}
 	}
-	gi->CachedRouble = Stat->GetCurrentRouble();
-	APlayerCameraManager* PlayerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
-	PlayerCam->StartCameraFade(0, 1, 2.0, FLinearColor::Black, false, true);
-	FTimerHandle EndHandle;
-	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
+
+	if (IsLocallyControlled())
 	{
-		UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"));
-	}), 2.f, false);
+		const FName LevelToLoad = FName("Safe_House");
+		const FName LevelToUnload = FName("Deserted_Road");
+		const FName OnHideoutLevelLoadFinishedFunc = FName("OnHideoutStreamingLevelLoadFinished");
+		const FLatentActionInfo UnloadLatentInfo;
+		FLatentActionInfo LoadLatentInfo;
+		LoadLatentInfo.CallbackTarget = this;
+		LoadLatentInfo.Linkage = 0;
+		LoadLatentInfo.ExecutionFunction = OnHideoutLevelLoadFinishedFunc;
+		UGameplayStatics::LoadStreamLevel(this, LevelToLoad, true, true, LoadLatentInfo);
+		UGameplayStatics::UnloadStreamLevel(this, LevelToUnload, UnloadLatentInfo, true);
+	}
 }
 
 void APlayerCharacter::MoveToBlockedIntersection()
 {
 	bEnding = true;
 	gi->IsWidgetOn = false;
+	IsPlayerDeadImmediately = true;
+
 	APlayerCameraManager* PlayerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 	PlayerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
-	StopAnimMontage();
-	GetCharacterMovement()->StopActiveMovement();
-	GetCharacterMovement()->DisableMovement();
+
 	const FTransform SpawnTrans = this->GetTransform();
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), recallParticle, SpawnTrans);
 	PlayAnimMontage(FullBodyMontage, 1, FName("LevelEnd"));
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), PortalSound, GetActorLocation());
+
 	bUseControllerRotationYaw = false;
 	infoWidgetUI->RemoveFromParent();
 	informationUI->RemoveFromParent();
@@ -3590,17 +3559,17 @@ void APlayerCharacter::MoveToBlockedIntersection()
 
 void APlayerCharacter::MoveToBlockedIntersectionClient()
 {
-	if(IsLocallyControlled())
+	if (IsLocallyControlled())
 	{
 		const FName LevelToLoad = FName("Deserted_Road");
 		const FName LevelToUnload = FName("Safe_House");
-		const FName OnLevelLoadFinishedFunc = FName("OnStreamingLevelLoadFinished");
+		const FName OnIntersectionLevelLoadFinishedFunc = FName("OnIntersectionStreamingLevelLoadFinished");
 		const FLatentActionInfo UnloadLatentInfo;
 		FLatentActionInfo LoadLatentInfo;
 		LoadLatentInfo.CallbackTarget = this;
 		LoadLatentInfo.Linkage = 0;
-		LoadLatentInfo.ExecutionFunction = OnLevelLoadFinishedFunc;
-	
+		LoadLatentInfo.ExecutionFunction = OnIntersectionLevelLoadFinishedFunc;
+
 		UGameplayStatics::LoadStreamLevel(this, LevelToLoad, true, true, LoadLatentInfo);
 		UGameplayStatics::UnloadStreamLevel(this, LevelToUnload, UnloadLatentInfo, true);
 	}
@@ -3693,62 +3662,6 @@ void APlayerCharacter::SetTiltingRightValue(const float Value)
 	FirstPersonCamera->SetRelativeTransform(TLerp);
 }
 
-void APlayerCharacter::CachingValues() const
-{
-	if (gi)
-	{
-		gi->ConsoleCount = ConsoleCount;
-
-		gi->GuardianCount = GuardianCount;
-
-		gi->BossCount = BossCount;
-
-		gi->curRifleAmmo = curRifleAmmo;
-
-		gi->curSniperAmmo = curSniperAmmo;
-
-		gi->curPistolAmmo = curPistolAmmo;
-
-		gi->curM249Ammo = curM249Ammo;
-
-		gi->maxRifleAmmo = maxRifleAmmo;
-
-		gi->maxSniperAmmo = maxSniperAmmo;
-
-		gi->maxPistolAmmo = maxPistolAmmo;
-
-		gi->maxM249Ammo = maxM249Ammo;
-	}
-}
-
-void APlayerCharacter::ApplyCachingValues()
-{
-	if (gi)
-	{
-		ConsoleCount = gi->ConsoleCount;
-
-		GuardianCount = gi->GuardianCount;
-
-		BossCount = gi->BossCount;
-
-		curRifleAmmo = gi->curRifleAmmo;
-
-		curSniperAmmo = gi->curSniperAmmo;
-
-		curPistolAmmo = gi->curPistolAmmo;
-
-		curM249Ammo = gi->curM249Ammo;
-
-		maxRifleAmmo = gi->maxRifleAmmo;
-
-		maxSniperAmmo = gi->maxSniperAmmo;
-
-		maxPistolAmmo = gi->maxPistolAmmo;
-
-		maxM249Ammo = gi->maxM249Ammo;
-	}
-}
-
 void APlayerCharacter::Damaged(const int Damage, AActor* DamageCauser)
 {
 	DamagedRPCServer(Damage, DamageCauser);
@@ -3812,48 +3725,110 @@ void APlayerCharacter::AddAmmunitionByInputString(const FString& InventoryStruct
 	}
 }
 
-void APlayerCharacter::OnStreamingLevelLoadFinished()
+void APlayerCharacter::OnIntersectionStreamingLevelLoadFinished()
 {
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
-	UGameplayStatics::PlaySound2D(GetWorld(), PlayerSpawnSound, 0.6, 1, 0.25);
-	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-	bUseControllerRotationYaw = true;
+	if (IsLocallyControlled())
+	{
+		if (!crosshairUI->IsInViewport())
+		{
+			crosshairUI->AddToViewport();
+		}
+		if (!informationUI->IsInViewport())
+		{
+			informationUI->AddToViewport();
+		}
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
+		UGameplayStatics::PlaySound2D(GetWorld(), PlayerSpawnSound, 0.6, 1, 0.25);
+	}
 	bEnding = false;
+	IsPlayerDeadImmediately=false;
+	bUseControllerRotationYaw = true;
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 	if (APlayerCameraManager* const CameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)))
 	{
 		CameraManager->StopCameraFade();
 		CameraManager->StartCameraFade(1.0, 0, 8.0, FColor::Black, false, true);
 	}
-	OnStreamingLevelLoadFinishedServer();
-	// TArray<class AActor*> OutActors;
-	// UGameplayStatics::GetAllActorsOfClass(GetWorld(), PlayerStartFactory, OutActors);
-	// for (const auto PlayerStarts : OutActors)
-	// {
-	// 	if (const auto PlayerStart = Cast<APlayerStart>(PlayerStarts))
-	// 	{
-	// 		if(PlayerStart && PlayerStart->PlayerStartTag==FName("Intersection"))
-	// 		{
-	// 			const FTransform TargetPlayerStartTrans = PlayerStart->GetActorTransform();
-	// 			SetActorTransform(TargetPlayerStartTrans, false);				
-	// 			return;
-	//
-	// 		}
-	// 	}
-	// }
+	OnIntersectionStreamingLevelLoadFinishedServer();
 }
 
-void APlayerCharacter::OnStreamingLevelLoadFinishedServer_Implementation()
+
+void APlayerCharacter::OnIntersectionStreamingLevelLoadFinishedServer_Implementation()
 {
-	const FVector TargetLoc = FVector(7317.601004, -5039.254026, 800.626289);
-	SetActorLocation(TargetLoc, false, nullptr);
+	TArray<class AActor*> OutActors;
+	TArray<class APlayerStart*> TargetPlayerStarts;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), PlayerStartFactory, OutActors);
+	for (const auto PlayerStarts : OutActors)
+	{
+		if (const auto PlayerStart = Cast<APlayerStart>(PlayerStarts))
+		{
+			if (PlayerStart && PlayerStart->PlayerStartTag == FName("Intersection"))
+			{
+				TargetPlayerStarts.Add(PlayerStart);
+			}
+		}
+	}
+	if (const auto PlayerStartRandIndex = FMath::RandRange(0, TargetPlayerStarts.Num() - 1); TargetPlayerStarts.IsValidIndex(PlayerStartRandIndex))
+	{
+		const FTransform TargetPlayerStartTrans = TargetPlayerStarts[PlayerStartRandIndex]->GetActorTransform();
+		SetActorTransform(TargetPlayerStartTrans, false);
+	}
 }
 
-bool APlayerCharacter::OnStreamingLevelLoadFinishedServer_Validate()
+bool APlayerCharacter::OnIntersectionStreamingLevelLoadFinishedServer_Validate()
 {
 	return true;
 }
 
+void APlayerCharacter::OnHideoutStreamingLevelLoadFinished()
+{
+	if (IsLocallyControlled())
+	{
+		if (!crosshairUI->IsInViewport())
+		{
+			crosshairUI->AddToViewport();
+		}
+		if (!informationUI->IsInViewport())
+		{
+			informationUI->AddToViewport();
+		}
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
+		UGameplayStatics::PlaySound2D(GetWorld(), PlayerSpawnSound, 0.6, 1, 0.25);
+	}
+	if (APlayerCameraManager* const CameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)))
+	{
+		CameraManager->StopCameraFade();
+		CameraManager->StartCameraFade(1.0, 0, 8.0, FColor::Black, false, true);
+	}
+	OnHideoutStreamingLevelLoadFinishedServer();
+}
 
+void APlayerCharacter::OnHideoutStreamingLevelLoadFinishedServer_Implementation()
+{
+	TArray<class AActor*> OutActors;
+	TArray<class APlayerStart*> TargetPlayerStarts;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), PlayerStartFactory, OutActors);
+	for (const auto PlayerStarts : OutActors)
+	{
+		if (const auto PlayerStart = Cast<APlayerStart>(PlayerStarts))
+		{
+			if (PlayerStart && PlayerStart->PlayerStartTag == FName("Hideout"))
+			{
+				TargetPlayerStarts.Add(PlayerStart);
+			}
+		}
+	}
+	if (const auto PlayerStartRandIndex = FMath::RandRange(0, TargetPlayerStarts.Num() - 1); TargetPlayerStarts.IsValidIndex(PlayerStartRandIndex))
+	{
+		const FTransform TargetPlayerStartTrans = TargetPlayerStarts[PlayerStartRandIndex]->GetActorTransform();
+		SetActorTransform(TargetPlayerStartTrans, false);
+	}
+}
+
+bool APlayerCharacter::OnHideoutStreamingLevelLoadFinishedServer_Validate()
+{
+	return true;
+}
 
 void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -3961,8 +3936,7 @@ void APlayerCharacter::OnRep_MaxM249Ammo()
 
 void APlayerCharacter::Fire()
 {
-	// 사격 가능 상태가 아니거나, 뛰고 있거나, 위젯이 켜져 있거나, 엔딩 연출 중이라면 리턴
-	if (!CanShoot || isRunning || gi->IsWidgetOn || bEnding || IsPlayerDeadImmediately || UGameplayStatics::GetCurrentLevelName(GetWorld()) == FString("Safe_House"))
+	if (!CanShoot || isRunning || gi->IsWidgetOn || bEnding || IsPlayerDeadImmediately)
 	{
 		return;
 	}
@@ -4143,12 +4117,18 @@ void APlayerCharacter::AmmoDepleted()
 	}
 }
 
-void APlayerCharacter::ExtractionSuccess() const
+void APlayerCharacter::ExtractionSuccess()
 {
 	UWidgetLayoutLibrary::RemoveAllWidgets(GetWorld());
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
 	UGameplayStatics::PlaySound2D(GetWorld(), ExtractionSound);
-	MoveToHideout(true);
+	APlayerCameraManager* PlayerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+	PlayerCam->StartCameraFade(0, 1, 2.0, FLinearColor::Black, false, true);
+	FTimerHandle TimerHandle;
+	GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()-> void
+	{
+		MoveToHideout(false);
+	}), 2.f, false);
 }
 
 void APlayerCharacter::SetFirstPersonModeRifle(const bool IsFirstPerson)
@@ -4340,7 +4320,7 @@ void APlayerCharacter::ProcessRifleFireSimulatedProxy() const
 
 void APlayerCharacter::FireRelease()
 {
-	if (!IsZoomKeyPressed && weaponArray[1] == false && weaponArray[2] == false && UGameplayStatics::GetCurrentLevelName(GetWorld()) != FString("Safe_House"))
+	if (!IsZoomKeyPressed && weaponArray[1] == false && weaponArray[2] == false)
 	{
 		GetWorld()->GetTimerManager().SetTimer(ZoomFireHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
@@ -4695,13 +4675,12 @@ void APlayerCharacter::ProcessM249FireSimulatedProxy() const
 
 void APlayerCharacter::PlayerDeath()
 {
-	PlayerDeathRPCServer();
-	gi->CachedRouble = Stat->GetCurrentRouble();
 	FTimerHandle EndHandle;
 	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
-		UGameplayStatics::OpenLevel(GetWorld(), FName("Safe_House"));
+		MoveToHideout(true);
 	}), 9.f, false);
+	PlayerDeathRPCServer();
 }
 
 void APlayerCharacter::PlayerDeathRPCServer_Implementation()
@@ -4743,8 +4722,6 @@ void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 		{
 			UGameplayStatics::PlaySound2D(GetWorld(), DeathSound);
 		}
-
-		GetMesh()->SetVisibility(false);
 	}), 2.f, false);
 
 	if (IsLocallyControlled())

@@ -15,10 +15,9 @@ class AEclipseGameMode : public AGameModeBase
 public:
 	AEclipseGameMode();
 
-	//UFUNCTION()
-	// virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
-	UPROPERTY()
-	TArray<class AActor*> outActors;
+	UFUNCTION()
+	 virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;	
+
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<APlayerStart> playerStartFactory;
 };

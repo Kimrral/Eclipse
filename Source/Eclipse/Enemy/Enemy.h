@@ -57,7 +57,10 @@ public:
 	void OnDestroy();
 
 	UFUNCTION()
-	virtual void DropReward();
+	void DropReward();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	virtual void DropRewardServer();
 
 	UFUNCTION()
 	void DropMagazine() const;

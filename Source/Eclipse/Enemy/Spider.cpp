@@ -14,7 +14,7 @@ void ASpider::BeginPlay()
 	PlayAnimMontage(SpiderSpawnMontage);
 }
 
-void ASpider::DropReward()
+void ASpider::DropRewardServer()
 {
 	FActorSpawnParameters Param;
 	Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;

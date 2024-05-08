@@ -489,7 +489,7 @@ public:
 	void MoveToIsolatedShip();
 
 	UFUNCTION()
-	void MoveToHideout(const bool SaveInventory) const;
+	void MoveToHideout(const bool IsPlayerDeath);
 
 	UFUNCTION()
 	void MoveToBlockedIntersection();
@@ -505,12 +505,6 @@ public:
 
 	UFUNCTION() // Bind function
 	void SetTiltingRightValue(float Value);
-
-	UFUNCTION()
-	void CachingValues() const;
-
-	UFUNCTION()
-	void ApplyCachingValues();
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void UpdateAmmunition();
@@ -558,7 +552,7 @@ public:
 	void AmmoDepleted();
 
 	UFUNCTION()
-	void ExtractionSuccess() const;
+	void ExtractionSuccess();
 
 	UFUNCTION()
 	void SetFirstPersonModeRifle(const bool IsFirstPerson);
@@ -587,10 +581,17 @@ public:
 	void AddAmmunitionByInputString(const FString& InventoryStructName);
 
 	UFUNCTION()
-	void OnStreamingLevelLoadFinished();
+	void OnIntersectionStreamingLevelLoadFinished();
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void OnStreamingLevelLoadFinishedServer();
+	void OnIntersectionStreamingLevelLoadFinishedServer();
+
+	UFUNCTION()
+	void OnHideoutStreamingLevelLoadFinished();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void OnHideoutStreamingLevelLoadFinishedServer();
+
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -914,16 +915,16 @@ public:
 	bool EmptySoundBoolean = false;
 
 	UPROPERTY(ReplicatedUsing=OnRep_MaxRifleAmmo)
-	int maxRifleAmmo;
+	int maxRifleAmmo = 40;
 
 	UPROPERTY(ReplicatedUsing=OnRep_MaxSniperAmmo)
-	int maxSniperAmmo;
+	int maxSniperAmmo = 5;
 
 	UPROPERTY(ReplicatedUsing=OnRep_MaxPistolAmmo)
-	int maxPistolAmmo;
+	int maxPistolAmmo = 8;
 
 	UPROPERTY(ReplicatedUsing=OnRep_MaxM249Ammo)
-	int maxM249Ammo;
+	int maxM249Ammo = 100;
 
 	UPROPERTY()
 	float zoomTriggeredTime;
@@ -1193,6 +1194,9 @@ public:
 	bool bPistolAdditionalMag;
 	UPROPERTY()
 	bool bM249AdditionalMag;
+
+	UPROPERTY()
+	bool bHideout = false;;
 
 	UPROPERTY()
 	class AEclipsePlayerController* PC;

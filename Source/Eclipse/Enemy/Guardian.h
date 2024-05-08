@@ -15,7 +15,7 @@ class ECLIPSE_API AGuardian : public AEnemy
 	GENERATED_BODY()
 
 public:
-	virtual void DropReward() override;
+	virtual void DropRewardServer() override;
 	virtual void FireProcess() const override;
 	
 	UPROPERTY(EditAnywhere)

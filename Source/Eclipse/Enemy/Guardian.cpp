@@ -8,10 +8,9 @@
 #include "Eclipse/Character/PlayerCharacter.h"
 #include "Kismet/KismetMathLibrary.h"
 
-void AGuardian::DropReward()
+void AGuardian::DropRewardServer()
 {
-	Super::DropReward();
-
+	Super::DropRewardServer();
 }
 
 void AGuardian::FireProcess() const

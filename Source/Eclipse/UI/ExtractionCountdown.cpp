@@ -11,6 +11,7 @@ void UExtractionCountdown::NativeConstruct()
 	Super::NativeConstruct();
 
 	PlayAnimation(CountdownConstruct);
+	bExtraction = false;
 }
 
 void UExtractionCountdown::NativeTick(const FGeometry& MyGeometry, const float InDeltaTime)
@@ -24,12 +25,11 @@ void UExtractionCountdown::SetCountdownTimer()
 {
 	if (Countdown == 0.0f)
 	{
-		if (bExtraction == true)
+		if (!bExtraction)
 		{
-			return;
+			ExtractionSuccessDele.Broadcast();
+			bExtraction = true;
 		}
-		ExtractionSuccessDele.Broadcast();
-		bExtraction = true;
 	}
 	Countdown = FMath::Clamp(Countdown -= GetWorld()->GetDeltaSeconds(), 0.f, 10.f);
 	const FString CountdownString = UKismetStringLibrary::TimeSecondsToString(Countdown);

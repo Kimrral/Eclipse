@@ -186,8 +186,18 @@ void AEnemy::OnDestroy()
 
 void AEnemy::DropReward()
 {
+	DropRewardServer();
+}
+
+void AEnemy::DropRewardServer_Implementation()
+{
 	DropMagazine();
 	DropGear();
+}
+
+bool AEnemy::DropRewardServer_Validate()
+{
+	return true;
 }
 
 void AEnemy::DropMagazine() const

@@ -6,7 +6,6 @@
 #include "TrooperProjectile.h"
 #include "Eclipse/AI/EnemyFSM.h"
 #include "Eclipse/Character/PlayerCharacter.h"
-#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
 ATrooper::ATrooper()

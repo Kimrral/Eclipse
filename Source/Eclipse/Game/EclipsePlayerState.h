@@ -104,10 +104,7 @@ public:
 	void ModifyRoubleServer(APlayerCharacter* PlayerCharacterRef, const float RoubleAmount);
 
 	UFUNCTION()
-	void MoveInventoryDataToGameInstance() const;
-
-	UFUNCTION()
-	void GetInventoryDataFromGameInstance();
+	void ResetPlayerInventoryData();
 
 	UFUNCTION()
 	void ApplyGearInventoryEquipState(APlayerCharacter* PlayerCharacterRef);

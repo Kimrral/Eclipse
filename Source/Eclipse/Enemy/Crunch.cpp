@@ -4,9 +4,9 @@
 #include "Crunch.h"
 
 
-void ACrunch::DropReward()
+void ACrunch::DropRewardServer()
 {
-	Super::DropReward();
+	Super::DropRewardServer();
 
 
 }

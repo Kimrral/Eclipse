@@ -48,8 +48,12 @@ void UMenuWidget::ReturnToHideoutYesFunc()
 		UWidgetBlueprintLibrary::SetInputMode_GameOnly(pc);
 		pc->SetShowMouseCursor(false);
 		this->RemoveFromParent();
-		player->MoveToHideout(false);
-	}	
+		FTimerHandle TimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()-> void
+		{
+			player->MoveToHideout(false);
+		}), 2.f, false);	
+	}
 }
 
 void UMenuWidget::ReturnToHideoutNoFunc()

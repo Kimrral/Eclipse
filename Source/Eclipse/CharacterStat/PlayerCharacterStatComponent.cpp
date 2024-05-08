@@ -29,13 +29,13 @@ float UPlayerCharacterStatComponent::ApplyDamage(const float InDamage, AActor* D
 	SetHp(PrevHp - ActualDamage);
 	if (CurrentHp <= 0.0f)
 	{
-		OnHpZero.Broadcast();
-
 		PlayerCharacter = Cast<APlayerCharacter>(DamageCauser);
 		if (PlayerCharacter)
 		{
 			PlayerCharacter->OnPlayerKill();
 		}
+		OnHpZero.Broadcast();
+		return 0;
 	}
 	return ActualDamage;
 }

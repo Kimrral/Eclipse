@@ -491,6 +491,9 @@ public:
 	UFUNCTION()
 	void MoveToHideout(const bool IsPlayerDeath);
 
+	UFUNCTION(Server, Reliable)
+	void ResetPlayerInventoryDataServer();
+
 	UFUNCTION()
 	void MoveToBlockedIntersection();
 
@@ -574,8 +577,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void EquipMaskInventorySlot(bool IsEquipping, const float EquipGearStat);
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void DeadPlayerContainerSettings(ADeadPlayerContainer* DeadPlayerContainers);
+	UFUNCTION()
+	void DeadPlayerContainerSettings(ADeadPlayerContainer* DeadPlayerContainers) const;
 
 	UFUNCTION()
 	void AddAmmunitionByInputString(const FString& InventoryStructName);
@@ -865,9 +868,6 @@ public:
 	FVector PistolLineTraceStart;
 
 	FVector PistolLineTraceEnd;
-
-	UPROPERTY()
-	FVector DeathPosition;
 
 	UPROPERTY()
 	FRotator CameraCurrentRotation;

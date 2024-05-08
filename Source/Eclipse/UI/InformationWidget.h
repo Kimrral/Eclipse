@@ -28,6 +28,15 @@ public:
 	UFUNCTION()
 	void ChargeAmmunitionInfoWidget() const;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void EnterHideout();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void EnterIntersection();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void EnterSpacecraft();
+
 	UPROPERTY()
 	class APlayerCharacter* owner;
 

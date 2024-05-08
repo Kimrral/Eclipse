@@ -271,8 +271,11 @@ void AEclipsePlayerState::DragFromGroundMulticast_Implementation(APlayerCharacte
 		}
 	}
 
-	if (PlayerCharacterRef->IsLocallyControlled()) UGameplayStatics::PlaySound2D(GetWorld(), PlayerCharacterRef->PickUpSound);
-	PlayerCharacterRef->PlayAnimMontage(PlayerCharacterRef->UpperOnlyMontage, 1, FName("WeaponEquip"));
+	if(PlayerCharacterRef)
+	{
+		if (PlayerCharacterRef->IsLocallyControlled()) UGameplayStatics::PlaySound2D(GetWorld(), PlayerCharacterRef->PickUpSound);
+		PlayerCharacterRef->PlayAnimMontage(PlayerCharacterRef->UpperOnlyMontage, 1, FName("WeaponEquip"));
+	}
 }
 
 void AEclipsePlayerState::DragFromInventory(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex)
@@ -294,145 +297,148 @@ void AEclipsePlayerState::DragFromInventoryMulticast_Implementation(APlayerChara
 {
 	if (HasAuthority())
 	{
-		if (DropArrayIndex == 38)
+		if(PlayerCharacterRef)
 		{
-			if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Helmet"))
+			if (DropArrayIndex == 38)
 			{
-				PlayerCharacterRef->EquipHelmetInventorySlot(true, PlayerInventoryStructs[DragArrayIndex].Stat);
+				if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Helmet"))
+				{
+					PlayerCharacterRef->EquipHelmetInventorySlot(true, PlayerInventoryStructs[DragArrayIndex].Stat);
+					if (PlayerInventoryStacks[DragArrayIndex] > 1)
+					{
+						PlayerGearSlotStructs[0] = PlayerInventoryStructs[DragArrayIndex];
+						PlayerInventoryStacks[DragArrayIndex]--;
+					}
+					else
+					{
+						PlayerGearSlotStructs[0] = PlayerInventoryStructs[DragArrayIndex];
+						PlayerInventoryStacks[DragArrayIndex]--;
+						PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
+					}
+				}
+				return;
+			}
+			if (DropArrayIndex == 39)
+			{
+				if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Goggle"))
+				{
+					PlayerCharacterRef->EquipGoggleInventorySlot(true, PlayerInventoryStructs[DragArrayIndex].Stat);
+					if (PlayerInventoryStacks[DragArrayIndex] > 1)
+					{
+						PlayerGearSlotStructs[1] = PlayerInventoryStructs[DragArrayIndex];
+						PlayerInventoryStacks[DragArrayIndex]--;
+					}
+					else
+					{
+						PlayerGearSlotStructs[1] = PlayerInventoryStructs[DragArrayIndex];
+						PlayerInventoryStacks[DragArrayIndex]--;
+						PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
+					}
+				}
+				return;
+			}
+			if (DropArrayIndex == 40)
+			{
+				if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Armor"))
+				{
+					PlayerCharacterRef->EquipArmorInventorySlot(true, PlayerInventoryStructs[DragArrayIndex].Stat);
+					if (PlayerInventoryStacks[DragArrayIndex] > 1)
+					{
+						PlayerGearSlotStructs[2] = PlayerInventoryStructs[DragArrayIndex];
+						PlayerInventoryStacks[DragArrayIndex]--;
+					}
+					else
+					{
+						PlayerGearSlotStructs[2] = PlayerInventoryStructs[DragArrayIndex];
+						PlayerInventoryStacks[DragArrayIndex]--;
+						PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
+					}
+				}
+				return;
+			}
+			if (DropArrayIndex == 41)
+			{
+				if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Mask"))
+				{
+					PlayerCharacterRef->EquipMaskInventorySlot(true, PlayerInventoryStructs[DragArrayIndex].Stat);
+					if (PlayerInventoryStacks[DragArrayIndex] > 1)
+					{
+						PlayerGearSlotStructs[3] = PlayerInventoryStructs[DragArrayIndex];
+						PlayerInventoryStacks[DragArrayIndex]--;
+					}
+					else
+					{
+						PlayerGearSlotStructs[3] = PlayerInventoryStructs[DragArrayIndex];
+						PlayerInventoryStacks[DragArrayIndex]--;
+						PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
+					}
+				}
+				return;
+			}
+			if (DropArrayIndex == 42)
+			{
+				if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Headset"))
+				{
+					PlayerCharacterRef->EquipHeadsetInventorySlot(true, PlayerInventoryStructs[DragArrayIndex].Stat);
+					if (PlayerInventoryStacks[DragArrayIndex] > 1)
+					{
+						PlayerGearSlotStructs[4] = PlayerInventoryStructs[DragArrayIndex];
+						PlayerInventoryStacks[DragArrayIndex]--;
+					}
+					else
+					{
+						PlayerGearSlotStructs[4] = PlayerInventoryStructs[DragArrayIndex];
+						PlayerInventoryStacks[DragArrayIndex]--;
+						PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
+					}
+				}
+				return;
+			}
+			if (DropArrayIndex == 45)
+			{
 				if (PlayerInventoryStacks[DragArrayIndex] > 1)
 				{
-					PlayerGearSlotStructs[0] = PlayerInventoryStructs[DragArrayIndex];
+					FActorSpawnParameters Param;
+					Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+					GetWorld()->SpawnActor<AActor>(PlayerInventoryStructs[DragArrayIndex].ActorReference, PlayerCharacterRef->GetMesh()->GetSocketTransform(FName("ItemDrop")), Param);
 					PlayerInventoryStacks[DragArrayIndex]--;
 				}
 				else
 				{
-					PlayerGearSlotStructs[0] = PlayerInventoryStructs[DragArrayIndex];
+					FActorSpawnParameters Param;
+					Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+					GetWorld()->SpawnActor<AActor>(PlayerInventoryStructs[DragArrayIndex].ActorReference, PlayerCharacterRef->GetMesh()->GetSocketTransform(FName("ItemDrop")), Param);
 					PlayerInventoryStacks[DragArrayIndex]--;
 					PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
 				}
+				return;
 			}
-			return;
-		}
-		if (DropArrayIndex == 39)
-		{
-			if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Goggle"))
+			// Move Item
+			if (PlayerInventoryStacks[DropArrayIndex] == 0)
 			{
-				PlayerCharacterRef->EquipGoggleInventorySlot(true, PlayerInventoryStructs[DragArrayIndex].Stat);
-				if (PlayerInventoryStacks[DragArrayIndex] > 1)
-				{
-					PlayerGearSlotStructs[1] = PlayerInventoryStructs[DragArrayIndex];
-					PlayerInventoryStacks[DragArrayIndex]--;
-				}
-				else
-				{
-					PlayerGearSlotStructs[1] = PlayerInventoryStructs[DragArrayIndex];
-					PlayerInventoryStacks[DragArrayIndex]--;
-					PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
-				}
-			}
-			return;
-		}
-		if (DropArrayIndex == 40)
-		{
-			if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Armor"))
-			{
-				PlayerCharacterRef->EquipArmorInventorySlot(true, PlayerInventoryStructs[DragArrayIndex].Stat);
-				if (PlayerInventoryStacks[DragArrayIndex] > 1)
-				{
-					PlayerGearSlotStructs[2] = PlayerInventoryStructs[DragArrayIndex];
-					PlayerInventoryStacks[DragArrayIndex]--;
-				}
-				else
-				{
-					PlayerGearSlotStructs[2] = PlayerInventoryStructs[DragArrayIndex];
-					PlayerInventoryStacks[DragArrayIndex]--;
-					PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
-				}
-			}
-			return;
-		}
-		if (DropArrayIndex == 41)
-		{
-			if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Mask"))
-			{
-				PlayerCharacterRef->EquipMaskInventorySlot(true, PlayerInventoryStructs[DragArrayIndex].Stat);
-				if (PlayerInventoryStacks[DragArrayIndex] > 1)
-				{
-					PlayerGearSlotStructs[3] = PlayerInventoryStructs[DragArrayIndex];
-					PlayerInventoryStacks[DragArrayIndex]--;
-				}
-				else
-				{
-					PlayerGearSlotStructs[3] = PlayerInventoryStructs[DragArrayIndex];
-					PlayerInventoryStacks[DragArrayIndex]--;
-					PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
-				}
-			}
-			return;
-		}
-		if (DropArrayIndex == 42)
-		{
-			if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Headset"))
-			{
-				PlayerCharacterRef->EquipHeadsetInventorySlot(true, PlayerInventoryStructs[DragArrayIndex].Stat);
-				if (PlayerInventoryStacks[DragArrayIndex] > 1)
-				{
-					PlayerGearSlotStructs[4] = PlayerInventoryStructs[DragArrayIndex];
-					PlayerInventoryStacks[DragArrayIndex]--;
-				}
-				else
-				{
-					PlayerGearSlotStructs[4] = PlayerInventoryStructs[DragArrayIndex];
-					PlayerInventoryStacks[DragArrayIndex]--;
-					PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
-				}
-			}
-			return;
-		}
-		if (DropArrayIndex == 45)
-		{
-			if (PlayerInventoryStacks[DragArrayIndex] > 1)
-			{
-				FActorSpawnParameters Param;
-				Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-				GetWorld()->SpawnActor<AActor>(PlayerInventoryStructs[DragArrayIndex].ActorReference, PlayerCharacterRef->GetMesh()->GetSocketTransform(FName("ItemDrop")), Param);
-				PlayerInventoryStacks[DragArrayIndex]--;
-			}
-			else
-			{
-				FActorSpawnParameters Param;
-				Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-				GetWorld()->SpawnActor<AActor>(PlayerInventoryStructs[DragArrayIndex].ActorReference, PlayerCharacterRef->GetMesh()->GetSocketTransform(FName("ItemDrop")), Param);
-				PlayerInventoryStacks[DragArrayIndex]--;
+				PlayerInventoryStructs[DropArrayIndex] = PlayerInventoryStructs[DragArrayIndex];
+				PlayerInventoryStacks[DropArrayIndex] = PlayerInventoryStacks[DragArrayIndex];
 				PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
+				PlayerInventoryStacks[DragArrayIndex] = 0;
+				return;
 			}
-			return;
-		}
-		// Move Item
-		if (PlayerInventoryStacks[DropArrayIndex] == 0)
-		{
-			PlayerInventoryStructs[DropArrayIndex] = PlayerInventoryStructs[DragArrayIndex];
-			PlayerInventoryStacks[DropArrayIndex] = PlayerInventoryStacks[DragArrayIndex];
-			PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
-			PlayerInventoryStacks[DragArrayIndex] = 0;
-			return;
-		}
-		// Merge Item
-		if (PlayerInventoryStructs[DragArrayIndex].Name == PlayerInventoryStructs[DropArrayIndex].Name)
-		{
-			PlayerInventoryStacks[DropArrayIndex] += PlayerInventoryStacks[DragArrayIndex];
-			PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
-			return;
-		}
-		//Swap Item
-		if (PlayerInventoryStructs[DragArrayIndex].Name != PlayerInventoryStructs[DropArrayIndex].Name)
-		{
-			InventoryDropStructCache = PlayerInventoryStructs[DropArrayIndex];
-			InventoryDropStackCache = PlayerInventoryStacks[DropArrayIndex];
-			PlayerInventoryStructs[DropArrayIndex] = PlayerInventoryStructs[DragArrayIndex];
-			PlayerInventoryStacks[DropArrayIndex] = PlayerInventoryStacks[DragArrayIndex];
-			PlayerInventoryStructs[DragArrayIndex] = InventoryDropStructCache;
-			PlayerInventoryStacks[DragArrayIndex] = InventoryDropStackCache;
+			// Merge Item
+			if (PlayerInventoryStructs[DragArrayIndex].Name == PlayerInventoryStructs[DropArrayIndex].Name)
+			{
+				PlayerInventoryStacks[DropArrayIndex] += PlayerInventoryStacks[DragArrayIndex];
+				PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
+				return;
+			}
+			//Swap Item
+			if (PlayerInventoryStructs[DragArrayIndex].Name != PlayerInventoryStructs[DropArrayIndex].Name)
+			{
+				InventoryDropStructCache = PlayerInventoryStructs[DropArrayIndex];
+				InventoryDropStackCache = PlayerInventoryStacks[DropArrayIndex];
+				PlayerInventoryStructs[DropArrayIndex] = PlayerInventoryStructs[DragArrayIndex];
+				PlayerInventoryStacks[DropArrayIndex] = PlayerInventoryStacks[DragArrayIndex];
+				PlayerInventoryStructs[DragArrayIndex] = InventoryDropStructCache;
+				PlayerInventoryStacks[DragArrayIndex] = InventoryDropStackCache;
+			}
 		}
 	}
 }
@@ -455,16 +461,19 @@ bool AEclipsePlayerState::DeadBodyWidgetSettingsServer_Validate(ADeadPlayerConta
 
 void AEclipsePlayerState::DeadBodyWidgetSettingsMulticast_Implementation(ADeadPlayerContainer* DeadPlayerContainer, APlayerCharacter* InstigatorPlayerRef)
 {
-	if (!IsAlreadyAccessed)
+	if(DeadPlayerContainer && InstigatorPlayerRef)
 	{
-		DeadPlayerInventoryStructs = DeadPlayerContainer->DeadPlayerInventoryStructArray;
-		DeadPlayerInventoryStacks = DeadPlayerContainer->DeadPlayerInventoryStackArray;
-		DeadPlayerGearSlotStructs = DeadPlayerContainer->DeadPlayerGearSlotArray;
-		IsAlreadyAccessed = true;
-	}
-	if (InstigatorPlayerRef->IsLocallyControlled())
-	{
-		DeadBodySettingsOnWidgetClass(InstigatorPlayerRef, DeadPlayerInventoryStructs, DeadPlayerInventoryStacks, DeadPlayerGearSlotStructs);
+		if (!IsAlreadyAccessed)
+		{
+			DeadPlayerInventoryStructs = DeadPlayerContainer->DeadPlayerInventoryStructArray;
+			DeadPlayerInventoryStacks = DeadPlayerContainer->DeadPlayerInventoryStackArray;
+			DeadPlayerGearSlotStructs = DeadPlayerContainer->DeadPlayerGearSlotArray;
+			IsAlreadyAccessed = true;
+		}
+		if (InstigatorPlayerRef->IsLocallyControlled())
+		{
+			DeadBodySettingsOnWidgetClass(InstigatorPlayerRef, DeadPlayerInventoryStructs, DeadPlayerInventoryStacks, DeadPlayerGearSlotStructs);
+		}
 	}
 }
 

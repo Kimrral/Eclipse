@@ -19,7 +19,7 @@ void ATrooper::BeginPlay()
 	Super::BeginPlay();
 
 	const auto Material = WeaponComp->GetMaterial(0);
-	if(UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(Material, this))
+	if (UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(Material, this))
 	{
 		WeaponComp->SetMaterial(0, DynamicMaterial);
 	}
@@ -39,8 +39,8 @@ void ATrooper::FireProcess() const
 	{
 		const FTransform MuzzleTrans = GetMesh()->GetSocketTransform(FName("TrooperMuzzle"));
 		const FVector PlayerLoc = (EnemyFSM->player->GetActorLocation() - MuzzleTrans.GetLocation());
-		const FRotator ProjectileRot = UKismetMathLibrary::MakeRotFromXZ(PlayerLoc, this->GetActorUpVector());		
-		const auto ProjectileTrans = UKismetMathLibrary::MakeTransform(MuzzleTrans.GetLocation(), ProjectileRot+FRotator(0, -90, 0));
+		const FRotator ProjectileRot = UKismetMathLibrary::MakeRotFromXZ(PlayerLoc, this->GetActorUpVector());
+		const auto ProjectileTrans = UKismetMathLibrary::MakeTransform(MuzzleTrans.GetLocation(), ProjectileRot + FRotator(0, -90, 0));
 		GetWorld()->SpawnActor<ATrooperProjectile>(TrooperProjectileFactory, ProjectileTrans);
 	}
 }

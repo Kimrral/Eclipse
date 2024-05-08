@@ -241,7 +241,6 @@ void APlayerCharacter::BeginPlay()
 
 	if (IsLocallyControlled())
 	{
-		UWidgetLayoutLibrary::RemoveAllWidgets(GetWorld());
 		if (!crosshairUI->IsInViewport())
 		{
 			crosshairUI->AddToViewport();
@@ -260,6 +259,7 @@ void APlayerCharacter::BeginPlay()
 				if (!informationUI->IsInViewport())
 				{
 					informationUI->AddToViewport();
+					informationUI->EnterHideout();
 				}
 			}), 0.5, false);
 		}
@@ -3505,19 +3505,13 @@ void APlayerCharacter::MoveToHideout(const bool IsPlayerDeath)
 		GetMesh()->SetVisibility(true);
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		GetController()->SetIgnoreMoveInput(false);
-		GetController()->SetIgnoreLookInput(false);
-	
-		if (const auto ResetPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))
-		{
-			ResetPlayerState->ResetPlayerInventoryData();
-			ResetPlayerState->ApplyGearInventoryEquipState(this);
-			UpdateTabWidget();
-		}
+		ResetPlayerInventoryDataServer();
 	}
 
 	if (IsLocallyControlled())
 	{
+		PC->SetIgnoreLookInput(false);
+		PC->SetIgnoreMoveInput(false);
 		const FName LevelToLoad = FName("Safe_House");
 		const FName LevelToUnload = FName("Deserted_Road");
 		const FName OnHideoutLevelLoadFinishedFunc = FName("OnHideoutStreamingLevelLoadFinished");
@@ -3531,11 +3525,25 @@ void APlayerCharacter::MoveToHideout(const bool IsPlayerDeath)
 	}
 }
 
+void APlayerCharacter::ResetPlayerInventoryDataServer_Implementation()
+{
+	if (const auto ResetPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))
+	{
+		ResetPlayerState->ResetPlayerInventoryData();
+		ResetPlayerState->ApplyGearInventoryEquipState(this);		
+	}
+}
+
 void APlayerCharacter::MoveToBlockedIntersection()
 {
 	bEnding = true;
 	gi->IsWidgetOn = false;
 	IsPlayerDeadImmediately = true;
+
+	if (IsLocallyControlled())
+	{
+		PC->SetIgnoreMoveInput(true);
+	}
 
 	APlayerCameraManager* PlayerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 	PlayerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
@@ -3561,6 +3569,7 @@ void APlayerCharacter::MoveToBlockedIntersectionClient()
 {
 	if (IsLocallyControlled())
 	{
+		PC->SetIgnoreMoveInput(false);
 		const FName LevelToLoad = FName("Deserted_Road");
 		const FName LevelToUnload = FName("Safe_House");
 		const FName OnIntersectionLevelLoadFinishedFunc = FName("OnIntersectionStreamingLevelLoadFinished");
@@ -3736,12 +3745,13 @@ void APlayerCharacter::OnIntersectionStreamingLevelLoadFinished()
 		if (!informationUI->IsInViewport())
 		{
 			informationUI->AddToViewport();
+			informationUI->EnterIntersection();
 		}
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
 		UGameplayStatics::PlaySound2D(GetWorld(), PlayerSpawnSound, 0.6, 1, 0.25);
 	}
 	bEnding = false;
-	IsPlayerDeadImmediately=false;
+	IsPlayerDeadImmediately = false;
 	bUseControllerRotationYaw = true;
 	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 	if (APlayerCameraManager* const CameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)))
@@ -3755,6 +3765,7 @@ void APlayerCharacter::OnIntersectionStreamingLevelLoadFinished()
 
 void APlayerCharacter::OnIntersectionStreamingLevelLoadFinishedServer_Implementation()
 {
+	Stat->SetHp(Stat->GetMaxHp());
 	TArray<class AActor*> OutActors;
 	TArray<class APlayerStart*> TargetPlayerStarts;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), PlayerStartFactory, OutActors);
@@ -3784,6 +3795,7 @@ void APlayerCharacter::OnHideoutStreamingLevelLoadFinished()
 {
 	if (IsLocallyControlled())
 	{
+		UpdateTabWidget();
 		if (!crosshairUI->IsInViewport())
 		{
 			crosshairUI->AddToViewport();
@@ -3791,6 +3803,7 @@ void APlayerCharacter::OnHideoutStreamingLevelLoadFinished()
 		if (!informationUI->IsInViewport())
 		{
 			informationUI->AddToViewport();
+			informationUI->EnterHideout();
 		}
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
 		UGameplayStatics::PlaySound2D(GetWorld(), PlayerSpawnSound, 0.6, 1, 0.25);
@@ -3805,6 +3818,7 @@ void APlayerCharacter::OnHideoutStreamingLevelLoadFinished()
 
 void APlayerCharacter::OnHideoutStreamingLevelLoadFinishedServer_Implementation()
 {
+	Stat->SetHp(Stat->GetMaxHp());
 	TArray<class AActor*> OutActors;
 	TArray<class APlayerStart*> TargetPlayerStarts;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), PlayerStartFactory, OutActors);
@@ -4157,7 +4171,10 @@ void APlayerCharacter::SetFirstPersonModeRifle(const bool IsFirstPerson)
 		SetActorRotation(FRotator(0, GetActorRotation().Yaw, 0));
 		crosshairUI->CrosshairImage->SetVisibility(ESlateVisibility::Visible);
 		GetMesh()->SetVisibility(true);
-		RifleComp->SetVisibility(true);
+		if (weaponArray[0] == true)
+		{
+			RifleComp->SetVisibility(true);
+		}
 		FirstPersonRifleComp->SetVisibility(false);
 		FirstPersonCharacterMesh->SetVisibility(false);
 		FollowCamera->SetActive(true);
@@ -4191,7 +4208,10 @@ void APlayerCharacter::SetFirstPersonModePistol(const bool IsFirstPerson)
 		SetActorRotation(FRotator(0, GetActorRotation().Yaw, 0));
 		crosshairUI->CrosshairImage->SetVisibility(ESlateVisibility::Visible);
 		GetMesh()->SetVisibility(true);
-		PistolComp->SetVisibility(true);
+		if (weaponArray[2] == true)
+		{
+			PistolComp->SetVisibility(true);
+		}
 		FirstPersonPistolComp->SetVisibility(false);
 		FirstPersonCharacterMesh->SetVisibility(false);
 		FollowCamera->SetActive(true);
@@ -4274,6 +4294,19 @@ void APlayerCharacter::EquipMaskInventorySlot(const bool IsEquipping, const floa
 		Stat->FireIntervalStatMultiplier = EquipGearStat;
 		IsEquipMask = false;
 		OnRep_IsEquipMask();
+	}
+}
+
+void APlayerCharacter::DeadPlayerContainerSettings(ADeadPlayerContainer* DeadPlayerContainers) const
+{
+	if(DeadPlayerContainers)
+	{
+		if (const AEclipsePlayerState* EcPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))
+		{
+			DeadPlayerContainers->DeadPlayerInventoryStructArray = EcPlayerState->PlayerInventoryStructs;
+			DeadPlayerContainers->DeadPlayerInventoryStackArray = EcPlayerState->PlayerInventoryStacks;
+			DeadPlayerContainers->DeadPlayerGearSlotArray = EcPlayerState->PlayerGearSlotStructs;
+		}
 	}
 }
 
@@ -4675,12 +4708,23 @@ void APlayerCharacter::ProcessM249FireSimulatedProxy() const
 
 void APlayerCharacter::PlayerDeath()
 {
-	FTimerHandle EndHandle;
-	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
-	{
-		MoveToHideout(true);
-	}), 9.f, false);
-	PlayerDeathRPCServer();
+		if (IsLocallyControlled())
+		{
+			SetFirstPersonModeRifle(false);
+			SetFirstPersonModePistol(false);
+			PC->SetIgnoreLookInput(true);
+			PC->SetIgnoreMoveInput(true);
+			UWidgetLayoutLibrary::RemoveAllWidgets(GetWorld());
+			APlayerCameraManager* PlayerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+			// 카메라 페이드 연출
+			PlayerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
+		}
+		PlayerDeathRPCServer();
+		FTimerHandle TimerHandle;
+		GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()-> void
+		{
+			MoveToHideout(true);
+		}), 9.f, false);
 }
 
 void APlayerCharacter::PlayerDeathRPCServer_Implementation()
@@ -4721,20 +4765,7 @@ void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 		if (IsLocallyControlled())
 		{
 			UGameplayStatics::PlaySound2D(GetWorld(), DeathSound);
+			UE_LOG(LogTemp, Warning, TEXT("DeathSound"))
 		}
 	}), 2.f, false);
-
-	if (IsLocallyControlled())
-	{
-		SetFirstPersonModeRifle(false);
-		SetFirstPersonModePistol(false);
-		GetController()->SetIgnoreMoveInput(true);
-		GetController()->SetIgnoreLookInput(true);
-		UWidgetLayoutLibrary::RemoveAllWidgets(GetWorld());
-		APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
-		// 카메라 페이드 연출
-		playerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
-		// 사망지점 전역변수에 캐싱
-		DeathPosition = GetActorLocation();
-	}
 }

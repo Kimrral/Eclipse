@@ -17,14 +17,14 @@ class ECLIPSE_API AEclipsePlayerController : public APlayerController
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<APlayerStart> PlayerStartFactory;
-
-	// UFUNCTION()
-	// void Respawn(const APlayerCharacter* Me);
-	
 	UFUNCTION()
-	void UpdateTabWidget() const;	
+	void UpdateTabWidget() const;
+
+	UFUNCTION()
+	void PlayerDeath() const;
+	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<APlayerStart> PlayerStartFactory;	
 
 	UPROPERTY()
 	class APlayerCharacter* PlayerCharacter;

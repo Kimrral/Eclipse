@@ -16,15 +16,14 @@ ADeadPlayerContainer::ADeadPlayerContainer()
 	SetRootComponent(DeadBodyMesh);
 	DeadBodyMesh->SetGenerateOverlapEvents(true);
 
-	bReplicates=true;
-
+	bReplicates = true;
 }
 
 void ADeadPlayerContainer::BeginPlay()
 {
 	Super::BeginPlay();
 }
-	
+
 
 void ADeadPlayerContainer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -34,7 +33,3 @@ void ADeadPlayerContainer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 	DOREPLIFETIME(ADeadPlayerContainer, DeadPlayerInventoryStackArray);
 	DOREPLIFETIME(ADeadPlayerContainer, DeadPlayerGearSlotArray);
 }
-
-
-
-

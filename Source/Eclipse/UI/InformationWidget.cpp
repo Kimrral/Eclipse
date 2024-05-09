@@ -22,11 +22,6 @@ void UInformationWidget::NativeConstruct()
 	GetWorld()->GetTimerManager().SetTimer(AmmoUpdateHandle, this, &UInformationWidget::UpdateAmmo, 0.01f, true);
 }
 
-void UInformationWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
-{
-	Super::NativeTick(MyGeometry, InDeltaTime);
-}
-
 void UInformationWidget::UpdateAmmo() const
 {
 	if (owner)

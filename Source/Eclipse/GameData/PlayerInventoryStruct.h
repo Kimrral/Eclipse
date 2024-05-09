@@ -6,13 +6,14 @@
 #include "Styling/SlateColor.h"
 #include "PlayerInventoryStruct.generated.h"
 
-USTRUCT(Atomic, BlueprintType)
+USTRUCT(BlueprintType)
 struct FPlayerInventoryStruct : public FTableRowBase
 {
 	GENERATED_BODY()
-
+	
 public:
-
+	FPlayerInventoryStruct(): Thumbnail(nullptr), Price(0), Stat(0){}
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Inventory)
 	FString Name;
 

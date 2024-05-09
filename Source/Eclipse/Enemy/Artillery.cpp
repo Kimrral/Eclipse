@@ -13,17 +13,23 @@ AArtillery::AArtillery()
 {
 	LauncherComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("LauncherComp"));
 	LauncherComp->SetupAttachment(GetMesh(), FName("hand_r"));
+	
+
 }
 
 void AArtillery::BeginPlay()
 {
 	Super::BeginPlay();
 
-	const auto Material = LauncherComp->GetMaterial(0);
-	if(UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(Material, this))
+	if(HasAuthority())
 	{
-		LauncherComp->SetMaterial(0, DynamicMaterial);
+		const auto Material = LauncherComp->GetMaterial(0);
+		if(UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(Material, this))
+		{
+			LauncherComp->SetMaterial(0, DynamicMaterial);
+		}
 	}
+
 }
 
 void AArtillery::SetDissolveValue(const float Value)

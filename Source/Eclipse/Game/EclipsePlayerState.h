@@ -8,6 +8,7 @@
 #include "GameFramework/PlayerState.h"
 #include "EclipsePlayerState.generated.h"
 
+
 /**
  * 
  */
@@ -134,6 +135,9 @@ public:
 	
 	UPROPERTY()
 	FPlayerInventoryStruct InventoryDropStructCache;
+
+	UPROPERTY()
+	ADeadPlayerContainer* DeadPlayerContainerRef;
 
 	UPROPERTY()
 	int32 InventoryDropStackCache;

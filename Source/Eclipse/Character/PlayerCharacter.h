@@ -518,6 +518,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void UpdateTabWidgetHP();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void ResetTabWidget();
+
 	UFUNCTION()
 	void OnRep_WeaponArrayChanged() const;
 

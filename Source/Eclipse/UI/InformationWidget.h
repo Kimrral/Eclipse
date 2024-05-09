@@ -17,7 +17,6 @@ class ECLIPSE_API UInformationWidget : public UUserWidget
 public:
 
 	virtual void NativeConstruct() override;
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 	UFUNCTION()
 	void UpdateAmmo() const;

@@ -17,6 +17,9 @@ AExtractionTrigger::AExtractionTrigger()
 	BoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxCollision"));
 	SetRootComponent(BoxCollision);
 	BoxCollision->SetGenerateOverlapEvents(true);
+
+	BoxCollision->OnComponentBeginOverlap.AddUniqueDynamic(this, &AExtractionTrigger::OnOverlap);
+	BoxCollision->OnComponentEndOverlap.AddUniqueDynamic(this, &AExtractionTrigger::EndOverlap);
 }
 
 // Called when the game starts or when spawned
@@ -24,8 +27,7 @@ void AExtractionTrigger::BeginPlay()
 {
 	Super::BeginPlay();
 
-	BoxCollision->OnComponentBeginOverlap.AddDynamic(this, &AExtractionTrigger::OnOverlap);
-	BoxCollision->OnComponentEndOverlap.AddDynamic(this, &AExtractionTrigger::EndOverlap);
+
 }
 
 // Called every frame

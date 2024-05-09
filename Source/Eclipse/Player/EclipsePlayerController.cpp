@@ -16,6 +16,7 @@ void AEclipsePlayerController::BeginPlay()
 	if (PlayerCharacter)
 	{
 		PlayerCharacter->Stat->OnHpChanged.AddUObject(this, &AEclipsePlayerController::UpdateTabWidget);
+		PlayerCharacter->Stat->OnHpZero.AddUObject(this, &AEclipsePlayerController::PlayerDeath);
 	}
 }
 
@@ -27,32 +28,12 @@ void AEclipsePlayerController::UpdateTabWidget() const
 	}
 }
 
-
-// void AEclipsePlayerController::Respawn(const APlayerCharacter* Me)
-// {
-// 	if (Me)
-// 	{		
-// 		TArray<class AActor*> OutActors;
-// 		TArray<class APlayerStart*> TargetPlayerStarts;
-// 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), PlayerStartFactory, OutActors);
-// 		for (const auto PlayerStarts : OutActors)
-// 		{
-// 			if (const auto PlayerStart = Cast<APlayerStart>(PlayerStarts))
-// 			{
-// 				if (PlayerStart && PlayerStart->PlayerStartTag == FName("Hideout"))
-// 				{
-// 					if (const auto Gm = Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode()))
-// 					{
-// 						// 게임모드의 리스타트 함수 호출
-// 						Gm->RestartPlayerAtPlayerStart(this,  PlayerStart);
-// 						return;
-// 					}
-// 				}
-// 			}
-// 		}	
-// 	}
-// }
-
-
+void AEclipsePlayerController::PlayerDeath() const
+{
+	if (PlayerCharacter)
+	{
+		PlayerCharacter->PlayerDeathRPCServer();
+	}
+}
 
 

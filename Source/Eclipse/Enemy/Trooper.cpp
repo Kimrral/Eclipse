@@ -12,16 +12,20 @@ ATrooper::ATrooper()
 {
 	WeaponComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponComp"));
 	WeaponComp->SetupAttachment(GetMesh(), FName("hand_r"));
+
 }
 
 void ATrooper::BeginPlay()
 {
 	Super::BeginPlay();
 
-	const auto Material = WeaponComp->GetMaterial(0);
-	if (UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(Material, this))
+	if(HasAuthority())
 	{
-		WeaponComp->SetMaterial(0, DynamicMaterial);
+		const auto Material = WeaponComp->GetMaterial(0);
+		if (UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(Material, this))
+		{
+			WeaponComp->SetMaterial(0, DynamicMaterial);
+		}
 	}
 }
 

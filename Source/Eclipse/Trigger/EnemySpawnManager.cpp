@@ -22,7 +22,10 @@ AEnemySpawnManager::AEnemySpawnManager()
 	SpawnTriggerBoxCollision->SetupAttachment(RootComponent);		
 	
 	SpawnPosition = CreateDefaultSubobject<USceneComponent>(TEXT("SpawnPosition"));
-	SpawnPosition->SetupAttachment(RootComponent);	
+	SpawnPosition->SetupAttachment(RootComponent);
+
+	SpawnTriggerBoxCollision->OnComponentBeginOverlap.AddUniqueDynamic(this, &AEnemySpawnManager::OnOverlap);
+	SpawnTriggerBoxCollision->OnComponentEndOverlap.AddUniqueDynamic(this, &AEnemySpawnManager::EndOverlap);
 }
 
 // Called when the game starts or when spawned
@@ -30,8 +33,7 @@ void AEnemySpawnManager::BeginPlay()
 {
 	Super::BeginPlay();
 
-	SpawnTriggerBoxCollision->OnComponentBeginOverlap.AddDynamic(this, &AEnemySpawnManager::OnOverlap);
-	SpawnTriggerBoxCollision->OnComponentEndOverlap.AddDynamic(this, &AEnemySpawnManager::EndOverlap);
+	
 }
 
 

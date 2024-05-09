@@ -35,7 +35,6 @@ float UPlayerCharacterStatComponent::ApplyDamage(const float InDamage, AActor* D
 			PlayerCharacter->OnPlayerKill();
 		}
 		OnHpZero.Broadcast();
-		return 0;
 	}
 	return ActualDamage;
 }

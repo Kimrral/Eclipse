@@ -598,6 +598,14 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void OnHideoutStreamingLevelLoadFinishedServer();
 
+	UFUNCTION()
+	void WidgetConstruction();
+
+	UFUNCTION(BlueprintCallable)
+	void PurchaseAmmo(const int32 AmmoIndex);
+
+	UFUNCTION(Server, Reliable)
+	void PurchaseAmmoServer(const int32 AmmoIndex);
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 

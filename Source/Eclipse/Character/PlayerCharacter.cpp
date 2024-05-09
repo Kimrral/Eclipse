@@ -84,7 +84,7 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer)
 	// instead of recompiling to adjust them
 	GetCharacterMovement()->JumpZVelocity = 1000.f;
 	GetCharacterMovement()->AirControl = 0.35f;
-	//GetCharacterMovement()->MaxWalkSpeed = CharacterWalkSpeed;
+	GetCharacterMovement()->MaxWalkSpeed = CharacterWalkSpeed;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 
@@ -174,16 +174,12 @@ void APlayerCharacter::BeginPlay()
 	GetMesh()->HideBoneByName(TEXT("shotgun_base"), EPhysBodyOp::PBO_None);
 	GetMesh()->HideBoneByName(TEXT("sniper_can_arm_01"), EPhysBodyOp::PBO_None);
 	GetMesh()->SetVisibility(true);
-	GetCharacterMovement()->MaxWalkSpeed = 360.f;
 
 	FirstPersonRifleComp->SetVisibility(false);
 	FirstPersonPistolComp->SetVisibility(false);
 	FirstPersonCharacterMesh->SetVisibility(false);
 	FirstPersonCamera->SetActive(false);
 	FollowCamera->SetActive(true);
-
-	IsPlayerDeadImmediately = false;
-	IsPlayerDead = false;
 
 	// Widget Settings
 	crosshairUI = CreateWidget<UCrosshairWidget>(GetWorld(), crosshairFactory);
@@ -237,37 +233,22 @@ void APlayerCharacter::BeginPlay()
 		TiltingRightTimeline.AddInterpFloat(TiltingCurveFloat, TiltRightTimelineProgress);
 	}
 
-	Stat->OnHpZero.AddUObject(this, &APlayerCharacter::PlayerDeath);
-
-	// FTimerHandle RespawnTimer;
-	// GetWorldTimerManager().SetTimer(RespawnTimer, FTimerDelegate::CreateLambda([this]()-> void
-	// {
-	// 	informationUI->owner = this;
-	// 	informationUI->GuardianCount->SetText(FText::AsNumber(GuardianCount));
-	// 	informationUI->BossCount->SetText(FText::AsNumber(BossCount));
-	// 	informationUI->ConsoleCount->SetText(FText::AsNumber(ConsoleCount));
-	// 	informationUI->UpdateAmmo();
-	// 	informationUI->UpdateAmmo_Secondary();
-	// 	informationUI->AddToViewport();
-	// 	//informationUI->EnterHideout();
-	// 	crosshairUI->AddToViewport();
-	// }), 0.5, false);
-
 	if (IsLocallyControlled())
 	{
 		TradeWidgetUI->Construction(this);
 		APlayerCameraManager* const CameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0));
 		CameraManager->StopCameraFade();
 		CameraManager->StartCameraFade(1.0, 0, 8.0, FColor::Black, false, true);
+
 		const FName LevelToUnload = FName("Deserted_Road");
-		const FLatentActionInfo UnloadLatentInfo;
-		UGameplayStatics::UnloadStreamLevel(this, LevelToUnload, UnloadLatentInfo, true);
+		const FName CallBackFunctionName = FName("WidgetConstruction");
+		FLatentActionInfo LoadLatentInfo;
+		LoadLatentInfo.CallbackTarget = this;
+		LoadLatentInfo.Linkage = 0;
+		LoadLatentInfo.ExecutionFunction = CallBackFunctionName;
+		UGameplayStatics::UnloadStreamLevel(this, LevelToUnload, LoadLatentInfo, true);
 	}
 
-	if (animInstance)
-	{
-		animInstance->bArmed = true;
-	}
 	bUsingRifle = true;
 	bUsingSniper = false;
 	bUsingPistol = false;
@@ -289,10 +270,13 @@ void APlayerCharacter::BeginPlay()
 	weaponArray.Add(bUsingPistol); //2
 	weaponArray.Add(bUsingM249); //3		
 
+	// Spawn Player Emitter
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
 	UGameplayStatics::PlaySound2D(GetWorld(), PlayerSpawnSound, 0.6, 1, 0.25);
 
+	// Delegate Binding
 	ExtractionCountdownUI->ExtractionSuccessDele.AddUObject(this, &APlayerCharacter::ExtractionSuccess);
+	Stat->OnHpZero.AddUObject(this, &APlayerCharacter::PlayerDeath);
 
 	// Update Tab Widget Before Widget Constructor
 	UpdateTabWidget();
@@ -302,6 +286,24 @@ void APlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
 }
+
+
+void APlayerCharacter::WidgetConstruction()
+{
+	if(IsLocallyControlled())
+	{
+		if(informationUI && crosshairUI)
+		{
+			crosshairUI->AddToViewport();
+			informationUI->owner = this;
+			informationUI->UpdateAmmo();
+			informationUI->UpdateAmmo_Secondary();
+			informationUI->AddToViewport();
+			informationUI->EnterHideout();
+		}
+	}
+}
+
 
 // Called every frame
 void APlayerCharacter::Tick(const float DeltaTime)
@@ -3493,17 +3495,18 @@ void APlayerCharacter::MoveToHideout(const bool IsPlayerDeath)
 	{
 		IsPlayerDead = false;
 		IsPlayerDeadImmediately = false;
-		StopAnimMontage();
-		GetMesh()->SetVisibility(true);
+		StopAnimMontage();		
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		ResetPlayerInventoryDataServer();
+		ResetTabWidget();
 	}
 
 	if (IsLocallyControlled())
 	{
 		PC->SetIgnoreLookInput(false);
 		PC->SetIgnoreMoveInput(false);
+
 		const FName LevelToLoad = FName("Safe_House");
 		const FName LevelToUnload = FName("Deserted_Road");
 		const FName OnHideoutLevelLoadFinishedFunc = FName("OnHideoutStreamingLevelLoadFinished");
@@ -3519,6 +3522,7 @@ void APlayerCharacter::MoveToHideout(const bool IsPlayerDeath)
 
 void APlayerCharacter::ResetPlayerInventoryDataServer_Implementation()
 {
+	Stat->SetHp(Stat->GetMaxHp());
 	if (const auto ResetPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))
 	{
 		ResetPlayerState->ResetPlayerInventoryData();
@@ -3734,23 +3738,23 @@ void APlayerCharacter::OnIntersectionStreamingLevelLoadFinished()
 		informationUI->EnterIntersection();
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
 		UGameplayStatics::PlaySound2D(GetWorld(), PlayerSpawnSound, 0.6, 1, 0.25);
+
+		if (APlayerCameraManager* const CameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)))
+		{
+			CameraManager->StopCameraFade();
+			CameraManager->StartCameraFade(1.0, 0, 8.0, FColor::Black, false, true);
+		}
 	}
 	bEnding = false;
 	IsPlayerDeadImmediately = false;
 	bUseControllerRotationYaw = true;
-	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-	if (APlayerCameraManager* const CameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)))
-	{
-		CameraManager->StopCameraFade();
-		CameraManager->StartCameraFade(1.0, 0, 8.0, FColor::Black, false, true);
-	}
+	
 	OnIntersectionStreamingLevelLoadFinishedServer();
 }
 
 
 void APlayerCharacter::OnIntersectionStreamingLevelLoadFinishedServer_Implementation()
-{
-	Stat->SetHp(Stat->GetMaxHp());
+{	
 	TArray<class AActor*> OutActors;
 	TArray<class APlayerStart*> TargetPlayerStarts;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), PlayerStartFactory, OutActors);
@@ -3780,21 +3784,30 @@ void APlayerCharacter::OnHideoutStreamingLevelLoadFinished()
 {
 	if (IsLocallyControlled())
 	{
-		ResetTabWidget();
-
 		crosshairUI->AddToViewport();
 		informationUI->AddToViewport();
 		informationUI->EnterHideout();
 
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
 		UGameplayStatics::PlaySound2D(GetWorld(), PlayerSpawnSound, 0.6, 1, 0.25);
+
+		if (APlayerCameraManager* const CameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)))
+		{
+			CameraManager->StopCameraFade();
+			CameraManager->StartCameraFade(1.0, 0, 8.0, FColor::Black, false, true);
+		}
 	}
-	if (APlayerCameraManager* const CameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)))
-	{
-		CameraManager->StopCameraFade();
-		CameraManager->StartCameraFade(1.0, 0, 8.0, FColor::Black, false, true);
-	}
+	
 	OnHideoutStreamingLevelLoadFinishedServer();
+
+	if(!GetMesh()->IsVisible())
+	{
+		FTimerHandle TimerHandle;
+		GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()-> void
+		{
+			GetMesh()->SetVisibility(true);
+		}), 2.f, false);
+	}
 }
 
 void APlayerCharacter::OnHideoutStreamingLevelLoadFinishedServer_Implementation()
@@ -3824,6 +3837,7 @@ bool APlayerCharacter::OnHideoutStreamingLevelLoadFinishedServer_Validate()
 {
 	return true;
 }
+
 
 void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -4583,9 +4597,9 @@ void APlayerCharacter::ProcessPistolFireLocal()
 		{
 			FirstAnimInstance->Montage_Play(FirstPersonPistolFireMontage, 1);
 		}
-		const FVector particleLoc = FirstPersonPistolComp->GetSocketLocation(FName("PistolFirePosition"));
-		const UE::Math::TRotator<double> particleRot = FirstPersonPistolComp->GetSocketRotation(FName("PistolFirePosition"));
-		const FTransform particleTrans = UKismetMathLibrary::MakeTransform(particleLoc, particleRot, FVector(0.4));
+		const FVector ParticleLoc = FirstPersonPistolComp->GetSocketLocation(FName("PistolFirePosition"));
+		const UE::Math::TRotator<double> ParticleRot = FirstPersonPistolComp->GetSocketRotation(FName("PistolFirePosition"));
+		const FTransform particleTrans = UKismetMathLibrary::MakeTransform(ParticleLoc, ParticleRot, FVector(0.4));
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), FirstPersonRifleFireParticle, particleTrans);
 	}
 	else
@@ -4745,7 +4759,34 @@ void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 		if (IsLocallyControlled())
 		{
 			UGameplayStatics::PlaySound2D(GetWorld(), DeathSound);
-			UE_LOG(LogTemp, Warning, TEXT("DeathSound"))
 		}
 	}), 2.f, false);
+}
+
+void APlayerCharacter::PurchaseAmmo(const int32 AmmoIndex)
+{
+	PurchaseAmmoServer(AmmoIndex);
+}
+
+void APlayerCharacter::PurchaseAmmoServer_Implementation(const int32 AmmoIndex)
+{
+	if(HasAuthority())
+	{
+		if(AmmoIndex==0)
+		{
+			maxRifleAmmo+=40;
+		}
+		else if(AmmoIndex==1)
+		{
+			maxSniperAmmo+=5;
+		}
+		else if(AmmoIndex==2)
+		{
+			maxPistolAmmo+=8;
+		}
+		else if(AmmoIndex==3)
+		{
+			maxM249Ammo+=50;
+		}
+	}
 }

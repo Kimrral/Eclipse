@@ -489,6 +489,9 @@ public:
 	void MoveToIsolatedShip();
 
 	UFUNCTION()
+	void MoveToIsolatedShipClient();
+
+	UFUNCTION()
 	void MoveToHideout(const bool IsPlayerDeath);
 
 	UFUNCTION(Server, Reliable)
@@ -587,19 +590,31 @@ public:
 	void AddAmmunitionByInputString(const FString& InventoryStructName);
 
 	UFUNCTION()
+	void OnSpacecraftStreamingLevelLoadFinished();
+
+	UFUNCTION(Server, Reliable)
+	void OnSpacecraftStreamingLevelLoadFinishedServer();
+
+	UFUNCTION()
 	void OnIntersectionStreamingLevelLoadFinished();
 
-	UFUNCTION(Server, Reliable, WithValidation)
+	UFUNCTION(Server, Reliable)
 	void OnIntersectionStreamingLevelLoadFinishedServer();
 
 	UFUNCTION()
 	void OnHideoutStreamingLevelLoadFinished();
 
-	UFUNCTION(Server, Reliable, WithValidation)
+	UFUNCTION(Server, Reliable)
 	void OnHideoutStreamingLevelLoadFinishedServer();
 
 	UFUNCTION()
 	void WidgetConstruction();
+
+	UFUNCTION()
+	void MoveToAnotherLevel();
+
+	UFUNCTION()
+	void UnloadMultipleStreamingLevels(const FName& FirstLevelName, const FName& SecondLevelName);
 
 	UFUNCTION(BlueprintCallable)
 	void PurchaseAmmo(const int32 AmmoIndex);
@@ -1241,7 +1256,7 @@ public:
 	class APistolMagActor* PistolMagActor;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	class AM249MagActor* M249MagActor;
-
+	
 	UPROPERTY()
 	float CharacterWalkSpeed = 360.f;
 

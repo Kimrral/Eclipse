@@ -15,8 +15,13 @@ class ECLIPSE_API AGuardian : public AEnemy
 	GENERATED_BODY()
 
 public:
-	virtual void DropRewardServer() override;
 	virtual void FireProcess() const override;
+	
+	virtual void DropRewardServer() override;
+
+	virtual void SetDissolveMaterial() override;
+	
+	virtual void SetDissolveValue(float Value) override;
 	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AGuardianProjectile> GuardianProjectileFactory;

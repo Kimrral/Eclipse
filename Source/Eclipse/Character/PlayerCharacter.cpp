@@ -238,15 +238,19 @@ void APlayerCharacter::BeginPlay()
 		TradeWidgetUI->Construction(this);
 		APlayerCameraManager* const CameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0));
 		CameraManager->StopCameraFade();
-		CameraManager->StartCameraFade(1.0, 0, 8.0, FColor::Black, false, true);
+		CameraManager->StartCameraFade(1.0, 0, 10.0, FColor::Black, true, true);
 
-		const FName LevelToUnload = FName("Deserted_Road");
+		const FName IntersectionUnload = FName("Deserted_Road");
+		const FName SpacecraftUnload = FName("Map_BigStarStation");
 		const FName CallBackFunctionName = FName("WidgetConstruction");
-		FLatentActionInfo LoadLatentInfo;
-		LoadLatentInfo.CallbackTarget = this;
-		LoadLatentInfo.Linkage = 0;
-		LoadLatentInfo.ExecutionFunction = CallBackFunctionName;
-		UGameplayStatics::UnloadStreamLevel(this, LevelToUnload, LoadLatentInfo, true);
+		FLatentActionInfo IntersectionLatentInfo;
+		const FLatentActionInfo SpacecraftLatentInfo;
+		IntersectionLatentInfo.CallbackTarget = this;
+		IntersectionLatentInfo.Linkage = 0;
+		IntersectionLatentInfo.UUID = 0;
+		IntersectionLatentInfo.ExecutionFunction = CallBackFunctionName;
+		UGameplayStatics::UnloadStreamLevel(this, SpacecraftUnload, SpacecraftLatentInfo, false);
+		UGameplayStatics::UnloadStreamLevel(this, IntersectionUnload, IntersectionLatentInfo, false);
 	}
 
 	bUsingRifle = true;
@@ -303,7 +307,6 @@ void APlayerCharacter::WidgetConstruction()
 		}
 	}
 }
-
 
 // Called every frame
 void APlayerCharacter::Tick(const float DeltaTime)
@@ -3273,34 +3276,22 @@ void APlayerCharacter::InteractionProcess()
 			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
 			if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 			{
-				if (GuardianCount >= 7 && ConsoleCount >= 5 && BossCount >= 1)
+				//if (GuardianCount >= 7 && ConsoleCount >= 5 && BossCount >= 1)
 				{
 					infoWidgetUI->weaponHoldPercent = 0;
-					bEnding = true;
-					APlayerCameraManager* playerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
-					playerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
-					StopAnimMontage();
-					GetCharacterMovement()->StopActiveMovement();
-					GetCharacterMovement()->DisableMovement();
-					FTransform spawnTrans = this->GetTransform();
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), recallParticle, spawnTrans);
-					PlayAnimMontage(FullBodyMontage, 1, FName("LevelEnd"));
-					UGameplayStatics::PlaySoundAtLocation(GetWorld(), PortalSound, GetActorLocation());
-					bUseControllerRotationYaw = false;
-					infoWidgetUI->RemoveFromParent();
-					informationUI->RemoveFromParent();
-					crosshairUI->RemoveFromParent();
-					FTimerHandle endHandle;
-					GetWorldTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()-> void
+					MoveToAnotherLevel();
+
+					FTimerHandle TimerHandle;
+					GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()-> void
 					{
-						UGameplayStatics::OpenLevel(GetWorld(), FName("127.0.0.1"));
+						MoveToHideout(false);
 					}), 9.f, false);
 				}
-				else
-				{
-					infoWidgetUI->PlayAnimation(infoWidgetUI->LackMission);
-					infoWidgetUI->weaponHoldPercent = 0;
-				}
+				// else
+				// {
+				// 	infoWidgetUI->PlayAnimation(infoWidgetUI->LackMission);
+				// 	infoWidgetUI->weaponHoldPercent = 0;
+				// }
 			}
 		}
 
@@ -3465,28 +3456,32 @@ bool APlayerCharacter::ServerRPCReload_Validate()
 
 void APlayerCharacter::MoveToIsolatedShip()
 {
-	bEnding = true;
-	gi->IsWidgetOn = false;
-	IsPlayerDeadImmediately = true;
-
-	APlayerCameraManager* PlayerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
-	PlayerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
-
-	const FTransform SpawnTrans = this->GetTransform();
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), recallParticle, SpawnTrans);
-	PlayAnimMontage(FullBodyMontage, 1, FName("LevelEnd"));
-	UGameplayStatics::PlaySoundAtLocation(GetWorld(), PortalSound, GetActorLocation());
-
-	bUseControllerRotationYaw = false;
-	infoWidgetUI->RemoveFromParent();
-	informationUI->RemoveFromParent();
-	crosshairUI->RemoveFromParent();
+	MoveToAnotherLevel();
 
 	FTimerHandle TimerHandle;
 	GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
-		UGameplayStatics::OpenLevel(GetWorld(), FName("Map_BigStarStation"));
+		MoveToIsolatedShipClient();
 	}), 9.f, false);
+}
+
+void APlayerCharacter::MoveToIsolatedShipClient()
+{
+	if (IsLocallyControlled())
+	{
+		PC->SetIgnoreMoveInput(false);
+		const FName IntersectionLevelName = FName("Deserted_Road");
+		const FName SpacecraftLevelName = FName("Map_BigStarStation");
+		const FName HideoutLevelName = FName("Safe_House");
+		const FName OnSpacecraftStreamingLevelLoadFinished = FName("OnSpacecraftStreamingLevelLoadFinished");
+		FLatentActionInfo LoadLatentInfo;		
+		LoadLatentInfo.CallbackTarget = this;
+		LoadLatentInfo.Linkage = 0;
+		LoadLatentInfo.ExecutionFunction = OnSpacecraftStreamingLevelLoadFinished;		
+
+		UnloadMultipleStreamingLevels(IntersectionLevelName, HideoutLevelName);
+		UGameplayStatics::LoadStreamLevel(this, SpacecraftLevelName, true, true, LoadLatentInfo);
+	}
 }
 
 void APlayerCharacter::MoveToHideout(const bool IsPlayerDeath)
@@ -3507,16 +3502,19 @@ void APlayerCharacter::MoveToHideout(const bool IsPlayerDeath)
 		PC->SetIgnoreLookInput(false);
 		PC->SetIgnoreMoveInput(false);
 
-		const FName LevelToLoad = FName("Safe_House");
-		const FName LevelToUnload = FName("Deserted_Road");
+		const FName HideoutLevelName = FName("Safe_House");
+		const FName IntersectionLevelName = FName("Deserted_Road");
+		const FName SpacecraftLevelName = FName("Map_BigStarStation");
 		const FName OnHideoutLevelLoadFinishedFunc = FName("OnHideoutStreamingLevelLoadFinished");
 		const FLatentActionInfo UnloadLatentInfo;
+		const FLatentActionInfo UnloadLatentInfo2;
 		FLatentActionInfo LoadLatentInfo;
 		LoadLatentInfo.CallbackTarget = this;
 		LoadLatentInfo.Linkage = 0;
 		LoadLatentInfo.ExecutionFunction = OnHideoutLevelLoadFinishedFunc;
-		UGameplayStatics::LoadStreamLevel(this, LevelToLoad, true, true, LoadLatentInfo);
-		UGameplayStatics::UnloadStreamLevel(this, LevelToUnload, UnloadLatentInfo, true);
+		UGameplayStatics::LoadStreamLevel(this, HideoutLevelName, true, true, LoadLatentInfo);
+		UGameplayStatics::UnloadStreamLevel(this, SpacecraftLevelName, UnloadLatentInfo2, true);
+		UGameplayStatics::UnloadStreamLevel(this, IntersectionLevelName, UnloadLatentInfo, true);
 	}
 }
 
@@ -3532,26 +3530,7 @@ void APlayerCharacter::ResetPlayerInventoryDataServer_Implementation()
 
 void APlayerCharacter::MoveToBlockedIntersection()
 {
-	bEnding = true;
-	gi->IsWidgetOn = false;
-	IsPlayerDeadImmediately = true;
-
-	if (IsLocallyControlled())
-	{
-		PC->SetIgnoreMoveInput(true);
-		bUseControllerRotationYaw = false;
-		infoWidgetUI->RemoveFromParent();
-		informationUI->RemoveFromParent();
-		crosshairUI->RemoveFromParent();
-	}
-
-	APlayerCameraManager* PlayerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
-	PlayerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
-
-	const FTransform SpawnTrans = this->GetTransform();
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), recallParticle, SpawnTrans);
-	PlayAnimMontage(FullBodyMontage, 1, FName("LevelEnd"));
-	UGameplayStatics::PlaySoundAtLocation(GetWorld(), PortalSound, GetActorLocation());
+	MoveToAnotherLevel();
 
 	FTimerHandle EndHandle;
 	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
@@ -3565,17 +3544,20 @@ void APlayerCharacter::MoveToBlockedIntersectionClient()
 	if (IsLocallyControlled())
 	{
 		PC->SetIgnoreMoveInput(false);
-		const FName LevelToLoad = FName("Deserted_Road");
-		const FName LevelToUnload = FName("Safe_House");
+		const FName IntersectionLevelName = FName("Deserted_Road");
+		const FName HideoutLevelName = FName("Safe_House");
+		const FName SpacecraftLevelName = FName("Map_BigStarStation");
 		const FName OnIntersectionLevelLoadFinishedFunc = FName("OnIntersectionStreamingLevelLoadFinished");
 		const FLatentActionInfo UnloadLatentInfo;
+		const FLatentActionInfo UnloadLatentInfo2;
 		FLatentActionInfo LoadLatentInfo;
 		LoadLatentInfo.CallbackTarget = this;
 		LoadLatentInfo.Linkage = 0;
 		LoadLatentInfo.ExecutionFunction = OnIntersectionLevelLoadFinishedFunc;
 
-		UGameplayStatics::LoadStreamLevel(this, LevelToLoad, true, true, LoadLatentInfo);
-		UGameplayStatics::UnloadStreamLevel(this, LevelToUnload, UnloadLatentInfo, true);
+		UGameplayStatics::LoadStreamLevel(this, IntersectionLevelName, true, true, LoadLatentInfo);
+		UGameplayStatics::UnloadStreamLevel(this, SpacecraftLevelName, UnloadLatentInfo2, true);
+		UGameplayStatics::UnloadStreamLevel(this, HideoutLevelName, UnloadLatentInfo, true);
 	}
 }
 
@@ -3729,6 +3711,48 @@ void APlayerCharacter::AddAmmunitionByInputString(const FString& InventoryStruct
 	}
 }
 
+void APlayerCharacter::OnSpacecraftStreamingLevelLoadFinished()
+{
+	if (IsLocallyControlled())
+	{
+		crosshairUI->AddToViewport();
+		informationUI->AddToViewport();
+		informationUI->EnterSpacecraft();
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
+		UGameplayStatics::PlaySound2D(GetWorld(), PlayerSpawnSound, 0.6, 1, 0.25);
+
+		if (APlayerCameraManager* const CameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)))
+		{
+			CameraManager->StopCameraFade();
+			CameraManager->StartCameraFade(1.0, 0, 10.0, FColor::Black, true, true);
+		}
+	}
+	bEnding = false;
+	IsPlayerDeadImmediately = false;
+	bUseControllerRotationYaw = true;
+	
+	OnSpacecraftStreamingLevelLoadFinishedServer();
+}
+
+void APlayerCharacter::OnSpacecraftStreamingLevelLoadFinishedServer_Implementation()
+{
+	TArray<class AActor*> OutActors;
+	TArray<class APlayerStart*> TargetPlayerStarts;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), PlayerStartFactory, OutActors);
+	for (const auto PlayerStarts : OutActors)
+	{
+		if (const auto PlayerStart = Cast<APlayerStart>(PlayerStarts))
+		{
+			if (PlayerStart && PlayerStart->PlayerStartTag == FName("Spacecraft"))
+			{
+				const FTransform TargetPlayerStartTrans = PlayerStart->GetActorTransform();
+				SetActorTransform(TargetPlayerStartTrans, false, nullptr, ETeleportType::TeleportPhysics);
+				return;
+			}
+		}
+	}
+}
+
 void APlayerCharacter::OnIntersectionStreamingLevelLoadFinished()
 {
 	if (IsLocallyControlled())
@@ -3742,7 +3766,7 @@ void APlayerCharacter::OnIntersectionStreamingLevelLoadFinished()
 		if (APlayerCameraManager* const CameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)))
 		{
 			CameraManager->StopCameraFade();
-			CameraManager->StartCameraFade(1.0, 0, 8.0, FColor::Black, false, true);
+			CameraManager->StartCameraFade(1.0, 0, 10.0, FColor::Black, true, true);
 		}
 	}
 	bEnding = false;
@@ -3771,13 +3795,8 @@ void APlayerCharacter::OnIntersectionStreamingLevelLoadFinishedServer_Implementa
 	if (const auto PlayerStartRandIndex = FMath::RandRange(0, TargetPlayerStarts.Num() - 1); TargetPlayerStarts.IsValidIndex(PlayerStartRandIndex))
 	{
 		const FTransform TargetPlayerStartTrans = TargetPlayerStarts[PlayerStartRandIndex]->GetActorTransform();
-		SetActorTransform(TargetPlayerStartTrans, false);
+		SetActorTransform(TargetPlayerStartTrans, false, nullptr, ETeleportType::TeleportPhysics);
 	}
-}
-
-bool APlayerCharacter::OnIntersectionStreamingLevelLoadFinishedServer_Validate()
-{
-	return true;
 }
 
 void APlayerCharacter::OnHideoutStreamingLevelLoadFinished()
@@ -3794,7 +3813,7 @@ void APlayerCharacter::OnHideoutStreamingLevelLoadFinished()
 		if (APlayerCameraManager* const CameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)))
 		{
 			CameraManager->StopCameraFade();
-			CameraManager->StartCameraFade(1.0, 0, 8.0, FColor::Black, false, true);
+			CameraManager->StartCameraFade(1.0, 0, 10.0, FColor::Black, true, true);
 		}
 	}
 	
@@ -3832,12 +3851,6 @@ void APlayerCharacter::OnHideoutStreamingLevelLoadFinishedServer_Implementation(
 		SetActorTransform(TargetPlayerStartTrans, false);
 	}
 }
-
-bool APlayerCharacter::OnHideoutStreamingLevelLoadFinishedServer_Validate()
-{
-	return true;
-}
-
 
 void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -4788,5 +4801,44 @@ void APlayerCharacter::PurchaseAmmoServer_Implementation(const int32 AmmoIndex)
 		{
 			maxM249Ammo+=50;
 		}
+	}
+}
+
+
+void APlayerCharacter::MoveToAnotherLevel()
+{
+	bEnding = true;
+	gi->IsWidgetOn = false;
+	IsPlayerDeadImmediately = true;
+
+	if (IsLocallyControlled())
+	{
+		PC->SetIgnoreMoveInput(true);
+		bUseControllerRotationYaw = false;
+		infoWidgetUI->RemoveFromParent();
+		informationUI->RemoveFromParent();
+		crosshairUI->RemoveFromParent();
+	}
+
+	APlayerCameraManager* PlayerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+	PlayerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
+
+	const FTransform SpawnTrans = this->GetTransform();
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), recallParticle, SpawnTrans);
+	PlayAnimMontage(FullBodyMontage, 1, FName("LevelEnd"));
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), PortalSound, GetActorLocation());
+}
+
+void APlayerCharacter::UnloadMultipleStreamingLevels(const FName& FirstLevelName, const FName& SecondLevelName)
+{
+	TArray<FName> StreamingLevelArray = {FirstLevelName, SecondLevelName};
+	int32 StreamingLevelID = 0;
+	for(const auto LevelName : StreamingLevelArray)
+	{
+		FLatentActionInfo LatentActionInfo;
+		LatentActionInfo.CallbackTarget = this;
+		LatentActionInfo.UUID = StreamingLevelID;
+		UGameplayStatics::UnloadStreamLevel(GetWorld(), LevelName, LatentActionInfo, false);
+		StreamingLevelID++;
 	}
 }

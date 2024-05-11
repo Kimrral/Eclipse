@@ -4,9 +4,17 @@
 #include "Crunch.h"
 
 
+void ACrunch::SetDissolveValue(float Value)
+{
+	return;
+}
+
 void ACrunch::DropRewardServer()
 {
 	Super::DropRewardServer();
+}
 
-
+void ACrunch::SetDissolveMaterial()
+{
+	return;
 }

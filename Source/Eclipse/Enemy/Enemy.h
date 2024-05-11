@@ -75,7 +75,7 @@ public:
 	virtual void SetDissolveValue(float Value);
 
 	UFUNCTION()
-	void SetDissolveMaterial();
+	virtual void SetDissolveMaterial();
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class ARifleMagActor> RifleMagActorFactory;

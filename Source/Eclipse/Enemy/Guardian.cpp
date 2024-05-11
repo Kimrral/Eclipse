@@ -8,6 +8,7 @@
 #include "Eclipse/Character/PlayerCharacter.h"
 #include "Kismet/KismetMathLibrary.h"
 
+
 void AGuardian::DropRewardServer()
 {
 	Super::DropRewardServer();
@@ -22,4 +23,14 @@ void AGuardian::FireProcess() const
 		const FRotator ProjectileRot = UKismetMathLibrary::MakeRotFromXZ(PlayerLoc, this->GetActorUpVector());
 		GetWorld()->SpawnActor<AGuardianProjectile>(GuardianProjectileFactory, MuzzleTrans.GetLocation(), ProjectileRot);
 	}
+}
+
+void AGuardian::SetDissolveMaterial()
+{
+	return;
+}
+
+void AGuardian::SetDissolveValue(float Value)
+{
+	return;
 }

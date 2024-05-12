@@ -46,60 +46,46 @@ void AEclipsePlayerState::AddToInventory(APlayerCharacter* PlayerCharacterRef, c
 
 void AEclipsePlayerState::AddToInventoryServer_Implementation(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct)
 {
-	AddToInventoryMulticast(PlayerCharacterRef, PlayerInventoryStruct);
-}
-
-bool AEclipsePlayerState::AddToInventoryServer_Validate(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct)
-{
-	return true;
-}
-
-void AEclipsePlayerState::AddToInventoryMulticast_Implementation(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct)
-{
 	if (PlayerCharacterRef)
 	{
-		if (PlayerCharacterRef->IsLocallyControlled()) AddToInventoryWidget(PlayerCharacterRef, PlayerInventoryStruct);
-		if (HasAuthority())
+		for (int i = 0; i < PlayerInventoryStructs.Num(); ++i)
 		{
-			for (int i = 0; i < PlayerInventoryStructs.Num(); ++i)
+			if (PlayerInventoryStructs[i].Name == PlayerInventoryStruct.Name)
 			{
-				if (PlayerInventoryStructs[i].Name == PlayerInventoryStruct.Name)
+				const int32 InventoryArrayIndex = i;
+				PlayerInventoryStacks[InventoryArrayIndex]++;
+				IsAlreadySet = true;
+			}
+		}
+		if (IsAlreadySet)
+		{
+			IsAlreadySet = false;
+		}
+		else
+		{
+			for (int i = 0; i < PlayerInventoryStacks.Num(); ++i)
+			{
+				if (PlayerInventoryStacks[i] == 0)
 				{
 					const int32 InventoryArrayIndex = i;
+					PlayerInventoryStructs[InventoryArrayIndex] = PlayerInventoryStruct;
 					PlayerInventoryStacks[InventoryArrayIndex]++;
-					IsAlreadySet = true;
-				}
-			}
-			if (IsAlreadySet)
-			{
-				IsAlreadySet = false;
-			}
-			else
-			{
-				for (int i = 0; i < PlayerInventoryStacks.Num(); ++i)
-				{
-					if (PlayerInventoryStacks[i] == 0)
-					{
-						const int32 InventoryArrayIndex = i;
-						PlayerInventoryStructs[InventoryArrayIndex] = PlayerInventoryStruct;
-						PlayerInventoryStacks[InventoryArrayIndex]++;
-						return;
-					}
+					return;
 				}
 			}
 		}
 	}
+	AddToInventoryMulticast(PlayerCharacterRef, PlayerInventoryStruct);
+}
+
+void AEclipsePlayerState::AddToInventoryMulticast_Implementation(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct)
+{
+	if (PlayerCharacterRef->IsLocallyControlled()) AddToInventoryWidget(PlayerCharacterRef, PlayerInventoryStruct);
 }
 
 void AEclipsePlayerState::OnUseConsumableItem(APlayerCharacter* PlayerCharacterRef, const FString& ConsumableItemName, const float HealAmount)
 {
 	OnUseConsumableItemServer(PlayerCharacterRef, ConsumableItemName, HealAmount);
-}
-
-
-bool AEclipsePlayerState::OnUseConsumableItemServer_Validate(APlayerCharacter* PlayerCharacterRef, const FString& ConsumableItemName, const float HealAmount)
-{
-	return true;
 }
 
 void AEclipsePlayerState::OnUseConsumableItemServer_Implementation(APlayerCharacter* PlayerCharacterRef, const FString& ConsumableItemName, const float HealAmount)
@@ -133,113 +119,87 @@ void AEclipsePlayerState::DragFromDeadBody(APlayerCharacter* PlayerCharacterRef,
 
 void AEclipsePlayerState::DragFromDeadBodyServer_Implementation(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex)
 {
-	DragFromDeadBodyMulticast(PlayerCharacterRef, DragArrayIndex, DropArrayIndex);
-}
-
-bool AEclipsePlayerState::DragFromDeadBodyServer_Validate(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex)
-{
-	return true;
-}
-
-void AEclipsePlayerState::DragFromDeadBodyMulticast_Implementation(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex)
-{
 	if (PlayerCharacterRef)
 	{
-		if (HasAuthority())
+		if (DropArrayIndex >= 81) return;
+		if (DragArrayIndex >= 111)
 		{
-			if (DropArrayIndex >= 81) return;
-			if (DragArrayIndex >= 111)
+			if (PlayerInventoryStructs.IsValidIndex(DropArrayIndex) && PlayerInventoryStacks.IsValidIndex(DropArrayIndex) && DeadPlayerGearSlotStructs.IsValidIndex(DragArrayIndex - 111))
 			{
-				if (PlayerInventoryStructs.IsValidIndex(DropArrayIndex) && PlayerInventoryStacks.IsValidIndex(DropArrayIndex) && DeadPlayerGearSlotStructs.IsValidIndex(DragArrayIndex - 111))
-				{
-					PlayerInventoryStructs[DropArrayIndex] = DeadPlayerGearSlotStructs[DragArrayIndex - 111];
-					PlayerInventoryStacks[DropArrayIndex] = 1;
-					DeadPlayerGearSlotStructs[DragArrayIndex - 111] = InventoryStructDefault;
-				}
+				PlayerInventoryStructs[DropArrayIndex] = DeadPlayerGearSlotStructs[DragArrayIndex - 111];
+				PlayerInventoryStacks[DropArrayIndex] = 1;
+				DeadPlayerGearSlotStructs[DragArrayIndex - 111] = InventoryStructDefault;
 			}
-			else
+		}
+		else
+		{
+			if (PlayerInventoryStructs.IsValidIndex(DropArrayIndex) && PlayerInventoryStacks.IsValidIndex(DropArrayIndex) && DeadPlayerGearSlotStructs.IsValidIndex(DragArrayIndex - 81))
 			{
-				if (PlayerInventoryStructs.IsValidIndex(DropArrayIndex) && PlayerInventoryStacks.IsValidIndex(DropArrayIndex) && DeadPlayerGearSlotStructs.IsValidIndex(DragArrayIndex - 81))
-				{
-					PlayerInventoryStructs[DropArrayIndex] = DeadPlayerInventoryStructs[DragArrayIndex - 81];
-					PlayerInventoryStacks[DropArrayIndex] = DeadPlayerInventoryStacks[DragArrayIndex - 81];
-					DeadPlayerInventoryStructs[DragArrayIndex - 81] = InventoryStructDefault;
-					DeadPlayerInventoryStacks[DragArrayIndex - 81] = 0;
-				}
+				PlayerInventoryStructs[DropArrayIndex] = DeadPlayerInventoryStructs[DragArrayIndex - 81];
+				PlayerInventoryStacks[DropArrayIndex] = DeadPlayerInventoryStacks[DragArrayIndex - 81];
+				DeadPlayerInventoryStructs[DragArrayIndex - 81] = InventoryStructDefault;
+				DeadPlayerInventoryStacks[DragArrayIndex - 81] = 0;
 			}
-			if (DeadPlayerContainerRef)
-			{
-				DeadPlayerContainerRef->DeadPlayerInventoryStructArray = DeadPlayerInventoryStructs;
-				DeadPlayerContainerRef->DeadPlayerInventoryStackArray = DeadPlayerInventoryStacks;
-				DeadPlayerContainerRef->DeadPlayerGearSlotArray = DeadPlayerGearSlotStructs;
-			}
+		}
+		if (DeadPlayerContainerRef)
+		{
+			DeadPlayerContainerRef->DeadPlayerInventoryStructArray = DeadPlayerInventoryStructs;
+			DeadPlayerContainerRef->DeadPlayerInventoryStackArray = DeadPlayerInventoryStacks;
+			DeadPlayerContainerRef->DeadPlayerGearSlotArray = DeadPlayerGearSlotStructs;
 		}
 	}
 }
-
 
 void AEclipsePlayerState::DragFromGearSlot(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex)
 {
 	DragFromGearSlotServer(PlayerCharacterRef, DragArrayIndex, DropArrayIndex);
 }
 
-bool AEclipsePlayerState::DragFromGearSlotServer_Validate(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex)
-{
-	return true;
-}
-
 void AEclipsePlayerState::DragFromGearSlotServer_Implementation(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex)
-{
-	DragFromGearSlotMulticast(PlayerCharacterRef, DragArrayIndex, DropArrayIndex);
-}
-
-void AEclipsePlayerState::DragFromGearSlotMulticast_Implementation(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex)
 {
 	if (PlayerCharacterRef)
 	{
-		if (HasAuthority())
+		if (PlayerInventoryStructs.IsValidIndex(DropArrayIndex) && PlayerInventoryStacks.IsValidIndex(DropArrayIndex) && PlayerGearSlotStructs.IsValidIndex(DragArrayIndex - 38))
 		{
-			if (PlayerInventoryStructs.IsValidIndex(DropArrayIndex) && PlayerInventoryStacks.IsValidIndex(DropArrayIndex) && PlayerGearSlotStructs.IsValidIndex(DragArrayIndex - 38))
+			if (DragArrayIndex == 38 && PlayerInventoryStacks[DropArrayIndex] == 0)
 			{
-				if (DragArrayIndex == 38 && PlayerInventoryStacks[DropArrayIndex] == 0)
-				{
-					PlayerCharacterRef->EquipHelmetInventorySlot(false, 1);
-					PlayerInventoryStructs[DropArrayIndex] = PlayerGearSlotStructs[DragArrayIndex - 38];
-					PlayerInventoryStacks[DropArrayIndex]++;
-					PlayerGearSlotStructs[DragArrayIndex - 38] = InventoryStructDefault;
-				}
-				else if (DragArrayIndex == 39 && PlayerInventoryStacks[DropArrayIndex] == 0)
-				{
-					PlayerCharacterRef->EquipGoggleInventorySlot(false, 1);
-					PlayerInventoryStructs[DropArrayIndex] = PlayerGearSlotStructs[DragArrayIndex - 38];
-					PlayerInventoryStacks[DropArrayIndex]++;
-					PlayerGearSlotStructs[DragArrayIndex - 38] = InventoryStructDefault;
-				}
-				else if (DragArrayIndex == 40 && PlayerInventoryStacks[DropArrayIndex] == 0)
-				{
-					PlayerCharacterRef->EquipArmorInventorySlot(false, PlayerGearSlotStructs[DragArrayIndex - 38].Stat);
-					PlayerInventoryStructs[DropArrayIndex] = PlayerGearSlotStructs[DragArrayIndex - 38];
-					PlayerInventoryStacks[DropArrayIndex]++;
-					PlayerGearSlotStructs[DragArrayIndex - 38] = InventoryStructDefault;
-				}
-				else if (DragArrayIndex == 41 && PlayerInventoryStacks[DropArrayIndex] == 0)
-				{
-					PlayerCharacterRef->EquipMaskInventorySlot(false, 1);
-					PlayerInventoryStructs[DropArrayIndex] = PlayerGearSlotStructs[DragArrayIndex - 38];
-					PlayerInventoryStacks[DropArrayIndex]++;
-					PlayerGearSlotStructs[DragArrayIndex - 38] = InventoryStructDefault;
-				}
-				else if (DragArrayIndex == 42 && PlayerInventoryStacks[DropArrayIndex] == 0)
-				{
-					PlayerCharacterRef->EquipHeadsetInventorySlot(false, 1);
-					PlayerInventoryStructs[DropArrayIndex] = PlayerGearSlotStructs[DragArrayIndex - 38];
-					PlayerInventoryStacks[DropArrayIndex]++;
-					PlayerGearSlotStructs[DragArrayIndex - 38] = InventoryStructDefault;
-				}
+				PlayerCharacterRef->EquipHelmetInventorySlot(false, 1);
+				PlayerInventoryStructs[DropArrayIndex] = PlayerGearSlotStructs[DragArrayIndex - 38];
+				PlayerInventoryStacks[DropArrayIndex]++;
+				PlayerGearSlotStructs[DragArrayIndex - 38] = InventoryStructDefault;
+			}
+			else if (DragArrayIndex == 39 && PlayerInventoryStacks[DropArrayIndex] == 0)
+			{
+				PlayerCharacterRef->EquipGoggleInventorySlot(false, 1);
+				PlayerInventoryStructs[DropArrayIndex] = PlayerGearSlotStructs[DragArrayIndex - 38];
+				PlayerInventoryStacks[DropArrayIndex]++;
+				PlayerGearSlotStructs[DragArrayIndex - 38] = InventoryStructDefault;
+			}
+			else if (DragArrayIndex == 40 && PlayerInventoryStacks[DropArrayIndex] == 0)
+			{
+				PlayerCharacterRef->EquipArmorInventorySlot(false, PlayerGearSlotStructs[DragArrayIndex - 38].Stat);
+				PlayerInventoryStructs[DropArrayIndex] = PlayerGearSlotStructs[DragArrayIndex - 38];
+				PlayerInventoryStacks[DropArrayIndex]++;
+				PlayerGearSlotStructs[DragArrayIndex - 38] = InventoryStructDefault;
+			}
+			else if (DragArrayIndex == 41 && PlayerInventoryStacks[DropArrayIndex] == 0)
+			{
+				PlayerCharacterRef->EquipMaskInventorySlot(false, 1);
+				PlayerInventoryStructs[DropArrayIndex] = PlayerGearSlotStructs[DragArrayIndex - 38];
+				PlayerInventoryStacks[DropArrayIndex]++;
+				PlayerGearSlotStructs[DragArrayIndex - 38] = InventoryStructDefault;
+			}
+			else if (DragArrayIndex == 42 && PlayerInventoryStacks[DropArrayIndex] == 0)
+			{
+				PlayerCharacterRef->EquipHeadsetInventorySlot(false, 1);
+				PlayerInventoryStructs[DropArrayIndex] = PlayerGearSlotStructs[DragArrayIndex - 38];
+				PlayerInventoryStacks[DropArrayIndex]++;
+				PlayerGearSlotStructs[DragArrayIndex - 38] = InventoryStructDefault;
 			}
 		}
 	}
 }
+
 
 void AEclipsePlayerState::DragFromGround(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct, const int32 DropArrayIndex, const bool IsAmmunition)
 {
@@ -249,50 +209,47 @@ void AEclipsePlayerState::DragFromGround(APlayerCharacter* PlayerCharacterRef, c
 
 void AEclipsePlayerState::DragFromGroundServer_Implementation(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct, const int32 DropArrayIndex, const bool IsAmmunition)
 {
+	if (PlayerCharacterRef)
+	{
+		if (IsAmmunition)
+		{
+			PlayerCharacterRef->AddAmmunitionByInputString(PlayerInventoryStruct.Name);
+			GroundDetectAndDestroy(PlayerCharacterRef->GetActorLocation(), PlayerInventoryStruct.Name);
+		}
+		else
+		{
+			if (PlayerInventoryStructs.IsValidIndex(DropArrayIndex) && PlayerInventoryStacks.IsValidIndex(DropArrayIndex))
+			{
+				if (PlayerInventoryStacks[DropArrayIndex] == 0)
+				{
+					PlayerInventoryStructs[DropArrayIndex] = PlayerInventoryStruct;
+					PlayerInventoryStacks[DropArrayIndex]++;
+					GroundDetectAndDestroy(PlayerCharacterRef->GetActorLocation(), PlayerInventoryStruct.Name);
+				}
+				else
+				{
+					AddToInventory(PlayerCharacterRef, PlayerInventoryStruct);
+					GroundDetectAndDestroy(PlayerCharacterRef->GetActorLocation(), PlayerInventoryStruct.Name);
+				}
+			}
+		}
+	}
+
 	DragFromGroundMulticast(PlayerCharacterRef, PlayerInventoryStruct, DropArrayIndex, IsAmmunition);
 }
-
-bool AEclipsePlayerState::DragFromGroundServer_Validate(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct, const int32 DropArrayIndex, const bool IsAmmunition)
-{
-	return true;
-}
-
 
 void AEclipsePlayerState::DragFromGroundMulticast_Implementation(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct, const int32 DropArrayIndex, const bool IsAmmunition)
 {
 	if (PlayerCharacterRef)
 	{
-		if (IsAmmunition)
+		if (PlayerCharacterRef->IsLocallyControlled())
 		{
-			if (HasAuthority())
-			{
-				PlayerCharacterRef->AddAmmunitionByInputString(PlayerInventoryStruct.Name);
-				GroundDetectAndDestroy(PlayerCharacterRef->GetActorLocation(), PlayerInventoryStruct.Name);
-			}
+			UGameplayStatics::PlaySound2D(GetWorld(), PlayerCharacterRef->PickUpSound);
 		}
-		else
+		if (!PlayerCharacterRef->HasAuthority())
 		{
-			if (HasAuthority())
-			{
-				if (PlayerInventoryStructs.IsValidIndex(DropArrayIndex) && PlayerInventoryStacks.IsValidIndex(DropArrayIndex))
-				{
-					if (PlayerInventoryStacks[DropArrayIndex] == 0)
-					{
-						PlayerInventoryStructs[DropArrayIndex] = PlayerInventoryStruct;
-						PlayerInventoryStacks[DropArrayIndex]++;
-						GroundDetectAndDestroy(PlayerCharacterRef->GetActorLocation(), PlayerInventoryStruct.Name);
-					}
-					else
-					{
-						AddToInventory(PlayerCharacterRef, PlayerInventoryStruct);
-						GroundDetectAndDestroy(PlayerCharacterRef->GetActorLocation(), PlayerInventoryStruct.Name);
-					}
-				}
-			}
+			PlayerCharacterRef->PlayAnimMontage(PlayerCharacterRef->UpperOnlyMontage, 1, FName("WeaponEquip"));
 		}
-
-		if (PlayerCharacterRef->IsLocallyControlled()) UGameplayStatics::PlaySound2D(GetWorld(), PlayerCharacterRef->PickUpSound);
-		PlayerCharacterRef->PlayAnimMontage(PlayerCharacterRef->UpperOnlyMontage, 1, FName("WeaponEquip"));
 	}
 }
 
@@ -303,164 +260,150 @@ void AEclipsePlayerState::DragFromInventory(APlayerCharacter* PlayerCharacterRef
 
 void AEclipsePlayerState::DragFromInventoryServer_Implementation(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex)
 {
-	DragFromInventoryMulticast(PlayerCharacterRef, DragArrayIndex, DropArrayIndex);
-}
-
-bool AEclipsePlayerState::DragFromInventoryServer_Validate(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex)
-{
-	return true;
-}
-
-void AEclipsePlayerState::DragFromInventoryMulticast_Implementation(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex)
-{
-	if (HasAuthority())
+	if (PlayerCharacterRef)
 	{
-		if (PlayerCharacterRef)
+		if (DropArrayIndex == 38)
 		{
-			if (DropArrayIndex == 38)
+			if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Helmet"))
 			{
-				if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Helmet"))
-				{
-					PlayerCharacterRef->EquipHelmetInventorySlot(true, PlayerInventoryStructs[DragArrayIndex].Stat);
-					if (PlayerInventoryStacks[DragArrayIndex] > 1)
-					{
-						PlayerGearSlotStructs[0] = PlayerInventoryStructs[DragArrayIndex];
-						PlayerInventoryStacks[DragArrayIndex]--;
-					}
-					else
-					{
-						PlayerGearSlotStructs[0] = PlayerInventoryStructs[DragArrayIndex];
-						PlayerInventoryStacks[DragArrayIndex]--;
-						PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
-					}
-				}
-				return;
-			}
-			if (DropArrayIndex == 39)
-			{
-				if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Goggle"))
-				{
-					PlayerCharacterRef->EquipGoggleInventorySlot(true, PlayerInventoryStructs[DragArrayIndex].Stat);
-					if (PlayerInventoryStacks[DragArrayIndex] > 1)
-					{
-						PlayerGearSlotStructs[1] = PlayerInventoryStructs[DragArrayIndex];
-						PlayerInventoryStacks[DragArrayIndex]--;
-					}
-					else
-					{
-						PlayerGearSlotStructs[1] = PlayerInventoryStructs[DragArrayIndex];
-						PlayerInventoryStacks[DragArrayIndex]--;
-						PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
-					}
-				}
-				return;
-			}
-			if (DropArrayIndex == 40)
-			{
-				if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Armor"))
-				{
-					PlayerCharacterRef->EquipArmorInventorySlot(true, PlayerInventoryStructs[DragArrayIndex].Stat);
-					if (PlayerInventoryStacks[DragArrayIndex] > 1)
-					{
-						PlayerGearSlotStructs[2] = PlayerInventoryStructs[DragArrayIndex];
-						PlayerInventoryStacks[DragArrayIndex]--;
-					}
-					else
-					{
-						PlayerGearSlotStructs[2] = PlayerInventoryStructs[DragArrayIndex];
-						PlayerInventoryStacks[DragArrayIndex]--;
-						PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
-					}
-				}
-				return;
-			}
-			if (DropArrayIndex == 41)
-			{
-				if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Mask"))
-				{
-					PlayerCharacterRef->EquipMaskInventorySlot(true, PlayerInventoryStructs[DragArrayIndex].Stat);
-					if (PlayerInventoryStacks[DragArrayIndex] > 1)
-					{
-						PlayerGearSlotStructs[3] = PlayerInventoryStructs[DragArrayIndex];
-						PlayerInventoryStacks[DragArrayIndex]--;
-					}
-					else
-					{
-						PlayerGearSlotStructs[3] = PlayerInventoryStructs[DragArrayIndex];
-						PlayerInventoryStacks[DragArrayIndex]--;
-						PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
-					}
-				}
-				return;
-			}
-			if (DropArrayIndex == 42)
-			{
-				if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Headset"))
-				{
-					PlayerCharacterRef->EquipHeadsetInventorySlot(true, PlayerInventoryStructs[DragArrayIndex].Stat);
-					if (PlayerInventoryStacks[DragArrayIndex] > 1)
-					{
-						PlayerGearSlotStructs[4] = PlayerInventoryStructs[DragArrayIndex];
-						PlayerInventoryStacks[DragArrayIndex]--;
-					}
-					else
-					{
-						PlayerGearSlotStructs[4] = PlayerInventoryStructs[DragArrayIndex];
-						PlayerInventoryStacks[DragArrayIndex]--;
-						PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
-					}
-				}
-				return;
-			}
-			if (DropArrayIndex == 45)
-			{
+				PlayerCharacterRef->EquipHelmetInventorySlot(true, PlayerInventoryStructs[DragArrayIndex].Stat);
 				if (PlayerInventoryStacks[DragArrayIndex] > 1)
 				{
-					FActorSpawnParameters Param;
-					Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-					GetWorld()->SpawnActor<AActor>(PlayerInventoryStructs[DragArrayIndex].ActorReference, PlayerCharacterRef->GetMesh()->GetSocketTransform(FName("ItemDrop")), Param);
+					PlayerGearSlotStructs[0] = PlayerInventoryStructs[DragArrayIndex];
 					PlayerInventoryStacks[DragArrayIndex]--;
 				}
 				else
 				{
-					FActorSpawnParameters Param;
-					Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-					GetWorld()->SpawnActor<AActor>(PlayerInventoryStructs[DragArrayIndex].ActorReference, PlayerCharacterRef->GetMesh()->GetSocketTransform(FName("ItemDrop")), Param);
+					PlayerGearSlotStructs[0] = PlayerInventoryStructs[DragArrayIndex];
 					PlayerInventoryStacks[DragArrayIndex]--;
 					PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
 				}
-				return;
 			}
-			// Move Item
-			if (PlayerInventoryStacks[DropArrayIndex] == 0)
+			return;
+		}
+		if (DropArrayIndex == 39)
+		{
+			if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Goggle"))
 			{
-				PlayerInventoryStructs[DropArrayIndex] = PlayerInventoryStructs[DragArrayIndex];
-				PlayerInventoryStacks[DropArrayIndex] = PlayerInventoryStacks[DragArrayIndex];
+				PlayerCharacterRef->EquipGoggleInventorySlot(true, PlayerInventoryStructs[DragArrayIndex].Stat);
+				if (PlayerInventoryStacks[DragArrayIndex] > 1)
+				{
+					PlayerGearSlotStructs[1] = PlayerInventoryStructs[DragArrayIndex];
+					PlayerInventoryStacks[DragArrayIndex]--;
+				}
+				else
+				{
+					PlayerGearSlotStructs[1] = PlayerInventoryStructs[DragArrayIndex];
+					PlayerInventoryStacks[DragArrayIndex]--;
+					PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
+				}
+			}
+			return;
+		}
+		if (DropArrayIndex == 40)
+		{
+			if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Armor"))
+			{
+				PlayerCharacterRef->EquipArmorInventorySlot(true, PlayerInventoryStructs[DragArrayIndex].Stat);
+				if (PlayerInventoryStacks[DragArrayIndex] > 1)
+				{
+					PlayerGearSlotStructs[2] = PlayerInventoryStructs[DragArrayIndex];
+					PlayerInventoryStacks[DragArrayIndex]--;
+				}
+				else
+				{
+					PlayerGearSlotStructs[2] = PlayerInventoryStructs[DragArrayIndex];
+					PlayerInventoryStacks[DragArrayIndex]--;
+					PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
+				}
+			}
+			return;
+		}
+		if (DropArrayIndex == 41)
+		{
+			if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Mask"))
+			{
+				PlayerCharacterRef->EquipMaskInventorySlot(true, PlayerInventoryStructs[DragArrayIndex].Stat);
+				if (PlayerInventoryStacks[DragArrayIndex] > 1)
+				{
+					PlayerGearSlotStructs[3] = PlayerInventoryStructs[DragArrayIndex];
+					PlayerInventoryStacks[DragArrayIndex]--;
+				}
+				else
+				{
+					PlayerGearSlotStructs[3] = PlayerInventoryStructs[DragArrayIndex];
+					PlayerInventoryStacks[DragArrayIndex]--;
+					PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
+				}
+			}
+			return;
+		}
+		if (DropArrayIndex == 42)
+		{
+			if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Headset"))
+			{
+				PlayerCharacterRef->EquipHeadsetInventorySlot(true, PlayerInventoryStructs[DragArrayIndex].Stat);
+				if (PlayerInventoryStacks[DragArrayIndex] > 1)
+				{
+					PlayerGearSlotStructs[4] = PlayerInventoryStructs[DragArrayIndex];
+					PlayerInventoryStacks[DragArrayIndex]--;
+				}
+				else
+				{
+					PlayerGearSlotStructs[4] = PlayerInventoryStructs[DragArrayIndex];
+					PlayerInventoryStacks[DragArrayIndex]--;
+					PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
+				}
+			}
+			return;
+		}
+		if (DropArrayIndex == 45)
+		{
+			if (PlayerInventoryStacks[DragArrayIndex] > 1)
+			{
+				FActorSpawnParameters Param;
+				Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+				GetWorld()->SpawnActor<AActor>(PlayerInventoryStructs[DragArrayIndex].ActorReference, PlayerCharacterRef->GetMesh()->GetSocketTransform(FName("ItemDrop")), Param);
+				PlayerInventoryStacks[DragArrayIndex]--;
+			}
+			else
+			{
+				FActorSpawnParameters Param;
+				Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+				GetWorld()->SpawnActor<AActor>(PlayerInventoryStructs[DragArrayIndex].ActorReference, PlayerCharacterRef->GetMesh()->GetSocketTransform(FName("ItemDrop")), Param);
+				PlayerInventoryStacks[DragArrayIndex]--;
 				PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
-				PlayerInventoryStacks[DragArrayIndex] = 0;
-				return;
 			}
-			// Merge Item
-			if (PlayerInventoryStructs[DragArrayIndex].Name == PlayerInventoryStructs[DropArrayIndex].Name)
-			{
-				PlayerInventoryStacks[DropArrayIndex] += PlayerInventoryStacks[DragArrayIndex];
-				PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
-				return;
-			}
-			//Swap Item
-			if (PlayerInventoryStructs[DragArrayIndex].Name != PlayerInventoryStructs[DropArrayIndex].Name)
-			{
-				InventoryDropStructCache = PlayerInventoryStructs[DropArrayIndex];
-				InventoryDropStackCache = PlayerInventoryStacks[DropArrayIndex];
-				PlayerInventoryStructs[DropArrayIndex] = PlayerInventoryStructs[DragArrayIndex];
-				PlayerInventoryStacks[DropArrayIndex] = PlayerInventoryStacks[DragArrayIndex];
-				PlayerInventoryStructs[DragArrayIndex] = InventoryDropStructCache;
-				PlayerInventoryStacks[DragArrayIndex] = InventoryDropStackCache;
-			}
+			return;
+		}
+		// Move Item
+		if (PlayerInventoryStacks[DropArrayIndex] == 0)
+		{
+			PlayerInventoryStructs[DropArrayIndex] = PlayerInventoryStructs[DragArrayIndex];
+			PlayerInventoryStacks[DropArrayIndex] = PlayerInventoryStacks[DragArrayIndex];
+			PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
+			PlayerInventoryStacks[DragArrayIndex] = 0;
+			return;
+		}
+		// Merge Item
+		if (PlayerInventoryStructs[DragArrayIndex].Name == PlayerInventoryStructs[DropArrayIndex].Name)
+		{
+			PlayerInventoryStacks[DropArrayIndex] += PlayerInventoryStacks[DragArrayIndex];
+			PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
+			return;
+		}
+		//Swap Item
+		if (PlayerInventoryStructs[DragArrayIndex].Name != PlayerInventoryStructs[DropArrayIndex].Name)
+		{
+			InventoryDropStructCache = PlayerInventoryStructs[DropArrayIndex];
+			InventoryDropStackCache = PlayerInventoryStacks[DropArrayIndex];
+			PlayerInventoryStructs[DropArrayIndex] = PlayerInventoryStructs[DragArrayIndex];
+			PlayerInventoryStacks[DropArrayIndex] = PlayerInventoryStacks[DragArrayIndex];
+			PlayerInventoryStructs[DragArrayIndex] = InventoryDropStructCache;
+			PlayerInventoryStacks[DragArrayIndex] = InventoryDropStackCache;
 		}
 	}
 }
-
 
 void AEclipsePlayerState::DeadBodyWidgetSettings(ADeadPlayerContainer* DeadPlayerContainer, APlayerCharacter* InstigatorPlayerRef)
 {
@@ -470,11 +413,6 @@ void AEclipsePlayerState::DeadBodyWidgetSettings(ADeadPlayerContainer* DeadPlaye
 void AEclipsePlayerState::DeadBodyWidgetSettingsServer_Implementation(ADeadPlayerContainer* DeadPlayerContainer, APlayerCharacter* InstigatorPlayerRef)
 {
 	DeadBodyWidgetSettingsMulticast(DeadPlayerContainer, InstigatorPlayerRef);
-}
-
-bool AEclipsePlayerState::DeadBodyWidgetSettingsServer_Validate(ADeadPlayerContainer* DeadPlayerContainer, APlayerCharacter* InstigatorPlayerRef)
-{
-	return true;
 }
 
 void AEclipsePlayerState::DeadBodyWidgetSettingsMulticast_Implementation(ADeadPlayerContainer* DeadPlayerContainer, APlayerCharacter* InstigatorPlayerRef)
@@ -512,11 +450,6 @@ void AEclipsePlayerState::RemoveSoldInventoryIndexServer_Implementation(APlayerC
 	}
 }
 
-bool AEclipsePlayerState::RemoveSoldInventoryIndexServer_Validate(APlayerCharacter* PlayerCharacterRef, const TArray<int32>& SoldInventoryIndexArray, const int32 SoldRoubleAmount)
-{
-	return true;
-}
-
 void AEclipsePlayerState::ModifyRouble(APlayerCharacter* PlayerCharacterRef, const float RoubleAmount)
 {
 	ModifyRoubleServer(PlayerCharacterRef, RoubleAmount);
@@ -528,11 +461,6 @@ void AEclipsePlayerState::ModifyRoubleServer_Implementation(APlayerCharacter* Pl
 	{
 		PlayerCharacterRef->Stat->AddRouble(RoubleAmount);
 	}
-}
-
-bool AEclipsePlayerState::ModifyRoubleServer_Validate(APlayerCharacter* PlayerCharacterRef, const float RoubleAmount)
-{
-	return true;
 }
 
 void AEclipsePlayerState::ResetPlayerInventoryData()

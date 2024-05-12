@@ -26,7 +26,7 @@ public:
 	UFUNCTION()
 	void DeadBodyWidgetSettings(ADeadPlayerContainer* DeadPlayerContainer, APlayerCharacter* InstigatorPlayerRef);
 
-	UFUNCTION(Server, Reliable, WithValidation)
+	UFUNCTION(Server, Reliable)
 	void DeadBodyWidgetSettingsServer(ADeadPlayerContainer* DeadPlayerContainer, APlayerCharacter* InstigatorPlayerRef);
 
 	UFUNCTION(NetMulticast, Reliable)
@@ -41,7 +41,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AddToInventory(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct);
 
-	UFUNCTION(Server, Reliable, WithValidation)
+	UFUNCTION(Server, Reliable)
 	void AddToInventoryServer(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct);
 
 	UFUNCTION(NetMulticast, Reliable)
@@ -50,31 +50,25 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void OnUseConsumableItem(APlayerCharacter* PlayerCharacterRef, const FString& ConsumableItemName, float HealAmount);
 
-	UFUNCTION(Server, Reliable, WithValidation)
+	UFUNCTION(Server, Reliable)
 	void OnUseConsumableItemServer(APlayerCharacter* PlayerCharacterRef, const FString& ConsumableItemName, const float HealAmount);
 
 	UFUNCTION(BlueprintCallable)
 	void DragFromDeadBody(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex);
 
-	UFUNCTION(Server, Reliable, WithValidation)
+	UFUNCTION(Server, Reliable)
 	void DragFromDeadBodyServer(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex);
-
-	UFUNCTION(NetMulticast, Reliable)
-	void DragFromDeadBodyMulticast(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex);
-
+	
 	UFUNCTION(BlueprintCallable)
 	void DragFromGearSlot(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex);
 
-	UFUNCTION(Server, Reliable, WithValidation)
+	UFUNCTION(Server, Reliable)
 	void DragFromGearSlotServer(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex);
-
-	UFUNCTION(NetMulticast, Reliable)
-	void DragFromGearSlotMulticast(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex);
 
 	UFUNCTION(BlueprintCallable)
 	void DragFromGround(APlayerCharacter* PlayerCharacterRef,  const FPlayerInventoryStruct& PlayerInventoryStruct, const int32 DropArrayIndex, const bool IsAmmunition);
 
-	UFUNCTION(Server, Reliable, WithValidation)
+	UFUNCTION(Server, Reliable)
 	void DragFromGroundServer(APlayerCharacter* PlayerCharacterRef,  const FPlayerInventoryStruct& PlayerInventoryStruct, const int32 DropArrayIndex, const bool IsAmmunition);
 
 	UFUNCTION(NetMulticast, Reliable)
@@ -83,11 +77,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void DragFromInventory(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex);
 
-	UFUNCTION(Server, Reliable, WithValidation)
+	UFUNCTION(Server, Reliable)
 	void DragFromInventoryServer(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex);
-
-	UFUNCTION(NetMulticast, Reliable)
-	void DragFromInventoryMulticast(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void GroundDetectAndDestroy(FVector PlayerCharacterLocation, const FString &InputItemString);
@@ -95,13 +86,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void RemoveSoldInventoryIndex(APlayerCharacter* PlayerCharacterRef, const TArray<int32>& SoldInventoryIndexArray, const int32 SoldRoubleAmount);
 
-	UFUNCTION(Server, Reliable, WithValidation)
+	UFUNCTION(Server, Reliable)
 	void RemoveSoldInventoryIndexServer(APlayerCharacter* PlayerCharacterRef, const TArray<int32>& SoldInventoryIndexArray, const int32 SoldRoubleAmount);
 
 	UFUNCTION(BlueprintCallable)
 	void ModifyRouble(APlayerCharacter* PlayerCharacterRef, const float RoubleAmount);
 
-	UFUNCTION(Server, Reliable, WithValidation)
+	UFUNCTION(Server, Reliable)
 	void ModifyRoubleServer(APlayerCharacter* PlayerCharacterRef, const float RoubleAmount);
 
 	UFUNCTION()

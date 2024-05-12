@@ -4,6 +4,7 @@
 #include "EnemySpawnManager.h"
 
 #include "Components/BoxComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Eclipse/Character/PlayerCharacter.h"
 #include "Eclipse/Enemy/Enemy.h"
 
@@ -25,15 +26,12 @@ AEnemySpawnManager::AEnemySpawnManager()
 	SpawnPosition->SetupAttachment(RootComponent);
 
 	SpawnTriggerBoxCollision->OnComponentBeginOverlap.AddUniqueDynamic(this, &AEnemySpawnManager::OnOverlap);
-	SpawnTriggerBoxCollision->OnComponentEndOverlap.AddUniqueDynamic(this, &AEnemySpawnManager::EndOverlap);
 }
 
 // Called when the game starts or when spawned
 void AEnemySpawnManager::BeginPlay()
 {
-	Super::BeginPlay();
-
-	
+	Super::BeginPlay();	
 }
 
 
@@ -44,9 +42,11 @@ void AEnemySpawnManager::OnOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 		if (const auto Player = Cast<APlayerCharacter>(OtherActor); Player && Player->HasAuthority() && IsSpawnable)
 		{
 			IsSpawnable = false;
-			const FTransform SpawnTrans = SpawnPosition->GetComponentTransform();
+			const FVector SpawnLoc = SpawnPosition->GetComponentLocation();
+			const FRotator SpawnRot = SpawnPosition->GetComponentRotation();		
+			const FTransform SpawnTrans = UKismetMathLibrary::MakeTransform(SpawnLoc, SpawnRot);
 			FActorSpawnParameters Param;
-			Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+			Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::DontSpawnIfColliding;
 			GetWorld()->SpawnActor<AEnemy>(EnemyFactory, SpawnTrans, Param);
 			FTimerHandle EnemySpawnHandle;
 			GetWorldTimerManager().SetTimer(EnemySpawnHandle, FTimerDelegate::CreateLambda([this]()-> void
@@ -55,8 +55,4 @@ void AEnemySpawnManager::OnOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 			}), SpawnCoolTime, false);
 		}
 	}
-}
-
-void AEnemySpawnManager::EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
 }

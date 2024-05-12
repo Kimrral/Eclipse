@@ -100,9 +100,9 @@ void AEnemy::OnPawnDetected(APawn* Pawn)
 {
 	if (APlayerCharacter* DetectedPawn = Cast<APlayerCharacter>(Pawn))
 	{
-		if (EnemyFSM->player == nullptr)
+		if (EnemyFSM->Player == nullptr)
 		{
-			EnemyFSM->player = DetectedPawn;
+			EnemyFSM->Player = DetectedPawn;
 		}
 	}
 }
@@ -127,20 +127,20 @@ void AEnemy::DamagedRPCMulticast_Implementation(int Damage, AActor* DamageCauser
 {
 	if (EnemyStat->IsShieldBroken)
 	{
-		FTimerHandle overlayMatHandle;
+		FTimerHandle OverlayMatHandle;
 		GetMesh()->SetOverlayMaterial(HitOverlayMat);
-		GetWorldTimerManager().ClearTimer(overlayMatHandle);
-		GetWorldTimerManager().SetTimer(overlayMatHandle, FTimerDelegate::CreateLambda([this]()-> void
+		GetWorldTimerManager().ClearTimer(OverlayMatHandle);
+		GetWorldTimerManager().SetTimer(OverlayMatHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
 			GetMesh()->SetOverlayMaterial(nullptr);
 		}), 0.3f, false);
 	}
 	else
 	{
-		FTimerHandle overlayMatHandle;
+		FTimerHandle OverlayMatHandle;
 		GetMesh()->SetOverlayMaterial(HitOverlayMatShield);
-		GetWorldTimerManager().ClearTimer(overlayMatHandle);
-		GetWorldTimerManager().SetTimer(overlayMatHandle, FTimerDelegate::CreateLambda([this]()-> void
+		GetWorldTimerManager().ClearTimer(OverlayMatHandle);
+		GetWorldTimerManager().SetTimer(OverlayMatHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
 			GetMesh()->SetOverlayMaterial(nullptr);
 		}), 0.3f, false);
@@ -170,7 +170,6 @@ void AEnemy::OnShieldDestroy()
 		// Shield 회복
 		EnemyStat->SetShield(EnemyStat->GetMaxShield());
 		EnemyStat->IsShieldBroken = false;
-		//EnemyFSM->player->bossHPUI->shieldProgressBar->SetPercent(1);
 		EnemyFSM->SetState(EEnemyState::MOVE);
 	}), 7.0f, false);
 }
@@ -202,49 +201,49 @@ bool AEnemy::DropRewardServer_Validate()
 
 void AEnemy::DropMagazine() const
 {
-	FActorSpawnParameters param;
-	param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	FActorSpawnParameters Param;
+	Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	if (const auto RandIndex = FMath::RandRange(0, 3); RandIndex == 0)
 	{
-		GetWorld()->SpawnActor<ARifleMagActor>(RifleMagActorFactory, GetActorLocation(), GetActorRotation(), param);
+		GetWorld()->SpawnActor<ARifleMagActor>(RifleMagActorFactory, GetActorLocation(), GetActorRotation(), Param);
 	}
 	else if (RandIndex == 1)
 	{
-		GetWorld()->SpawnActor<ASniperMagActor>(SniperMagActorFactory, GetActorLocation(), GetActorRotation(), param);
+		GetWorld()->SpawnActor<ASniperMagActor>(SniperMagActorFactory, GetActorLocation(), GetActorRotation(), Param);
 	}
 	else if (RandIndex == 2)
 	{
-		GetWorld()->SpawnActor<APistolMagActor>(PistolMagActorFactory, GetActorLocation(), GetActorRotation(), param);
+		GetWorld()->SpawnActor<APistolMagActor>(PistolMagActorFactory, GetActorLocation(), GetActorRotation(), Param);
 	}
 	else if (RandIndex == 3)
 	{
-		GetWorld()->SpawnActor<AM249MagActor>(M249MagActorFactory, GetActorLocation(), GetActorRotation(), param);
+		GetWorld()->SpawnActor<AM249MagActor>(M249MagActorFactory, GetActorLocation(), GetActorRotation(), Param);
 	}
 }
 
 void AEnemy::DropGear() const
 {
-	FActorSpawnParameters param;
-	param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	FActorSpawnParameters Param;
+	Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	if (const auto RandIndex = FMath::RandRange(0, 4); RandIndex == 0)
 	{
-		GetWorld()->SpawnActor<AHelmetActor>(HelmetActorFactory, GetActorLocation(), GetActorRotation(), param);
+		GetWorld()->SpawnActor<AHelmetActor>(HelmetActorFactory, GetActorLocation(), GetActorRotation(), Param);
 	}
 	else if (RandIndex == 1)
 	{
-		GetWorld()->SpawnActor<AHeadsetActor>(HeadsetActorFactory, GetActorLocation(), GetActorRotation(), param);
+		GetWorld()->SpawnActor<AHeadsetActor>(HeadsetActorFactory, GetActorLocation(), GetActorRotation(), Param);
 	}
 	else if (RandIndex == 2)
 	{
-		GetWorld()->SpawnActor<AMaskActor>(MaskActorFactory, GetActorLocation(), GetActorRotation(), param);
+		GetWorld()->SpawnActor<AMaskActor>(MaskActorFactory, GetActorLocation(), GetActorRotation(), Param);
 	}
 	else if (RandIndex == 3)
 	{
-		GetWorld()->SpawnActor<AGoggleActor>(GoggleActorFactory, GetActorLocation(), GetActorRotation(), param);
+		GetWorld()->SpawnActor<AGoggleActor>(GoggleActorFactory, GetActorLocation(), GetActorRotation(), Param);
 	}
 	else if (RandIndex == 4)
 	{
-		GetWorld()->SpawnActor<AArmorActor>(ArmorActorFactory, GetActorLocation(), GetActorRotation(), param);
+		GetWorld()->SpawnActor<AArmorActor>(ArmorActorFactory, GetActorLocation(), GetActorRotation(), Param);
 	}
 }
 

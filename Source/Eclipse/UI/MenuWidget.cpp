@@ -51,7 +51,7 @@ void UMenuWidget::ReturnToHideoutYesFunc()
 		FTimerHandle TimerHandle;
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
-			player->MoveToHideout(false);
+			player->MoveToHideout(true);
 		}), 2.f, false);	
 	}
 }

@@ -33,18 +33,19 @@ void UEnemyFSM::BeginPlay()
 
 	SetIsReplicated(true);
 
-	state = EEnemyState::IDLE;
-	me = Cast<AEnemy>(GetOwner());
-	AIController = Cast<AEclipseAIController>(me->GetController());
+	State = EEnemyState::IDLE;
+	Me = Cast<AEnemy>(GetOwner());
+	AIController = Cast<AEclipseAIController>(Me->GetController());
 
-	// Origin Location
-	InitialPosition = me->GetActorLocation();
+	// Origin Transform
+	InitialPosition = Me->GetActorLocation();
+	InitialRotation = Me->GetActorRotation();
 
 	// Set MoveSpeed
-	me->GetCharacterMovement()->MaxWalkSpeed = maxWalkSpeed;
+	Me->GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
 
-	me->EnemyStat->OnHpZero.AddUObject(this, &UEnemyFSM::DieProcess);
-	me->EnemyStat->OnEnemyDamaged.AddUObject(this, &UEnemyFSM::FindAgressivePlayer);
+	Me->EnemyStat->OnHpZero.AddUObject(this, &UEnemyFSM::DieProcess);
+	Me->EnemyStat->OnEnemyDamaged.AddUObject(this, &UEnemyFSM::FindAgressivePlayer);
 
 	// Timeline Binding
 	if (CurveFloat)
@@ -69,18 +70,18 @@ void UEnemyFSM::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(UEnemyFSM, state);
+	DOREPLIFETIME(UEnemyFSM, State);
 }
 
 // Called every frame
-void UEnemyFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UEnemyFSM::TickComponent(const float DeltaTime, const ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	Timeline.TickTimeline(DeltaTime);
 
 	// switch / case 문을 이용한 상태머신
-	switch (state)
+	switch (State)
 	{
 	case EEnemyState::IDLE:
 		TickIdle();
@@ -102,16 +103,16 @@ void UEnemyFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
 
 void UEnemyFSM::TickIdle()
 {
-	if (player)
+	if (Player)
 	{
-		if (player->IsPlayerDeadImmediately)
+		if (Player->IsPlayerDeadImmediately)
 		{
-			SetState(EEnemyState::MOVE);
+			Player=nullptr;
 			return;
 		}
 		// 플레이어와 적 간의 거리값 도출
-		const auto distToPlayer = player->GetDistanceTo(me);
-		if (distToPlayer <= aggressiveRange)
+		if (const auto DistToPlayer =
+			Player->GetDistanceTo(Me); DistToPlayer <= AggressiveRange)
 		{
 			// 탐색 범위 내에 플레이어가 있다면, 이동 상태로 전이
 			SetState(EEnemyState::MOVE);
@@ -121,27 +122,30 @@ void UEnemyFSM::TickIdle()
 
 void UEnemyFSM::TickMove()
 {
-	if (player)
+	if (Player)
 	{
-		if (player->IsPlayerDeadImmediately)
+		if (Player->IsPlayerDeadImmediately)
 		{
 			MoveBackToInitialPosition();
 			return;
 		}		
 		// 타임라인을 이용한 Enemy 캐릭터 회전 러프
 		Timeline.PlayFromStart();
-		if (AIController) AIController->MoveToPlayer(player);
-		const float dist = player->GetDistanceTo(me);
-		if (dist <= attackRange)
+		if (AIController) AIController->MoveToPlayer(Player);
+		if (const float Dist = Player->GetDistanceTo(Me))
 		{
-			if (AIController) AIController->StopMovement();
-			// 플레이어가 공격 범위 내에 위치한다면, 공격 상태로 전이
-			SetState(EEnemyState::ATTACK);
+			if(Dist >= ChaseLimitRange)
+			{
+				MoveBackToInitialPosition();
+				return;
+			}
+			if(Dist <= AttackRange)
+			{
+				if (AIController) AIController->StopMovement();
+				// 플레이어가 공격 범위 내에 위치한다면, 공격 상태로 전이
+				SetState(EEnemyState::ATTACK);
+			}			
 		}
-	}
-	else
-	{
-		SetState(EEnemyState::IDLE);
 	}
 }
 
@@ -151,25 +155,31 @@ void UEnemyFSM::TickAttack()
 	{
 		return;
 	}
-	if (player)
+	if (Player)
 	{
-		if (player->IsPlayerDeadImmediately)
+		if (Player->IsPlayerDeadImmediately)
 		{
-			SetState(EEnemyState::IDLE);
+			SetState(EEnemyState::MOVE);
+			MoveBackToInitialPosition();
 			return;
 		}
 		// 플레이어와의 거리 도출
-		const float dist = player->GetDistanceTo(me);
-		// 공격거리보다 멀어졌다면
-		if (dist > attackRange)
+		
+		if (const float Dist = Player->GetDistanceTo(Me))
 		{
-			// 이동상태로 전이한다
-			SetState(EEnemyState::MOVE);
-		}
-	}
-	else
-	{
-		SetState(EEnemyState::IDLE);
+			// 추적 범위보다 멀어졌다면
+			if(Dist > ChaseLimitRange)
+			{
+				MoveBackToInitialPosition();
+				return;
+			}
+			// 공격거리보다 멀어졌다면
+			if(Dist > AttackRange)
+			{
+				// 이동상태로 전이한다
+				SetState(EEnemyState::MOVE);
+			}			
+		}	
 	}
 }
 
@@ -187,69 +197,69 @@ void UEnemyFSM::DieProcess()
 {
 	// Die 상태로 전이한다.
 	SetState(EEnemyState::DIE);
-	me->OnDie();	
+	Me->OnDie();	
 }
 
-void UEnemyFSM::SetState(EEnemyState next) // 상태 전이함수
+void UEnemyFSM::SetState(EEnemyState Next) // 상태 전이함수
 {
-	if (me->HasAuthority())
+	if (Me->HasAuthority())
 	{
-		state = next;
-		me->EnemyAnim->state = next;
+		State = Next;
+		Me->EnemyAnim->state = Next;
 	}	
 }
 
 void UEnemyFSM::SetRotToPlayer(const float Value)
 {
-	if(state==EEnemyState::DIE)
+	if(State==EEnemyState::DIE)
 	{
 		return;
 	}
-	if (player && me->HasAuthority() && me->EnemyStat->IsStunned==false)
+	if (Player && Me->HasAuthority() && Me->EnemyStat->IsStunned==false)
 	{
-		if (player->IsPlayerDeadImmediately)
+		if (Player->IsPlayerDeadImmediately)
 		{
-			const FVector dir = InitialPosition - me->GetActorLocation();
+			const FVector dir = InitialPosition - Me->GetActorLocation();
 			// 벡터값에서 회전값 산출
-			const FRotator AttackRot = UKismetMathLibrary::MakeRotFromXZ(dir, player->GetActorUpVector());
-			const FRotator StartRot = me->GetActorRotation();
+			const FRotator AttackRot = UKismetMathLibrary::MakeRotFromXZ(dir, Player->GetActorUpVector());
+			const FRotator StartRot = Me->GetActorRotation();
 			const FRotator EndRot = AttackRot;
 			// RLerp와 TimeLine Value 값을 통한 자연스러운 회전
 			const FRotator Lerp = UKismetMathLibrary::RLerp(StartRot, EndRot, Value, true);
 			// 해당 회전값 Enemy에 할당
-			me->SetActorRotation(FRotator(0, Lerp.Yaw, 0));
+			Me->SetActorRotation(FRotator(0, Lerp.Yaw, 0));
 		}
 		else
 		{
 			// 플레이어를 바라보는 벡터값 산출
-			const FVector Dir = player->GetActorLocation() - me->GetActorLocation();
+			const FVector Dir = Player->GetActorLocation() - Me->GetActorLocation();
 			// 벡터값에서 회전값 산출
-			const FRotator AttackRot = UKismetMathLibrary::MakeRotFromXZ(Dir, player->GetActorUpVector());
-			const FRotator StartRot = me->GetActorRotation();
+			const FRotator AttackRot = UKismetMathLibrary::MakeRotFromXZ(Dir, Player->GetActorUpVector());
+			const FRotator StartRot = Me->GetActorRotation();
 			const FRotator EndRot = AttackRot;
 			// RLerp와 TimeLine Value 값을 통한 자연스러운 회전
 			const FRotator Lerp = UKismetMathLibrary::RLerp(StartRot, EndRot, Value, true);
 			// 해당 회전값 Enemy에 할당
-			me->SetActorRotation(FRotator(0, Lerp.Yaw, 0));
+			Me->SetActorRotation(FRotator(0, Lerp.Yaw, 0));
 		}
 	}
 }
 
 void UEnemyFSM::FindAgressivePlayer()
 {
-	if (state == EEnemyState::IDLE)
+	if (State == EEnemyState::IDLE)
 	{
-		player = ReturnAgressivePlayer();
+		Player = ReturnAggressivePlayer();
 		SetState(EEnemyState::MOVE);
 		return;
 	}
-	if (state == EEnemyState::MOVE)
+	if (State == EEnemyState::MOVE)
 	{
-		player = ReturnAgressivePlayer();
+		Player = ReturnAggressivePlayer();
 	}
 }
 
-APlayerCharacter* UEnemyFSM::ReturnAgressivePlayer()
+APlayerCharacter* UEnemyFSM::ReturnAggressivePlayer()
 {
 	TArray<AActor*> ActorCharacterArray;
 	TArray<APlayerCharacter*> PlayerCharacterArray;
@@ -258,9 +268,9 @@ APlayerCharacter* UEnemyFSM::ReturnAgressivePlayer()
 	int MaxDamageIndex = 0;
 	for (int i = 0; i < ActorCharacterArray.Num(); i++)
 	{
-		if (APlayerCharacter* Player = Cast<APlayerCharacter>(ActorCharacterArray[i]))
+		if (APlayerCharacter* AggressivePlayer = Cast<APlayerCharacter>(ActorCharacterArray[i]))
 		{
-			PlayerCharacterArray.Add(Player);
+			PlayerCharacterArray.Add(AggressivePlayer);
 		}
 	}
 	for (int i = 0; i < PlayerCharacterArray.Num(); i++)
@@ -282,16 +292,17 @@ APlayerCharacter* UEnemyFSM::ReturnAgressivePlayer()
 
 void UEnemyFSM::MoveBackToInitialPosition()
 {
-	if (state == EEnemyState::IDLE)
+	if (State == EEnemyState::IDLE)
 	{
 		return;
 	}
+	Player=nullptr;
 	// 타임라인을 이용한 Enemy 캐릭터 회전 러프
 	Timeline.PlayFromStart();
 	if (AIController) AIController->MoveToLocation(InitialPosition);
-	if (FVector::Dist(me->GetActorLocation(), InitialPosition) <= 100.f)
+	if (FVector::Dist(Me->GetActorLocation(), InitialPosition) <= 100.f)
 	{
-		player=nullptr;
+		Me->GetController()->SetControlRotation(InitialRotation);
 		SetState(EEnemyState::IDLE);
 	}
 }

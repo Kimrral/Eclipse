@@ -12,20 +12,16 @@ ATrooper::ATrooper()
 {
 	WeaponComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponComp"));
 	WeaponComp->SetupAttachment(GetMesh(), FName("hand_r"));
-
 }
 
 void ATrooper::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if(HasAuthority())
+	const auto Material = WeaponComp->GetMaterial(0);
+	if (UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(Material, this))
 	{
-		const auto Material = WeaponComp->GetMaterial(0);
-		if (UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(Material, this))
-		{
-			WeaponComp->SetMaterial(0, DynamicMaterial);
-		}
+		WeaponComp->SetMaterial(0, DynamicMaterial);
 	}
 }
 
@@ -39,10 +35,10 @@ void ATrooper::SetDissolveValue(const float Value)
 
 void ATrooper::FireProcess() const
 {
-	if (EnemyFSM->player)
+	if (EnemyFSM->Player)
 	{
 		const FTransform MuzzleTrans = GetMesh()->GetSocketTransform(FName("TrooperMuzzle"));
-		const FVector PlayerLoc = (EnemyFSM->player->GetActorLocation() - MuzzleTrans.GetLocation());
+		const FVector PlayerLoc = (EnemyFSM->Player->GetActorLocation() - MuzzleTrans.GetLocation());
 		const FRotator ProjectileRot = UKismetMathLibrary::MakeRotFromXZ(PlayerLoc, this->GetActorUpVector());
 		const auto ProjectileTrans = UKismetMathLibrary::MakeTransform(MuzzleTrans.GetLocation(), ProjectileRot + FRotator(0, -90, 0));
 		GetWorld()->SpawnActor<ATrooperProjectile>(TrooperProjectileFactory, ProjectileTrans);

@@ -13,23 +13,17 @@ AArtillery::AArtillery()
 {
 	LauncherComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("LauncherComp"));
 	LauncherComp->SetupAttachment(GetMesh(), FName("hand_r"));
-	
-
 }
 
 void AArtillery::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if(HasAuthority())
+	const auto Material = LauncherComp->GetMaterial(0);
+	if (UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(Material, this))
 	{
-		const auto Material = LauncherComp->GetMaterial(0);
-		if(UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(Material, this))
-		{
-			LauncherComp->SetMaterial(0, DynamicMaterial);
-		}
+		LauncherComp->SetMaterial(0, DynamicMaterial);
 	}
-
 }
 
 void AArtillery::SetDissolveValue(const float Value)
@@ -42,12 +36,11 @@ void AArtillery::SetDissolveValue(const float Value)
 
 void AArtillery::FireProcess() const
 {
-	if (EnemyFSM->player)
+	if (EnemyFSM->Player)
 	{
 		const FTransform MuzzleTrans = GetMesh()->GetSocketTransform(FName("ArtilleryMuzzle"));
-		const FVector PlayerLoc = (EnemyFSM->player->GetActorLocation() - MuzzleTrans.GetLocation());
+		const FVector PlayerLoc = (EnemyFSM->Player->GetActorLocation() - MuzzleTrans.GetLocation());
 		const FRotator ProjectileRot = UKismetMathLibrary::MakeRotFromXZ(PlayerLoc, this->GetActorUpVector());
 		GetWorld()->SpawnActor<AGuardianProjectile>(GuardianProjectileFactory, MuzzleTrans.GetLocation(), ProjectileRot);
 	}
-	
 }

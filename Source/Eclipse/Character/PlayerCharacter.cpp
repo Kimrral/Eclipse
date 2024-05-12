@@ -292,11 +292,19 @@ void APlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 }
 
 
+void APlayerCharacter::SetPlayerControlRotation_Implementation(const FRotator& DesiredRotation)
+{
+	if(PC)
+	{
+		PC->SetControlRotation(DesiredRotation);
+	}
+}
+
 void APlayerCharacter::WidgetConstruction()
 {
-	if(IsLocallyControlled())
+	if (IsLocallyControlled())
 	{
-		if(informationUI && crosshairUI)
+		if (informationUI && crosshairUI)
 		{
 			crosshairUI->AddToViewport();
 			informationUI->owner = this;
@@ -3474,10 +3482,10 @@ void APlayerCharacter::MoveToIsolatedShipClient()
 		const FName SpacecraftLevelName = FName("Map_BigStarStation");
 		const FName HideoutLevelName = FName("Safe_House");
 		const FName OnSpacecraftStreamingLevelLoadFinished = FName("OnSpacecraftStreamingLevelLoadFinished");
-		FLatentActionInfo LoadLatentInfo;		
+		FLatentActionInfo LoadLatentInfo;
 		LoadLatentInfo.CallbackTarget = this;
 		LoadLatentInfo.Linkage = 0;
-		LoadLatentInfo.ExecutionFunction = OnSpacecraftStreamingLevelLoadFinished;		
+		LoadLatentInfo.ExecutionFunction = OnSpacecraftStreamingLevelLoadFinished;
 
 		UnloadMultipleStreamingLevels(IntersectionLevelName, HideoutLevelName);
 		UGameplayStatics::LoadStreamLevel(this, SpacecraftLevelName, true, true, LoadLatentInfo);
@@ -3490,7 +3498,7 @@ void APlayerCharacter::MoveToHideout(const bool IsPlayerDeath)
 	{
 		IsPlayerDead = false;
 		IsPlayerDeadImmediately = false;
-		StopAnimMontage();		
+		StopAnimMontage();
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		ResetPlayerInventoryDataServer();
@@ -3506,15 +3514,13 @@ void APlayerCharacter::MoveToHideout(const bool IsPlayerDeath)
 		const FName IntersectionLevelName = FName("Deserted_Road");
 		const FName SpacecraftLevelName = FName("Map_BigStarStation");
 		const FName OnHideoutLevelLoadFinishedFunc = FName("OnHideoutStreamingLevelLoadFinished");
-		const FLatentActionInfo UnloadLatentInfo;
-		const FLatentActionInfo UnloadLatentInfo2;
 		FLatentActionInfo LoadLatentInfo;
 		LoadLatentInfo.CallbackTarget = this;
 		LoadLatentInfo.Linkage = 0;
 		LoadLatentInfo.ExecutionFunction = OnHideoutLevelLoadFinishedFunc;
+
+		UnloadMultipleStreamingLevels(IntersectionLevelName, SpacecraftLevelName);
 		UGameplayStatics::LoadStreamLevel(this, HideoutLevelName, true, true, LoadLatentInfo);
-		UGameplayStatics::UnloadStreamLevel(this, SpacecraftLevelName, UnloadLatentInfo2, true);
-		UGameplayStatics::UnloadStreamLevel(this, IntersectionLevelName, UnloadLatentInfo, true);
 	}
 }
 
@@ -3548,16 +3554,13 @@ void APlayerCharacter::MoveToBlockedIntersectionClient()
 		const FName HideoutLevelName = FName("Safe_House");
 		const FName SpacecraftLevelName = FName("Map_BigStarStation");
 		const FName OnIntersectionLevelLoadFinishedFunc = FName("OnIntersectionStreamingLevelLoadFinished");
-		const FLatentActionInfo UnloadLatentInfo;
-		const FLatentActionInfo UnloadLatentInfo2;
 		FLatentActionInfo LoadLatentInfo;
 		LoadLatentInfo.CallbackTarget = this;
 		LoadLatentInfo.Linkage = 0;
 		LoadLatentInfo.ExecutionFunction = OnIntersectionLevelLoadFinishedFunc;
 
+		UnloadMultipleStreamingLevels(HideoutLevelName, SpacecraftLevelName);
 		UGameplayStatics::LoadStreamLevel(this, IntersectionLevelName, true, true, LoadLatentInfo);
-		UGameplayStatics::UnloadStreamLevel(this, SpacecraftLevelName, UnloadLatentInfo2, true);
-		UGameplayStatics::UnloadStreamLevel(this, HideoutLevelName, UnloadLatentInfo, true);
 	}
 }
 
@@ -3730,7 +3733,7 @@ void APlayerCharacter::OnSpacecraftStreamingLevelLoadFinished()
 	bEnding = false;
 	IsPlayerDeadImmediately = false;
 	bUseControllerRotationYaw = true;
-	
+
 	OnSpacecraftStreamingLevelLoadFinishedServer();
 }
 
@@ -3747,6 +3750,7 @@ void APlayerCharacter::OnSpacecraftStreamingLevelLoadFinishedServer_Implementati
 			{
 				const FTransform TargetPlayerStartTrans = PlayerStart->GetActorTransform();
 				SetActorTransform(TargetPlayerStartTrans, false, nullptr, ETeleportType::TeleportPhysics);
+				SetPlayerControlRotation(TargetPlayerStartTrans.Rotator());
 				return;
 			}
 		}
@@ -3772,13 +3776,13 @@ void APlayerCharacter::OnIntersectionStreamingLevelLoadFinished()
 	bEnding = false;
 	IsPlayerDeadImmediately = false;
 	bUseControllerRotationYaw = true;
-	
+
 	OnIntersectionStreamingLevelLoadFinishedServer();
 }
 
 
 void APlayerCharacter::OnIntersectionStreamingLevelLoadFinishedServer_Implementation()
-{	
+{
 	TArray<class AActor*> OutActors;
 	TArray<class APlayerStart*> TargetPlayerStarts;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), PlayerStartFactory, OutActors);
@@ -3796,6 +3800,7 @@ void APlayerCharacter::OnIntersectionStreamingLevelLoadFinishedServer_Implementa
 	{
 		const FTransform TargetPlayerStartTrans = TargetPlayerStarts[PlayerStartRandIndex]->GetActorTransform();
 		SetActorTransform(TargetPlayerStartTrans, false, nullptr, ETeleportType::TeleportPhysics);
+		SetPlayerControlRotation(TargetPlayerStartTrans.Rotator());
 	}
 }
 
@@ -3816,10 +3821,10 @@ void APlayerCharacter::OnHideoutStreamingLevelLoadFinished()
 			CameraManager->StartCameraFade(1.0, 0, 10.0, FColor::Black, true, true);
 		}
 	}
-	
+
 	OnHideoutStreamingLevelLoadFinishedServer();
 
-	if(!GetMesh()->IsVisible())
+	if (!GetMesh()->IsVisible())
 	{
 		FTimerHandle TimerHandle;
 		GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()-> void
@@ -3849,6 +3854,7 @@ void APlayerCharacter::OnHideoutStreamingLevelLoadFinishedServer_Implementation(
 	{
 		const FTransform TargetPlayerStartTrans = TargetPlayerStarts[PlayerStartRandIndex]->GetActorTransform();
 		SetActorTransform(TargetPlayerStartTrans, false);
+		SetPlayerControlRotation(TargetPlayerStartTrans.Rotator());
 	}
 }
 
@@ -4783,23 +4789,23 @@ void APlayerCharacter::PurchaseAmmo(const int32 AmmoIndex)
 
 void APlayerCharacter::PurchaseAmmoServer_Implementation(const int32 AmmoIndex)
 {
-	if(HasAuthority())
+	if (HasAuthority())
 	{
-		if(AmmoIndex==0)
+		if (AmmoIndex == 0)
 		{
-			maxRifleAmmo+=40;
+			maxRifleAmmo += 40;
 		}
-		else if(AmmoIndex==1)
+		else if (AmmoIndex == 1)
 		{
-			maxSniperAmmo+=5;
+			maxSniperAmmo += 5;
 		}
-		else if(AmmoIndex==2)
+		else if (AmmoIndex == 2)
 		{
-			maxPistolAmmo+=8;
+			maxPistolAmmo += 8;
 		}
-		else if(AmmoIndex==3)
+		else if (AmmoIndex == 3)
 		{
-			maxM249Ammo+=50;
+			maxM249Ammo += 50;
 		}
 	}
 }
@@ -4833,7 +4839,7 @@ void APlayerCharacter::UnloadMultipleStreamingLevels(const FName& FirstLevelName
 {
 	TArray<FName> StreamingLevelArray = {FirstLevelName, SecondLevelName};
 	int32 StreamingLevelID = 0;
-	for(const auto LevelName : StreamingLevelArray)
+	for (const auto LevelName : StreamingLevelArray)
 	{
 		FLatentActionInfo LatentActionInfo;
 		LatentActionInfo.CallbackTarget = this;

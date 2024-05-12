@@ -42,7 +42,7 @@ void UEnemyAnim::AnimNotify_DamageEnd()
 	me->GetCharacterMovement()->Activate();
 	if (FSM)
 	{
-		FSM->state = EEnemyState::MOVE;
+		FSM->State = EEnemyState::MOVE;
 	}
 }
 
@@ -54,7 +54,7 @@ void UEnemyAnim::AnimNotify_DieEnd()
 
 void UEnemyAnim::ReplicateChangedState()
 {
-	state= FSM->state;
+	state= FSM->State;
 }
 
 

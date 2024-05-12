@@ -59,9 +59,8 @@ public:
 	UFUNCTION()
 	void DieProcess();
 
-
 	UFUNCTION()
-	void SetState(EEnemyState next);
+	void SetState(EEnemyState Next);
 
 	UFUNCTION()
 	void SetRotToPlayer(float Value);
@@ -73,7 +72,7 @@ public:
 	bool IsAttackAnimationPlaying() const;
 
 	UFUNCTION()
-	APlayerCharacter* ReturnAgressivePlayer();
+	APlayerCharacter* ReturnAggressivePlayer();
 
 	UFUNCTION()
 	void MoveBackToInitialPosition();
@@ -88,14 +87,13 @@ public:
 	class UParticleSystem* ShieldBreakEmitter;
 
 	UPROPERTY(ReplicatedUsing=OnRep_EnemyState)
-	EEnemyState state;
-
-
-	UPROPERTY()
-	class APlayerCharacter* player;
+	EEnemyState State;
 
 	UPROPERTY()
-	class AEnemy* me;
+	class APlayerCharacter* Player;
+
+	UPROPERTY()
+	class AEnemy* Me;
 
 	UPROPERTY()
 	class AEclipseAIController* AIController;
@@ -104,21 +102,29 @@ public:
 	bool IsPlayingAttackAnimation = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=EnemySettings)
-	float aggressiveRange = 600.f;
+	float ChaseLimitRange = 900.f;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=EnemySettings)
-	float attackRange = 300.f;
+	float AggressiveRange = 600.f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=EnemySettings)
+	float AttackRange = 300.f;
 
 	UPROPERTY()
-	float curTime;
+	float CurTime;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=EnemySettings)
-	float attackDelayTime = 1.5f;
+	float AttackDelayTime = 1.5f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=EnemySettings)
-	float maxWalkSpeed = 200.0f;
+	float MaxWalkSpeed = 200.0f;
+	
 	bool bTickDie;
 
 	UPROPERTY()
 	FVector InitialPosition;
+
+	UPROPERTY()
+	FRotator InitialRotation;
 
 	UPROPERTY()
 	float alpha;

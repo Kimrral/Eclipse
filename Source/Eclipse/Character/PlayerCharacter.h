@@ -607,6 +607,9 @@ public:
 	UFUNCTION(Server, Reliable)
 	void OnHideoutStreamingLevelLoadFinishedServer();
 
+	UFUNCTION(Client, Unreliable)
+	void SetPlayerControlRotation(const FRotator& DesiredRotation);
+
 	UFUNCTION()
 	void WidgetConstruction();
 
@@ -1222,7 +1225,7 @@ public:
 	bool bM249AdditionalMag;
 
 	UPROPERTY()
-	bool bHideout = false;;
+	bool bHideout = true;
 
 	UPROPERTY()
 	class AEclipsePlayerController* PC;

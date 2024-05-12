@@ -16,10 +16,10 @@ void AGuardian::DropRewardServer()
 
 void AGuardian::FireProcess() const
 {
-	if (EnemyFSM->player)
+	if (EnemyFSM->Player)
 	{
 		const FTransform MuzzleTrans = GetMesh()->GetSocketTransform(FName("Muzzle"));
-		const FVector PlayerLoc = (EnemyFSM->player->GetActorLocation() - MuzzleTrans.GetLocation());
+		const FVector PlayerLoc = (EnemyFSM->Player->GetActorLocation() - MuzzleTrans.GetLocation());
 		const FRotator ProjectileRot = UKismetMathLibrary::MakeRotFromXZ(PlayerLoc, this->GetActorUpVector());
 		GetWorld()->SpawnActor<AGuardianProjectile>(GuardianProjectileFactory, MuzzleTrans.GetLocation(), ProjectileRot);
 	}

@@ -35,7 +35,6 @@ void UPlayerAnim::AnimNotify_ReloadEnd() const
 			me->maxRifleAmmo -= (40 - me->curRifleAmmo);
 			me->curRifleAmmo += (40- me->curRifleAmmo);
 		}
-		UE_LOG(LogTemp, Warning, TEXT("MaxRifleAmmo:%d"), me->maxRifleAmmo)
 	}
 	else if (me->weaponArray[1] == true)
 	{
@@ -49,7 +48,6 @@ void UPlayerAnim::AnimNotify_ReloadEnd() const
 			me->maxSniperAmmo -= (5 - me->curSniperAmmo);
 			me->curSniperAmmo += (5- me->curSniperAmmo);
 		}
-		UE_LOG(LogTemp, Warning, TEXT("MaxSniperAmmo:%d"), me->maxSniperAmmo)
 	}
 	else if (me->weaponArray[2] == true)
 	{
@@ -63,7 +61,6 @@ void UPlayerAnim::AnimNotify_ReloadEnd() const
 			me->maxPistolAmmo -= (8 - me->curPistolAmmo);
 			me->curPistolAmmo += (8 - me->curPistolAmmo);
 		}
-		UE_LOG(LogTemp, Warning, TEXT("MaxPistolAmmo:%d"), me->maxPistolAmmo)
 	}
 	else if (me->weaponArray[3] == true)
 	{
@@ -77,7 +74,6 @@ void UPlayerAnim::AnimNotify_ReloadEnd() const
 			me->maxM249Ammo -= (100 - me->curM249Ammo);
 			me->curM249Ammo += (100  - me->curM249Ammo);
 		}
-		UE_LOG(LogTemp, Warning, TEXT("MaxM249Ammo:%d"), me->maxM249Ammo)
 	}
 	me->CanShoot = true;
 }

@@ -166,14 +166,9 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	SetActorEnableCollision(true);
-	SetActorHiddenInGame(false);
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	GetMesh()->HideBoneByName(TEXT("bot_hand"), EPhysBodyOp::PBO_None);
 	GetMesh()->HideBoneByName(TEXT("shotgun_base"), EPhysBodyOp::PBO_None);
 	GetMesh()->HideBoneByName(TEXT("sniper_can_arm_01"), EPhysBodyOp::PBO_None);
-	GetMesh()->SetVisibility(true);
 
 	FirstPersonRifleComp->SetVisibility(false);
 	FirstPersonPistolComp->SetVisibility(false);
@@ -233,12 +228,17 @@ void APlayerCharacter::BeginPlay()
 		TiltingRightTimeline.AddInterpFloat(TiltingCurveFloat, TiltRightTimelineProgress);
 	}
 
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
+
 	if (IsLocallyControlled())
 	{
 		TradeWidgetUI->Construction(this);
 		APlayerCameraManager* const CameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0));
 		CameraManager->StopCameraFade();
 		CameraManager->StartCameraFade(1.0, 0, 10.0, FColor::Black, true, true);
+
+		// Spawn Player Emitter
+		UGameplayStatics::PlaySound2D(GetWorld(), PlayerSpawnSound, 0.6, 1, 0.25);
 
 		const FName IntersectionUnload = FName("Deserted_Road");
 		const FName SpacecraftUnload = FName("Map_BigStarStation");
@@ -274,10 +274,6 @@ void APlayerCharacter::BeginPlay()
 	weaponArray.Add(bUsingPistol); //2
 	weaponArray.Add(bUsingM249); //3		
 
-	// Spawn Player Emitter
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
-	UGameplayStatics::PlaySound2D(GetWorld(), PlayerSpawnSound, 0.6, 1, 0.25);
-
 	// Delegate Binding
 	ExtractionCountdownUI->ExtractionSuccessDele.AddUObject(this, &APlayerCharacter::ExtractionSuccess);
 	Stat->OnHpZero.AddUObject(this, &APlayerCharacter::PlayerDeath);
@@ -294,7 +290,7 @@ void APlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void APlayerCharacter::SetPlayerControlRotation_Implementation(const FRotator& DesiredRotation)
 {
-	if(PC)
+	if (PC)
 	{
 		PC->SetControlRotation(DesiredRotation);
 	}
@@ -407,7 +403,7 @@ void APlayerCharacter::Move(const FInputActionValue& Value)
 		// find out which way is forward
 		const FRotator ControlRotation = Controller->GetControlRotation();
 		const FRotator CapsuleRotation = GetCapsuleComponent()->GetComponentRotation();
-		
+
 		const double SelectedYaw = UKismetMathLibrary::SelectFloat(CapsuleRotation.Yaw, ControlRotation.Yaw, bFreeLook);
 		const FRotator SelectedRotator(0, SelectedYaw, 0);
 
@@ -3470,6 +3466,7 @@ bool APlayerCharacter::ServerRPCReload_Validate()
 void APlayerCharacter::MoveToIsolatedShip()
 {
 	MoveToAnotherLevel();
+	bHideout = false;
 
 	FTimerHandle TimerHandle;
 	GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()-> void
@@ -3510,6 +3507,8 @@ void APlayerCharacter::MoveToHideout(const bool IsPlayerDeath)
 		ResetTabWidget();
 	}
 
+	bHideout = true;
+
 	if (IsLocallyControlled())
 	{
 		PC->SetIgnoreLookInput(false);
@@ -3542,6 +3541,7 @@ void APlayerCharacter::ResetPlayerInventoryDataServer_Implementation()
 void APlayerCharacter::MoveToBlockedIntersection()
 {
 	MoveToAnotherLevel();
+	bHideout = false;
 
 	FTimerHandle EndHandle;
 	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
@@ -3744,22 +3744,7 @@ void APlayerCharacter::OnSpacecraftStreamingLevelLoadFinished()
 
 void APlayerCharacter::OnSpacecraftStreamingLevelLoadFinishedServer_Implementation()
 {
-	TArray<class AActor*> OutActors;
-	TArray<class APlayerStart*> TargetPlayerStarts;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), PlayerStartFactory, OutActors);
-	for (const auto PlayerStarts : OutActors)
-	{
-		if (const auto PlayerStart = Cast<APlayerStart>(PlayerStarts))
-		{
-			if (PlayerStart && PlayerStart->PlayerStartTag == FName("Spacecraft"))
-			{
-				const FTransform TargetPlayerStartTrans = PlayerStart->GetActorTransform();
-				SetActorTransform(TargetPlayerStartTrans, false, nullptr, ETeleportType::TeleportPhysics);
-				SetPlayerControlRotation(TargetPlayerStartTrans.Rotator());
-				return;
-			}
-		}
-	}
+	ChoosePlayerStartByTagName(FName("Spacecraft"), 1000);
 }
 
 void APlayerCharacter::OnIntersectionStreamingLevelLoadFinished()
@@ -3788,25 +3773,7 @@ void APlayerCharacter::OnIntersectionStreamingLevelLoadFinished()
 
 void APlayerCharacter::OnIntersectionStreamingLevelLoadFinishedServer_Implementation()
 {
-	TArray<class AActor*> OutActors;
-	TArray<class APlayerStart*> TargetPlayerStarts;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), PlayerStartFactory, OutActors);
-	for (const auto PlayerStarts : OutActors)
-	{
-		if (const auto PlayerStart = Cast<APlayerStart>(PlayerStarts))
-		{
-			if (PlayerStart && PlayerStart->PlayerStartTag == FName("Intersection"))
-			{
-				TargetPlayerStarts.Add(PlayerStart);
-			}
-		}
-	}
-	if (const auto PlayerStartRandIndex = FMath::RandRange(0, TargetPlayerStarts.Num() - 1); TargetPlayerStarts.IsValidIndex(PlayerStartRandIndex))
-	{
-		const FTransform TargetPlayerStartTrans = TargetPlayerStarts[PlayerStartRandIndex]->GetActorTransform();
-		SetActorTransform(TargetPlayerStartTrans, false, nullptr, ETeleportType::TeleportPhysics);
-		SetPlayerControlRotation(TargetPlayerStartTrans.Rotator());
-	}
+	ChoosePlayerStartByTagName(FName("Intersection"), 3000);
 }
 
 void APlayerCharacter::OnHideoutStreamingLevelLoadFinished()
@@ -3842,6 +3809,11 @@ void APlayerCharacter::OnHideoutStreamingLevelLoadFinished()
 void APlayerCharacter::OnHideoutStreamingLevelLoadFinishedServer_Implementation()
 {
 	Stat->SetHp(Stat->GetMaxHp());
+	ChoosePlayerStartByTagName(FName("Hideout"), 100);
+}
+
+void APlayerCharacter::ChoosePlayerStartByTagName(const FName& PlayerStartTagName, const int32 DetectionSphereRadius)
+{
 	TArray<class AActor*> OutActors;
 	TArray<class APlayerStart*> TargetPlayerStarts;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), PlayerStartFactory, OutActors);
@@ -3849,8 +3821,26 @@ void APlayerCharacter::OnHideoutStreamingLevelLoadFinishedServer_Implementation(
 	{
 		if (const auto PlayerStart = Cast<APlayerStart>(PlayerStarts))
 		{
-			if (PlayerStart && PlayerStart->PlayerStartTag == FName("Hideout"))
+			if (PlayerStart && PlayerStart->PlayerStartTag == PlayerStartTagName)
 			{
+				const FVector Center = PlayerStart->GetActorLocation();
+				FCollisionQueryParams Params;
+				bool AlreadyLocated = false;
+				if (TArray<FOverlapResult> HitObj; GetWorld()->OverlapMultiByChannel(HitObj, Center, FQuat::Identity, ECC_Pawn, FCollisionShape::MakeSphere(DetectionSphereRadius), Params))
+				{
+					for (int i = 0; i < HitObj.Num(); ++i)
+					{
+						if (Cast<APlayerCharacter>(HitObj[i].GetActor()))
+						{
+							AlreadyLocated = true;
+							break;
+						}						
+					}
+				}
+				if(AlreadyLocated)
+				{
+					continue;
+				}
 				TargetPlayerStarts.Add(PlayerStart);
 			}
 		}
@@ -3969,6 +3959,11 @@ void APlayerCharacter::OnRep_MaxM249Ammo()
 
 void APlayerCharacter::Fire()
 {
+	if (bHideout)
+	{
+		crosshairUI->PlayAnimation(crosshairUI->HideoutWarningAnimation);
+		return;
+	}
 	if (!CanShoot || isRunning || gi->IsWidgetOn || bEnding || IsPlayerDeadImmediately)
 	{
 		return;

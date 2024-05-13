@@ -46,41 +46,44 @@ void AEclipsePlayerState::AddToInventory(APlayerCharacter* PlayerCharacterRef, c
 
 void AEclipsePlayerState::AddToInventoryServer_Implementation(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct)
 {
-	if (PlayerCharacterRef)
-	{
-		for (int i = 0; i < PlayerInventoryStructs.Num(); ++i)
-		{
-			if (PlayerInventoryStructs[i].Name == PlayerInventoryStruct.Name)
-			{
-				const int32 InventoryArrayIndex = i;
-				PlayerInventoryStacks[InventoryArrayIndex]++;
-				IsAlreadySet = true;
-			}
-		}
-		if (IsAlreadySet)
-		{
-			IsAlreadySet = false;
-		}
-		else
-		{
-			for (int i = 0; i < PlayerInventoryStacks.Num(); ++i)
-			{
-				if (PlayerInventoryStacks[i] == 0)
-				{
-					const int32 InventoryArrayIndex = i;
-					PlayerInventoryStructs[InventoryArrayIndex] = PlayerInventoryStruct;
-					PlayerInventoryStacks[InventoryArrayIndex]++;
-					return;
-				}
-			}
-		}
-	}
 	AddToInventoryMulticast(PlayerCharacterRef, PlayerInventoryStruct);
 }
 
 void AEclipsePlayerState::AddToInventoryMulticast_Implementation(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct)
 {
 	if (PlayerCharacterRef->IsLocallyControlled()) AddToInventoryWidget(PlayerCharacterRef, PlayerInventoryStruct);
+	if(HasAuthority())
+	{
+		if (PlayerCharacterRef)
+		{
+			for (int i = 0; i < PlayerInventoryStructs.Num(); ++i)
+			{
+				if (PlayerInventoryStructs[i].Name == PlayerInventoryStruct.Name)
+				{
+					const int32 InventoryArrayIndex = i;
+					PlayerInventoryStacks[InventoryArrayIndex]++;
+					IsAlreadySet = true;
+				}
+			}
+			if (IsAlreadySet)
+			{
+				IsAlreadySet = false;
+			}
+			else
+			{
+				for (int i = 0; i < PlayerInventoryStacks.Num(); ++i)
+				{
+					if (PlayerInventoryStacks[i] == 0)
+					{
+						const int32 InventoryArrayIndex = i;
+						PlayerInventoryStructs[InventoryArrayIndex] = PlayerInventoryStruct;
+						PlayerInventoryStacks[InventoryArrayIndex]++;
+						return;
+					}
+				}
+			}
+		}
+	}
 }
 
 void AEclipsePlayerState::OnUseConsumableItem(APlayerCharacter* PlayerCharacterRef, const FString& ConsumableItemName, const float HealAmount)

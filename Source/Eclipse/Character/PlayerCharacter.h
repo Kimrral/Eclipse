@@ -1209,6 +1209,9 @@ public:
 	UPROPERTY()
 	bool ArmorEquipped = false;
 
+	UPROPERTY()
+	bool bFreeLook = false;
+
 	UPROPERTY(Replicated)
 	bool IsPlayerDeadImmediately = false;
 

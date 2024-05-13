@@ -405,14 +405,17 @@ void APlayerCharacter::Move(const FInputActionValue& Value)
 	if (Controller != nullptr)
 	{
 		// find out which way is forward
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
+		const FRotator ControlRotation = Controller->GetControlRotation();
+		const FRotator CapsuleRotation = GetCapsuleComponent()->GetComponentRotation();
+		
+		const double SelectedYaw = UKismetMathLibrary::SelectFloat(CapsuleRotation.Yaw, ControlRotation.Yaw, bFreeLook);
+		const FRotator SelectedRotator(0, SelectedYaw, 0);
 
 		// get forward vector
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		const FVector ForwardDirection = FRotationMatrix(SelectedRotator).GetUnitAxis(EAxis::X);
 
 		// get right vector 
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		const FVector RightDirection = FRotationMatrix(SelectedRotator).GetUnitAxis(EAxis::Y);
 
 		// add movement 
 		AddMovementInput(ForwardDirection, MovementVector.Y);
@@ -757,11 +760,13 @@ void APlayerCharacter::RunRPCReleaseMulticast_Implementation()
 
 void APlayerCharacter::OnActionLookAroundPressed()
 {
+	bFreeLook = true;
 	bUseControllerRotationYaw = false;
 }
 
 void APlayerCharacter::OnActionLookAroundReleased()
 {
+	bFreeLook = false;
 	bUseControllerRotationYaw = true;
 }
 

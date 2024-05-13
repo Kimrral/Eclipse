@@ -17,6 +17,7 @@ class ECLIPSE_API AEclipsePlayerController : public APlayerController
 	GENERATED_BODY()
 
 public:
+	
 	UFUNCTION()
 	void UpdateTabWidget() const;
 

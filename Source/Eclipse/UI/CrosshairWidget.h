@@ -41,4 +41,7 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Transient, meta = (BindWidgetAnim))
 	class UWidgetAnimation* DamagedAnimation;
+
+	UPROPERTY(BlueprintReadWrite, Transient, meta = (BindWidgetAnim))
+	class UWidgetAnimation* HideoutWarningAnimation;
 };

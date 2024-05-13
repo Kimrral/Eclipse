@@ -4,6 +4,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
 #include "EclipseGameState.h"
+#include "Eclipse/Character/PlayerCharacter.h"
 
 AEclipseGameMode::AEclipseGameMode()
 {
@@ -23,6 +24,24 @@ AActor* AEclipseGameMode::ChoosePlayerStart_Implementation(AController* Player)
 		{
 			if (PlayerStart && PlayerStart->PlayerStartTag == FName("Hideout"))
 			{
+				const FVector Center = PlayerStart->GetActorLocation();
+				FCollisionQueryParams Params;
+				bool AlreadyLocated = false;
+				if (TArray<FOverlapResult> HitObj; GetWorld()->OverlapMultiByChannel(HitObj, Center, FQuat::Identity, ECC_Pawn, FCollisionShape::MakeSphere(50), Params))
+				{
+					for (int i = 0; i < HitObj.Num(); ++i)
+					{
+						if (Cast<APlayerCharacter>(HitObj[i].GetActor()))
+						{
+							AlreadyLocated = true;
+							break;
+						}						
+					}
+				}
+				if(AlreadyLocated)
+				{
+					continue;
+				}
 				TargetPlayerStarts.Add(PlayerStart);
 			}
 		}

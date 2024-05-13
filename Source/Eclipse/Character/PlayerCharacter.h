@@ -625,6 +625,9 @@ public:
 	UFUNCTION(Server, Reliable)
 	void PurchaseAmmoServer(const int32 AmmoIndex);
 
+	UFUNCTION()
+	void ChoosePlayerStartByTagName(const FName& PlayerStartTagName, const int32 DetectionSphereRadius);
+
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	/** Returns CameraBoom subobject **/

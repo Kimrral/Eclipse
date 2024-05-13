@@ -30,9 +30,6 @@ public:
 	void UpdateWeaponEquipState();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool bArmed = true;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bPistol = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

@@ -5,6 +5,7 @@
 
 #include "TrooperProjectile.h"
 #include "Eclipse/AI/EnemyFSM.h"
+#include "Eclipse/Item/RewardManagerComponent.h"
 #include "Eclipse/Character/PlayerCharacter.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -23,6 +24,15 @@ void ATrooper::BeginPlay()
 	{
 		WeaponComp->SetMaterial(0, DynamicMaterial);
 	}
+}
+
+void ATrooper::OnDestroy()
+{
+	if(HasAuthority())
+	{		
+		RewardManager->DropSniperServer(GetActorTransform());
+	}
+	DissolveTimeline.PlayFromStart();
 }
 
 void ATrooper::SetDissolveValue(const float Value)

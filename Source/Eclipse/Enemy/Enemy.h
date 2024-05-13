@@ -22,12 +22,32 @@ protected:
 
 	virtual void Tick(float DeltaSeconds) override;
 
-public:
+public:	
+	// Enemy Stat
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UEnemyCharacterStatComponent> EnemyStat;
+	
+	// Reward Manager
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class URewardManagerComponent> RewardManager;
+	
 	UPROPERTY()
-	class AEclipseGameMode* gameMode;
+	class AEclipseGameMode* GameMode;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=FSM)
 	class UEnemyFSM* EnemyFSM;
+
+	UPROPERTY(EditAnywhere, Category=EnemySettings)
+	UAnimMontage* DamageMontage;
+
+	UPROPERTY(EditAnywhere, Category=EnemySettings)
+	UAnimMontage* StunMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=EnemySettings)
+	class UMaterialInterface* HitOverlayMat;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=EnemySettings)
+	class UMaterialInterface* HitOverlayMatShield;
 
 	UPROPERTY()
 	class UEnemyAnim* EnemyAnim;
@@ -51,22 +71,13 @@ public:
 	void DamagedRPCMulticast(int Damage, AActor* DamageCauser);
 
 	UFUNCTION()
+	void ResetOverlayMaterial() const;
+
+	UFUNCTION()
 	void OnShieldDestroy();
 
 	UFUNCTION()
-	void OnDestroy();
-
-	UFUNCTION()
-	void DropReward();
-
-	UFUNCTION(Server, Reliable, WithValidation)
-	virtual void DropRewardServer();
-
-	UFUNCTION()
-	void DropMagazine() const;
-
-	UFUNCTION()
-	void DropGear() const;
+	virtual void OnDestroy();
 
 	UFUNCTION()
 	virtual void FireProcess() const;
@@ -77,45 +88,6 @@ public:
 	UFUNCTION()
 	virtual void SetDissolveMaterial();
 
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class ARifleMagActor> RifleMagActorFactory;
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class ASniperMagActor> SniperMagActorFactory;
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class APistolMagActor> PistolMagActorFactory;
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AM249MagActor> M249MagActorFactory;
-
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AHelmetActor> HelmetActorFactory;
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AGoggleActor> GoggleActorFactory;
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AMaskActor> MaskActorFactory;
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AArmorActor> ArmorActorFactory;
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AHeadsetActor> HeadsetActorFactory;	
-
-	// Stat Section
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UEnemyCharacterStatComponent> EnemyStat;
-
-	UPROPERTY(EditAnywhere, Category=EnemySettings)
-	UAnimMontage* damageMontage;
-
-	UPROPERTY(EditAnywhere, Category=EnemySettings)
-	UAnimMontage* stunMontage;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=EnemySettings)
-	class UMaterialInterface* HitOverlayMat;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=EnemySettings)
-	class UMaterialInterface* HitOverlayMatShield;
-
-	UPROPERTY()
-	class UEnemyHPWidget* enemyHPWidget;
-
 	UPROPERTY()
 	FTimerHandle StunHandle;
 
@@ -123,14 +95,7 @@ public:
 	FTimerHandle HPWidgetInvisibleHandle;
 
 	UPROPERTY()
-	class AEclipsePlayerController* PC;
-	
-
-	UPROPERTY()
-	FVector DropForce = FVector(50);
-
-	UPROPERTY()
-	FVector DropLoc = GetActorUpVector();
+	class AEclipsePlayerController* PC;	
 
 	TArray<uint32> DynamicMaterialIndices;
 

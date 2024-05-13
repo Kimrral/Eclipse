@@ -1230,7 +1230,7 @@ public:
 	UPROPERTY()
 	bool bM249AdditionalMag;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bHideout = true;
 
 	UPROPERTY()

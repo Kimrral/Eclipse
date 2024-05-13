@@ -13,24 +13,13 @@ class ECLIPSE_API ARewardContainer : public AActor
 {
 	GENERATED_BODY()
 	
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+	
 public:	
 	// Sets default values for this actor's properties
 	ARewardContainer();
-	
-	UFUNCTION()
-	void DropReward() const;
-
-	UFUNCTION()
-	void DropConsole() const;
-
-	UFUNCTION()
-	void DropMagazine() const;
-
-	UFUNCTION()
-	void DropConsumable() const;
-
-	UFUNCTION()
-	void DropETC() const;
 
 	UFUNCTION()
 	void BoxDestroyed();
@@ -40,54 +29,27 @@ public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	class UGeometryCollectionComponent* containerMesh;
+	// Reward Manager
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class URewardManagerComponent> RewardManager;
 
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AHackingConsole> HackingConsoleFactory;	
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class ARifleMagActor> RifleMagActorFactory;
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class ASniperMagActor> SniperMagActorFactory;
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class APistolMagActor> PistolMagActorFactory;
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AM249MagActor> M249MagActorFactory;
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AMilitaryDevice> MilitaryDeviceFactory;
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AMilitaryLaptop> MilitaryLaptopFactory;
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AMedKitActor> MedKitActorFactory;
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AAdrenalineSyringe> AdrenalineSyringeFactory;
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AFirstAidKitActor> FirstAidKitActorFactory;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	class UGeometryCollectionComponent* ContainerMesh;
 	
 	UPROPERTY(EditAnywhere)
-	class USoundBase* containerBreakSound;
-	
-	UPROPERTY()
-	FVector DropForce;
+	class USoundBase* ContainerBreakSound;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FRewardContainerDestruct containerDele;
 	
 	UPROPERTY()
-	int curBoxHP;
+	int CurBoxHP;
 
 	UPROPERTY()
-	int maxBoxHP = 5;
+	int MaxBoxHP = 5;
 
 	UPROPERTY(ReplicatedUsing=OnRep_IsBoxDestroyed)
 	bool IsBoxDestroyed = false;	
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
 };

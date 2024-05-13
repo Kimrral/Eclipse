@@ -18,20 +18,19 @@ public:
 	
 	virtual void BeginPlay() override;
 
+	virtual void OnDestroy() override;
+
 	virtual void SetDissolveValue(float Value) override;
 	
 	virtual void FireProcess() const override;
-
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AGuardianProjectile> GuardianProjectileFactory;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = weapon)
 	class USkeletalMeshComponent* WeaponComp;
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<class ATrooperProjectile> TrooperProjectileFactory;
-
-	UPROPERTY(EditAnywhere)
 	class USoundBase* TrooperFireSound;
+
+	UPROPERTY(EditAnywhere, Category=Factory)
+	TSubclassOf<class ATrooperProjectile> TrooperProjectileFactory;
 	
 };

@@ -16,8 +16,6 @@ class ECLIPSE_API AGuardian : public AEnemy
 
 public:
 	virtual void FireProcess() const override;
-	
-	virtual void DropRewardServer() override;
 
 	virtual void SetDissolveMaterial() override;
 	

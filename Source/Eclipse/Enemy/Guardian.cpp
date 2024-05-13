@@ -9,11 +9,6 @@
 #include "Kismet/KismetMathLibrary.h"
 
 
-void AGuardian::DropRewardServer()
-{
-	Super::DropRewardServer();
-}
-
 void AGuardian::FireProcess() const
 {
 	if (EnemyFSM->Player)

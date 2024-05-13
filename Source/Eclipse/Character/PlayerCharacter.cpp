@@ -1320,13 +1320,13 @@ void APlayerCharacter::OnContainerHitRPCMulticast_Implementation(const FHitResul
 {
 	if (HasAuthority())
 	{
-		if (HitContainer->curBoxHP <= 1)
+		if (HitContainer->CurBoxHP <= 1)
 		{
 			HitContainer->BoxDestroyed();
 		}
 		else
 		{
-			HitContainer->curBoxHP = FMath::Clamp(HitContainer->curBoxHP - 1, 0, 5);
+			HitContainer->CurBoxHP = FMath::Clamp(HitContainer->CurBoxHP - 1, 0, 5);
 		}
 	}
 	if (IsLocallyControlled())

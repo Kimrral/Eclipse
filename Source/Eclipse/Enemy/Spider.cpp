@@ -13,10 +13,3 @@ void ASpider::BeginPlay()
 	GetMesh()->SetRelativeScale3D(FVector(0.3f));
 	PlayAnimMontage(SpiderSpawnMontage);
 }
-
-void ASpider::DropRewardServer()
-{
-	FActorSpawnParameters Param;
-	Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	GetWorld()->SpawnActor<APoisonOfSpider>(PoisonOfSpiderFactory, GetActorLocation(), GetActorRotation(), Param);	
-}

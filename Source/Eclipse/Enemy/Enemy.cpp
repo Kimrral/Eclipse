@@ -3,24 +3,15 @@
 
 #include "Enemy.h"
 
-#include "Eclipse/Item/ArmorActor.h"
 #include "Eclipse/Player/EclipsePlayerController.h"
 #include "Eclipse/Animation/EnemyAnim.h"
 #include "Eclipse/AI/EnemyFSM.h"
-#include "Eclipse/Item/GoggleActor.h"
-#include "GuardianProjectile.h"
-#include "Eclipse/Item/HeadsetActor.h"
-#include "Eclipse/Item/HelmetActor.h"
-#include "Eclipse/Item/M249MagActor.h"
-#include "Eclipse/Item/MaskActor.h"
-#include "Eclipse/Item/PistolMagActor.h"
 #include "Eclipse/Character/PlayerCharacter.h"
-#include "Eclipse/Item/RifleMagActor.h"
-#include "Eclipse/Item/SniperMagActor.h"
 #include "Components/CapsuleComponent.h"
 #include "Eclipse/AI/EclipseAIController.h"
 #include "Eclipse/CharacterStat/EnemyCharacterStatComponent.h"
 #include "Eclipse/Game/EclipseGameMode.h"
+#include "Eclipse/Item/RewardManagerComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -32,13 +23,17 @@ AEnemy::AEnemy()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = false;
-
-	// Enemy FSM
-	EnemyFSM = CreateDefaultSubobject<UEnemyFSM>(TEXT("enemyFSM"));
+	
 	// Pawn Sensor
 	PawnSensingComponent = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComponent"));
+	// Reward Manager
+	RewardManager = CreateDefaultSubobject<URewardManagerComponent>(TEXT("RewardManagerComponent"));
 	// Stat Component 
 	EnemyStat = CreateDefaultSubobject<UEnemyCharacterStatComponent>(TEXT("Stat"));
+	// Enemy FSM
+	EnemyFSM = CreateDefaultSubobject<UEnemyFSM>(TEXT("enemyFSM"));
+	
+	
 	// AI Controller
 	AIControllerClass = AEclipseAIController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
@@ -58,7 +53,7 @@ void AEnemy::BeginPlay()
 	EnemyStat->OnShieldZero.AddUObject(this, &AEnemy::OnShieldDestroy);
 
 	EnemyAnim = Cast<UEnemyAnim>(GetMesh()->GetAnimInstance());
-	gameMode = Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());
+	GameMode = Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());
 	PC = Cast<AEclipsePlayerController>(GetWorld()->GetFirstPlayerController());
 
 	SetDissolveMaterial();
@@ -130,21 +125,20 @@ void AEnemy::DamagedRPCMulticast_Implementation(int Damage, AActor* DamageCauser
 		FTimerHandle OverlayMatHandle;
 		GetMesh()->SetOverlayMaterial(HitOverlayMat);
 		GetWorldTimerManager().ClearTimer(OverlayMatHandle);
-		GetWorldTimerManager().SetTimer(OverlayMatHandle, FTimerDelegate::CreateLambda([this]()-> void
-		{
-			GetMesh()->SetOverlayMaterial(nullptr);
-		}), 0.3f, false);
+		GetWorldTimerManager().SetTimer(OverlayMatHandle, this, &AEnemy::ResetOverlayMaterial, 0.3f, false);
 	}
 	else
 	{
 		FTimerHandle OverlayMatHandle;
 		GetMesh()->SetOverlayMaterial(HitOverlayMatShield);
 		GetWorldTimerManager().ClearTimer(OverlayMatHandle);
-		GetWorldTimerManager().SetTimer(OverlayMatHandle, FTimerDelegate::CreateLambda([this]()-> void
-		{
-			GetMesh()->SetOverlayMaterial(nullptr);
-		}), 0.3f, false);
+		GetWorldTimerManager().SetTimer(OverlayMatHandle, this, &AEnemy::ResetOverlayMaterial, 0.3f, false);		
 	}
+}
+
+void AEnemy::ResetOverlayMaterial() const
+{
+	GetMesh()->SetOverlayMaterial(nullptr);
 }
 
 void AEnemy::OnShieldDestroy()
@@ -160,7 +154,7 @@ void AEnemy::OnShieldDestroy()
 	// Movement Mode = None [움직임 차단]
 	GetCharacterMovement()->SetMovementMode(MOVE_None);
 	StopAnimMontage();
-	PlayAnimMontage(stunMontage, 1, FName("StunStart"));
+	PlayAnimMontage(StunMontage, 1, FName("StunStart"));
 	GetWorld()->GetTimerManager().SetTimer(StunHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
 		EnemyStat->IsStunned = false;
@@ -178,73 +172,9 @@ void AEnemy::OnDestroy()
 {
 	if (HasAuthority())
 	{
-		DropReward();
+		RewardManager->DropRewardServer(GetActorTransform());
 	}
 	DissolveTimeline.PlayFromStart();
-}
-
-void AEnemy::DropReward()
-{
-	DropRewardServer();
-}
-
-void AEnemy::DropRewardServer_Implementation()
-{
-	DropMagazine();
-	DropGear();
-}
-
-bool AEnemy::DropRewardServer_Validate()
-{
-	return true;
-}
-
-void AEnemy::DropMagazine() const
-{
-	FActorSpawnParameters Param;
-	Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	if (const auto RandIndex = FMath::RandRange(0, 3); RandIndex == 0)
-	{
-		GetWorld()->SpawnActor<ARifleMagActor>(RifleMagActorFactory, GetActorLocation(), GetActorRotation(), Param);
-	}
-	else if (RandIndex == 1)
-	{
-		GetWorld()->SpawnActor<ASniperMagActor>(SniperMagActorFactory, GetActorLocation(), GetActorRotation(), Param);
-	}
-	else if (RandIndex == 2)
-	{
-		GetWorld()->SpawnActor<APistolMagActor>(PistolMagActorFactory, GetActorLocation(), GetActorRotation(), Param);
-	}
-	else if (RandIndex == 3)
-	{
-		GetWorld()->SpawnActor<AM249MagActor>(M249MagActorFactory, GetActorLocation(), GetActorRotation(), Param);
-	}
-}
-
-void AEnemy::DropGear() const
-{
-	FActorSpawnParameters Param;
-	Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	if (const auto RandIndex = FMath::RandRange(0, 4); RandIndex == 0)
-	{
-		GetWorld()->SpawnActor<AHelmetActor>(HelmetActorFactory, GetActorLocation(), GetActorRotation(), Param);
-	}
-	else if (RandIndex == 1)
-	{
-		GetWorld()->SpawnActor<AHeadsetActor>(HeadsetActorFactory, GetActorLocation(), GetActorRotation(), Param);
-	}
-	else if (RandIndex == 2)
-	{
-		GetWorld()->SpawnActor<AMaskActor>(MaskActorFactory, GetActorLocation(), GetActorRotation(), Param);
-	}
-	else if (RandIndex == 3)
-	{
-		GetWorld()->SpawnActor<AGoggleActor>(GoggleActorFactory, GetActorLocation(), GetActorRotation(), Param);
-	}
-	else if (RandIndex == 4)
-	{
-		GetWorld()->SpawnActor<AArmorActor>(ArmorActorFactory, GetActorLocation(), GetActorRotation(), Param);
-	}
 }
 
 void AEnemy::FireProcess() const

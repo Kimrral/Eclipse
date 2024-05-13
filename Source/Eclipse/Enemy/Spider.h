@@ -15,8 +15,7 @@ class ECLIPSE_API ASpider : public AEnemy
 	GENERATED_BODY()
 
 protected:
-	virtual void BeginPlay() override;
-	virtual  void DropRewardServer() override;
+	virtual void BeginPlay() override;	
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class APoisonOfSpider> PoisonOfSpiderFactory;

@@ -3,17 +3,8 @@
 
 #include "RewardContainer.h"
 
-#include "Eclipse/Item/AdrenalineSyringe.h"
-#include "Eclipse/Item/FirstAidKitActor.h"
-#include "Eclipse/Item/HackingConsole.h"
-#include "Eclipse/Item/M249MagActor.h"
-#include "Eclipse/Item/MedKitActor.h"
-#include "Eclipse/Item/MilitaryDevice.h"
-#include "Eclipse/Item/MilitaryLaptop.h"
-#include "Eclipse/Item/PistolMagActor.h"
+
 #include "Eclipse/Item/RewardManagerComponent.h"
-#include "Eclipse/Item/RifleMagActor.h"
-#include "Eclipse/Item/SniperMagActor.h"
 #include "GeometryCollection/GeometryCollectionComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
@@ -56,7 +47,7 @@ void ARewardContainer::BoxDestroyed()
 	IsBoxDestroyed = true;
 	OnRep_IsBoxDestroyed();
 	RewardManager->DropRewardServer(GetActorTransform());
-	UGameplayStatics::PlaySoundAtLocation(GetWorld(), ContainerBreakSound, this->GetActorLocation());
+	UGameplayStatics::PlaySound2D(GetWorld(), ContainerBreakSound);
 }
 
 

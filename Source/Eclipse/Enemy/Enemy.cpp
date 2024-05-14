@@ -120,19 +120,22 @@ bool AEnemy::DamagedRPCServer_Validate(int Damage, AActor* DamageCauser)
 
 void AEnemy::DamagedRPCMulticast_Implementation(int Damage, AActor* DamageCauser)
 {
-	if (EnemyStat->IsShieldBroken)
+	if(!HasAuthority())
 	{
-		FTimerHandle OverlayMatHandle;
-		GetMesh()->SetOverlayMaterial(HitOverlayMat);
-		GetWorldTimerManager().ClearTimer(OverlayMatHandle);
-		GetWorldTimerManager().SetTimer(OverlayMatHandle, this, &AEnemy::ResetOverlayMaterial, 0.3f, false);
-	}
-	else
-	{
-		FTimerHandle OverlayMatHandle;
-		GetMesh()->SetOverlayMaterial(HitOverlayMatShield);
-		GetWorldTimerManager().ClearTimer(OverlayMatHandle);
-		GetWorldTimerManager().SetTimer(OverlayMatHandle, this, &AEnemy::ResetOverlayMaterial, 0.3f, false);		
+		if (EnemyStat->IsShieldBroken)
+		{
+			FTimerHandle OverlayMatHandle;
+			GetMesh()->SetOverlayMaterial(HitOverlayMat);
+			GetWorldTimerManager().ClearTimer(OverlayMatHandle);
+			GetWorldTimerManager().SetTimer(OverlayMatHandle, this, &AEnemy::ResetOverlayMaterial, 0.3f, false);
+		}
+		else
+		{
+			FTimerHandle OverlayMatHandle;
+			GetMesh()->SetOverlayMaterial(HitOverlayMatShield);
+			GetWorldTimerManager().ClearTimer(OverlayMatHandle);
+			GetWorldTimerManager().SetTimer(OverlayMatHandle, this, &AEnemy::ResetOverlayMaterial, 0.3f, false);		
+		}
 	}
 }
 

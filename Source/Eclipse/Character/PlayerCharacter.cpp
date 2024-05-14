@@ -490,7 +490,6 @@ void APlayerCharacter::ZoomReleaseInput()
 		TiltingRightTimeline.Stop();
 	}
 	FirstPersonCamera->SetRelativeRotation(FRotator::ZeroRotator);
-	FirstPersonCamera->SetRelativeLocation(FVector(26.9, 77.4, 82));
 	ZoomRelease(true);
 }
 
@@ -516,9 +515,7 @@ void APlayerCharacter::ZoomRPCMulticast_Implementation(const bool IsZoomInput)
 			if (IsZoomInput)
 			{
 				SetFirstPersonModeRifle(true);
-				return;
-			}
-			Timeline.PlayFromStart();
+			}			
 		}
 		else
 		{
@@ -558,9 +555,7 @@ void APlayerCharacter::ZoomRPCMulticast_Implementation(const bool IsZoomInput)
 			if (IsZoomInput)
 			{
 				SetFirstPersonModePistol(true);
-				return;
 			}
-			Timeline.PlayFromStart();
 		}
 		else
 		{
@@ -571,9 +566,11 @@ void APlayerCharacter::ZoomRPCMulticast_Implementation(const bool IsZoomInput)
 	{
 		if (IsLocallyControlled())
 		{
-			Timeline.PlayFromStart();
-
 			UGameplayStatics::PlaySound2D(GetWorld(), zoomSound);
+			if (IsZoomInput)
+			{
+				Timeline.PlayFromStart();
+			}
 		}
 		else
 		{
@@ -625,9 +622,7 @@ void APlayerCharacter::ZoomRPCReleaseMulticast_Implementation(const bool IsZoomI
 			if (IsZoomInput)
 			{
 				SetFirstPersonModeRifle(false);
-				return;
 			}
-			Timeline.ReverseFromEnd();
 		}
 	}
 	else if (weaponArray[1] == true)
@@ -658,9 +653,7 @@ void APlayerCharacter::ZoomRPCReleaseMulticast_Implementation(const bool IsZoomI
 			if (IsZoomInput)
 			{
 				SetFirstPersonModePistol(false);
-				return;
 			}
-			Timeline.ReverseFromEnd();
 		}
 	}
 	else if (weaponArray[3] == true)
@@ -669,12 +662,14 @@ void APlayerCharacter::ZoomRPCReleaseMulticast_Implementation(const bool IsZoomI
 		{
 			AnimInst->bM249Zooming = false;
 		}
-		Timeline.ReverseFromEnd();
-	}
-	else
-	{
-		Timeline.ReverseFromEnd();
-	}
+		if (IsLocallyControlled())
+		{
+			if (IsZoomInput)
+			{
+				Timeline.ReverseFromEnd();
+			}
+		}
+	}	
 }
 
 
@@ -769,6 +764,11 @@ void APlayerCharacter::OnActionLookAroundReleased()
 
 void APlayerCharacter::SwapFirstWeapon()
 {
+	if (curWeaponSlotNumber == 1 || isSniperZooming || animInstance->IsAnyMontagePlaying() || FirstPersonCharacterMesh->IsVisible())
+	{
+		return;
+	}
+
 	SwapFirstWeaponRPCServer();
 }
 
@@ -784,17 +784,6 @@ bool APlayerCharacter::SwapFirstWeaponRPCServer_Validate()
 
 void APlayerCharacter::SwapFirstWeaponRPCMulticast_Implementation()
 {
-	if (curWeaponSlotNumber == 1 || isSniperZooming)
-	{
-		return;
-	}
-	if (const UPlayerAnim* AnimInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance()))
-	{
-		if (AnimInst->IsAnyMontagePlaying())
-		{
-			return;
-		}
-	}
 	if (IsLocallyControlled())
 	{
 		UGameplayStatics::PlaySound2D(GetWorld(), SwapSound);
@@ -895,6 +884,10 @@ void APlayerCharacter::SwapFirstWeaponRPCMulticast_Implementation()
 
 void APlayerCharacter::SwapSecondWeapon()
 {
+	if (curWeaponSlotNumber == 2 || isSniperZooming || animInstance->IsAnyMontagePlaying() || FirstPersonCharacterMesh->IsVisible())
+	{
+		return;
+	}
 	SwapSecondWeaponRPCServer();
 }
 
@@ -910,17 +903,6 @@ bool APlayerCharacter::SwapSecondWeaponRPCServer_Validate()
 
 void APlayerCharacter::SwapSecondWeaponRPCMulticast_Implementation()
 {
-	if (curWeaponSlotNumber == 2 || isSniperZooming)
-	{
-		return;
-	}
-	if (const UPlayerAnim* AnimInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance()))
-	{
-		if (AnimInst->IsAnyMontagePlaying())
-		{
-			return;
-		}
-	}
 	if (IsLocallyControlled())
 	{
 		UGameplayStatics::PlaySound2D(GetWorld(), SwapSound);
@@ -3609,51 +3591,39 @@ void APlayerCharacter::SetTiltingLeftValue(const float Value)
 {
 	if (TiltReleaseLeft)
 	{
-		CameraCurrentPosition = FirstPersonCamera->GetRelativeLocation();
-		CameraDesiredPosition = FVector(26.9, 77.4, 82);
 		CameraCurrentRotation = FirstPersonCamera->GetRelativeRotation();
 		CameraDesiredRotation = FRotator::ZeroRotator;
 	}
 	else
 	{
-		CameraCurrentPosition = FirstPersonCamera->GetRelativeLocation();
-		CameraDesiredPosition = FVector(26.9, 57.4, 82);
 		CameraCurrentRotation = FirstPersonCamera->GetRelativeRotation();
 		CameraDesiredRotation = FRotator(0, 0, -15);
 	}
 
 	// RLerp와 TimeLine Value 값을 통한 자연스러운 기울이기
 	const FRotator RLerp = UKismetMathLibrary::RLerp(CameraCurrentRotation, CameraDesiredRotation, Value, true);
-	const FVector VLerp = UKismetMathLibrary::VLerp(CameraCurrentPosition, CameraDesiredPosition, Value);
-	const FTransform TLerp = UKismetMathLibrary::MakeTransform(VLerp, RLerp);
 
-	// 해당 트랜스폼 할당
-	FirstPersonCamera->SetRelativeTransform(TLerp);
+	// 해당 트랜스폼 할당	
+	FirstPersonCamera->SetRelativeRotation(RLerp);
 }
 
 void APlayerCharacter::SetTiltingRightValue(const float Value)
 {
 	if (TiltReleaseRight)
 	{
-		CameraCurrentPosition = FirstPersonCamera->GetRelativeLocation();
-		CameraDesiredPosition = FVector(26.9, 77.4, 82);
 		CameraCurrentRotation = FirstPersonCamera->GetRelativeRotation();
 		CameraDesiredRotation = FRotator::ZeroRotator;
 	}
 	else
 	{
-		CameraCurrentPosition = FirstPersonCamera->GetRelativeLocation();
-		CameraDesiredPosition = FVector(26.9, 97.4, 82);
 		CameraCurrentRotation = FirstPersonCamera->GetRelativeRotation();
 		CameraDesiredRotation = FRotator(0, 0, 15);
 	}
 
 	// RLerp와 TimeLine Value 값을 통한 자연스러운 기울이기
 	const FRotator RLerp = UKismetMathLibrary::RLerp(CameraCurrentRotation, CameraDesiredRotation, Value, true);
-	const FVector VLerp = UKismetMathLibrary::VLerp(CameraCurrentPosition, CameraDesiredPosition, Value);
-	const FTransform TLerp = UKismetMathLibrary::MakeTransform(VLerp, RLerp);
 	// 해당 트랜스폼 할당
-	FirstPersonCamera->SetRelativeTransform(TLerp);
+	FirstPersonCamera->SetRelativeRotation(RLerp);
 }
 
 void APlayerCharacter::Damaged(const int Damage, AActor* DamageCauser)
@@ -3834,10 +3804,10 @@ void APlayerCharacter::ChoosePlayerStartByTagName(const FName& PlayerStartTagNam
 						{
 							AlreadyLocated = true;
 							break;
-						}						
+						}
 					}
 				}
-				if(AlreadyLocated)
+				if (AlreadyLocated)
 				{
 					continue;
 				}
@@ -3959,15 +3929,15 @@ void APlayerCharacter::OnRep_MaxM249Ammo()
 
 void APlayerCharacter::Fire()
 {
-	if (bHideout)
-	{
-		crosshairUI->PlayAnimation(crosshairUI->HideoutWarningAnimation);
-		return;
-	}
 	if (!CanShoot || isRunning || gi->IsWidgetOn || bEnding || IsPlayerDeadImmediately)
 	{
 		return;
 	}
+	if (bHideout)
+	{
+		crosshairUI->PlayAnimation(crosshairUI->HideoutWarningAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
+		return;
+	}	
 	if (!isZooming && weaponArray[1] == false && weaponArray[2] == false)
 	{
 		GetWorldTimerManager().ClearTimer(ZoomFireHandle);

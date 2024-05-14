@@ -41,18 +41,23 @@ void UMenuWidget::ReturnToHideoutFunc()
 
 void UMenuWidget::ReturnToHideoutYesFunc()
 {
-	//Move to Blocked Intersection
 	if (quitBool == false)
 	{
 		quitBool = true;
+		//Exit Level Selection
 		UWidgetBlueprintLibrary::SetInputMode_GameOnly(pc);
 		pc->SetShowMouseCursor(false);
-		this->RemoveFromParent();
+		gi->IsWidgetOn = false;
+		
+		APlayerCameraManager* PlayerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+		PlayerCam->StartCameraFade(0, 1, 2.0, FLinearColor::Black, false, true);
 		FTimerHandle TimerHandle;
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
 			player->MoveToHideout(true);
-		}), 2.f, false);	
+		}), 2.f, false);
+		
+		this->RemoveFromParent();
 	}
 }
 

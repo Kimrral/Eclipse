@@ -907,12 +907,6 @@ public:
 	UPROPERTY()
 	FRotator CameraDesiredRotation;
 
-	UPROPERTY()
-	FVector CameraCurrentPosition;
-
-	UPROPERTY()
-	FVector CameraDesiredPosition;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	int curWeaponSlotNumber = 1;
 

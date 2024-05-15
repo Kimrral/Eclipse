@@ -46,8 +46,7 @@ void ARewardContainer::BoxDestroyed()
 {
 	IsBoxDestroyed = true;
 	OnRep_IsBoxDestroyed();
-	RewardManager->DropRewardServer(GetActorTransform());
-	UGameplayStatics::PlaySound2D(GetWorld(), ContainerBreakSound);
+	RewardManager->DropRewardServer(GetActorTransform());	
 }
 
 
@@ -55,4 +54,5 @@ void ARewardContainer::OnRep_IsBoxDestroyed()
 {
 	SetLifeSpan(5.f);
 	containerDele.ExecuteIfBound(GetActorLocation());
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), ContainerBreakSound, GetActorLocation());
 }

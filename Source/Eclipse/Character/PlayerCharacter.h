@@ -472,9 +472,6 @@ public:
 	void TiltingRightReleaseRPCMulticast();
 
 	UFUNCTION()
-	void WeaponDetectionLineTrace();
-
-	UFUNCTION()
 	void SetBossHPWidget(const AEnemy* Enemy) const;
 
 	UFUNCTION()
@@ -619,6 +616,9 @@ public:
 
 	UFUNCTION()
 	void MoveToAnotherLevel();
+
+	UFUNCTION()
+	void ResetFireBoolean();
 
 	UFUNCTION()
 	void UnloadMultipleStreamingLevels(const FName& FirstLevelName, const FName& SecondLevelName);
@@ -811,12 +811,6 @@ public:
 	class ARifleActor* OverlappedRifleActor;
 
 	UPROPERTY()
-	class ASniperActor* OverlappedSniperActor;
-
-	UPROPERTY()
-	class APistolActor* OverlappedPistolActor;
-
-	UPROPERTY()
 	class UPlayerAnim* animInstance;
 
 	UPROPERTY(EditAnywhere)
@@ -1006,9 +1000,6 @@ public:
 
 	UPROPERTY()
 	bool IsHideOut = true;
-
-	UPROPERTY()
-	bool TickOverlapBoolean = false;
 
 	UPROPERTY()
 	bool OpenMenuBoolean = false;;
@@ -1255,13 +1246,16 @@ public:
 	UPROPERTY()
 	class ADeadPlayerContainer* DeadPlayerContainer;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UPROPERTY()
 	class ARifleMagActor* RifleMagActor;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	
+	UPROPERTY()
 	class ASniperMagActor* SniperMagActor;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	
+	UPROPERTY()
 	class APistolMagActor* PistolMagActor;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	
+	UPROPERTY()
 	class AM249MagActor* M249MagActor;
 	
 	UPROPERTY()

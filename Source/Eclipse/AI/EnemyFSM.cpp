@@ -107,7 +107,7 @@ void UEnemyFSM::TickIdle()
 	{
 		if (Player->IsPlayerDeadImmediately)
 		{
-			Player=nullptr;
+			Player = nullptr;
 			return;
 		}
 		// 플레이어와 적 간의 거리값 도출
@@ -128,23 +128,23 @@ void UEnemyFSM::TickMove()
 		{
 			MoveBackToInitialPosition();
 			return;
-		}		
+		}
 		// 타임라인을 이용한 Enemy 캐릭터 회전 러프
 		Timeline.PlayFromStart();
 		if (AIController) AIController->MoveToPlayer(Player);
 		if (const float Dist = Player->GetDistanceTo(Me))
 		{
-			if(Dist >= ChaseLimitRange)
+			if (Dist >= ChaseLimitRange)
 			{
 				MoveBackToInitialPosition();
 				return;
 			}
-			if(Dist <= AttackRange)
+			if (Dist <= AttackRange)
 			{
 				if (AIController) AIController->StopMovement();
 				// 플레이어가 공격 범위 내에 위치한다면, 공격 상태로 전이
 				SetState(EEnemyState::ATTACK);
-			}			
+			}
 		}
 	}
 }
@@ -164,22 +164,22 @@ void UEnemyFSM::TickAttack()
 			return;
 		}
 		// 플레이어와의 거리 도출
-		
+
 		if (const float Dist = Player->GetDistanceTo(Me))
 		{
 			// 추적 범위보다 멀어졌다면
-			if(Dist > ChaseLimitRange)
+			if (Dist > ChaseLimitRange)
 			{
 				MoveBackToInitialPosition();
 				return;
 			}
 			// 공격거리보다 멀어졌다면
-			if(Dist > AttackRange)
+			if (Dist > AttackRange)
 			{
 				// 이동상태로 전이한다
 				SetState(EEnemyState::MOVE);
-			}			
-		}	
+			}
+		}
 	}
 }
 
@@ -197,7 +197,7 @@ void UEnemyFSM::DieProcess()
 {
 	// Die 상태로 전이한다.
 	SetState(EEnemyState::DIE);
-	Me->OnDie();	
+	Me->OnDie();
 }
 
 void UEnemyFSM::SetState(EEnemyState Next) // 상태 전이함수
@@ -206,16 +206,16 @@ void UEnemyFSM::SetState(EEnemyState Next) // 상태 전이함수
 	{
 		State = Next;
 		Me->EnemyAnim->state = Next;
-	}	
+	}
 }
 
 void UEnemyFSM::SetRotToPlayer(const float Value)
 {
-	if(State==EEnemyState::DIE)
+	if (State == EEnemyState::DIE)
 	{
 		return;
 	}
-	if (Player && Me->HasAuthority() && Me->EnemyStat->IsStunned==false)
+	if (Player && Me->HasAuthority() && Me->EnemyStat->IsStunned == false)
 	{
 		if (Player->IsPlayerDeadImmediately)
 		{
@@ -296,12 +296,17 @@ void UEnemyFSM::MoveBackToInitialPosition()
 	{
 		return;
 	}
-	Player=nullptr;
+	
+	Player = nullptr;
+	
 	// 타임라인을 이용한 Enemy 캐릭터 회전 러프
 	Timeline.PlayFromStart();
+	
 	if (AIController) AIController->MoveToLocation(InitialPosition);
-	if (FVector::Dist(Me->GetActorLocation(), InitialPosition) <= 100.f)
+	
+	if (FVector::Dist(Me->GetActorLocation(), InitialPosition) < 100.f)
 	{
+		if (AIController) AIController->StopMovement();
 		Me->GetController()->SetControlRotation(InitialRotation);
 		SetState(EEnemyState::IDLE);
 	}

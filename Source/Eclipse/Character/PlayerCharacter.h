@@ -59,9 +59,13 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	// Stat Section
+	// Stat Actor Component
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UPlayerCharacterStatComponent> Stat;
+
+	// Line Trace Detection Component
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class ULineTraceDetectionComponent> Detection;
 
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -371,8 +375,8 @@ public:
 	UFUNCTION(Reliable, Server, WithValidation)
 	void OnPlayerKillRPCServer();
 
-	UFUNCTION(Unreliable, NetMulticast)
-	void OnPlayerKillRPCMulticast();
+	UFUNCTION(Unreliable, Client)
+	void OnPlayerKillRPCClient();
 
 	//=======================================//
 
@@ -393,8 +397,8 @@ public:
 	UFUNCTION(Reliable, Server, WithValidation)
 	void OnEnemyKillRPCServer();
 
-	UFUNCTION(Unreliable, NetMulticast)
-	void OnEnemyKillRPCMulticast();
+	UFUNCTION(Unreliable, Client)
+	void OnEnemyKillRPCClient();
 
 	//=======================================//
 

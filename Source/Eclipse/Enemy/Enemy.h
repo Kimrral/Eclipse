@@ -44,10 +44,10 @@ public:
 	UAnimMontage* StunMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=EnemySettings)
-	class UMaterialInterface* HitOverlayMat;
+	TObjectPtr<class UMaterialInterface> HitOverlayMat;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=EnemySettings)
-	class UMaterialInterface* HitOverlayMatShield;
+	TObjectPtr<class UMaterialInterface> HitOverlayMatShield;
 
 	UPROPERTY()
 	class UEnemyAnim* EnemyAnim;

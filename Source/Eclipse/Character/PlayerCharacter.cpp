@@ -12,6 +12,7 @@
 #include "Eclipse/Enemy/Enemy.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "LineTraceDetectionComponent.h"
 #include "Eclipse/Item/GoggleActor.h"
 #include "Eclipse/Item/HackingConsole.h"
 #include "Eclipse/Item/HeadsetActor.h"
@@ -155,6 +156,9 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer)
 
 	// Stat Component 
 	Stat = CreateDefaultSubobject<UPlayerCharacterStatComponent>(TEXT("Stat"));
+
+	// Line Trace Detection Component
+	Detection = CreateDefaultSubobject<ULineTraceDetectionComponent>(TEXT("LineTraceDetection"));
 
 	SetReplicates(true);
 	NetUpdateFrequency = 200.f;
@@ -1090,7 +1094,7 @@ void APlayerCharacter::OnPlayerKill()
 
 void APlayerCharacter::OnPlayerKillRPCServer_Implementation()
 {
-	OnPlayerKillRPCMulticast();
+	OnPlayerKillRPCClient();
 }
 
 bool APlayerCharacter::OnPlayerKillRPCServer_Validate()
@@ -1098,15 +1102,11 @@ bool APlayerCharacter::OnPlayerKillRPCServer_Validate()
 	return true;
 }
 
-void APlayerCharacter::OnPlayerKillRPCMulticast_Implementation()
+void APlayerCharacter::OnPlayerKillRPCClient_Implementation()
 {
-	if (IsLocallyControlled())
-	{
-		crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
-		UGameplayStatics::PlaySound2D(GetWorld(), PlayerKillSound, 1, 1, 0.25);
-	}
+	crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
+	UGameplayStatics::PlaySound2D(GetWorld(), PlayerKillSound, 1, 1, 0.25);
 }
-
 
 void APlayerCharacter::OnEnemyHit(const FHitResult& HitResult, AEnemy* HitEnemy, bool IsHeadshot)
 {
@@ -1123,7 +1123,12 @@ void APlayerCharacter::OnEnemyKill()
 
 void APlayerCharacter::OnEnemyKillRPCServer_Implementation()
 {
-	OnEnemyKillRPCMulticast();
+	if (weaponArray[0]) maxRifleAmmo += 20;
+	else if (weaponArray[1]) maxSniperAmmo += 4;
+	else if (weaponArray[2]) maxPistolAmmo += 6;
+	else if (weaponArray[3]) maxM249Ammo += 30;
+	
+	OnEnemyKillRPCClient();
 }
 
 bool APlayerCharacter::OnEnemyKillRPCServer_Validate()
@@ -1131,30 +1136,20 @@ bool APlayerCharacter::OnEnemyKillRPCServer_Validate()
 	return true;
 }
 
-void APlayerCharacter::OnEnemyKillRPCMulticast_Implementation()
-{
-	if (HasAuthority())
-	{
-		if (weaponArray[0]) maxRifleAmmo += 20;
-		else if (weaponArray[1]) maxSniperAmmo += 4;
-		else if (weaponArray[2]) maxPistolAmmo += 6;
-		else if (weaponArray[3]) maxM249Ammo += 30;
-	}
-	if (IsLocallyControlled())
-	{
-		crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
-		UGameplayStatics::PlaySound2D(GetWorld(), KillSound);
-		informationUI->ChargeAmmunitionInfoWidget();
-		informationUI->PlayAnimation(informationUI->ChargeAmmunition);
-		informationUI->UpdateAmmo_Secondary();
-		FTimerHandle AmmoPickHandle;
-		GetWorldTimerManager().SetTimer(AmmoPickHandle, FTimerDelegate::CreateLambda([this]()-> void
-		{
-			UGameplayStatics::PlaySound2D(GetWorld(), AmmoPickupSound);
-		}), 1.f, false);
-	}
-}
 
+void APlayerCharacter::OnEnemyKillRPCClient_Implementation()
+{
+	crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
+	UGameplayStatics::PlaySound2D(GetWorld(), KillSound);
+	informationUI->ChargeAmmunitionInfoWidget();
+	informationUI->PlayAnimation(informationUI->ChargeAmmunition);
+	informationUI->UpdateAmmo_Secondary();
+	FTimerHandle AmmoPickHandle;
+	GetWorldTimerManager().SetTimer(AmmoPickHandle, FTimerDelegate::CreateLambda([this]()-> void
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), AmmoPickupSound);
+	}), 1.f, false);
+}
 
 void APlayerCharacter::OnEnemyHitRPCServer_Implementation(const FHitResult& HitResult, AEnemy* HitEnemy, bool IsHeadshot)
 {
@@ -3172,23 +3167,22 @@ void APlayerCharacter::ChangeWeaponToM249RPCMulticast_Implementation(AM249Actor*
 
 void APlayerCharacter::InteractionProcess()
 {
-	FHitResult actorHitResult;
-	FVector StartLoc = FollowCamera->GetComponentLocation();
-	FVector EndLoc = StartLoc + FollowCamera->GetForwardVector() * 500.0f;
+	const FVector StartLoc = FollowCamera->GetComponentLocation();
+	const FVector EndLoc = StartLoc + FollowCamera->GetForwardVector() * 500.0f;
 	// 무기 액터 탐지 라인 트레이스
-	if (GetWorld()->LineTraceSingleByChannel(actorHitResult, StartLoc, EndLoc, ECC_Visibility))
+	if (FHitResult ActorHitResult; GetWorld()->LineTraceSingleByChannel(ActorHitResult, StartLoc, EndLoc, ECC_Visibility))
 	{
 		// 무기 액터 캐스팅
-		rifleActor = Cast<ARifleActor>(actorHitResult.GetActor());
-		sniperActor = Cast<ASniperActor>(actorHitResult.GetActor());
-		pistolActor = Cast<APistolActor>(actorHitResult.GetActor());
-		m249Actor = Cast<AM249Actor>(actorHitResult.GetActor());
-		PickableItemActor = Cast<APickableActor>(actorHitResult.GetActor());
-		StageBoard = Cast<AStageBoard>(actorHitResult.GetActor());
-		Stash = Cast<AStash>(actorHitResult.GetActor());
-		Trader = Cast<ATrader>(actorHitResult.GetActor());
-		QuitGameActor = Cast<AQuitGameActor>(actorHitResult.GetActor());
-		DeadPlayerContainer = Cast<ADeadPlayerContainer>(actorHitResult.GetActor());
+		rifleActor = Cast<ARifleActor>(ActorHitResult.GetActor());
+		sniperActor = Cast<ASniperActor>(ActorHitResult.GetActor());
+		pistolActor = Cast<APistolActor>(ActorHitResult.GetActor());
+		m249Actor = Cast<AM249Actor>(ActorHitResult.GetActor());
+		PickableItemActor = Cast<APickableActor>(ActorHitResult.GetActor());
+		StageBoard = Cast<AStageBoard>(ActorHitResult.GetActor());
+		Stash = Cast<AStash>(ActorHitResult.GetActor());
+		Trader = Cast<ATrader>(ActorHitResult.GetActor());
+		QuitGameActor = Cast<AQuitGameActor>(ActorHitResult.GetActor());
+		DeadPlayerContainer = Cast<ADeadPlayerContainer>(ActorHitResult.GetActor());
 
 		// 라이플로 교체
 		if (rifleActor)
@@ -3471,8 +3465,8 @@ void APlayerCharacter::MoveToIsolatedShipClient()
 		LoadLatentInfo.Linkage = 0;
 		LoadLatentInfo.ExecutionFunction = OnSpacecraftStreamingLevelLoadFinished;
 
-		UnloadMultipleStreamingLevels(IntersectionLevelName, HideoutLevelName);
 		UGameplayStatics::LoadStreamLevel(this, SpacecraftLevelName, true, true, LoadLatentInfo);
+		UnloadMultipleStreamingLevels(IntersectionLevelName, HideoutLevelName);
 	}
 }
 
@@ -3481,7 +3475,6 @@ void APlayerCharacter::MoveToHideout(const bool IsPlayerDeath)
 	if (IsPlayerDeath)
 	{
 		IsPlayerDead = false;
-		IsPlayerDeadImmediately = false;
 		StopAnimMontage();
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
@@ -3489,6 +3482,7 @@ void APlayerCharacter::MoveToHideout(const bool IsPlayerDeath)
 		ResetTabWidget();
 	}
 
+	IsPlayerDeadImmediately = false;
 	bHideout = true;
 
 	if (IsLocallyControlled())
@@ -3505,8 +3499,8 @@ void APlayerCharacter::MoveToHideout(const bool IsPlayerDeath)
 		LoadLatentInfo.Linkage = 0;
 		LoadLatentInfo.ExecutionFunction = OnHideoutLevelLoadFinishedFunc;
 
-		UnloadMultipleStreamingLevels(IntersectionLevelName, SpacecraftLevelName);
 		UGameplayStatics::LoadStreamLevel(this, HideoutLevelName, true, true, LoadLatentInfo);
+		UnloadMultipleStreamingLevels(IntersectionLevelName, SpacecraftLevelName);
 	}
 }
 
@@ -3546,8 +3540,8 @@ void APlayerCharacter::MoveToBlockedIntersectionClient()
 		LoadLatentInfo.Linkage = 0;
 		LoadLatentInfo.ExecutionFunction = OnIntersectionLevelLoadFinishedFunc;
 
-		UnloadMultipleStreamingLevels(HideoutLevelName, SpacecraftLevelName);
 		UGameplayStatics::LoadStreamLevel(this, IntersectionLevelName, true, true, LoadLatentInfo);
+		UnloadMultipleStreamingLevels(HideoutLevelName, SpacecraftLevelName);
 	}
 }
 
@@ -3693,8 +3687,8 @@ void APlayerCharacter::OnSpacecraftStreamingLevelLoadFinished()
 {
 	if (IsLocallyControlled())
 	{
-		crosshairUI->AddToViewport();
-		informationUI->AddToViewport();
+		if(!crosshairUI->IsInViewport()) crosshairUI->AddToViewport();
+		if(!informationUI->IsInViewport()) informationUI->AddToViewport();
 		informationUI->EnterSpacecraft();
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
 		UGameplayStatics::PlaySound2D(GetWorld(), PlayerSpawnSound, 0.6, 1, 0.25);
@@ -3721,8 +3715,8 @@ void APlayerCharacter::OnIntersectionStreamingLevelLoadFinished()
 {
 	if (IsLocallyControlled())
 	{
-		crosshairUI->AddToViewport();
-		informationUI->AddToViewport();
+		if(!crosshairUI->IsInViewport()) crosshairUI->AddToViewport();
+		if(!informationUI->IsInViewport()) informationUI->AddToViewport();
 		informationUI->EnterIntersection();
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
 		UGameplayStatics::PlaySound2D(GetWorld(), PlayerSpawnSound, 0.6, 1, 0.25);
@@ -3750,8 +3744,8 @@ void APlayerCharacter::OnHideoutStreamingLevelLoadFinished()
 {
 	if (IsLocallyControlled())
 	{
-		crosshairUI->AddToViewport();
-		informationUI->AddToViewport();
+		if(!crosshairUI->IsInViewport()) crosshairUI->AddToViewport();
+		if(!informationUI->IsInViewport()) informationUI->AddToViewport();
 		informationUI->EnterHideout();
 
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
@@ -4307,10 +4301,10 @@ void APlayerCharacter::ProcessRifleFireLocal()
 	PC->PlayerCameraManager->StartCameraShake(rifleFireShake);
 	if (FirstPersonCharacterMesh->IsVisible())
 	{
-		const FVector particleLoc = FirstPersonRifleComp->GetSocketLocation(FName("RifleFirePosition"));
+		const FVector ParticleLoc = FirstPersonRifleComp->GetSocketLocation(FName("RifleFirePosition"));
 		const UE::Math::TRotator<double> ParticleRot = FirstPersonRifleComp->GetSocketRotation(FName("RifleFirePosition"));
-		const FTransform particleTrans = UKismetMathLibrary::MakeTransform(particleLoc, ParticleRot, FVector(0.4));
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), FirstPersonRifleFireParticle, particleTrans);
+		const FTransform ParticleTrans = UKismetMathLibrary::MakeTransform(ParticleLoc, ParticleRot, FVector(0.4));
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), FirstPersonRifleFireParticle, ParticleTrans);
 	}
 	else
 	{
@@ -4319,8 +4313,7 @@ void APlayerCharacter::ProcessRifleFireLocal()
 		const FTransform ParticleTrans = UKismetMathLibrary::MakeTransform(particleLoc, ParticleRot, FVector(0.4));
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle, ParticleTrans);
 	}
-	UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleFireSound, GetActorLocation());
-
+	
 	Stat->SetRecoilRate(weaponArray);
 	AddControllerPitchInput(Stat->GetPitchRecoilRate());
 	AddControllerYawInput(Stat->GetYawRecoilRate());
@@ -4330,9 +4323,9 @@ void APlayerCharacter::ProcessRifleFireSimulatedProxy() const
 {
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleFireSound, GetActorLocation());
 	const FVector ParticleLoc = RifleComp->GetSocketLocation(FName("RifleFirePosition"));
-	const UE::Math::TRotator<double> particleRot = RifleComp->GetSocketRotation(FName("RifleFirePosition"));
-	const FTransform particleTrans = UKismetMathLibrary::MakeTransform(ParticleLoc, particleRot, FVector(0.4));
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle, particleTrans);
+	const UE::Math::TRotator<double> ParticleRot = RifleComp->GetSocketRotation(FName("RifleFirePosition"));
+	const FTransform ParticleTrans = UKismetMathLibrary::MakeTransform(ParticleLoc, ParticleRot, FVector(0.4));
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle, ParticleTrans);
 }
 
 void APlayerCharacter::FireRelease()

@@ -3000,22 +3000,31 @@ void APlayerCharacter::OnHideoutStreamingLevelLoadFinished()
 	}
 
 	OnHideoutStreamingLevelLoadFinishedServer();
-
-	if (!GetMesh()->IsVisible())
-	{
-		FTimerHandle TimerHandle;
-		GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()-> void
-		{
-			GetMesh()->SetVisibility(true);
-		}), 2.f, false);
-	}
 }
 
 void APlayerCharacter::OnHideoutStreamingLevelLoadFinishedServer_Implementation()
 {
 	Stat->SetHp(Stat->GetMaxHp());
 	ChoosePlayerStartByTagName(FName("Hideout"), 100);
+	OnHideoutStreamingLevelLoadFinishedMulticast();
 }
+
+void APlayerCharacter::OnHideoutStreamingLevelLoadFinishedMulticast_Implementation()
+{
+	if(!HasAuthority()&&!IsLocallyControlled())
+	{
+		if (!GetMesh()->IsVisible())
+		{
+			FTimerHandle TimerHandle;
+			GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()-> void
+			{
+				GetMesh()->SetVisibility(true);
+			}), 2.f, false);
+		}
+	}
+}
+
+
 
 void APlayerCharacter::ChoosePlayerStartByTagName(const FName& PlayerStartTagName, const int32 DetectionSphereRadius)
 {
@@ -3972,13 +3981,19 @@ void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 		if (HasAuthority())
 		{
 			IsPlayerDead = true;
-			GetMesh()->SetVisibility(false);
 			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			FActorSpawnParameters Params;
 			Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 			ADeadPlayerContainer* DeadPlayerBodyActor = GetWorld()->SpawnActor<ADeadPlayerContainer>(DeadPlayerContainerFactory, GetMesh()->GetComponentTransform(), Params);
 			DeadPlayerContainerSettings(DeadPlayerBodyActor);
+		}
+		else
+		{
+			if(!IsLocallyControlled())
+			{
+				GetMesh()->SetVisibility(false);
+			}
 		}
 
 		if (IsLocallyControlled())

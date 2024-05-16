@@ -608,6 +608,9 @@ public:
 	UFUNCTION(Server, Reliable)
 	void OnHideoutStreamingLevelLoadFinishedServer();
 
+	UFUNCTION(NetMulticast, Reliable)
+	void OnHideoutStreamingLevelLoadFinishedMulticast();
+
 	UFUNCTION(Client, Unreliable)
 	void SetPlayerControlRotation(const FRotator& DesiredRotation);
 

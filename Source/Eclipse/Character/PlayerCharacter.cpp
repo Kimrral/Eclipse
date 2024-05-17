@@ -42,6 +42,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
+#include "Components/AudioComponent.h"
 #include "Components/Image.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
@@ -237,9 +238,13 @@ void APlayerCharacter::BeginPlay()
 	if (IsLocallyControlled())
 	{
 		TradeWidgetUI->Construction(this);
-		APlayerCameraManager* const CameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0));
-		CameraManager->StopCameraFade();
-		CameraManager->StartCameraFade(1.0, 0, 10.0, FColor::Black, true, true);
+
+		if (APlayerCameraManager* const CameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)))
+		{
+			CameraManager->StopCameraFade();
+			CameraManager->StartCameraFade(1.0, 0, 20.0, FColor::Black, false, false);
+		}
+
 
 		// Spawn Player Emitter
 		UGameplayStatics::PlaySound2D(GetWorld(), PlayerSpawnSound, 0.6, 1, 0.25);
@@ -518,7 +523,7 @@ void APlayerCharacter::ZoomRPCMulticast_Implementation(const bool IsZoomInput)
 			if (IsZoomInput)
 			{
 				SetFirstPersonModeRifle(true);
-			}			
+			}
 		}
 		else
 		{
@@ -672,7 +677,7 @@ void APlayerCharacter::ZoomRPCReleaseMulticast_Implementation(const bool IsZoomI
 				Timeline.ReverseFromEnd();
 			}
 		}
-	}	
+	}
 }
 
 
@@ -1126,7 +1131,7 @@ void APlayerCharacter::OnEnemyKillRPCServer_Implementation()
 	else if (weaponArray[1]) maxSniperAmmo += 4;
 	else if (weaponArray[2]) maxPistolAmmo += 6;
 	else if (weaponArray[3]) maxM249Ammo += 30;
-	
+
 	OnEnemyKillRPCClient();
 }
 
@@ -2635,7 +2640,7 @@ void APlayerCharacter::MulticastRPCReload_Implementation()
 		{
 			if (IsLocallyControlled())
 			{
-				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
+				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
 				UGameplayStatics::PlaySound2D(GetWorld(), SniperReloadSound);
 			}
 			else
@@ -2649,7 +2654,7 @@ void APlayerCharacter::MulticastRPCReload_Implementation()
 			if (IsLocallyControlled())
 			{
 				SetFirstPersonModePistol(false);
-				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
+				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
 				UGameplayStatics::PlaySound2D(GetWorld(), PistolReloadSound);
 			}
 			else
@@ -2662,7 +2667,7 @@ void APlayerCharacter::MulticastRPCReload_Implementation()
 		{
 			if (IsLocallyControlled())
 			{
-				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation);
+				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
 				UGameplayStatics::PlaySound2D(GetWorld(), M249ReloadSound);
 			}
 			else
@@ -2730,6 +2735,9 @@ void APlayerCharacter::MoveToHideout(const bool IsPlayerDeath)
 	{
 		PC->SetIgnoreLookInput(false);
 		PC->SetIgnoreMoveInput(false);
+
+		if (SpawnedSpacecraftSound) SpawnedSpacecraftSound->Deactivate();
+		if (SpawnedIntersectionSound) SpawnedIntersectionSound->Deactivate();
 
 		const FName HideoutLevelName = FName("Safe_House");
 		const FName IntersectionLevelName = FName("Deserted_Road");
@@ -2928,17 +2936,21 @@ void APlayerCharacter::OnSpacecraftStreamingLevelLoadFinished()
 {
 	if (IsLocallyControlled())
 	{
-		if(!crosshairUI->IsInViewport()) crosshairUI->AddToViewport();
-		if(!informationUI->IsInViewport()) informationUI->AddToViewport();
+		if (!crosshairUI->IsInViewport()) crosshairUI->AddToViewport();
+		if (!informationUI->IsInViewport()) informationUI->AddToViewport();
 		informationUI->EnterSpacecraft();
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
 		UGameplayStatics::PlaySound2D(GetWorld(), PlayerSpawnSound, 0.6, 1, 0.25);
+		SpawnedSpacecraftSound = UGameplayStatics::SpawnSound2D(GetWorld(), SpacecraftAmbientSound);
 
-		if (APlayerCameraManager* const CameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)))
+		FTimerHandle TimerHandle;
+		GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
-			CameraManager->StopCameraFade();
-			CameraManager->StartCameraFade(1.0, 0, 10.0, FColor::Black, true, true);
-		}
+			if (APlayerCameraManager* const CameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)))
+			{
+				CameraManager->StopCameraFade();
+				CameraManager->StartCameraFade(1.0, 0, 10.0, FColor::Black, false, false);
+			}
+		}), 0.5f, false);
 	}
 	bEnding = false;
 	IsPlayerDeadImmediately = false;
@@ -2956,17 +2968,21 @@ void APlayerCharacter::OnIntersectionStreamingLevelLoadFinished()
 {
 	if (IsLocallyControlled())
 	{
-		if(!crosshairUI->IsInViewport()) crosshairUI->AddToViewport();
-		if(!informationUI->IsInViewport()) informationUI->AddToViewport();
+		if (!crosshairUI->IsInViewport()) crosshairUI->AddToViewport();
+		if (!informationUI->IsInViewport()) informationUI->AddToViewport();
 		informationUI->EnterIntersection();
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
 		UGameplayStatics::PlaySound2D(GetWorld(), PlayerSpawnSound, 0.6, 1, 0.25);
+		SpawnedIntersectionSound = UGameplayStatics::SpawnSoundAtLocation(GetWorld(), IntersectionAmbientSound, FVector(234, -800, 0));
 
-		if (APlayerCameraManager* const CameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)))
+		FTimerHandle TimerHandle;
+		GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
-			CameraManager->StopCameraFade();
-			CameraManager->StartCameraFade(1.0, 0, 10.0, FColor::Black, true, true);
-		}
+			if (APlayerCameraManager* const CameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)))
+			{
+				CameraManager->StopCameraFade();
+				CameraManager->StartCameraFade(1.0, 0, 10.0, FColor::Black, false, false);
+			}
+		}), 0.5f, false);
 	}
 	bEnding = false;
 	IsPlayerDeadImmediately = false;
@@ -2985,18 +3001,21 @@ void APlayerCharacter::OnHideoutStreamingLevelLoadFinished()
 {
 	if (IsLocallyControlled())
 	{
-		if(!crosshairUI->IsInViewport()) crosshairUI->AddToViewport();
-		if(!informationUI->IsInViewport()) informationUI->AddToViewport();
+		if (!crosshairUI->IsInViewport()) crosshairUI->AddToViewport();
+		if (!informationUI->IsInViewport()) informationUI->AddToViewport();
 		informationUI->EnterHideout();
 
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerSpawnEmitter, GetActorLocation());
 		UGameplayStatics::PlaySound2D(GetWorld(), PlayerSpawnSound, 0.6, 1, 0.25);
 
-		if (APlayerCameraManager* const CameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)))
+		FTimerHandle TimerHandle;
+		GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
-			CameraManager->StopCameraFade();
-			CameraManager->StartCameraFade(1.0, 0, 10.0, FColor::Black, true, true);
-		}
+			if (APlayerCameraManager* const CameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)))
+			{
+				CameraManager->StopCameraFade();
+				CameraManager->StartCameraFade(1.0, 0, 10.0, FColor::Black, false, false);
+			}
+		}), 0.5f, false);
 	}
 
 	OnHideoutStreamingLevelLoadFinishedServer();
@@ -3011,7 +3030,7 @@ void APlayerCharacter::OnHideoutStreamingLevelLoadFinishedServer_Implementation(
 
 void APlayerCharacter::OnHideoutStreamingLevelLoadFinishedMulticast_Implementation()
 {
-	if(!HasAuthority()&&!IsLocallyControlled())
+	if (!HasAuthority() && !IsLocallyControlled())
 	{
 		if (!GetMesh()->IsVisible())
 		{
@@ -3023,7 +3042,6 @@ void APlayerCharacter::OnHideoutStreamingLevelLoadFinishedMulticast_Implementati
 		}
 	}
 }
-
 
 
 void APlayerCharacter::ChoosePlayerStartByTagName(const FName& PlayerStartTagName, const int32 DetectionSphereRadius)
@@ -3186,7 +3204,7 @@ void APlayerCharacter::Fire()
 	{
 		crosshairUI->PlayAnimation(crosshairUI->HideoutWarningAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
 		return;
-	}	
+	}
 	if (!isZooming && weaponArray[1] == false && weaponArray[2] == false)
 	{
 		GetWorldTimerManager().ClearTimer(ZoomFireHandle);
@@ -3195,7 +3213,7 @@ void APlayerCharacter::Fire()
 	FireLocal();
 	ServerRPCFire();
 	CanShoot = false;
-	GetWorldTimerManager().SetTimer(shootEnableHandle, this, &APlayerCharacter::ResetFireBoolean, Stat->GetFireInterval(weaponArray), false);	
+	GetWorldTimerManager().SetTimer(shootEnableHandle, this, &APlayerCharacter::ResetFireBoolean, Stat->GetFireInterval(weaponArray), false);
 }
 
 void APlayerCharacter::FireLocal()
@@ -3565,7 +3583,7 @@ void APlayerCharacter::ProcessRifleFireLocal()
 		const FTransform ParticleTrans = UKismetMathLibrary::MakeTransform(particleLoc, ParticleRot, FVector(0.4));
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle, ParticleTrans);
 	}
-	
+
 	Stat->SetRecoilRate(weaponArray);
 	AddControllerPitchInput(Stat->GetPitchRecoilRate());
 	AddControllerYawInput(Stat->GetYawRecoilRate());
@@ -3990,7 +4008,7 @@ void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 		}
 		else
 		{
-			if(!IsLocallyControlled())
+			if (!IsLocallyControlled())
 			{
 				GetMesh()->SetVisibility(false);
 			}

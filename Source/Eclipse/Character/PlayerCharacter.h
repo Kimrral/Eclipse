@@ -1121,6 +1121,12 @@ public:
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* ExtractionSound;
 
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* IntersectionAmbientSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* SpacecraftAmbientSound;
+	
 	UPROPERTY()
 	FTimerHandle shootEnableHandle;
 
@@ -1159,6 +1165,11 @@ public:
 	class UParticleSystem* SniperFireParticle;
 	UPROPERTY(EditAnywhere, Transient, Category="Particle")
 	class UParticleSystem* BloodParticle;
+
+	UPROPERTY()
+	UAudioComponent* SpawnedIntersectionSound;
+	UPROPERTY()
+	UAudioComponent* SpawnedSpacecraftSound;
 
 	UPROPERTY(EditAnywhere) // Timeline 생성
 	FTimeline Timeline;

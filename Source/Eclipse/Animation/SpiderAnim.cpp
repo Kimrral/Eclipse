@@ -10,7 +10,6 @@ void USpiderAnim::AnimNotify_HitPoint() const
 {
 	if(me->HasAuthority())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Attack"))
 		// 중심점
 		const FVector Center = me->GetActorLocation() + me->GetActorForwardVector() * 30.f;
 		// 충돌체크(구충돌)

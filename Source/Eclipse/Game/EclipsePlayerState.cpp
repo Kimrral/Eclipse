@@ -203,7 +203,7 @@ void AEclipsePlayerState::DragFromGearSlotServer_Implementation(APlayerCharacter
 	}
 }
 
-
+// 그라운드 아이템 리스트 드래그
 void AEclipsePlayerState::DragFromGround(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct, const int32 DropArrayIndex, const bool IsAmmunition)
 {
 	DragFromGroundServer(PlayerCharacterRef, PlayerInventoryStruct, DropArrayIndex, IsAmmunition);
@@ -216,21 +216,27 @@ void AEclipsePlayerState::DragFromGroundServer_Implementation(APlayerCharacter* 
 	{
 		if (IsAmmunition)
 		{
+			// 탄약 아이템일 경우, 해당 아이템 구조체 데이터 타입에 따라 탄약 보충
 			PlayerCharacterRef->AddAmmunitionByInputString(PlayerInventoryStruct.Name);
+			// 드래그 대상 아이템 액터 파괴
 			GroundDetectAndDestroy(PlayerCharacterRef->GetActorLocation(), PlayerInventoryStruct.Name);
 		}
 		else
 		{
 			if (PlayerInventoryStructs.IsValidIndex(DropArrayIndex) && PlayerInventoryStacks.IsValidIndex(DropArrayIndex))
 			{
+				// 드랍한 인벤토리 인덱스에 아이템이 없다면
 				if (PlayerInventoryStacks[DropArrayIndex] == 0)
 				{
+					// 매개변수 구조체로 해당 인벤토리 인덱스 채우기
 					PlayerInventoryStructs[DropArrayIndex] = PlayerInventoryStruct;
 					PlayerInventoryStacks[DropArrayIndex]++;
 					GroundDetectAndDestroy(PlayerCharacterRef->GetActorLocation(), PlayerInventoryStruct.Name);
 				}
+				// 드랍한 인벤토리 인덱스에 아이템이 있다면
 				else
 				{
+					// 인벤토리 아이템 자동 추가 함수 호출
 					AddToInventory(PlayerCharacterRef, PlayerInventoryStruct);
 					GroundDetectAndDestroy(PlayerCharacterRef->GetActorLocation(), PlayerInventoryStruct.Name);
 				}
@@ -238,6 +244,7 @@ void AEclipsePlayerState::DragFromGroundServer_Implementation(APlayerCharacter* 
 		}
 	}
 
+	// 멀티캐스트 RPC 호출
 	DragFromGroundMulticast(PlayerCharacterRef, PlayerInventoryStruct, DropArrayIndex, IsAmmunition);
 }
 
@@ -247,10 +254,12 @@ void AEclipsePlayerState::DragFromGroundMulticast_Implementation(APlayerCharacte
 	{
 		if (PlayerCharacterRef->IsLocallyControlled())
 		{
+			// 로컬 클라이언트 픽업 2D 사운드 재생
 			UGameplayStatics::PlaySound2D(GetWorld(), PlayerCharacterRef->PickUpSound);
 		}
 		if (!PlayerCharacterRef->HasAuthority())
 		{
+			// 모든 클라이언트에서 픽업 애니메이션 몽타주 재생
 			PlayerCharacterRef->PlayAnimMontage(PlayerCharacterRef->UpperOnlyMontage, 1, FName("WeaponEquip"));
 		}
 	}
@@ -434,7 +443,7 @@ void AEclipsePlayerState::DeadBodyWidgetSettingsMulticast_Implementation(ADeadPl
 	}
 }
 
-
+// 판매 완료한 인벤토리 아이템 제거 함수
 void AEclipsePlayerState::RemoveSoldInventoryIndex(APlayerCharacter* PlayerCharacterRef, const TArray<int32>& SoldInventoryIndexArray, const int32 SoldRoubleAmount)
 {
 	RemoveSoldInventoryIndexServer(PlayerCharacterRef, SoldInventoryIndexArray, SoldRoubleAmount);
@@ -442,11 +451,13 @@ void AEclipsePlayerState::RemoveSoldInventoryIndex(APlayerCharacter* PlayerChara
 
 void AEclipsePlayerState::RemoveSoldInventoryIndexServer_Implementation(APlayerCharacter* PlayerCharacterRef, const TArray<int32>& SoldInventoryIndexArray, const int32 SoldRoubleAmount)
 {
+	// 판매 완료한 인벤토리 아이템 슬롯 인덱스 초기화
 	for (int i = 0; i < SoldInventoryIndexArray.Num(); ++i)
 	{
 		PlayerInventoryStructs[SoldInventoryIndexArray[i]] = InventoryStructDefault;
 		PlayerInventoryStacks[SoldInventoryIndexArray[i]] = 0;
 	}
+	// 판매한 아이템 가치만큼 스탯 컴포넌트의 보유 자산 증가 
 	if (PlayerCharacterRef)
 	{
 		PlayerCharacterRef->Stat->AddRouble(SoldRoubleAmount);

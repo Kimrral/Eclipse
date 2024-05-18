@@ -2413,101 +2413,102 @@ void APlayerCharacter::ChangeWeaponToM249RPCMulticast_Implementation(AM249Actor*
 
 void APlayerCharacter::InteractionProcess()
 {
-	const FVector StartLoc = FollowCamera->GetComponentLocation();
-	const FVector EndLoc = StartLoc + FollowCamera->GetForwardVector() * 500.0f;
-	// 무기 액터 탐지 라인 트레이스
-	if (FHitResult ActorHitResult; GetWorld()->LineTraceSingleByChannel(ActorHitResult, StartLoc, EndLoc, ECC_Visibility))
+	if(IsLocallyControlled())
 	{
-		// 무기 액터 캐스팅
-		rifleActor = Cast<ARifleActor>(ActorHitResult.GetActor());
-		sniperActor = Cast<ASniperActor>(ActorHitResult.GetActor());
-		pistolActor = Cast<APistolActor>(ActorHitResult.GetActor());
-		m249Actor = Cast<AM249Actor>(ActorHitResult.GetActor());
-		PickableItemActor = Cast<APickableActor>(ActorHitResult.GetActor());
-		StageBoard = Cast<AStageBoard>(ActorHitResult.GetActor());
-		Stash = Cast<AStash>(ActorHitResult.GetActor());
-		Trader = Cast<ATrader>(ActorHitResult.GetActor());
-		QuitGameActor = Cast<AQuitGameActor>(ActorHitResult.GetActor());
-		DeadPlayerContainer = Cast<ADeadPlayerContainer>(ActorHitResult.GetActor());
+		const FVector StartLoc = FollowCamera->GetComponentLocation();
+		const FVector EndLoc = StartLoc + FollowCamera->GetForwardVector() * 500.0f;
+		// 무기 액터 탐지 라인 트레이스
+		if (FHitResult ActorHitResult; GetWorld()->LineTraceSingleByChannel(ActorHitResult, StartLoc, EndLoc, ECC_Visibility))
+		{
+			// 무기 액터 캐스팅
+			rifleActor = Cast<ARifleActor>(ActorHitResult.GetActor());
+			sniperActor = Cast<ASniperActor>(ActorHitResult.GetActor());
+			pistolActor = Cast<APistolActor>(ActorHitResult.GetActor());
+			m249Actor = Cast<AM249Actor>(ActorHitResult.GetActor());
+			PickableItemActor = Cast<APickableActor>(ActorHitResult.GetActor());
+			MissionChecker = Cast<AMissionChecker>(ActorHitResult.GetActor());
+			StageBoard = Cast<AStageBoard>(ActorHitResult.GetActor());
+			Stash = Cast<AStash>(ActorHitResult.GetActor());
+			Trader = Cast<ATrader>(ActorHitResult.GetActor());
+			QuitGameActor = Cast<AQuitGameActor>(ActorHitResult.GetActor());
+			DeadPlayerContainer = Cast<ADeadPlayerContainer>(ActorHitResult.GetActor());
 
-		// 라이플로 교체
-		if (rifleActor)
-		{
-			// 라이플을 사용하지 않을 때만 교체
-			if (weaponArray[0] == false)
+			// 라이플로 교체
+			if (rifleActor)
+			{
+				// 라이플을 사용하지 않을 때만 교체
+				if (weaponArray[0] == false)
+				{
+					// 키다운 시간 동안 Radial Slider 게이지 상승
+					infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
+					// 게이지가 모두 채워졌을 때
+					if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
+					{
+						infoWidgetUI->weaponHoldPercent = 0;
+						ChangeWeaponToRifle(rifleActor);
+					}
+				}
+			}
+			// 스나이퍼로 교체
+			else if (sniperActor)
+			{
+				// 스나이퍼를 사용하지 않을 때만 교체
+				if (weaponArray[1] == false)
+				{
+					// 키다운 시간 동안 Radial Slider 게이지 상승
+					infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
+					if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
+					{
+						infoWidgetUI->weaponHoldPercent = 0;
+						ChangeWeaponToSniper(sniperActor);
+					}
+				}
+			}
+			// 권총으로 교체
+			else if (pistolActor)
+			{
+				// 권총을 사용하지 않을 때만 교체
+				if (weaponArray[2] == false)
+				{
+					// 키다운 시간 동안 Radial Slider 게이지 상승
+					infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
+					if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
+					{
+						infoWidgetUI->weaponHoldPercent = 0;
+						ChangeWeaponToPistol(pistolActor);
+					}
+				}
+			}
+			// M249로 교체
+			else if (m249Actor)
+			{
+				// M249을 사용하지 않을 때만 교체
+				if (weaponArray[3] == false)
+				{
+					// 키다운 시간 동안 Radial Slider 게이지 상승
+					infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
+					if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
+					{
+						infoWidgetUI->weaponHoldPercent = 0;
+						ChangeWeaponToM249(m249Actor);
+					}
+				}
+			}
+			else if (PickableItemActor)
 			{
 				// 키다운 시간 동안 Radial Slider 게이지 상승
 				infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
-				// 게이지가 모두 채워졌을 때
 				if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 				{
 					infoWidgetUI->weaponHoldPercent = 0;
-					ChangeWeaponToRifle(rifleActor);
+					PickableItemActorInteraction(PickableItemActor);
 				}
 			}
-		}
-		// 스나이퍼로 교체
-		else if (sniperActor)
-		{
-			// 스나이퍼를 사용하지 않을 때만 교체
-			if (weaponArray[1] == false)
+			else if (MissionChecker)
 			{
 				// 키다운 시간 동안 Radial Slider 게이지 상승
 				infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
 				if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
-				{
-					infoWidgetUI->weaponHoldPercent = 0;
-					ChangeWeaponToSniper(sniperActor);
-				}
-			}
-		}
-		// 권총으로 교체
-		else if (pistolActor)
-		{
-			// 권총을 사용하지 않을 때만 교체
-			if (weaponArray[2] == false)
-			{
-				// 키다운 시간 동안 Radial Slider 게이지 상승
-				infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
-				if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
-				{
-					infoWidgetUI->weaponHoldPercent = 0;
-					ChangeWeaponToPistol(pistolActor);
-				}
-			}
-		}
-		// M249로 교체
-		else if (m249Actor)
-		{
-			// M249을 사용하지 않을 때만 교체
-			if (weaponArray[3] == false)
-			{
-				// 키다운 시간 동안 Radial Slider 게이지 상승
-				infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
-				if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
-				{
-					infoWidgetUI->weaponHoldPercent = 0;
-					ChangeWeaponToM249(m249Actor);
-				}
-			}
-		}
-		else if (PickableItemActor)
-		{
-			// 키다운 시간 동안 Radial Slider 게이지 상승
-			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
-			if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
-			{
-				infoWidgetUI->weaponHoldPercent = 0;
-				PickableItemActorInteraction(PickableItemActor);
-			}
-		}
-		else if (MissionChecker)
-		{
-			// 키다운 시간 동안 Radial Slider 게이지 상승
-			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
-			if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
-			{
-				//if (GuardianCount >= 7 && ConsoleCount >= 5 && BossCount >= 1)
 				{
 					infoWidgetUI->weaponHoldPercent = 0;
 					MoveToAnotherLevel();
@@ -2518,88 +2519,83 @@ void APlayerCharacter::InteractionProcess()
 						MoveToHideout(false);
 					}), 9.f, false);
 				}
-				// else
-				// {
-				// 	infoWidgetUI->PlayAnimation(infoWidgetUI->LackMission);
-				// 	infoWidgetUI->weaponHoldPercent = 0;
-				// }
 			}
-		}
 
-		else if (StageBoard)
-		{
-			// 키다운 시간 동안 Radial Slider 게이지 상승
-			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
-			if (levelSelectionUI && infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
+			else if (StageBoard)
 			{
-				infoWidgetUI->weaponHoldPercent = 0;
-				UGameplayStatics::PlaySound2D(GetWorld(), levelSelectionSound);
-				infoWidgetUI->RemoveFromParent();
-				UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(PC, levelSelectionUI);
-				PC->SetShowMouseCursor(true);
-				levelSelectionUI->AddToViewport();
-			}
-		}
-		else if (Stash)
-		{
-			// 키다운 시간 동안 Radial Slider 게이지 상승
-			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
-			if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
-			{
-				infoWidgetUI->weaponHoldPercent = 0;
-				if (bStashWidgetOn == false && PC)
+				// 키다운 시간 동안 Radial Slider 게이지 상승
+				infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
+				if (levelSelectionUI && infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 				{
-					bStashWidgetOn = true;
-					UGameplayStatics::PlaySound2D(GetWorld(), tabSound);
+					infoWidgetUI->weaponHoldPercent = 0;
+					UGameplayStatics::PlaySound2D(GetWorld(), levelSelectionSound);
 					infoWidgetUI->RemoveFromParent();
+					UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(PC, levelSelectionUI);
 					PC->SetShowMouseCursor(true);
-					StashWidgetOnViewport();
+					levelSelectionUI->AddToViewport();
 				}
 			}
-		}
-		else if (Trader)
-		{
-			// 키다운 시간 동안 Radial Slider 게이지 상승
-			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
-			if (TradeWidgetUI && infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
+			else if (Stash)
 			{
-				infoWidgetUI->weaponHoldPercent = 0;
-				gi->IsWidgetOn = true;
-				UGameplayStatics::PlaySound2D(GetWorld(), quitGameSound);
-				infoWidgetUI->RemoveFromParent();
-				UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(PC, TradeWidgetUI);
-				PC->SetShowMouseCursor(true);
-				TradeWidgetUI->AddToViewport();
-			}
-		}
-		else if (QuitGameActor)
-		{
-			// 키다운 시간 동안 Radial Slider 게이지 상승
-			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
-			if (quitWidgetUI && infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
-			{
-				infoWidgetUI->weaponHoldPercent = 0;
-				if (!quitWidgetUI->IsInViewport() && PC)
+				// 키다운 시간 동안 Radial Slider 게이지 상승
+				infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
+				if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 				{
+					infoWidgetUI->weaponHoldPercent = 0;
+					if (bStashWidgetOn == false && PC)
+					{
+						bStashWidgetOn = true;
+						UGameplayStatics::PlaySound2D(GetWorld(), tabSound);
+						infoWidgetUI->RemoveFromParent();
+						PC->SetShowMouseCursor(true);
+						StashWidgetOnViewport();
+					}
+				}
+			}
+			else if (Trader)
+			{
+				// 키다운 시간 동안 Radial Slider 게이지 상승
+				infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
+				if (TradeWidgetUI && infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
+				{
+					infoWidgetUI->weaponHoldPercent = 0;
+					gi->IsWidgetOn = true;
 					UGameplayStatics::PlaySound2D(GetWorld(), quitGameSound);
 					infoWidgetUI->RemoveFromParent();
-					UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(PC, quitWidgetUI);
+					UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(PC, TradeWidgetUI);
 					PC->SetShowMouseCursor(true);
-					quitWidgetUI->AddToViewport();
+					TradeWidgetUI->AddToViewport();
 				}
 			}
-		}
-		else if (DeadPlayerContainer)
-		{
-			// 키다운 시간 동안 Radial Slider 게이지 상승
-			infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
-			if (quitWidgetUI && infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
+			else if (QuitGameActor)
 			{
-				infoWidgetUI->weaponHoldPercent = 0;
-				if (bDeadBodyWidgetOn == false)
+				// 키다운 시간 동안 Radial Slider 게이지 상승
+				infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
+				if (quitWidgetUI && infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 				{
-					bDeadBodyWidgetOn = true;
-					DeadBodyInteraction(DeadPlayerContainer);
+					infoWidgetUI->weaponHoldPercent = 0;
+					if (!quitWidgetUI->IsInViewport() && PC)
+					{
+						UGameplayStatics::PlaySound2D(GetWorld(), quitGameSound);
+						infoWidgetUI->RemoveFromParent();
+						UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(PC, quitWidgetUI);
+						PC->SetShowMouseCursor(true);
+						quitWidgetUI->AddToViewport();
+					}
+				}
+			}
+			else if (DeadPlayerContainer)
+			{
+				// 키다운 시간 동안 Radial Slider 게이지 상승
+				infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
+				if (quitWidgetUI && infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
+				{
+					infoWidgetUI->weaponHoldPercent = 0;
+					if (bDeadBodyWidgetOn == false)
+					{
+						bDeadBodyWidgetOn = true;
+						DeadBodyInteraction(DeadPlayerContainer);
+					}
 				}
 			}
 		}
@@ -2718,6 +2714,8 @@ void APlayerCharacter::MoveToIsolatedShipClient()
 
 void APlayerCharacter::MoveToHideout(const bool IsPlayerDeath)
 {
+	bHideout = true;
+	
 	if (IsPlayerDeath)
 	{
 		IsPlayerDead = false;
@@ -2727,9 +2725,6 @@ void APlayerCharacter::MoveToHideout(const bool IsPlayerDeath)
 		ResetPlayerInventoryDataServer();
 		ResetTabWidget();
 	}
-
-	IsPlayerDeadImmediately = false;
-	bHideout = true;
 
 	if (IsLocallyControlled())
 	{
@@ -3016,6 +3011,9 @@ void APlayerCharacter::OnHideoutStreamingLevelLoadFinished()
 				CameraManager->StartCameraFade(1.0, 0, 10.0, FColor::Black, false, false);
 			}
 		}), 0.5f, false);
+		bEnding = false;
+		IsPlayerDeadImmediately = false;
+		bUseControllerRotationYaw = true;
 	}
 
 	OnHideoutStreamingLevelLoadFinishedServer();

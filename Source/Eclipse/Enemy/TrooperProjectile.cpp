@@ -18,8 +18,6 @@ ATrooperProjectile::ATrooperProjectile()
 	BulletMesh->SetGenerateOverlapEvents(true);
 
 	bReplicates = true;
-	SetReplicatingMovement(true);
-
 }
 
 
@@ -48,7 +46,7 @@ void ATrooperProjectile::OnOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 	}
 	if (OtherComp)
 	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), TrooperGroundHitSound, this->GetActorLocation());
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), TrooperGroundHitSound, GetActorLocation());
 		Destroy();
 	}
 }

@@ -180,7 +180,7 @@ void AEnemy::OnDestroy()
 	DissolveTimeline.PlayFromStart();
 }
 
-void AEnemy::FireProcess() const
+void AEnemy::FireProcess_Implementation() const
 {
 }
 

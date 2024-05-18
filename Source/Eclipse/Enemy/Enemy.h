@@ -79,7 +79,7 @@ public:
 	UFUNCTION()
 	virtual void OnDestroy();
 
-	UFUNCTION()
+	UFUNCTION(Server, Reliable)
 	virtual void FireProcess() const;
 
 	UFUNCTION()

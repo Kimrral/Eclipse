@@ -2928,9 +2928,10 @@ void APlayerCharacter::AddAmmunitionByInputString(const FString& InventoryStruct
 }
 
 void APlayerCharacter::OnSpacecraftStreamingLevelLoadFinished()
-{
+{	
 	if (IsLocallyControlled())
 	{
+		IsPlayerDeadImmediately = false;
 		if (!crosshairUI->IsInViewport()) crosshairUI->AddToViewport();
 		if (!informationUI->IsInViewport()) informationUI->AddToViewport();
 		informationUI->EnterSpacecraft();
@@ -2948,7 +2949,6 @@ void APlayerCharacter::OnSpacecraftStreamingLevelLoadFinished()
 		}), 0.5f, false);
 	}
 	bEnding = false;
-	IsPlayerDeadImmediately = false;
 	bUseControllerRotationYaw = true;
 
 	OnSpacecraftStreamingLevelLoadFinishedServer();
@@ -2956,13 +2956,15 @@ void APlayerCharacter::OnSpacecraftStreamingLevelLoadFinished()
 
 void APlayerCharacter::OnSpacecraftStreamingLevelLoadFinishedServer_Implementation()
 {
+	IsPlayerDeadImmediately = false;
 	ChoosePlayerStartByTagName(FName("Spacecraft"), 1000);
 }
 
 void APlayerCharacter::OnIntersectionStreamingLevelLoadFinished()
-{
+{	
 	if (IsLocallyControlled())
 	{
+		IsPlayerDeadImmediately = false;
 		if (!crosshairUI->IsInViewport()) crosshairUI->AddToViewport();
 		if (!informationUI->IsInViewport()) informationUI->AddToViewport();
 		informationUI->EnterIntersection();
@@ -2980,7 +2982,6 @@ void APlayerCharacter::OnIntersectionStreamingLevelLoadFinished()
 		}), 0.5f, false);
 	}
 	bEnding = false;
-	IsPlayerDeadImmediately = false;
 	bUseControllerRotationYaw = true;
 
 	OnIntersectionStreamingLevelLoadFinishedServer();
@@ -2989,6 +2990,7 @@ void APlayerCharacter::OnIntersectionStreamingLevelLoadFinished()
 
 void APlayerCharacter::OnIntersectionStreamingLevelLoadFinishedServer_Implementation()
 {
+	IsPlayerDeadImmediately = false;
 	ChoosePlayerStartByTagName(FName("Intersection"), 3000);
 }
 
@@ -2996,6 +2998,7 @@ void APlayerCharacter::OnHideoutStreamingLevelLoadFinished()
 {
 	if (IsLocallyControlled())
 	{
+		IsPlayerDeadImmediately = false;
 		if (!crosshairUI->IsInViewport()) crosshairUI->AddToViewport();
 		if (!informationUI->IsInViewport()) informationUI->AddToViewport();
 		informationUI->EnterHideout();
@@ -3012,7 +3015,6 @@ void APlayerCharacter::OnHideoutStreamingLevelLoadFinished()
 			}
 		}), 0.5f, false);
 		bEnding = false;
-		IsPlayerDeadImmediately = false;
 		bUseControllerRotationYaw = true;
 	}
 
@@ -3021,6 +3023,7 @@ void APlayerCharacter::OnHideoutStreamingLevelLoadFinished()
 
 void APlayerCharacter::OnHideoutStreamingLevelLoadFinishedServer_Implementation()
 {
+	IsPlayerDeadImmediately = false;
 	Stat->SetHp(Stat->GetMaxHp());
 	ChoosePlayerStartByTagName(FName("Hideout"), 100);
 	OnHideoutStreamingLevelLoadFinishedMulticast();

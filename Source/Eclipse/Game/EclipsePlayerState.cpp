@@ -52,7 +52,7 @@ void AEclipsePlayerState::AddToInventoryServer_Implementation(APlayerCharacter* 
 void AEclipsePlayerState::AddToInventoryMulticast_Implementation(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct)
 {
 	if (PlayerCharacterRef->IsLocallyControlled()) AddToInventoryWidget(PlayerCharacterRef, PlayerInventoryStruct);
-	if(HasAuthority())
+	if (HasAuthority())
 	{
 		if (PlayerCharacterRef)
 		{
@@ -122,34 +122,31 @@ void AEclipsePlayerState::DragFromDeadBody(APlayerCharacter* PlayerCharacterRef,
 
 void AEclipsePlayerState::DragFromDeadBodyServer_Implementation(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex)
 {
-	if (PlayerCharacterRef)
+	if (DropArrayIndex >= 81) return;
+	if (DragArrayIndex >= 111)
 	{
-		if (DropArrayIndex >= 81) return;
-		if (DragArrayIndex >= 111)
+		if (PlayerInventoryStructs.IsValidIndex(DropArrayIndex) && PlayerInventoryStacks.IsValidIndex(DropArrayIndex) && DeadPlayerGearSlotStructs.IsValidIndex(DragArrayIndex - 111))
 		{
-			if (PlayerInventoryStructs.IsValidIndex(DropArrayIndex) && PlayerInventoryStacks.IsValidIndex(DropArrayIndex) && DeadPlayerGearSlotStructs.IsValidIndex(DragArrayIndex - 111))
-			{
-				PlayerInventoryStructs[DropArrayIndex] = DeadPlayerGearSlotStructs[DragArrayIndex - 111];
-				PlayerInventoryStacks[DropArrayIndex] = 1;
-				DeadPlayerGearSlotStructs[DragArrayIndex - 111] = InventoryStructDefault;
-			}
+			PlayerInventoryStructs[DropArrayIndex] = DeadPlayerGearSlotStructs[DragArrayIndex - 111];
+			PlayerInventoryStacks[DropArrayIndex] = 1;
+			DeadPlayerGearSlotStructs[DragArrayIndex - 111] = InventoryStructDefault;
 		}
-		else
+	}
+	else
+	{
+		if (PlayerInventoryStructs.IsValidIndex(DropArrayIndex) && PlayerInventoryStacks.IsValidIndex(DropArrayIndex) && DeadPlayerInventoryStructs.IsValidIndex(DragArrayIndex - 81))
 		{
-			if (PlayerInventoryStructs.IsValidIndex(DropArrayIndex) && PlayerInventoryStacks.IsValidIndex(DropArrayIndex) && DeadPlayerGearSlotStructs.IsValidIndex(DragArrayIndex - 81))
-			{
-				PlayerInventoryStructs[DropArrayIndex] = DeadPlayerInventoryStructs[DragArrayIndex - 81];
-				PlayerInventoryStacks[DropArrayIndex] = DeadPlayerInventoryStacks[DragArrayIndex - 81];
-				DeadPlayerInventoryStructs[DragArrayIndex - 81] = InventoryStructDefault;
-				DeadPlayerInventoryStacks[DragArrayIndex - 81] = 0;
-			}
+			PlayerInventoryStructs[DropArrayIndex] = DeadPlayerInventoryStructs[DragArrayIndex - 81];
+			PlayerInventoryStacks[DropArrayIndex] = DeadPlayerInventoryStacks[DragArrayIndex - 81];
+			DeadPlayerInventoryStructs[DragArrayIndex - 81] = InventoryStructDefault;
+			DeadPlayerInventoryStacks[DragArrayIndex - 81] = 0;
 		}
-		if (DeadPlayerContainerRef)
-		{
-			DeadPlayerContainerRef->DeadPlayerInventoryStructArray = DeadPlayerInventoryStructs;
-			DeadPlayerContainerRef->DeadPlayerInventoryStackArray = DeadPlayerInventoryStacks;
-			DeadPlayerContainerRef->DeadPlayerGearSlotArray = DeadPlayerGearSlotStructs;
-		}
+	}
+	if (DeadPlayerContainerRef)
+	{
+		DeadPlayerContainerRef->DeadPlayerInventoryStructArray = DeadPlayerInventoryStructs;
+		DeadPlayerContainerRef->DeadPlayerInventoryStackArray = DeadPlayerInventoryStacks;
+		DeadPlayerContainerRef->DeadPlayerGearSlotArray = DeadPlayerGearSlotStructs;
 	}
 }
 
@@ -424,22 +421,25 @@ void AEclipsePlayerState::DeadBodyWidgetSettings(ADeadPlayerContainer* DeadPlaye
 
 void AEclipsePlayerState::DeadBodyWidgetSettingsServer_Implementation(ADeadPlayerContainer* DeadPlayerContainer, APlayerCharacter* InstigatorPlayerRef)
 {
-	DeadBodyWidgetSettingsMulticast(DeadPlayerContainer, InstigatorPlayerRef);
-}
-
-void AEclipsePlayerState::DeadBodyWidgetSettingsMulticast_Implementation(ADeadPlayerContainer* DeadPlayerContainer, APlayerCharacter* InstigatorPlayerRef)
-{
-	if (DeadPlayerContainer && InstigatorPlayerRef)
+	if (DeadPlayerContainer)
 	{
 		DeadPlayerContainerRef = DeadPlayerContainer;
 		DeadPlayerInventoryStructs = DeadPlayerContainer->DeadPlayerInventoryStructArray;
 		DeadPlayerInventoryStacks = DeadPlayerContainer->DeadPlayerInventoryStackArray;
 		DeadPlayerGearSlotStructs = DeadPlayerContainer->DeadPlayerGearSlotArray;
+	}
 
-		if (InstigatorPlayerRef->IsLocallyControlled())
-		{
-			DeadBodySettingsOnWidgetClass(InstigatorPlayerRef, DeadPlayerInventoryStructs, DeadPlayerInventoryStacks, DeadPlayerGearSlotStructs);
-		}
+	DeadBodyWidgetSettingsMulticast(DeadPlayerContainer, InstigatorPlayerRef);
+}
+
+void AEclipsePlayerState::DeadBodyWidgetSettingsMulticast_Implementation(ADeadPlayerContainer* DeadPlayerContainer, APlayerCharacter* InstigatorPlayerRef)
+{
+	if (InstigatorPlayerRef && InstigatorPlayerRef->IsLocallyControlled())
+	{
+		DeadBodySettingsOnWidgetClass(InstigatorPlayerRef,
+		                              DeadPlayerContainer->DeadPlayerInventoryStructArray,
+		                              DeadPlayerContainer->DeadPlayerInventoryStackArray,
+		                              DeadPlayerContainer->DeadPlayerGearSlotArray);
 	}
 }
 

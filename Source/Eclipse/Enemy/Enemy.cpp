@@ -38,6 +38,8 @@ AEnemy::AEnemy()
 	AIControllerClass = AEclipseAIController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
+	GetCharacterMovement()->bUseControllerDesiredRotation = true;
+	
 	SetReplicates(true);
 }
 

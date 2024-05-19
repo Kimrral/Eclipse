@@ -6,6 +6,7 @@
 #include "AIController.h"
 #include "EclipseAIController.generated.h"
 
+DECLARE_DYNAMIC_DELEGATE_OneParam(FOnRandomMoveBegin, FVector, RandomLocation);
 /**
  * 
  */
@@ -20,6 +21,8 @@ public:
 	void RandomMove();
 	void MoveToPlayer(const AActor* TargetPlayer);
 	void MoveToLocation(const FVector& TargetLocation);
+
+	FOnRandomMoveBegin AIControllerRandMoveDelegate;
 
 	FTimerHandle RepeatTimerHandle;
 	float RepeatInterval = 15.0f;

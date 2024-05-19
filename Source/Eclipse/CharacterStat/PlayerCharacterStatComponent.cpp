@@ -27,6 +27,7 @@ float UPlayerCharacterStatComponent::ApplyDamage(const float InDamage, AActor* D
 	const float ActualDamage = FMath::Clamp<float>(InDamage, 0, InDamage);
 
 	SetHp(PrevHp - ActualDamage);
+	
 	if (CurrentHp <= 0.0f)
 	{
 		PlayerCharacter = Cast<APlayerCharacter>(DamageCauser);

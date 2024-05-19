@@ -23,10 +23,7 @@ void URewardManagerComponent::DropSniperServer_Implementation(const FTransform& 
 {
 	FActorSpawnParameters Param;
 	Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	if (const auto RandIndex = FMath::RandRange(0, 2); RandIndex == 0)
-	{
-		GetWorld()->SpawnActor<ASniperActor>(SniperWeaponFactory, EnemyTransform, Param);
-	}
+	GetWorld()->SpawnActor<ASniperActor>(SniperWeaponFactory, EnemyTransform, Param);
 }
 
 void URewardManagerComponent::DropAmmunition(const FTransform& EnemyTransform) const

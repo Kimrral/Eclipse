@@ -3051,34 +3051,44 @@ void APlayerCharacter::ChoosePlayerStartByTagName(const FName& PlayerStartTagNam
 	{
 		if (const auto PlayerStart = Cast<APlayerStart>(PlayerStarts))
 		{
+			// 대상 PlayerStartTag가 매개변수의 FName과 일치한다면
 			if (PlayerStart && PlayerStart->PlayerStartTag == PlayerStartTagName)
 			{
 				const FVector Center = PlayerStart->GetActorLocation();
 				FCollisionQueryParams Params;
 				bool AlreadyLocated = false;
+				// PlayerStart주변 캐릭터 여부 탐지를 위한 오버랩 멀티
 				if (TArray<FOverlapResult> HitObj; GetWorld()->OverlapMultiByChannel(HitObj, Center, FQuat::Identity, ECC_Pawn, FCollisionShape::MakeSphere(DetectionSphereRadius), Params))
 				{
 					for (int i = 0; i < HitObj.Num(); ++i)
 					{
+						// 일정 반경 내에 캐릭터가 존재한다면
 						if (Cast<APlayerCharacter>(HitObj[i].GetActor()))
 						{
 							AlreadyLocated = true;
+							// 반복문을 빠져나온다.
 							break;
-						}
+						}						
 					}
 				}
-				if (AlreadyLocated)
+				// 일정 반경 내에 캐릭터가 존재하는 경우
+				if(AlreadyLocated)
 				{
+					// TargetPlayerStart 배열에 추가하지 않고 넘어간다.
 					continue;
 				}
+				// 일정 반경 내에 캐릭터가 존재하지 않는 경우 TargetPlayerStart 배열에 추가한다.
 				TargetPlayerStarts.Add(PlayerStart);
 			}
 		}
 	}
 	if (const auto PlayerStartRandIndex = FMath::RandRange(0, TargetPlayerStarts.Num() - 1); TargetPlayerStarts.IsValidIndex(PlayerStartRandIndex))
 	{
+		// 조건에 부합하는 PlayerStart 중 랜덤한 인덱스의 PlayerStart 트랜스폼
 		const FTransform TargetPlayerStartTrans = TargetPlayerStarts[PlayerStartRandIndex]->GetActorTransform();
+		// 선별한 PlayerStart 지점으로 플레이어 이동
 		SetActorTransform(TargetPlayerStartTrans, false);
+		// 캐릭터의 Control Rotation 설정 클라이언트 RPC 함수
 		SetPlayerControlRotation(TargetPlayerStartTrans.Rotator());
 	}
 }
@@ -3208,9 +3218,9 @@ void APlayerCharacter::Fire()
 		GetWorldTimerManager().ClearTimer(ZoomFireHandle);
 		Zoom(false);
 	}
+	CanShoot = false;
 	FireLocal();
 	ServerRPCFire();
-	CanShoot = false;
 	GetWorldTimerManager().SetTimer(shootEnableHandle, this, &APlayerCharacter::ResetFireBoolean, Stat->GetFireInterval(weaponArray), false);
 }
 

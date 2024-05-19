@@ -60,6 +60,9 @@ public:
 	void DieProcess();
 
 	UFUNCTION()
+	void RandomMoveSettings(FVector TargetLocation);
+
+	UFUNCTION()
 	void SetState(EEnemyState Next);
 
 	UFUNCTION()
@@ -117,14 +120,21 @@ public:
 	float AttackDelayTime = 1.5f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=EnemySettings)
 	float MaxWalkSpeed = 200.0f;
-	
-	bool bTickDie;
+
+	UPROPERTY()
+	bool IsMovingBack = false;
+
+	UPROPERTY()
+	bool IsMovingRandom = false;	
 
 	UPROPERTY()
 	FVector InitialPosition;
 
 	UPROPERTY()
 	FRotator InitialRotation;
+
+	UPROPERTY()
+	FVector RandomMoveTargetLocation;
 
 	UPROPERTY()
 	float alpha;

@@ -54,6 +54,11 @@ void UEnemyFSM::BeginPlay()
 		TimelineProgress.BindDynamic(this, &UEnemyFSM::SetRotToPlayer);
 		Timeline.AddInterpFloat(CurveFloat, TimelineProgress);
 	}
+
+	if(AIController)
+	{
+		AIController->AIControllerRandMoveDelegate.BindDynamic(this, &UEnemyFSM::RandomMoveSettings);
+	}
 }
 
 void UEnemyFSM::InitializeComponent()
@@ -103,6 +108,7 @@ void UEnemyFSM::TickComponent(const float DeltaTime, const ELevelTick TickType, 
 
 void UEnemyFSM::TickIdle()
 {
+	// 플레이어가 감지되었다면
 	if (Player)
 	{
 		if (Player->IsPlayerDeadImmediately)
@@ -110,18 +116,30 @@ void UEnemyFSM::TickIdle()
 			Player = nullptr;
 			return;
 		}
-		// 플레이어와 적 간의 거리값 도출
-		if (const auto DistToPlayer =
-			Player->GetDistanceTo(Me); DistToPlayer <= AggressiveRange)
-		{
-			// 탐색 범위 내에 플레이어가 있다면, 이동 상태로 전이
-			SetState(EEnemyState::MOVE);
-		}
+		// 이동 상태로 전이
+		SetState(EEnemyState::MOVE);
 	}
 }
 
 void UEnemyFSM::TickMove()
 {
+	if (IsMovingBack)
+	{
+		if (AIController) AIController->MoveToLocation(InitialPosition);
+		if (FVector::Dist(Me->GetActorLocation(), InitialPosition) < 100.f)
+		{
+			if (AIController)
+			{
+				AIController->StopMovement();
+				AIController->SetControlRotation(InitialRotation);
+			}
+			SetState(EEnemyState::IDLE);
+			IsMovingBack = false;
+			return;
+		}
+		return;
+	}
+	
 	if (Player)
 	{
 		if (Player->IsPlayerDeadImmediately)
@@ -146,6 +164,16 @@ void UEnemyFSM::TickMove()
 				SetState(EEnemyState::ATTACK);
 			}
 		}
+		return;
+	}
+
+	if(IsMovingRandom)
+	{
+		if(FVector::Dist(Me->GetActorLocation(), RandomMoveTargetLocation) < 100.f)
+		{
+			SetState(EEnemyState::IDLE);
+			IsMovingRandom = false;
+		}
 	}
 }
 
@@ -159,12 +187,10 @@ void UEnemyFSM::TickAttack()
 	{
 		if (Player->IsPlayerDeadImmediately)
 		{
-			SetState(EEnemyState::MOVE);
 			MoveBackToInitialPosition();
 			return;
 		}
 		// 플레이어와의 거리 도출
-
 		if (const float Dist = Player->GetDistanceTo(Me))
 		{
 			// 추적 범위보다 멀어졌다면
@@ -198,6 +224,13 @@ void UEnemyFSM::DieProcess()
 	// Die 상태로 전이한다.
 	SetState(EEnemyState::DIE);
 	Me->OnDie();
+}
+
+void UEnemyFSM::RandomMoveSettings(FVector TargetLocation)
+{
+	IsMovingRandom = true;
+	RandomMoveTargetLocation = TargetLocation;
+	SetState(EEnemyState::MOVE);
 }
 
 void UEnemyFSM::SetState(EEnemyState Next) // 상태 전이함수
@@ -296,20 +329,12 @@ void UEnemyFSM::MoveBackToInitialPosition()
 	{
 		return;
 	}
-	
+	State = EEnemyState::MOVE;
+
 	Player = nullptr;
-	
-	// 타임라인을 이용한 Enemy 캐릭터 회전 러프
-	Timeline.PlayFromStart();
-	
+	IsMovingBack = true;
+
 	if (AIController) AIController->MoveToLocation(InitialPosition);
-	
-	if (FVector::Dist(Me->GetActorLocation(), InitialPosition) < 100.f)
-	{
-		if (AIController) AIController->StopMovement();
-		Me->GetController()->SetControlRotation(InitialRotation);
-		SetState(EEnemyState::IDLE);
-	}
 }
 
 void UEnemyFSM::OnRep_EnemyState() const

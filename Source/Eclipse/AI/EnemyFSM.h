@@ -125,7 +125,10 @@ public:
 	bool IsMovingBack = false;
 
 	UPROPERTY()
-	bool IsMovingRandom = false;	
+	bool IsMovingRandom = false;
+
+	UPROPERTY()
+	float StuckedTime = 0;
 
 	UPROPERTY()
 	FVector InitialPosition;

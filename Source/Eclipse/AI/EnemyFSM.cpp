@@ -55,7 +55,7 @@ void UEnemyFSM::BeginPlay()
 		Timeline.AddInterpFloat(CurveFloat, TimelineProgress);
 	}
 
-	if(AIController)
+	if (AIController)
 	{
 		AIController->AIControllerRandMoveDelegate.BindDynamic(this, &UEnemyFSM::RandomMoveSettings);
 	}
@@ -123,6 +123,39 @@ void UEnemyFSM::TickIdle()
 
 void UEnemyFSM::TickMove()
 {
+	if (Player)
+	{
+		if (Player->IsPlayerDeadImmediately)
+		{
+			MoveBackToInitialPosition();
+			return;
+		}		
+		if (const float Dist = Player->GetDistanceTo(Me))
+		{
+			if (Dist > ChaseLimitRange)
+			{
+				MoveBackToInitialPosition();
+				return;
+			}
+			if(Dist>AttackRange && Dist <= ChaseLimitRange)
+			{
+				if (AIController)
+				{
+					// 타임라인을 이용한 Enemy 캐릭터 회전 러프
+					Timeline.PlayFromStart();
+					AIController->MoveToPlayer(Player);
+				}
+			}
+			if (Dist <= AttackRange)
+			{
+				if (AIController) AIController->StopMovement();
+				// 플레이어가 공격 범위 내에 위치한다면, 공격 상태로 전이
+				SetState(EEnemyState::ATTACK);
+			}
+		}
+		return;
+	}
+	
 	if (IsMovingBack)
 	{
 		if (AIController) AIController->MoveToLocation(InitialPosition);
@@ -139,40 +172,25 @@ void UEnemyFSM::TickMove()
 		}
 		return;
 	}
-	
-	if (Player)
+
+	if (IsMovingRandom)
 	{
-		if (Player->IsPlayerDeadImmediately)
+		if (Me->GetCharacterMovement()->GetCurrentAcceleration().Normalize() == 0.f)
 		{
-			MoveBackToInitialPosition();
-			return;
-		}
-		// 타임라인을 이용한 Enemy 캐릭터 회전 러프
-		Timeline.PlayFromStart();
-		if (AIController) AIController->MoveToPlayer(Player);
-		if (const float Dist = Player->GetDistanceTo(Me))
-		{
-			if (Dist >= ChaseLimitRange)
+			StuckedTime += GetWorld()->GetDeltaSeconds();
+			if (StuckedTime > 3.f)
 			{
-				MoveBackToInitialPosition();
+				SetState(EEnemyState::IDLE);
+				IsMovingRandom = false;
+				StuckedTime = 0.f;
 				return;
 			}
-			if (Dist <= AttackRange)
-			{
-				if (AIController) AIController->StopMovement();
-				// 플레이어가 공격 범위 내에 위치한다면, 공격 상태로 전이
-				SetState(EEnemyState::ATTACK);
-			}
 		}
-		return;
-	}
-
-	if(IsMovingRandom)
-	{
-		if(FVector::Dist(Me->GetActorLocation(), RandomMoveTargetLocation) < 100.f)
+		if (FVector::Dist(Me->GetActorLocation(), RandomMoveTargetLocation) < 50.f)
 		{
 			SetState(EEnemyState::IDLE);
 			IsMovingRandom = false;
+			StuckedTime = 0.f;
 		}
 	}
 }
@@ -193,12 +211,6 @@ void UEnemyFSM::TickAttack()
 		// 플레이어와의 거리 도출
 		if (const float Dist = Player->GetDistanceTo(Me))
 		{
-			// 추적 범위보다 멀어졌다면
-			if (Dist > ChaseLimitRange)
-			{
-				MoveBackToInitialPosition();
-				return;
-			}
 			// 공격거리보다 멀어졌다면
 			if (Dist > AttackRange)
 			{
@@ -228,9 +240,12 @@ void UEnemyFSM::DieProcess()
 
 void UEnemyFSM::RandomMoveSettings(FVector TargetLocation)
 {
-	IsMovingRandom = true;
-	RandomMoveTargetLocation = TargetLocation;
-	SetState(EEnemyState::MOVE);
+	if(State==EEnemyState::IDLE)
+	{
+		IsMovingRandom = true;
+		RandomMoveTargetLocation = TargetLocation;
+		SetState(EEnemyState::MOVE);
+	}
 }
 
 void UEnemyFSM::SetState(EEnemyState Next) // 상태 전이함수

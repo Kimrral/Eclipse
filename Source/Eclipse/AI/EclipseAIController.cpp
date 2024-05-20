@@ -14,13 +14,20 @@ void AEclipseAIController::OnPossess(APawn* InPawn)
 	// 빙의 시
 	Super::OnPossess(InPawn);
 
-	GetWorld()->GetTimerManager().SetTimer(RepeatTimerHandle, this, &AEclipseAIController::RandomMove, RepeatInterval, true);
+	if (const auto Enemy = Cast<AEnemy>(InPawn))
+	{
+		if(Enemy->IsRandomMovable)
+		{
+			GetWorld()->GetTimerManager().SetTimer(RepeatTimerHandle, this, &AEclipseAIController::RandomMove, RepeatInterval, true);
+		}
+	}
 }
 
 void AEclipseAIController::OnUnPossess()
 {
 	// 빙의 해제 시
 	Super::OnUnPossess();
+	
 	GetWorld()->GetTimerManager().ClearTimer(RepeatTimerHandle);
 }
 

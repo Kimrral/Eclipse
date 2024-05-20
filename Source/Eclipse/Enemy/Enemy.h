@@ -105,6 +105,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bPlayerInSight = false;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsRandomMovable = false;
+
 	UPROPERTY(EditAnywhere) // Timeline 생성
 	FTimeline DissolveTimeline;
 

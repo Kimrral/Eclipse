@@ -3073,38 +3073,55 @@ void APlayerCharacter::OnHideoutStreamingLevelLoadFinishedMulticast_Implementati
 
 void APlayerCharacter::ToggleFlashlight()
 {
-	if (IsFlashlightToggled)
+	if (IsLocallyControlled())
 	{
-		IsFlashlightToggled = false;
+		UGameplayStatics::PlaySound2D(GetWorld(), FlashlightToggleSound);
 	}
-	else
-	{
-		IsFlashlightToggled = true;
-	}
-	//OnRep_IsFlashlightToggled();
+	
+	ToggleFlashlightServer();
 }
 
-void APlayerCharacter::ModifyFlashlightAttachment(const int32 WeaponNum)
+void APlayerCharacter::ToggleFlashlightServer_Implementation()
+{
+	ToggleFlashlightMulticast();
+}
+
+void APlayerCharacter::ToggleFlashlightMulticast_Implementation()
+{
+	if(!HasAuthority())
+	{
+		if (FlashLight->IsVisible())
+		{
+			FlashLight->SetVisibility(false);
+		}
+		else
+		{
+			FlashLight->SetVisibility(true);
+		}
+	}
+}
+
+void APlayerCharacter::ModifyFlashlightAttachment(const int32 WeaponNum) const
 {
 	if (WeaponNum == 0)
-	{		
+	{
 		FlashLight->SetWorldTransform(RifleComp->GetSocketTransform(FName("Flashlight")));
-		FlashLight->SetupAttachment(RifleComp, FName("Flashlight"));
+		FlashLight->AttachToComponent(RifleComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("Flashlight"));
 	}
 	else if (WeaponNum == 1)
 	{
 		FlashLight->SetWorldTransform(SniperComp->GetSocketTransform(FName("Flashlight")));
-		FlashLight->SetupAttachment(SniperComp, FName("Flashlight"));
+		FlashLight->AttachToComponent(SniperComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("Flashlight"));
 	}
 	else if (WeaponNum == 2)
-	{	
+	{
 		FlashLight->SetWorldTransform(PistolComp->GetSocketTransform(FName("Flashlight")));
-		FlashLight->SetupAttachment(PistolComp, FName("Flashlight"));
+		FlashLight->AttachToComponent(PistolComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("Flashlight"));
 	}
 	else if (WeaponNum == 3)
 	{
 		FlashLight->SetWorldTransform(M249Comp->GetSocketTransform(FName("Flashlight")));
-		FlashLight->SetupAttachment(M249Comp, FName("Flashlight"));
+		FlashLight->AttachToComponent(M249Comp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("Flashlight"));
 	}
 }
 
@@ -3181,7 +3198,6 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(APlayerCharacter, IsEquipMask);
 	DOREPLIFETIME(APlayerCharacter, IsEquipHeadset);
 	DOREPLIFETIME(APlayerCharacter, DamageAmount);
-	DOREPLIFETIME(APlayerCharacter, IsFlashlightToggled);
 }
 
 void APlayerCharacter::OnRep_IsEquipArmor() const
@@ -3262,22 +3278,6 @@ void APlayerCharacter::OnRep_MaxPistolAmmo()
 void APlayerCharacter::OnRep_MaxM249Ammo()
 {
 	UpdateAmmunition();
-}
-
-void APlayerCharacter::OnRep_IsFlashlightToggled()
-{
-	if (IsLocallyControlled())
-	{
-		UGameplayStatics::PlaySound2D(GetWorld(), FlashlightToggleSound);
-	}
-	if (FlashLight->IsVisible())
-	{
-		FlashLight->SetVisibility(false);
-	}
-	else
-	{
-		FlashLight->SetVisibility(true);
-	}
 }
 
 void APlayerCharacter::ResetFireBoolean()
@@ -3497,6 +3497,10 @@ void APlayerCharacter::SetFirstPersonModeRifle(const bool IsFirstPerson)
 		FirstPersonCharacterMesh->SetVisibility(true);
 		FollowCamera->SetActive(false);
 		FirstPersonCamera->SetActive(true);
+
+		FlashLight->SetWorldTransform(FirstPersonRifleComp->GetSocketTransform(FName("FirstFlashlight")));
+		FlashLight->AttachToComponent(FirstPersonRifleComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("FirstFlashlight"));
+
 		if (const auto FirstAnimInstance = Cast<UFirstPersonPlayerAnim>(FirstPersonCharacterMesh->GetAnimInstance()))
 		{
 			FirstAnimInstance->bPistol = false;
@@ -3518,6 +3522,9 @@ void APlayerCharacter::SetFirstPersonModeRifle(const bool IsFirstPerson)
 		FirstPersonCharacterMesh->SetVisibility(false);
 		FollowCamera->SetActive(true);
 		FirstPersonCamera->SetActive(false);
+
+		FlashLight->SetWorldTransform(RifleComp->GetSocketTransform(FName("Flashlight")));
+		FlashLight->AttachToComponent(RifleComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("Flashlight"));
 	}
 }
 
@@ -3534,6 +3541,10 @@ void APlayerCharacter::SetFirstPersonModePistol(const bool IsFirstPerson)
 		FirstPersonCharacterMesh->SetVisibility(true);
 		FollowCamera->SetActive(false);
 		FirstPersonCamera->SetActive(true);
+
+		FlashLight->SetWorldTransform(FirstPersonPistolComp->GetSocketTransform(FName("Flashlight")));
+		FlashLight->AttachToComponent(FirstPersonPistolComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("Flashlight"));
+
 		if (const auto FirstAnimInstance = Cast<UFirstPersonPlayerAnim>(FirstPersonCharacterMesh->GetAnimInstance()))
 		{
 			FirstAnimInstance->bPistol = true;
@@ -3555,6 +3566,9 @@ void APlayerCharacter::SetFirstPersonModePistol(const bool IsFirstPerson)
 		FirstPersonCharacterMesh->SetVisibility(false);
 		FollowCamera->SetActive(true);
 		FirstPersonCamera->SetActive(false);
+
+		FlashLight->SetWorldTransform(PistolComp->GetSocketTransform(FName("Flashlight")));
+		FlashLight->AttachToComponent(PistolComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("Flashlight"));
 	}
 }
 

@@ -564,9 +564,6 @@ public:
 	void OnRep_MaxM249Ammo();
 
 	UFUNCTION()
-	void OnRep_IsFlashlightToggled();
-
-	UFUNCTION()
 	int32 GenerateRandomDamage(float InDamage) const;
 
 	UFUNCTION()
@@ -646,8 +643,14 @@ public:
 	UFUNCTION()
 	void ToggleFlashlight();
 
+	UFUNCTION(Server, Reliable)
+	void ToggleFlashlightServer();
+	
+	UFUNCTION(NetMulticast, Unreliable)
+	void ToggleFlashlightMulticast();
+
 	UFUNCTION()
-	void ModifyFlashlightAttachment(const int32 WeaponNum);
+	void ModifyFlashlightAttachment(const int32 WeaponNum) const;
 
 	UFUNCTION()
 	void ChoosePlayerStartByTagName(const FName& PlayerStartTagName, const int32 DetectionSphereRadius);
@@ -1294,9 +1297,6 @@ public:
 	
 	UPROPERTY()
 	float CharacterWalkSpeed = 360.f;
-
-	UPROPERTY(ReplicatedUsing=OnRep_IsFlashlightToggled)
-	bool IsFlashlightToggled = false;
 
 	UPROPERTY()
 	int ConsoleCount;

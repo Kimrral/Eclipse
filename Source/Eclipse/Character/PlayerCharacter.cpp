@@ -45,6 +45,7 @@
 #include "Components/AudioComponent.h"
 #include "Components/Image.h"
 #include "Components/ProgressBar.h"
+#include "Components/SpotLightComponent.h"
 #include "Components/TextBlock.h"
 #include "Components/WidgetComponent.h"
 #include "Eclipse/Animation/FirstPersonPlayerAnim.h"
@@ -154,6 +155,10 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer)
 
 	ArmorSlot = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ArmorSlot"));
 	ArmorSlot->SetupAttachment(GetMesh(), FName("spine_03"));
+
+	FlashLight = CreateDefaultSubobject<USpotLightComponent>(TEXT("FlashLight"));
+	FlashLight->SetupAttachment(RifleComp, FName("Flashlight"));
+	FlashLight->SetVisibility(false);
 
 	// Stat Component 
 	Stat = CreateDefaultSubobject<UPlayerCharacterStatComponent>(TEXT("Stat"));
@@ -397,6 +402,9 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		//Tilting Right
 		EnhancedInputComponent->BindAction(EAction, ETriggerEvent::Started, this, &APlayerCharacter::TiltingRight);
 		EnhancedInputComponent->BindAction(EAction, ETriggerEvent::Completed, this, &APlayerCharacter::TiltingRightRelease);
+
+		//Toggle Flashlight
+		EnhancedInputComponent->BindAction(FlashAction, ETriggerEvent::Started, this, &APlayerCharacter::ToggleFlashlight);
 	}
 }
 
@@ -818,6 +826,8 @@ void APlayerCharacter::SwapFirstWeaponRPCMulticast_Implementation()
 		weaponArray[1] = false;
 		weaponArray[2] = false;
 		weaponArray[3] = false;
+
+		FlashLight->SetupAttachment(RifleComp, FName("Flashlight"));
 
 		if (IsLocallyControlled())
 		{
@@ -2413,7 +2423,7 @@ void APlayerCharacter::ChangeWeaponToM249RPCMulticast_Implementation(AM249Actor*
 
 void APlayerCharacter::InteractionProcess()
 {
-	if(IsLocallyControlled())
+	if (IsLocallyControlled())
 	{
 		const FVector StartLoc = FollowCamera->GetComponentLocation();
 		const FVector EndLoc = StartLoc + FollowCamera->GetForwardVector() * 500.0f;
@@ -2715,7 +2725,7 @@ void APlayerCharacter::MoveToIsolatedShipClient()
 void APlayerCharacter::MoveToHideout(const bool IsPlayerDeath)
 {
 	bHideout = true;
-	
+
 	if (IsPlayerDeath)
 	{
 		IsPlayerDead = false;
@@ -2902,9 +2912,25 @@ void APlayerCharacter::DamagedRPCMulticast_Implementation(int Damage, AActor* Da
 	}
 }
 
-void APlayerCharacter::OnRep_WeaponArrayChanged() const
+void APlayerCharacter::OnRep_WeaponArrayChanged()
 {
 	WeaponChangeDele.Broadcast();
+	if (weaponArray[0] == true)
+	{
+		ModifyFlashlightAttachment(0);
+	}
+	else if (weaponArray[1] == true)
+	{
+		ModifyFlashlightAttachment(1);
+	}
+	else if (weaponArray[2] == true)
+	{
+		ModifyFlashlightAttachment(2);
+	}
+	else if (weaponArray[3] == true)
+	{
+		ModifyFlashlightAttachment(3);
+	}
 }
 
 void APlayerCharacter::AddAmmunitionByInputString(const FString& InventoryStructName)
@@ -2928,7 +2954,7 @@ void APlayerCharacter::AddAmmunitionByInputString(const FString& InventoryStruct
 }
 
 void APlayerCharacter::OnSpacecraftStreamingLevelLoadFinished()
-{	
+{
 	if (IsLocallyControlled())
 	{
 		IsPlayerDeadImmediately = false;
@@ -2961,7 +2987,7 @@ void APlayerCharacter::OnSpacecraftStreamingLevelLoadFinishedServer_Implementati
 }
 
 void APlayerCharacter::OnIntersectionStreamingLevelLoadFinished()
-{	
+{
 	if (IsLocallyControlled())
 	{
 		IsPlayerDeadImmediately = false;
@@ -3045,6 +3071,43 @@ void APlayerCharacter::OnHideoutStreamingLevelLoadFinishedMulticast_Implementati
 }
 
 
+void APlayerCharacter::ToggleFlashlight()
+{
+	if (IsFlashlightToggled)
+	{
+		IsFlashlightToggled = false;
+	}
+	else
+	{
+		IsFlashlightToggled = true;
+	}
+	//OnRep_IsFlashlightToggled();
+}
+
+void APlayerCharacter::ModifyFlashlightAttachment(const int32 WeaponNum)
+{
+	if (WeaponNum == 0)
+	{		
+		FlashLight->SetWorldTransform(RifleComp->GetSocketTransform(FName("Flashlight")));
+		FlashLight->SetupAttachment(RifleComp, FName("Flashlight"));
+	}
+	else if (WeaponNum == 1)
+	{
+		FlashLight->SetWorldTransform(SniperComp->GetSocketTransform(FName("Flashlight")));
+		FlashLight->SetupAttachment(SniperComp, FName("Flashlight"));
+	}
+	else if (WeaponNum == 2)
+	{	
+		FlashLight->SetWorldTransform(PistolComp->GetSocketTransform(FName("Flashlight")));
+		FlashLight->SetupAttachment(PistolComp, FName("Flashlight"));
+	}
+	else if (WeaponNum == 3)
+	{
+		FlashLight->SetWorldTransform(M249Comp->GetSocketTransform(FName("Flashlight")));
+		FlashLight->SetupAttachment(M249Comp, FName("Flashlight"));
+	}
+}
+
 void APlayerCharacter::ChoosePlayerStartByTagName(const FName& PlayerStartTagName, const int32 DetectionSphereRadius)
 {
 	TArray<class AActor*> OutActors;
@@ -3071,11 +3134,11 @@ void APlayerCharacter::ChoosePlayerStartByTagName(const FName& PlayerStartTagNam
 							AlreadyLocated = true;
 							// 반복문을 빠져나온다.
 							break;
-						}						
+						}
 					}
 				}
 				// 일정 반경 내에 캐릭터가 존재하는 경우
-				if(AlreadyLocated)
+				if (AlreadyLocated)
 				{
 					// TargetPlayerStart 배열에 추가하지 않고 넘어간다.
 					continue;
@@ -3118,6 +3181,7 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(APlayerCharacter, IsEquipMask);
 	DOREPLIFETIME(APlayerCharacter, IsEquipHeadset);
 	DOREPLIFETIME(APlayerCharacter, DamageAmount);
+	DOREPLIFETIME(APlayerCharacter, IsFlashlightToggled);
 }
 
 void APlayerCharacter::OnRep_IsEquipArmor() const
@@ -3198,6 +3262,22 @@ void APlayerCharacter::OnRep_MaxPistolAmmo()
 void APlayerCharacter::OnRep_MaxM249Ammo()
 {
 	UpdateAmmunition();
+}
+
+void APlayerCharacter::OnRep_IsFlashlightToggled()
+{
+	if (IsLocallyControlled())
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), FlashlightToggleSound);
+	}
+	if (FlashLight->IsVisible())
+	{
+		FlashLight->SetVisibility(false);
+	}
+	else
+	{
+		FlashLight->SetVisibility(true);
+	}
 }
 
 void APlayerCharacter::ResetFireBoolean()

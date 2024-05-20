@@ -67,6 +67,10 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class ULineTraceDetectionComponent> Detection;
 
+	// Flash Light Component
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Light, Meta = (AllowPrivateAccess = "true"))
+	class USpotLightComponent* FlashLight;
+
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputMappingContext* DefaultMappingContext;
@@ -106,6 +110,10 @@ public:
 	/** Reload Input */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* ReloadAction;
+	
+	/** Flash Input */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* FlashAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAroundAction;
@@ -526,7 +534,7 @@ public:
 	void ResetTabWidget();
 
 	UFUNCTION()
-	void OnRep_WeaponArrayChanged() const;
+	void OnRep_WeaponArrayChanged();
 
 	UFUNCTION()
 	void OnRep_IsEquipArmor() const;
@@ -554,6 +562,9 @@ public:
 
 	UFUNCTION()
 	void OnRep_MaxM249Ammo();
+
+	UFUNCTION()
+	void OnRep_IsFlashlightToggled();
 
 	UFUNCTION()
 	int32 GenerateRandomDamage(float InDamage) const;
@@ -631,6 +642,12 @@ public:
 
 	UFUNCTION(Server, Reliable)
 	void PurchaseAmmoServer(const int32 AmmoIndex);
+
+	UFUNCTION()
+	void ToggleFlashlight();
+
+	UFUNCTION()
+	void ModifyFlashlightAttachment(const int32 WeaponNum);
 
 	UFUNCTION()
 	void ChoosePlayerStartByTagName(const FName& PlayerStartTagName, const int32 DetectionSphereRadius);
@@ -1126,6 +1143,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* SpacecraftAmbientSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* FlashlightToggleSound;;
 	
 	UPROPERTY()
 	FTimerHandle shootEnableHandle;
@@ -1274,6 +1294,9 @@ public:
 	
 	UPROPERTY()
 	float CharacterWalkSpeed = 360.f;
+
+	UPROPERTY(ReplicatedUsing=OnRep_IsFlashlightToggled)
+	bool IsFlashlightToggled = false;
 
 	UPROPERTY()
 	int ConsoleCount;

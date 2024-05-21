@@ -1,1 +1,0 @@
-"C:\Program Files\UE_5.1\Engine\Binaries\Win64\UnrealEditor.exe"  "E:\Unreal 5 Projects\Eclipse\Eclipse.uproject" 192.168.0.3 -game -ResX=800 -ResY=600 -log -nosteam

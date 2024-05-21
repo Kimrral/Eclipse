@@ -1064,7 +1064,7 @@ void APlayerCharacter::OnPlayerHitRPCMulticast_Implementation(const FHitResult& 
 		{
 			UGameplayStatics::PlaySound2D(GetWorld(), BulletHeadHitSound);
 			// 적중 위젯 애니메이션 재생
-			crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
+			crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
 			// 데미지 위젯에 피해 값과 적 위치벡터 할당
 			SetDamageWidget(DamageAmount * 2, HitResult.Location, false, FLinearColor::Yellow);
 			// 적중 파티클 스폰
@@ -1074,7 +1074,7 @@ void APlayerCharacter::OnPlayerHitRPCMulticast_Implementation(const FHitResult& 
 		{
 			UGameplayStatics::PlaySound2D(GetWorld(), BulletHitSound);
 			// 적중 위젯 애니메이션 재생
-			crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
+			crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
 			// 데미지 위젯에 피해 값과 적 위치벡터 할당
 			SetDamageWidget(DamageAmount, HitResult.Location, false, FLinearColor::White);
 			// 적중 파티클 스폰
@@ -1083,20 +1083,16 @@ void APlayerCharacter::OnPlayerHitRPCMulticast_Implementation(const FHitResult& 
 	}
 	else
 	{
-		const FRotator hitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
+		const FRotator HitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
 		if (IsHeadshot)
 		{
-			// 적중 사운드 재생
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHeadHitSound, HitResult.Location);
 			// 적중 파티클 스폰
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodParticle, HitResult.Location, hitRot, FVector(1.7f));
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodParticle, HitResult.Location, HitRot, FVector(1.7f));
 		}
 		else
 		{
-			// 적중 사운드 재생
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, HitResult.Location);
 			// 적중 파티클 스폰
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodParticle, HitResult.Location, hitRot, FVector(1.f));
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodParticle, HitResult.Location, HitRot, FVector(1.f));
 		}
 	}
 }
@@ -1118,7 +1114,7 @@ bool APlayerCharacter::OnPlayerKillRPCServer_Validate()
 
 void APlayerCharacter::OnPlayerKillRPCClient_Implementation()
 {
-	crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
+	crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
 	UGameplayStatics::PlaySound2D(GetWorld(), PlayerKillSound, 1, 1, 0.25);
 }
 
@@ -1153,10 +1149,10 @@ bool APlayerCharacter::OnEnemyKillRPCServer_Validate()
 
 void APlayerCharacter::OnEnemyKillRPCClient_Implementation()
 {
-	crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation);
+	crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
 	UGameplayStatics::PlaySound2D(GetWorld(), KillSound);
 	informationUI->ChargeAmmunitionInfoWidget();
-	informationUI->PlayAnimation(informationUI->ChargeAmmunition);
+	informationUI->PlayAnimation(informationUI->ChargeAmmunition, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
 	informationUI->UpdateAmmo_Secondary();
 	FTimerHandle AmmoPickHandle;
 	GetWorldTimerManager().SetTimer(AmmoPickHandle, FTimerDelegate::CreateLambda([this]()-> void
@@ -1192,98 +1188,101 @@ void APlayerCharacter::OnEnemyHitRPCMulticast_Implementation(const FHitResult& H
 			Stat->AccumulatedDamageToEnemy += DamageAmount;
 		}
 	}
-	if (IsLocallyControlled())
+	else
 	{
-		const FRotator HitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
-		if (HitEnemy->EnemyStat->IsStunned)
+		if (IsLocallyControlled())
 		{
+			const FRotator HitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
+			if (HitEnemy->EnemyStat->IsStunned)
+			{
+				if (IsHeadshot)
+				{
+					UGameplayStatics::PlaySound2D(GetWorld(), BulletHeadHitSound);
+					// 적중 위젯 애니메이션 재생
+					crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
+					// 데미지 위젯에 피해 값과 적 위치벡터 할당
+					SetDamageWidget(DamageAmount * 4, HitResult.Location, false, FLinearColor::Red);
+					// 적중 파티클 스폰
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(2.f));
+				}
+				else
+				{
+					UGameplayStatics::PlaySound2D(GetWorld(), BulletHitSound);
+					// 적중 위젯 애니메이션 재생
+					crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
+					// 데미지 위젯에 피해 값과 적 위치벡터 할당
+					SetDamageWidget(DamageAmount * 2, HitResult.Location, false, FLinearColor::Red);
+					// 적중 파티클 스폰
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(1.f));
+				}
+			}
+			else
+			{
+				if (HitEnemy->EnemyStat->IsShieldBroken)
+				{
+					if (IsHeadshot)
+					{
+						UGameplayStatics::PlaySound2D(GetWorld(), BulletHeadHitSound);
+						// 적중 위젯 애니메이션 재생
+						crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
+						// 데미지 위젯에 피해 값과 적 위치벡터 할당
+						SetDamageWidget(DamageAmount * 2, HitResult.Location, false, FLinearColor::Yellow);
+						// 적중 파티클 스폰
+						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(2.f));
+					}
+					else
+					{
+						UGameplayStatics::PlaySound2D(GetWorld(), BulletHitSound);
+						// 적중 위젯 애니메이션 재생
+						crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
+						// 데미지 위젯에 피해 값과 적 위치벡터 할당
+						SetDamageWidget(DamageAmount, HitResult.Location, false, FLinearColor::White);
+						// 적중 파티클 스폰
+						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(1.f));
+					}
+				}
+				else
+				{
+					if (IsHeadshot)
+					{
+						UGameplayStatics::PlaySound2D(GetWorld(), BulletHeadHitSound);
+						// 적중 위젯 애니메이션 재생
+						crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
+						// 데미지 위젯에 피해 값과 적 위치벡터 할당
+						SetDamageWidget(DamageAmount * 0.1f, HitResult.Location, true, FLinearColor::Gray);
+						// 적중 파티클 스폰
+						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(2.f));
+					}
+					else
+					{
+						UGameplayStatics::PlaySound2D(GetWorld(), BulletHitSound);
+						// 적중 위젯 애니메이션 재생
+						crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
+						// 데미지 위젯에 피해 값과 적 위치벡터 할당
+						SetDamageWidget(DamageAmount * 0.05f, HitResult.Location, true, FLinearColor::Gray);
+						// 적중 파티클 스폰
+						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(1.f));
+					}
+				}
+			}
+		}
+		else
+		{
+			const FRotator HitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
 			if (IsHeadshot)
 			{
-				UGameplayStatics::PlaySound2D(GetWorld(), BulletHeadHitSound);
-				// 적중 위젯 애니메이션 재생
-				crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
-				// 데미지 위젯에 피해 값과 적 위치벡터 할당
-				SetDamageWidget(DamageAmount * 4, HitResult.Location, false, FLinearColor::Red);
+				// 적중 사운드 재생
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHeadHitSound, HitResult.Location);
 				// 적중 파티클 스폰
 				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(2.f));
 			}
 			else
 			{
-				UGameplayStatics::PlaySound2D(GetWorld(), BulletHitSound);
-				// 적중 위젯 애니메이션 재생
-				crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
-				// 데미지 위젯에 피해 값과 적 위치벡터 할당
-				SetDamageWidget(DamageAmount * 2, HitResult.Location, false, FLinearColor::Red);
+				// 적중 사운드 재생
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, HitResult.Location);
 				// 적중 파티클 스폰
 				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(1.f));
 			}
-		}
-		else
-		{
-			if (HitEnemy->EnemyStat->IsShieldBroken)
-			{
-				if (IsHeadshot)
-				{
-					UGameplayStatics::PlaySound2D(GetWorld(), BulletHeadHitSound);
-					// 적중 위젯 애니메이션 재생
-					crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
-					// 데미지 위젯에 피해 값과 적 위치벡터 할당
-					SetDamageWidget(DamageAmount * 2, HitResult.Location, false, FLinearColor::Yellow);
-					// 적중 파티클 스폰
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(2.f));
-				}
-				else
-				{
-					UGameplayStatics::PlaySound2D(GetWorld(), BulletHitSound);
-					// 적중 위젯 애니메이션 재생
-					crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
-					// 데미지 위젯에 피해 값과 적 위치벡터 할당
-					SetDamageWidget(DamageAmount, HitResult.Location, false, FLinearColor::White);
-					// 적중 파티클 스폰
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(1.f));
-				}
-			}
-			else
-			{
-				if (IsHeadshot)
-				{
-					UGameplayStatics::PlaySound2D(GetWorld(), BulletHeadHitSound);
-					// 적중 위젯 애니메이션 재생
-					crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation);
-					// 데미지 위젯에 피해 값과 적 위치벡터 할당
-					SetDamageWidget(DamageAmount * 0.1f, HitResult.Location, true, FLinearColor::Gray);
-					// 적중 파티클 스폰
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(2.f));
-				}
-				else
-				{
-					UGameplayStatics::PlaySound2D(GetWorld(), BulletHitSound);
-					// 적중 위젯 애니메이션 재생
-					crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
-					// 데미지 위젯에 피해 값과 적 위치벡터 할당
-					SetDamageWidget(DamageAmount * 0.05f, HitResult.Location, true, FLinearColor::Gray);
-					// 적중 파티클 스폰
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(1.f));
-				}
-			}
-		}
-	}
-	else
-	{
-		const FRotator HitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
-		if (IsHeadshot)
-		{
-			// 적중 사운드 재생
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHeadHitSound, HitResult.Location);
-			// 적중 파티클 스폰
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(2.f));
-		}
-		else
-		{
-			// 적중 사운드 재생
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, HitResult.Location);
-			// 적중 파티클 스폰
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(1.f));
 		}
 	}
 }
@@ -1320,17 +1319,21 @@ void APlayerCharacter::OnContainerHitRPCMulticast_Implementation(const FHitResul
 			HitContainer->CurBoxHP = FMath::Clamp(HitContainer->CurBoxHP - 1, 0, 5);
 		}
 	}
-	if (IsLocallyControlled())
-	{
-		crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
-		UGameplayStatics::PlaySound2D(GetWorld(), BulletHitSound);
-	}
 	else
 	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, HitContainer->GetActorLocation());
+		if (IsLocallyControlled())
+		{
+			crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
+			UGameplayStatics::PlaySound2D(GetWorld(), BulletHitSound);
+		}
+		else
+		{
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, HitContainer->GetActorLocation());
+		}
+		const FRotator HitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(1.f));
 	}
-	const FRotator HitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(1.f));
+	
 }
 
 void APlayerCharacter::OnGroundHit(const FHitResult& HitResult)
@@ -1646,15 +1649,18 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 {
 	if (PickableActor && !PickableActor->IsAlreadyLooted)
 	{
-		if (IsLocallyControlled())
+		if(!HasAuthority())
 		{
-			UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
+			if (IsLocallyControlled())
+			{
+				UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
+			}
+			else
+			{
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
+			}
+			PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
 		}
-		else
-		{
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
-		}
-		PlayAnimMontage(UpperOnlyMontage, 1, FName("WeaponEquip"));
 		FTimerHandle DestroyHandle;
 		RifleMagActor = Cast<ARifleMagActor>(PickableActor);
 		if (RifleMagActor)
@@ -2200,15 +2206,18 @@ void APlayerCharacter::ChangeWeaponToRifleRPCMulticast_Implementation(ARifleActo
 	weaponArray[2] = false;
 	weaponArray[3] = false;
 
-	if (IsLocallyControlled())
+	if(!HasAuthority())
 	{
-		UGameplayStatics::PlaySound2D(GetWorld(), WeaponSwapSound);
-		// 무기 정보 위젯 제거
-		infoWidgetUI->RemoveFromParent();
-	}
-	else
-	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
+		if (IsLocallyControlled())
+		{
+			UGameplayStatics::PlaySound2D(GetWorld(), WeaponSwapSound);
+			// 무기 정보 위젯 제거
+			infoWidgetUI->RemoveFromParent();
+		}
+		else
+		{
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
+		}
 	}
 }
 
@@ -2270,15 +2279,18 @@ void APlayerCharacter::ChangeWeaponToSniperRPCMulticast_Implementation(ASniperAc
 	weaponArray[2] = false;
 	weaponArray[3] = false;
 
-	if (IsLocallyControlled())
+	if(!HasAuthority())
 	{
-		UGameplayStatics::PlaySound2D(GetWorld(), WeaponSwapSound);
-		// 무기 정보 위젯 제거
-		infoWidgetUI->RemoveFromParent();
-	}
-	else
-	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
+		if (IsLocallyControlled())
+		{
+			UGameplayStatics::PlaySound2D(GetWorld(), WeaponSwapSound);
+			// 무기 정보 위젯 제거
+			infoWidgetUI->RemoveFromParent();
+		}
+		else
+		{
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
+		}
 	}
 }
 
@@ -2339,15 +2351,18 @@ void APlayerCharacter::ChangeWeaponToPistolRPCMulticast_Implementation(APistolAc
 	weaponArray[2] = true;
 	weaponArray[3] = false;
 
-	if (IsLocallyControlled())
+	if(!HasAuthority())
 	{
-		UGameplayStatics::PlaySound2D(GetWorld(), WeaponSwapSound);
-		// 무기 정보 위젯 제거
-		infoWidgetUI->RemoveFromParent();
-	}
-	else
-	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
+		if (IsLocallyControlled())
+		{
+			UGameplayStatics::PlaySound2D(GetWorld(), WeaponSwapSound);
+			// 무기 정보 위젯 제거
+			infoWidgetUI->RemoveFromParent();
+		}
+		else
+		{
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
+		}
 	}
 }
 
@@ -2408,15 +2423,18 @@ void APlayerCharacter::ChangeWeaponToM249RPCMulticast_Implementation(AM249Actor*
 	weaponArray[2] = false;
 	weaponArray[3] = true;
 
-	if (IsLocallyControlled())
+	if(!HasAuthority())
 	{
-		UGameplayStatics::PlaySound2D(GetWorld(), WeaponSwapSound);
-		// 무기 정보 위젯 제거
-		infoWidgetUI->RemoveFromParent();
-	}
-	else
-	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
+		if (IsLocallyControlled())
+		{
+			UGameplayStatics::PlaySound2D(GetWorld(), WeaponSwapSound);
+			// 무기 정보 위젯 제거
+			infoWidgetUI->RemoveFromParent();
+		}
+		else
+		{
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSwapSound, GetActorLocation());
+		}
 	}
 }
 
@@ -2894,7 +2912,7 @@ void APlayerCharacter::DamagedRPCMulticast_Implementation(int Damage, AActor* Da
 {
 	if (IsLocallyControlled())
 	{
-		crosshairUI->PlayAnimation(crosshairUI->DamagedAnimation);
+		crosshairUI->PlayAnimation(crosshairUI->DamagedAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
 		UGameplayStatics::PlaySound2D(GetWorld(), DamagedSound);
 		PC->PlayerCameraManager->StartCameraShake(PlayerDamagedShake);
 	}
@@ -2915,21 +2933,24 @@ void APlayerCharacter::DamagedRPCMulticast_Implementation(int Damage, AActor* Da
 void APlayerCharacter::OnRep_WeaponArrayChanged()
 {
 	WeaponChangeDele.Broadcast();
-	if (weaponArray[0] == true)
+	if(!HasAuthority())
 	{
-		ModifyFlashlightAttachment(0);
-	}
-	else if (weaponArray[1] == true)
-	{
-		ModifyFlashlightAttachment(1);
-	}
-	else if (weaponArray[2] == true)
-	{
-		ModifyFlashlightAttachment(2);
-	}
-	else if (weaponArray[3] == true)
-	{
-		ModifyFlashlightAttachment(3);
+		if (weaponArray[0] == true)
+		{
+			ModifyFlashlightAttachment(0);
+		}
+		else if (weaponArray[1] == true)
+		{
+			ModifyFlashlightAttachment(1);
+		}
+		else if (weaponArray[2] == true)
+		{
+			ModifyFlashlightAttachment(2);
+		}
+		else if (weaponArray[3] == true)
+		{
+			ModifyFlashlightAttachment(3);
+		}
 	}
 }
 

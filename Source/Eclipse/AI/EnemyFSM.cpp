@@ -45,7 +45,7 @@ void UEnemyFSM::BeginPlay()
 	Me->GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
 
 	Me->EnemyStat->OnHpZero.AddUObject(this, &UEnemyFSM::DieProcess);
-	Me->EnemyStat->OnEnemyDamaged.AddUObject(this, &UEnemyFSM::FindAgressivePlayer);
+	Me->EnemyStat->OnEnemyDamaged.AddUObject(this, &UEnemyFSM::FindAggressivePlayer);
 
 	// Timeline Binding
 	if (CurveFloat)
@@ -293,7 +293,7 @@ void UEnemyFSM::SetRotToPlayer(const float Value)
 	}
 }
 
-void UEnemyFSM::FindAgressivePlayer()
+void UEnemyFSM::FindAggressivePlayer()
 {
 	if (State == EEnemyState::IDLE)
 	{
@@ -307,7 +307,7 @@ void UEnemyFSM::FindAgressivePlayer()
 	}
 }
 
-APlayerCharacter* UEnemyFSM::ReturnAggressivePlayer()
+APlayerCharacter* UEnemyFSM::ReturnAggressivePlayer() const
 {
 	TArray<AActor*> ActorCharacterArray;
 	TArray<APlayerCharacter*> PlayerCharacterArray;
@@ -318,7 +318,10 @@ APlayerCharacter* UEnemyFSM::ReturnAggressivePlayer()
 	{
 		if (APlayerCharacter* AggressivePlayer = Cast<APlayerCharacter>(ActorCharacterArray[i]))
 		{
-			PlayerCharacterArray.Add(AggressivePlayer);
+			if(AggressivePlayer->GetDistanceTo(Me)<ChaseLimitRange)
+			{
+				PlayerCharacterArray.Add(AggressivePlayer);
+			}
 		}
 	}
 	for (int i = 0; i < PlayerCharacterArray.Num(); i++)
@@ -335,7 +338,13 @@ APlayerCharacter* UEnemyFSM::ReturnAggressivePlayer()
 			MaxDamageIndex = i;
 		}
 	}
-	return PlayerCharacterArray[MaxDamageIndex];
+	
+	if(PlayerCharacterArray.IsValidIndex(MaxDamageIndex))
+	{
+		return PlayerCharacterArray[MaxDamageIndex];
+	}
+	
+	return nullptr;
 }
 
 void UEnemyFSM::MoveBackToInitialPosition()

@@ -17,6 +17,7 @@ void UPlayerCharacterStatComponent::InitializeComponent()
 	Super::InitializeComponent();
 
 	SetHp(MaxHp);
+	AddRouble(100000.f);
 	SetIsReplicated(true);
 }
 

@@ -69,13 +69,13 @@ public:
 	void SetRotToPlayer(float Value);
 
 	UFUNCTION()
-	void FindAgressivePlayer();
+	void FindAggressivePlayer();
 
 	UFUNCTION()
 	bool IsAttackAnimationPlaying() const;
 
 	UFUNCTION()
-	APlayerCharacter* ReturnAggressivePlayer();
+	APlayerCharacter* ReturnAggressivePlayer() const;
 
 	UFUNCTION()
 	void MoveBackToInitialPosition();

@@ -442,7 +442,7 @@ void APlayerCharacter::Look(const FInputActionValue& Value)
 		return;
 	}
 	// input is a Vector2D
-	const FVector2D LookAxisVector = Value.Get<FVector2D>();
+	const FVector2D LookAxisVector = Value.Get<FVector2D>() * 0.5f;
 
 	if (Controller != nullptr)
 	{
@@ -825,9 +825,7 @@ void APlayerCharacter::SwapFirstWeaponRPCMulticast_Implementation()
 		weaponArray[0] = true;
 		weaponArray[1] = false;
 		weaponArray[2] = false;
-		weaponArray[3] = false;
-
-		FlashLight->SetupAttachment(RifleComp, FName("Flashlight"));
+		weaponArray[3] = false;		
 
 		if (IsLocallyControlled())
 		{
@@ -1333,7 +1331,6 @@ void APlayerCharacter::OnContainerHitRPCMulticast_Implementation(const FHitResul
 		const FRotator HitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(1.f));
 	}
-	
 }
 
 void APlayerCharacter::OnGroundHit(const FHitResult& HitResult)
@@ -1650,7 +1647,7 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 {
 	if (PickableActor && !PickableActor->IsAlreadyLooted)
 	{
-		if(!HasAuthority())
+		if (!HasAuthority())
 		{
 			if (IsLocallyControlled())
 			{
@@ -2207,7 +2204,7 @@ void APlayerCharacter::ChangeWeaponToRifleRPCMulticast_Implementation(ARifleActo
 	weaponArray[2] = false;
 	weaponArray[3] = false;
 
-	if(!HasAuthority())
+	if (!HasAuthority())
 	{
 		if (IsLocallyControlled())
 		{
@@ -2280,7 +2277,7 @@ void APlayerCharacter::ChangeWeaponToSniperRPCMulticast_Implementation(ASniperAc
 	weaponArray[2] = false;
 	weaponArray[3] = false;
 
-	if(!HasAuthority())
+	if (!HasAuthority())
 	{
 		if (IsLocallyControlled())
 		{
@@ -2352,7 +2349,7 @@ void APlayerCharacter::ChangeWeaponToPistolRPCMulticast_Implementation(APistolAc
 	weaponArray[2] = true;
 	weaponArray[3] = false;
 
-	if(!HasAuthority())
+	if (!HasAuthority())
 	{
 		if (IsLocallyControlled())
 		{
@@ -2424,7 +2421,7 @@ void APlayerCharacter::ChangeWeaponToM249RPCMulticast_Implementation(AM249Actor*
 	weaponArray[2] = false;
 	weaponArray[3] = true;
 
-	if(!HasAuthority())
+	if (!HasAuthority())
 	{
 		if (IsLocallyControlled())
 		{
@@ -2546,7 +2543,7 @@ void APlayerCharacter::InteractionProcess()
 					GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()-> void
 					{
 						MoveToHideout(false);
-					}), 9.f, false);
+					}), 7.f, false);
 				}
 			}
 
@@ -2719,7 +2716,7 @@ void APlayerCharacter::MoveToIsolatedShip()
 	GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
 		MoveToIsolatedShipClient();
-	}), 9.f, false);
+	}), 7.f, false);
 }
 
 void APlayerCharacter::MoveToIsolatedShipClient()
@@ -2727,6 +2724,7 @@ void APlayerCharacter::MoveToIsolatedShipClient()
 	if (IsLocallyControlled())
 	{
 		PC->SetIgnoreMoveInput(false);
+		PC->SetIgnoreLookInput(false);
 		const FName IntersectionLevelName = FName("Deserted_Road");
 		const FName SpacecraftLevelName = FName("Map_BigStarStation");
 		const FName HideoutLevelName = FName("Safe_House");
@@ -2796,7 +2794,7 @@ void APlayerCharacter::MoveToBlockedIntersection()
 	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
 		MoveToBlockedIntersectionClient();
-	}), 9.f, false);
+	}), 7.f, false);
 }
 
 void APlayerCharacter::MoveToBlockedIntersectionClient()
@@ -2804,6 +2802,7 @@ void APlayerCharacter::MoveToBlockedIntersectionClient()
 	if (IsLocallyControlled())
 	{
 		PC->SetIgnoreMoveInput(false);
+		PC->SetIgnoreLookInput(false);
 		const FName IntersectionLevelName = FName("Deserted_Road");
 		const FName HideoutLevelName = FName("Safe_House");
 		const FName SpacecraftLevelName = FName("Map_BigStarStation");
@@ -2934,7 +2933,7 @@ void APlayerCharacter::DamagedRPCMulticast_Implementation(int Damage, AActor* Da
 void APlayerCharacter::OnRep_WeaponArrayChanged()
 {
 	WeaponChangeDele.Broadcast();
-	if(!HasAuthority())
+	if (!HasAuthority())
 	{
 		if (weaponArray[0] == true)
 		{
@@ -2996,8 +2995,9 @@ void APlayerCharacter::OnSpacecraftStreamingLevelLoadFinished()
 			}
 		}), 0.5f, false);
 	}
+
+	OnRep_WeaponArrayChanged();
 	bEnding = false;
-	bUseControllerRotationYaw = true;
 
 	OnSpacecraftStreamingLevelLoadFinishedServer();
 }
@@ -3029,8 +3029,9 @@ void APlayerCharacter::OnIntersectionStreamingLevelLoadFinished()
 			}
 		}), 0.5f, false);
 	}
+
+	OnRep_WeaponArrayChanged();
 	bEnding = false;
-	bUseControllerRotationYaw = true;
 
 	OnIntersectionStreamingLevelLoadFinishedServer();
 }
@@ -3062,8 +3063,9 @@ void APlayerCharacter::OnHideoutStreamingLevelLoadFinished()
 				CameraManager->StartCameraFade(1.0, 0, 10.0, FColor::Black, false, false);
 			}
 		}), 0.5f, false);
+
+		OnRep_WeaponArrayChanged();
 		bEnding = false;
-		bUseControllerRotationYaw = true;
 	}
 
 	OnHideoutStreamingLevelLoadFinishedServer();
@@ -3099,7 +3101,7 @@ void APlayerCharacter::ToggleFlashlight()
 	{
 		UGameplayStatics::PlaySound2D(GetWorld(), FlashlightToggleSound);
 	}
-	
+
 	ToggleFlashlightServer();
 }
 
@@ -3110,7 +3112,7 @@ void APlayerCharacter::ToggleFlashlightServer_Implementation()
 
 void APlayerCharacter::ToggleFlashlightMulticast_Implementation()
 {
-	if(!HasAuthority())
+	if (!HasAuthority())
 	{
 		if (FlashLight->IsVisible())
 		{
@@ -3128,21 +3130,25 @@ void APlayerCharacter::ModifyFlashlightAttachment(const int32 WeaponNum) const
 	if (WeaponNum == 0)
 	{
 		FlashLight->SetWorldTransform(RifleComp->GetSocketTransform(FName("Flashlight")));
+		if (!RifleComp->IsRegistered()) RifleComp->RegisterComponent();
 		FlashLight->AttachToComponent(RifleComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("Flashlight"));
 	}
 	else if (WeaponNum == 1)
 	{
 		FlashLight->SetWorldTransform(SniperComp->GetSocketTransform(FName("Flashlight")));
+		if (!SniperComp->IsRegistered()) SniperComp->RegisterComponent();
 		FlashLight->AttachToComponent(SniperComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("Flashlight"));
 	}
 	else if (WeaponNum == 2)
 	{
 		FlashLight->SetWorldTransform(PistolComp->GetSocketTransform(FName("Flashlight")));
+		if (!PistolComp->IsRegistered()) PistolComp->RegisterComponent();
 		FlashLight->AttachToComponent(PistolComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("Flashlight"));
 	}
 	else if (WeaponNum == 3)
 	{
 		FlashLight->SetWorldTransform(M249Comp->GetSocketTransform(FName("Flashlight")));
+		if (!M249Comp->IsRegistered()) M249Comp->RegisterComponent();
 		FlashLight->AttachToComponent(M249Comp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("Flashlight"));
 	}
 }
@@ -3224,61 +3230,76 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 void APlayerCharacter::OnRep_IsEquipArmor() const
 {
-	if (IsEquipArmor)
+	if(!HasAuthority())
 	{
-		ArmorSlot->SetVisibility(true);
-	}
-	else
-	{
-		ArmorSlot->SetVisibility(false);
+		if (IsEquipArmor)
+		{
+			ArmorSlot->SetVisibility(true);
+		}
+		else
+		{
+			ArmorSlot->SetVisibility(false);
+		}
 	}
 }
 
 void APlayerCharacter::OnRep_IsEquipHelmet() const
 {
-	if (IsEquipHelmet)
+	if(!HasAuthority())
 	{
-		HelmetSlot->SetVisibility(true);
-	}
-	else
-	{
-		HelmetSlot->SetVisibility(false);
+		if (IsEquipHelmet)
+		{
+			HelmetSlot->SetVisibility(true);
+		}
+		else
+		{
+			HelmetSlot->SetVisibility(false);
+		}
 	}
 }
 
 void APlayerCharacter::OnRep_IsEquipGoggle() const
 {
-	if (IsEquipGoggle)
+	if(!HasAuthority())
 	{
-		GoggleSlot->SetVisibility(true);
-	}
-	else
-	{
-		GoggleSlot->SetVisibility(false);
+		if (IsEquipGoggle)
+		{
+			GoggleSlot->SetVisibility(true);
+		}
+		else
+		{
+			GoggleSlot->SetVisibility(false);
+		}
 	}
 }
 
 void APlayerCharacter::OnRep_IsEquipMask() const
 {
-	if (IsEquipMask)
+	if(!HasAuthority())
 	{
-		MaskSlot->SetVisibility(true);
-	}
-	else
-	{
-		MaskSlot->SetVisibility(false);
+		if (IsEquipMask)
+		{
+			MaskSlot->SetVisibility(true);
+		}
+		else
+		{
+			MaskSlot->SetVisibility(false);
+		}
 	}
 }
 
 void APlayerCharacter::OnRep_IsEquipHeadset() const
 {
-	if (IsEquipHeadset)
+	if(!HasAuthority())
 	{
-		HeadSetSlot->SetVisibility(true);
-	}
-	else
-	{
-		HeadSetSlot->SetVisibility(false);
+		if (IsEquipHeadset)
+		{
+			HeadSetSlot->SetVisibility(true);
+		}
+		else
+		{
+			HeadSetSlot->SetVisibility(false);
+		}
 	}
 }
 
@@ -4100,7 +4121,7 @@ void APlayerCharacter::PlayerDeath()
 	GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
 		MoveToHideout(true);
-	}), 9.f, false);
+	}), 10.f, false);
 }
 
 void APlayerCharacter::PlayerDeathRPCServer_Implementation()
@@ -4189,13 +4210,13 @@ void APlayerCharacter::MoveToAnotherLevel()
 	if (IsLocallyControlled())
 	{
 		PC->SetIgnoreMoveInput(true);
-		bUseControllerRotationYaw = false;
+		PC->SetIgnoreLookInput(true);
 		infoWidgetUI->RemoveFromParent();
 		informationUI->RemoveFromParent();
 		crosshairUI->RemoveFromParent();
 
 		APlayerCameraManager* PlayerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
-		PlayerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);	
+		PlayerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
 		UGameplayStatics::PlaySound2D(GetWorld(), PortalSound);
 	}
 
@@ -4209,7 +4230,7 @@ void APlayerCharacter::MoveToAnotherLevelServer_Implementation()
 
 void APlayerCharacter::MoveToAnotherLevelMulticast_Implementation()
 {
-	if(!HasAuthority())
+	if (!HasAuthority())
 	{
 		const FTransform SpawnTrans = this->GetTransform();
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), recallParticle, SpawnTrans);

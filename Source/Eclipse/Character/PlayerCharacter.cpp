@@ -87,7 +87,7 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer)
 	// instead of recompiling to adjust them
 	GetCharacterMovement()->JumpZVelocity = 1000.f;
 	GetCharacterMovement()->AirControl = 0.35f;
-	GetCharacterMovement()->MaxWalkSpeed = CharacterWalkSpeed;
+	GetCharacterMovement()->MaxWalkSpeed = CharacterDefaultWalkSpeed;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 
@@ -442,7 +442,7 @@ void APlayerCharacter::Look(const FInputActionValue& Value)
 		return;
 	}
 	// input is a Vector2D
-	const FVector2D LookAxisVector = Value.Get<FVector2D>() * 0.5f;
+	const FVector2D LookAxisVector = Value.Get<FVector2D>() * MouseSensitivityRate;
 
 	if (Controller != nullptr)
 	{
@@ -518,7 +518,7 @@ void APlayerCharacter::ZoomRPCMulticast_Implementation(const bool IsZoomInput)
 	{
 		AnimInst->bZooming = true;
 	}
-	CharacterWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
+	GetCharacterMovement()->MaxWalkSpeed = CharacterDefaultWalkSpeed;
 	GetCharacterMovement()->MaxWalkSpeed = 180.f;
 
 	// is using rifle
@@ -624,7 +624,7 @@ void APlayerCharacter::ZoomRPCReleaseMulticast_Implementation(const bool IsZoomI
 {
 	// Zooming Boolean
 	isZooming = false;
-	GetCharacterMovement()->MaxWalkSpeed = CharacterWalkSpeed;
+	GetCharacterMovement()->MaxWalkSpeed = CharacterDefaultWalkSpeed;
 	UPlayerAnim* const AnimInst = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
 	if (AnimInst)
 	{
@@ -825,7 +825,7 @@ void APlayerCharacter::SwapFirstWeaponRPCMulticast_Implementation()
 		weaponArray[0] = true;
 		weaponArray[1] = false;
 		weaponArray[2] = false;
-		weaponArray[3] = false;		
+		weaponArray[3] = false;
 
 		if (IsLocallyControlled())
 		{
@@ -2095,9 +2095,6 @@ void APlayerCharacter::PickableItemActorInteractionRPCMutlicast_Implementation(A
 			if (IsLocallyControlled())
 			{
 				if (infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
-
-				ConsoleCount++;
-				informationUI->ConsoleCount->SetText(FText::AsNumber(ConsoleCount));
 			}
 		}
 	}
@@ -2551,7 +2548,7 @@ void APlayerCharacter::InteractionProcess()
 			{
 				// 키다운 시간 동안 Radial Slider 게이지 상승
 				infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
-				if (levelSelectionUI && infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
+				if (levelSelectionUI && !levelSelectionUI->IsInViewport() && infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 				{
 					infoWidgetUI->weaponHoldPercent = 0;
 					UGameplayStatics::PlaySound2D(GetWorld(), levelSelectionSound);
@@ -2561,28 +2558,11 @@ void APlayerCharacter::InteractionProcess()
 					levelSelectionUI->AddToViewport();
 				}
 			}
-			else if (Stash)
-			{
-				// 키다운 시간 동안 Radial Slider 게이지 상승
-				infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
-				if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
-				{
-					infoWidgetUI->weaponHoldPercent = 0;
-					if (bStashWidgetOn == false && PC)
-					{
-						bStashWidgetOn = true;
-						UGameplayStatics::PlaySound2D(GetWorld(), tabSound);
-						infoWidgetUI->RemoveFromParent();
-						PC->SetShowMouseCursor(true);
-						StashWidgetOnViewport();
-					}
-				}
-			}
 			else if (Trader)
 			{
 				// 키다운 시간 동안 Radial Slider 게이지 상승
 				infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
-				if (TradeWidgetUI && infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
+				if (TradeWidgetUI && !TradeWidgetUI->IsInViewport() && infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 				{
 					infoWidgetUI->weaponHoldPercent = 0;
 					gi->IsWidgetOn = true;
@@ -2597,7 +2577,7 @@ void APlayerCharacter::InteractionProcess()
 			{
 				// 키다운 시간 동안 Radial Slider 게이지 상승
 				infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
-				if (quitWidgetUI && infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
+				if (quitWidgetUI && !quitWidgetUI->IsInViewport() && infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 				{
 					infoWidgetUI->weaponHoldPercent = 0;
 					if (!quitWidgetUI->IsInViewport() && PC)
@@ -2614,7 +2594,7 @@ void APlayerCharacter::InteractionProcess()
 			{
 				// 키다운 시간 동안 Radial Slider 게이지 상승
 				infoWidgetUI->weaponHoldPercent = FMath::Clamp(infoWidgetUI->weaponHoldPercent + 0.02, 0, 1);
-				if (quitWidgetUI && infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
+				if (infoWidgetUI && infoWidgetUI->weaponHoldPercent >= 1)
 				{
 					infoWidgetUI->weaponHoldPercent = 0;
 					if (bDeadBodyWidgetOn == false)
@@ -3230,7 +3210,7 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 void APlayerCharacter::OnRep_IsEquipArmor() const
 {
-	if(!HasAuthority())
+	if (!HasAuthority())
 	{
 		if (IsEquipArmor)
 		{
@@ -3245,7 +3225,7 @@ void APlayerCharacter::OnRep_IsEquipArmor() const
 
 void APlayerCharacter::OnRep_IsEquipHelmet() const
 {
-	if(!HasAuthority())
+	if (!HasAuthority())
 	{
 		if (IsEquipHelmet)
 		{
@@ -3260,7 +3240,7 @@ void APlayerCharacter::OnRep_IsEquipHelmet() const
 
 void APlayerCharacter::OnRep_IsEquipGoggle() const
 {
-	if(!HasAuthority())
+	if (!HasAuthority())
 	{
 		if (IsEquipGoggle)
 		{
@@ -3275,7 +3255,7 @@ void APlayerCharacter::OnRep_IsEquipGoggle() const
 
 void APlayerCharacter::OnRep_IsEquipMask() const
 {
-	if(!HasAuthority())
+	if (!HasAuthority())
 	{
 		if (IsEquipMask)
 		{
@@ -3290,7 +3270,7 @@ void APlayerCharacter::OnRep_IsEquipMask() const
 
 void APlayerCharacter::OnRep_IsEquipHeadset() const
 {
-	if(!HasAuthority())
+	if (!HasAuthority())
 	{
 		if (IsEquipHeadset)
 		{
@@ -3348,7 +3328,7 @@ void APlayerCharacter::Fire()
 	CanShoot = false;
 	FireLocal();
 	ServerRPCFire();
-	GetWorldTimerManager().SetTimer(shootEnableHandle, this, &APlayerCharacter::ResetFireBoolean, Stat->GetFireInterval(weaponArray), false);
+	GetWorldTimerManager().SetTimer(ShootEnableHandle, this, &APlayerCharacter::ResetFireBoolean, Stat->GetFireInterval(weaponArray), false);
 }
 
 void APlayerCharacter::FireLocal()
@@ -3566,6 +3546,7 @@ void APlayerCharacter::SetFirstPersonModeRifle(const bool IsFirstPerson)
 		FirstPersonCharacterMesh->SetVisibility(false);
 		FollowCamera->SetActive(true);
 		FirstPersonCamera->SetActive(false);
+		GetCharacterMovement()->MaxWalkSpeed = CharacterDefaultWalkSpeed;
 
 		FlashLight->SetWorldTransform(RifleComp->GetSocketTransform(FName("Flashlight")));
 		FlashLight->AttachToComponent(RifleComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("Flashlight"));
@@ -3610,6 +3591,7 @@ void APlayerCharacter::SetFirstPersonModePistol(const bool IsFirstPerson)
 		FirstPersonCharacterMesh->SetVisibility(false);
 		FollowCamera->SetActive(true);
 		FirstPersonCamera->SetActive(false);
+		GetCharacterMovement()->MaxWalkSpeed = CharacterDefaultWalkSpeed;
 
 		FlashLight->SetWorldTransform(PistolComp->GetSocketTransform(FName("Flashlight")));
 		FlashLight->AttachToComponent(PistolComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("Flashlight"));
@@ -3820,7 +3802,6 @@ void APlayerCharacter::ProcessRifleFire()
 		}
 	}
 }
-
 
 void APlayerCharacter::ProcessSniperFire()
 {
@@ -4101,7 +4082,6 @@ void APlayerCharacter::ProcessM249FireSimulatedProxy() const
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), M249FireSound, GetActorLocation());
 }
 
-
 void APlayerCharacter::PlayerDeath()
 {
 	if (IsLocallyControlled())
@@ -4200,7 +4180,6 @@ void APlayerCharacter::PurchaseAmmoServer_Implementation(const int32 AmmoIndex)
 	}
 }
 
-
 void APlayerCharacter::MoveToAnotherLevel()
 {
 	bEnding = true;
@@ -4237,7 +4216,6 @@ void APlayerCharacter::MoveToAnotherLevelMulticast_Implementation()
 		PlayAnimMontage(FullBodyMontage, 1, FName("LevelEnd"));
 	}
 }
-
 
 void APlayerCharacter::UnloadMultipleStreamingLevels(const FName& FirstLevelName, const FName& SecondLevelName)
 {

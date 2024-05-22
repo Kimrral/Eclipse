@@ -17,7 +17,7 @@ void UPlayerAnim::NativeBeginPlay()
 
 void UPlayerAnim::AnimNotify_ReloadStart() const
 {
-	GetWorld()->GetTimerManager().ClearTimer(me->shootEnableHandle);
+	GetWorld()->GetTimerManager().ClearTimer(me->ShootEnableHandle);
 	me->CanShoot = false;
 }
 

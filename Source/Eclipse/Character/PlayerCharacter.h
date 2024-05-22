@@ -837,9 +837,6 @@ public:
 	class AM249AmmoPack* M249AmmoPack;
 
 	UPROPERTY()
-	class ARifleActor* OverlappedRifleActor;
-
-	UPROPERTY()
 	class UPlayerAnim* animInstance;
 
 	UPROPERTY(EditAnywhere)
@@ -911,12 +908,6 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	class UUserWidget* sniperScopeUI;
 
-	UPROPERTY()
-	class AActor* hitActors;
-
-	UPROPERTY()
-	class AEnemy* enemyRef;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Material)
 	class UMaterialInterface* overlayMatRed;
 
@@ -979,17 +970,11 @@ public:
 	UPROPERTY(ReplicatedUsing=OnRep_MaxM249Ammo)
 	int maxM249Ammo = 100;
 
-	UPROPERTY()
-	float zoomTriggeredTime;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bStashWidgetOn = false;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bDeadBodyWidgetOn = false;
-
-	UPROPERTY()
-	bool bPlayerDeath;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool isZooming = false;
@@ -1001,37 +986,14 @@ public:
 	bool isRunning = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool isRifleZooming = false;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool isSniperZooming = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool isM249Zooming = false;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool isCursorOnRifle;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool isCursorOnSniper;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool isCursorOnPistol;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool isCursorOnM249;
 
 	UPROPERTY()
 	bool TiltReleaseRight = false;
 
 	UPROPERTY()
 	bool TiltReleaseLeft = false;
-
-	UPROPERTY()
-	bool IsHideOut = true;
-
-	UPROPERTY()
-	bool OpenMenuBoolean = false;;
 
 	UPROPERTY(Replicated)
 	bool CanShoot = true;
@@ -1160,7 +1122,7 @@ public:
 	class USoundBase* GroundHitSound;
 	
 	UPROPERTY()
-	FTimerHandle shootEnableHandle;
+	FTimerHandle ShootEnableHandle;
 
 	UPROPERTY(EditDefaultsOnly, Category=CameraMotion)
 	TSubclassOf<class UCameraShakeBase> sniperCameraShake;
@@ -1233,18 +1195,6 @@ public:
 	float DamageAmount;
 
 	UPROPERTY()
-	bool HelmetEquipped = false;
-
-	UPROPERTY()
-	bool MaskEquipped = false;
-
-	UPROPERTY()
-	bool HeadsetEquipped = false;
-
-	UPROPERTY()
-	bool GoggleEquipped = false;
-
-	UPROPERTY()
 	bool ArmorEquipped = false;
 
 	UPROPERTY()
@@ -1255,15 +1205,6 @@ public:
 
 	UPROPERTY(Replicated, BlueprintReadOnly)
 	bool IsPlayerDead = false;
-
-	UPROPERTY()
-	bool bRifleAdditionalMag;
-	UPROPERTY()
-	bool bSniperAdditionalMag;
-	UPROPERTY()
-	bool bPistolAdditionalMag;
-	UPROPERTY()
-	bool bM249AdditionalMag;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bHideout = true;
@@ -1305,22 +1246,7 @@ public:
 	class AM249MagActor* M249MagActor;
 	
 	UPROPERTY()
-	float CharacterWalkSpeed = 360.f;
-
-	UPROPERTY()
-	int ConsoleCount;
-
-	UPROPERTY()
-	int GuardianCount;
-
-	UPROPERTY()
-	int BossCount;
-
-	UPROPERTY()
-	bool bGuardian;
-
-	UPROPERTY()
-	bool bCrunch;
+	float CharacterDefaultWalkSpeed = 360.f;
 
 	UPROPERTY()
 	bool bEnding;
@@ -1331,18 +1257,6 @@ public:
 	UPROPERTY()
 	bool SniperZoomOutBool;
 
-	UPROPERTY()
-	float HeadSetStat;
-
-	UPROPERTY()
-	float GoggleStat;
-
-	UPROPERTY()
-	float MaskStat;
-
-	UPROPERTY()
-	float HelmetStat;
-
-	UPROPERTY()
-	float ArmorStat;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	float MouseSensitivityRate = 0.5f;
 };

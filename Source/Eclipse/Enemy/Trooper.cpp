@@ -49,7 +49,6 @@ void ATrooper::FireProcess() const
 	{
 		const FVector MuzzleLocation = WeaponComp->GetSocketLocation(FName("Muzzle"));
 		const FVector TargetLocation = EnemyFSM->Player->GetMesh()->GetBoneLocation(FName("head"));
-		UE_LOG(LogTemp, Warning, TEXT("%f, %f, %f"), TargetLocation.X, TargetLocation.Y, TargetLocation.Z)
 		const FRotator ProjectileRot = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), TargetLocation) + FRotator(0, -90, 0);
 		GetWorld()->SpawnActor<ATrooperProjectile>(TrooperProjectileFactory, MuzzleLocation, ProjectileRot);
 	}

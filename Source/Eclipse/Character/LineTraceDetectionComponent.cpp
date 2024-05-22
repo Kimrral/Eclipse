@@ -60,6 +60,10 @@ void ULineTraceDetectionComponent::TickComponent(float DeltaTime, ELevelTick Tic
 
 void ULineTraceDetectionComponent::LineTraceDetection()
 {
+	if(Owner->bEnding)
+	{
+		return;
+	}
 	if (Owner->IsLocallyControlled())
 	{		
 		FVector StartLoc = Owner->FollowCamera->GetComponentLocation();

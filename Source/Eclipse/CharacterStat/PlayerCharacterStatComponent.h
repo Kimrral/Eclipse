@@ -147,10 +147,10 @@ protected:
 	float PlayerAttackDamageRifle = 9.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float PlayerAttackDamagePistol = 15.f;
+	float PlayerAttackDamagePistol = 19.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float PlayerAttackDamageSniper = 70.f;
+	float PlayerAttackDamageSniper = 72.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float PlayerAttackDamageM249 = 8.f;

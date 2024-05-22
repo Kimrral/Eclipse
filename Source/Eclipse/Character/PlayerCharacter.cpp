@@ -1059,7 +1059,7 @@ void APlayerCharacter::OnPlayerHitRPCMulticast_Implementation(const FHitResult& 
 	}
 	if (IsLocallyControlled())
 	{
-		const FRotator hitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
+		const FRotator HitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
 		if (IsHeadshot)
 		{
 			UGameplayStatics::PlaySound2D(GetWorld(), BulletHeadHitSound);
@@ -1068,7 +1068,7 @@ void APlayerCharacter::OnPlayerHitRPCMulticast_Implementation(const FHitResult& 
 			// 데미지 위젯에 피해 값과 적 위치벡터 할당
 			SetDamageWidget(DamageAmount * 2, HitResult.Location, false, FLinearColor::Yellow);
 			// 적중 파티클 스폰
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodParticle, HitResult.Location, hitRot, FVector(1.f));
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodParticle, HitResult.Location, HitRot, FVector(1.f));
 		}
 		else
 		{
@@ -1078,7 +1078,7 @@ void APlayerCharacter::OnPlayerHitRPCMulticast_Implementation(const FHitResult& 
 			// 데미지 위젯에 피해 값과 적 위치벡터 할당
 			SetDamageWidget(DamageAmount, HitResult.Location, false, FLinearColor::White);
 			// 적중 파티클 스폰
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodParticle, HitResult.Location, hitRot, FVector(1.f));
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodParticle, HitResult.Location, HitRot, FVector(1.f));
 		}
 	}
 	else
@@ -1368,6 +1368,7 @@ void APlayerCharacter::OnGroundHitRPCMulticast_Implementation(const FHitResult& 
 		const FTransform DecalTrans = UKismetMathLibrary::MakeTransform(DecalLoc, DecalRot);
 		GetWorld()->SpawnActor<AActor>(ShotDecalFactory, DecalTrans);
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, DecalLoc, DecalRot + FRotator(-90, 0, 0), FVector(0.5f));
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), GroundHitSound, DecalLoc);
 	}
 }
 
@@ -3301,6 +3302,7 @@ void APlayerCharacter::OnRep_MaxM249Ammo()
 	UpdateAmmunition();
 }
 
+
 void APlayerCharacter::ResetFireBoolean()
 {
 	CanShoot = true;
@@ -4083,6 +4085,7 @@ void APlayerCharacter::PlayerDeath()
 {
 	if (IsLocallyControlled())
 	{
+		ZoomRelease(false);
 		SetFirstPersonModeRifle(false);
 		SetFirstPersonModePistol(false);
 		PC->SetIgnoreLookInput(true);
@@ -4091,6 +4094,7 @@ void APlayerCharacter::PlayerDeath()
 		APlayerCameraManager* PlayerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 		// 카메라 페이드 연출
 		PlayerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
+		FollowCamera->SetFieldOfView(90.f);
 	}
 	FTimerHandle TimerHandle;
 	GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()-> void
@@ -4189,15 +4193,28 @@ void APlayerCharacter::MoveToAnotherLevel()
 		infoWidgetUI->RemoveFromParent();
 		informationUI->RemoveFromParent();
 		crosshairUI->RemoveFromParent();
+
+		APlayerCameraManager* PlayerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+		PlayerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);	
+		UGameplayStatics::PlaySound2D(GetWorld(), PortalSound);
 	}
 
-	APlayerCameraManager* PlayerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
-	PlayerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
+	MoveToAnotherLevelServer();
+}
 
-	const FTransform SpawnTrans = this->GetTransform();
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), recallParticle, SpawnTrans);
-	PlayAnimMontage(FullBodyMontage, 1, FName("LevelEnd"));
-	UGameplayStatics::PlaySoundAtLocation(GetWorld(), PortalSound, GetActorLocation());
+void APlayerCharacter::MoveToAnotherLevelServer_Implementation()
+{
+	MoveToAnotherLevelMulticast();
+}
+
+void APlayerCharacter::MoveToAnotherLevelMulticast_Implementation()
+{
+	if(!HasAuthority())
+	{
+		const FTransform SpawnTrans = this->GetTransform();
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), recallParticle, SpawnTrans);
+		PlayAnimMontage(FullBodyMontage, 1, FName("LevelEnd"));
+	}
 }
 
 

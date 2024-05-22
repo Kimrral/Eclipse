@@ -135,7 +135,4 @@ public:
 
 	UPROPERTY()
 	bool IsAlreadySet = false;
-
-	UPROPERTY()
-	bool IsAlreadyAccessed = false;
 };

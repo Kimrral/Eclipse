@@ -21,7 +21,6 @@ void AEclipsePlayerState::BeginPlay()
 {
 	Super::BeginPlay();
 
-	IsAlreadyAccessed = false;
 	PlayerInventoryStructs.Init(InventoryStructDefault, 30);
 	PlayerInventoryStacks.Init(0, 30);
 	PlayerGearSlotStructs.Init(InventoryStructDefault, 5);
@@ -51,35 +50,38 @@ void AEclipsePlayerState::AddToInventoryServer_Implementation(APlayerCharacter* 
 
 void AEclipsePlayerState::AddToInventoryMulticast_Implementation(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct)
 {
-	if (PlayerCharacterRef->IsLocallyControlled()) AddToInventoryWidget(PlayerCharacterRef, PlayerInventoryStruct);
+	if (PlayerCharacterRef)
+	{
+		if (PlayerCharacterRef->IsLocallyControlled())
+		{
+			AddToInventoryWidget(PlayerCharacterRef, PlayerInventoryStruct);
+		}
+	}
 	if (HasAuthority())
 	{
-		if (PlayerCharacterRef)
+		for (int i = 0; i < PlayerInventoryStructs.Num(); ++i)
 		{
-			for (int i = 0; i < PlayerInventoryStructs.Num(); ++i)
+			if (PlayerInventoryStructs[i].Name == PlayerInventoryStruct.Name)
 			{
-				if (PlayerInventoryStructs[i].Name == PlayerInventoryStruct.Name)
+				const int32 InventoryArrayIndex = i;
+				PlayerInventoryStacks[InventoryArrayIndex]++;
+				IsAlreadySet = true;
+			}
+		}
+		if (IsAlreadySet)
+		{
+			IsAlreadySet = false;
+		}
+		else
+		{
+			for (int i = 0; i < PlayerInventoryStacks.Num(); ++i)
+			{
+				if (PlayerInventoryStacks[i] == 0)
 				{
 					const int32 InventoryArrayIndex = i;
+					PlayerInventoryStructs[InventoryArrayIndex] = PlayerInventoryStruct;
 					PlayerInventoryStacks[InventoryArrayIndex]++;
-					IsAlreadySet = true;
-				}
-			}
-			if (IsAlreadySet)
-			{
-				IsAlreadySet = false;
-			}
-			else
-			{
-				for (int i = 0; i < PlayerInventoryStacks.Num(); ++i)
-				{
-					if (PlayerInventoryStacks[i] == 0)
-					{
-						const int32 InventoryArrayIndex = i;
-						PlayerInventoryStructs[InventoryArrayIndex] = PlayerInventoryStruct;
-						PlayerInventoryStacks[InventoryArrayIndex]++;
-						return;
-					}
+					return;
 				}
 			}
 		}

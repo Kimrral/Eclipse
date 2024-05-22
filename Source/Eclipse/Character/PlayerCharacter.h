@@ -1330,4 +1330,19 @@ public:
 
 	UPROPERTY()
 	bool SniperZoomOutBool;
+
+	UPROPERTY()
+	float HeadSetStat;
+
+	UPROPERTY()
+	float GoggleStat;
+
+	UPROPERTY()
+	float MaskStat;
+
+	UPROPERTY()
+	float HelmetStat;
+
+	UPROPERTY()
+	float ArmorStat;
 };

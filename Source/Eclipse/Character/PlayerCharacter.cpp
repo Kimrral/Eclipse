@@ -301,7 +301,6 @@ void APlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 }
 
-
 void APlayerCharacter::SetPlayerControlRotation_Implementation(const FRotator& DesiredRotation)
 {
 	if (PC)
@@ -407,7 +406,6 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(FlashAction, ETriggerEvent::Started, this, &APlayerCharacter::ToggleFlashlight);
 	}
 }
-
 
 void APlayerCharacter::Move(const FInputActionValue& Value)
 {
@@ -609,7 +607,6 @@ bool APlayerCharacter::ZoomRPCServer_Validate(const bool IsZoomInput)
 	return true;
 }
 
-
 void APlayerCharacter::ZoomRPCReleaseServer_Implementation(const bool IsZoomInput)
 {
 	ZoomRPCReleaseMulticast(IsZoomInput);
@@ -688,7 +685,6 @@ void APlayerCharacter::ZoomRPCReleaseMulticast_Implementation(const bool IsZoomI
 	}
 }
 
-
 void APlayerCharacter::Run()
 {
 	RunRPCServer();
@@ -744,7 +740,6 @@ bool APlayerCharacter::RunRPCServer_Validate()
 	return true;
 }
 
-
 void APlayerCharacter::RunRPCReleaseServer_Implementation()
 {
 	RunRPCReleaseMulticast();
@@ -764,7 +759,6 @@ void APlayerCharacter::RunRPCReleaseMulticast_Implementation()
 	GetCharacterMovement()->MaxWalkSpeed = 360.f;
 }
 
-
 void APlayerCharacter::OnActionLookAroundPressed()
 {
 	bFreeLook = true;
@@ -776,7 +770,6 @@ void APlayerCharacter::OnActionLookAroundReleased()
 	bFreeLook = false;
 	bUseControllerRotationYaw = true;
 }
-
 
 void APlayerCharacter::SwapFirstWeapon()
 {
@@ -1018,7 +1011,6 @@ void APlayerCharacter::SwapSecondWeaponRPCMulticast_Implementation()
 	}
 }
 
-
 void APlayerCharacter::OnPlayerHit(const FHitResult& HitResult, APlayerCharacter* HitCharacter, bool IsHeadshot)
 {
 	if (HitCharacter->Stat->GetCurrentHp() > 0)
@@ -1026,7 +1018,6 @@ void APlayerCharacter::OnPlayerHit(const FHitResult& HitResult, APlayerCharacter
 		OnPlayerHitRPCServer(HitResult, HitCharacter, IsHeadshot);
 	}
 }
-
 
 void APlayerCharacter::OnPlayerHitRPCServer_Implementation(const FHitResult& HitResult, APlayerCharacter* HitCharacter, bool IsHeadshot)
 {
@@ -1086,11 +1077,13 @@ void APlayerCharacter::OnPlayerHitRPCMulticast_Implementation(const FHitResult& 
 		{
 			// 적중 파티클 스폰
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodParticle, HitResult.Location, HitRot, FVector(1.7f));
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHeadHitSound, HitResult.Location);
 		}
 		else
 		{
 			// 적중 파티클 스폰
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodParticle, HitResult.Location, HitRot, FVector(1.f));
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, HitResult.Location);
 		}
 	}
 }
@@ -1143,7 +1136,6 @@ bool APlayerCharacter::OnEnemyKillRPCServer_Validate()
 {
 	return true;
 }
-
 
 void APlayerCharacter::OnEnemyKillRPCClient_Implementation()
 {
@@ -3215,11 +3207,20 @@ void APlayerCharacter::OnRep_IsEquipArmor() const
 		if (IsEquipArmor)
 		{
 			ArmorSlot->SetVisibility(true);
+			if(IsLocallyControlled())
+			{
+				UGameplayStatics::PlaySound2D(GetWorld(), gearEquipSound);
+			}
 		}
 		else
 		{
 			ArmorSlot->SetVisibility(false);
+			if(IsLocallyControlled())
+			{
+				UGameplayStatics::PlaySound2D(GetWorld(), gearUnequipSound);
+			}
 		}
+		
 	}
 }
 
@@ -3230,10 +3231,18 @@ void APlayerCharacter::OnRep_IsEquipHelmet() const
 		if (IsEquipHelmet)
 		{
 			HelmetSlot->SetVisibility(true);
+			if(IsLocallyControlled())
+			{
+				UGameplayStatics::PlaySound2D(GetWorld(), gearEquipSound);
+			}
 		}
 		else
 		{
 			HelmetSlot->SetVisibility(false);
+			if(IsLocallyControlled())
+			{
+				UGameplayStatics::PlaySound2D(GetWorld(), gearUnequipSound);
+			}
 		}
 	}
 }
@@ -3245,10 +3254,18 @@ void APlayerCharacter::OnRep_IsEquipGoggle() const
 		if (IsEquipGoggle)
 		{
 			GoggleSlot->SetVisibility(true);
+			if(IsLocallyControlled())
+			{
+				UGameplayStatics::PlaySound2D(GetWorld(), gearEquipSound);
+			}
 		}
 		else
 		{
 			GoggleSlot->SetVisibility(false);
+			if(IsLocallyControlled())
+			{
+				UGameplayStatics::PlaySound2D(GetWorld(), gearUnequipSound);
+			}
 		}
 	}
 }
@@ -3260,10 +3277,18 @@ void APlayerCharacter::OnRep_IsEquipMask() const
 		if (IsEquipMask)
 		{
 			MaskSlot->SetVisibility(true);
+			if(IsLocallyControlled())
+			{
+				UGameplayStatics::PlaySound2D(GetWorld(), gearEquipSound);
+			}
 		}
 		else
 		{
 			MaskSlot->SetVisibility(false);
+			if(IsLocallyControlled())
+			{
+				UGameplayStatics::PlaySound2D(GetWorld(), gearUnequipSound);
+			}
 		}
 	}
 }
@@ -3275,10 +3300,18 @@ void APlayerCharacter::OnRep_IsEquipHeadset() const
 		if (IsEquipHeadset)
 		{
 			HeadSetSlot->SetVisibility(true);
+			if(IsLocallyControlled())
+			{
+				UGameplayStatics::PlaySound2D(GetWorld(), gearEquipSound);
+			}
 		}
 		else
 		{
 			HeadSetSlot->SetVisibility(false);
+			if(IsLocallyControlled())
+			{
+				UGameplayStatics::PlaySound2D(GetWorld(), gearUnequipSound);
+			}
 		}
 	}
 }
@@ -3601,7 +3634,7 @@ void APlayerCharacter::SetFirstPersonModePistol(const bool IsFirstPerson)
 void APlayerCharacter::EquipArmorInventorySlot(const bool IsEquipping, const float EquipGearStat)
 {
 	if (IsEquipping)
-	{
+	{		
 		Stat->AddMaxHp(EquipGearStat);
 		IsEquipArmor = true;
 		OnRep_IsEquipArmor();

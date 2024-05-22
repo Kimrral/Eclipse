@@ -628,6 +628,12 @@ public:
 	UFUNCTION()
 	void MoveToAnotherLevel();
 
+	UFUNCTION(Server, Reliable)
+	void MoveToAnotherLevelServer();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MoveToAnotherLevelMulticast();
+
 	UFUNCTION()
 	void ResetFireBoolean();
 
@@ -1148,7 +1154,10 @@ public:
 	class USoundBase* SpacecraftAmbientSound;
 
 	UPROPERTY(EditAnywhere, Category="Sounds")
-	class USoundBase* FlashlightToggleSound;;
+	class USoundBase* FlashlightToggleSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	class USoundBase* GroundHitSound;
 	
 	UPROPERTY()
 	FTimerHandle shootEnableHandle;

@@ -248,7 +248,7 @@ void UEnemyFSM::RandomMoveSettings(FVector TargetLocation)
 	}
 }
 
-void UEnemyFSM::SetState(EEnemyState Next) // 상태 전이함수
+void UEnemyFSM::SetState(const EEnemyState Next) // 상태 전이함수
 {
 	if (Me->HasAuthority())
 	{
@@ -257,6 +257,7 @@ void UEnemyFSM::SetState(EEnemyState Next) // 상태 전이함수
 	}
 }
 
+// 회전 선형보간을 위한 타임라인 바인딩 함수
 void UEnemyFSM::SetRotToPlayer(const float Value)
 {
 	if (State == EEnemyState::DIE)
@@ -267,9 +268,10 @@ void UEnemyFSM::SetRotToPlayer(const float Value)
 	{
 		if (Player->IsPlayerDeadImmediately)
 		{
-			const FVector dir = InitialPosition - Me->GetActorLocation();
-			// 벡터값에서 회전값 산출
-			const FRotator AttackRot = UKismetMathLibrary::MakeRotFromXZ(dir, Player->GetActorUpVector());
+			// 초기 스폰 위치를 향하는 벡터값 산출
+			const FVector Dir = InitialPosition - Me->GetActorLocation();
+			// 초기 스폰 위치를 향하는 방향벡터에서 회전값 산출
+			const FRotator AttackRot = UKismetMathLibrary::MakeRotFromXZ(Dir, Player->GetActorUpVector());
 			const FRotator StartRot = Me->GetActorRotation();
 			const FRotator EndRot = AttackRot;
 			// RLerp와 TimeLine Value 값을 통한 자연스러운 회전
@@ -281,7 +283,7 @@ void UEnemyFSM::SetRotToPlayer(const float Value)
 		{
 			// 플레이어를 바라보는 벡터값 산출
 			const FVector Dir = Player->GetActorLocation() - Me->GetActorLocation();
-			// 벡터값에서 회전값 산출
+			// 플레이어를 향하는 방향벡터에서 회전값 산출
 			const FRotator AttackRot = UKismetMathLibrary::MakeRotFromXZ(Dir, Player->GetActorUpVector());
 			const FRotator StartRot = Me->GetActorRotation();
 			const FRotator EndRot = AttackRot;
@@ -307,23 +309,29 @@ void UEnemyFSM::FindAggressivePlayer()
 	}
 }
 
+// 가장 위협적인 플레이어 선별과 타겟 지정
 APlayerCharacter* UEnemyFSM::ReturnAggressivePlayer() const
 {
 	TArray<AActor*> ActorCharacterArray;
 	TArray<APlayerCharacter*> PlayerCharacterArray;
+	// 함수 호출마다 캐릭터 배열 리셋
 	PlayerCharacterArray.Reset();
+	// 월드 내 모든 플레이어 캐릭터 순회
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerCharacter::StaticClass(), ActorCharacterArray);
 	int MaxDamageIndex = 0;
-	for (int i = 0; i < ActorCharacterArray.Num(); i++)
+	for (AActor* const AggressiveCharacter : ActorCharacterArray)
 	{
-		if (APlayerCharacter* AggressivePlayer = Cast<APlayerCharacter>(ActorCharacterArray[i]))
+		if (APlayerCharacter* AggressivePlayer = Cast<APlayerCharacter>(AggressiveCharacter))
 		{
+			// 추적 범위 내의 캐릭터 여부 우선 판별
 			if(AggressivePlayer->GetDistanceTo(Me)<ChaseLimitRange)
 			{
+				// 추적 범위 내에 있다면, PlayerCharacterArray에 추가
 				PlayerCharacterArray.Add(AggressivePlayer);
 			}
 		}
 	}
+	// 범위 내 플레이어 중 가장 위협적인 대상 선별
 	for (int i = 0; i < PlayerCharacterArray.Num(); i++)
 	{
 		// [MaxDistIndex]번째 플레이어 누적 데미지
@@ -338,7 +346,7 @@ APlayerCharacter* UEnemyFSM::ReturnAggressivePlayer() const
 			MaxDamageIndex = i;
 		}
 	}
-	
+	// 인덱스 유효 여부 검사 후 리턴
 	if(PlayerCharacterArray.IsValidIndex(MaxDamageIndex))
 	{
 		return PlayerCharacterArray[MaxDamageIndex];

@@ -579,8 +579,7 @@ void APlayerCharacter::ZoomRPCMulticast_Implementation(const bool IsZoomInput)
 	else if (weaponArray[3] == true)
 	{
 		if (IsLocallyControlled())
-		{
-			UGameplayStatics::PlaySound2D(GetWorld(), zoomSound);
+		{			
 			if (IsZoomInput)
 			{
 				Timeline.PlayFromStart();
@@ -2751,20 +2750,10 @@ void APlayerCharacter::ResetPlayerInventoryDataServer_Implementation()
 {
 	if (const auto ResetPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))
 	{
-		ResetPlayerState->ResetPlayerInventoryData();
-		
-		EquipHelmetInventorySlot(false, 1);
-
-		EquipGoggleInventorySlot(false, 1);
-
-		EquipArmorInventorySlot(false, 50);
-
-		EquipMaskInventorySlot(false, 1);
-
-		EquipHeadsetInventorySlot(false, 1);
-		
-		Stat->SetHp(Stat->GetMaxHp());
-	}	
+		ResetPlayerState->ApplyGearInventoryEquipState(this);
+		ResetPlayerState->ResetPlayerInventoryData();		
+	}		
+	Stat->SetHp(Stat->GetMaxHp());
 }
 
 void APlayerCharacter::MoveToBlockedIntersection()
@@ -3644,14 +3633,20 @@ void APlayerCharacter::SetFirstPersonModePistol(const bool IsFirstPerson)
 void APlayerCharacter::EquipArmorInventorySlot(const bool IsEquipping, const float EquipGearStat)
 {
 	if (IsEquipping)
-	{		
-		Stat->AddMaxHp(EquipGearStat);
+	{
+		if(HasAuthority())
+		{
+			Stat->AddMaxHp(EquipGearStat);
+		}
 		IsEquipArmor = true;
 		OnRep_IsEquipArmor();
 	}
 	else
 	{
-		Stat->SubtractMaxHp(EquipGearStat);
+		if(HasAuthority())
+		{
+			Stat->SubtractMaxHp(EquipGearStat);
+		}
 		IsEquipArmor = false;
 		OnRep_IsEquipArmor();
 	}
@@ -3675,13 +3670,19 @@ void APlayerCharacter::EquipGoggleInventorySlot(const bool IsEquipping, const fl
 {
 	if (IsEquipping)
 	{
-		Stat->RecoilStatMultiplier = EquipGearStat;
+		if(HasAuthority())
+		{
+			Stat->RecoilStatMultiplier = EquipGearStat;
+		}
 		IsEquipGoggle = true;
 		OnRep_IsEquipGoggle();
 	}
 	else
 	{
-		Stat->RecoilStatMultiplier = EquipGearStat;
+		if(HasAuthority())
+		{
+			Stat->RecoilStatMultiplier = EquipGearStat;
+		}
 		IsEquipGoggle = false;
 		OnRep_IsEquipGoggle();
 	}
@@ -3691,13 +3692,19 @@ void APlayerCharacter::EquipHeadsetInventorySlot(const bool IsEquipping, const f
 {
 	if (IsEquipping)
 	{
-		Stat->DamageStatMultiplier = EquipGearStat;
+		if(HasAuthority())
+		{
+			Stat->DamageStatMultiplier = EquipGearStat;
+		}
 		IsEquipHeadset = true;
 		OnRep_IsEquipHeadset();
 	}
 	else
 	{
-		Stat->DamageStatMultiplier = EquipGearStat;
+		if(HasAuthority())
+		{
+			Stat->DamageStatMultiplier = EquipGearStat;
+		}
 		IsEquipHeadset = false;
 		OnRep_IsEquipHeadset();
 	}
@@ -3707,13 +3714,19 @@ void APlayerCharacter::EquipMaskInventorySlot(const bool IsEquipping, const floa
 {
 	if (IsEquipping)
 	{
-		Stat->FireIntervalStatMultiplier = EquipGearStat;
+		if(HasAuthority())
+		{
+			Stat->FireIntervalStatMultiplier = EquipGearStat;
+		}
 		IsEquipMask = true;
 		OnRep_IsEquipMask();
 	}
 	else
 	{
-		Stat->FireIntervalStatMultiplier = EquipGearStat;
+		if(HasAuthority())
+		{
+			Stat->FireIntervalStatMultiplier = EquipGearStat;
+		}
 		IsEquipMask = false;
 		OnRep_IsEquipMask();
 	}
@@ -4109,7 +4122,7 @@ void APlayerCharacter::ProcessM249FireLocal()
 {
 	FTransform ParticleTrans = M249Comp->GetSocketTransform(FName("M249FirePosition"));
 	ParticleTrans.SetScale3D(FVector(0.7));
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PistolfireParticle, ParticleTrans);
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle, ParticleTrans);
 	UGameplayStatics::PlaySound2D(GetWorld(), M249FireSound);
 	PC->PlayerCameraManager->StartCameraShake(rifleFireShake);
 	Stat->SetRecoilRate(weaponArray);
@@ -4121,7 +4134,7 @@ void APlayerCharacter::ProcessM249FireSimulatedProxy() const
 {
 	FTransform ParticleTrans = M249Comp->GetSocketTransform(FName("M249FirePosition"));
 	ParticleTrans.SetScale3D(FVector(0.7));
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PistolfireParticle, ParticleTrans);
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RifleFireParticle, ParticleTrans);
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), M249FireSound, GetActorLocation());
 }
 

@@ -2532,7 +2532,7 @@ void APlayerCharacter::InteractionProcess()
 					GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()-> void
 					{
 						MoveToHideout(false);
-					}), 7.f, false);
+					}), 8.f, false);
 				}
 			}
 
@@ -2688,7 +2688,7 @@ void APlayerCharacter::MoveToIsolatedShip()
 	GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
 		MoveToIsolatedShipClient();
-	}), 7.f, false);
+	}), 8.f, false);
 }
 
 void APlayerCharacter::MoveToIsolatedShipClient()
@@ -2749,12 +2749,22 @@ void APlayerCharacter::MoveToHideout(const bool IsPlayerDeath)
 
 void APlayerCharacter::ResetPlayerInventoryDataServer_Implementation()
 {
-	Stat->SetHp(Stat->GetMaxHp());
 	if (const auto ResetPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))
 	{
 		ResetPlayerState->ResetPlayerInventoryData();
-		ResetPlayerState->ApplyGearInventoryEquipState(this);
-	}
+		
+		EquipHelmetInventorySlot(false, 1);
+
+		EquipGoggleInventorySlot(false, 1);
+
+		EquipArmorInventorySlot(false, 50);
+
+		EquipMaskInventorySlot(false, 1);
+
+		EquipHeadsetInventorySlot(false, 1);
+		
+		Stat->SetHp(Stat->GetMaxHp());
+	}	
 }
 
 void APlayerCharacter::MoveToBlockedIntersection()
@@ -2766,7 +2776,7 @@ void APlayerCharacter::MoveToBlockedIntersection()
 	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
 		MoveToBlockedIntersectionClient();
-	}), 7.f, false);
+	}), 8.f, false);
 }
 
 void APlayerCharacter::MoveToBlockedIntersectionClient()

@@ -177,7 +177,7 @@ protected:
 	float BulletsPerSecSniper = 2.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float BulletsPerSecM249 = 0.125f;
+	float BulletsPerSecM249 = 0.07f;
 
 	UFUNCTION()
 	void OnRep_CurrentHp() const;

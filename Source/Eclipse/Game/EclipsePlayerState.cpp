@@ -479,14 +479,37 @@ void AEclipsePlayerState::ModifyRoubleServer_Implementation(APlayerCharacter* Pl
 	}
 }
 
+void AEclipsePlayerState::ApplyGearInventoryEquipState(APlayerCharacter* PlayerCharacterRef)
+{
+	if (PlayerGearSlotStructs[0].Price > 0)
+	{
+		PlayerCharacterRef->EquipHelmetInventorySlot(false, 1);
+	}
+
+	if (PlayerGearSlotStructs[1].Price > 0)
+	{
+		PlayerCharacterRef->EquipGoggleInventorySlot(false, 1);
+	}
+
+	if (PlayerGearSlotStructs[2].Price > 0)
+	{
+		PlayerCharacterRef->EquipArmorInventorySlot(false, PlayerGearSlotStructs[2].Stat);
+	}
+
+	if (PlayerGearSlotStructs[3].Price > 0)
+	{
+		PlayerCharacterRef->EquipMaskInventorySlot(false, 1);
+	}
+
+	if (PlayerGearSlotStructs[4].Price > 0)
+	{
+		PlayerCharacterRef->EquipHeadsetInventorySlot(false, 1);
+	}
+}
+
 void AEclipsePlayerState::ResetPlayerInventoryData()
 {
 	PlayerInventoryStructs.Init(InventoryStructDefault, 30);
 	PlayerInventoryStacks.Init(0, 30);
 	PlayerGearSlotStructs.Init(InventoryStructDefault, 5);
-}
-
-void AEclipsePlayerState::ApplyGearInventoryEquipState(APlayerCharacter* PlayerCharacterRef)
-{
-
 }

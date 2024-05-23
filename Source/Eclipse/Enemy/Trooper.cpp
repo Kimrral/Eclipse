@@ -28,11 +28,11 @@ void ATrooper::BeginPlay()
 
 void ATrooper::OnDestroy()
 {
-	Super::OnDestroy();
 	if(HasAuthority())
 	{		
 		RewardManager->DropSniperServer(GetActorTransform());
 	}
+	DissolveTimeline.PlayFromStart();
 }
 
 void ATrooper::SetDissolveValue(const float Value)

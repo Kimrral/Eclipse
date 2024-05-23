@@ -36,12 +36,5 @@ void APickableActor::AddToInventory(APlayerCharacter* PlayerCharacter) const
 	}
 }
 
-void APickableActor::BeginPlay()
-{
-	Super::BeginPlay();
-
-	RootMesh->SetRenderCustomDepth(true);
-}
-
 
 

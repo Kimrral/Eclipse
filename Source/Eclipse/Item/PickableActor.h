@@ -28,7 +28,4 @@ public:
 	UPROPERTY()
 	bool IsAlreadyLooted = false;
 
-protected:
-	virtual void BeginPlay() override;
-
 };

@@ -99,7 +99,7 @@ public:
 	void ResetPlayerInventoryData();
 
 	UFUNCTION()
-	void ApplyGearInventoryEquipState(APlayerCharacter* PlayerCharacterRef);
+	static void ApplyGearInventoryEquipState(APlayerCharacter* PlayerCharacterRef);
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	

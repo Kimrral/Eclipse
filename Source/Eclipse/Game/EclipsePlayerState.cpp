@@ -488,44 +488,5 @@ void AEclipsePlayerState::ResetPlayerInventoryData()
 
 void AEclipsePlayerState::ApplyGearInventoryEquipState(APlayerCharacter* PlayerCharacterRef)
 {
-	if (PlayerGearSlotStructs[0].Price > 0)
-	{
-		PlayerCharacterRef->EquipHelmetInventorySlot(true, PlayerGearSlotStructs[0].Stat);
-	}
-	else
-	{
-		PlayerCharacterRef->EquipHelmetInventorySlot(false, 1);
-	}
-	if (PlayerGearSlotStructs[1].Price > 0)
-	{
-		PlayerCharacterRef->EquipGoggleInventorySlot(true, PlayerGearSlotStructs[1].Stat);
-	}
-	else
-	{
-		PlayerCharacterRef->EquipGoggleInventorySlot(false, 1);
-	}
-	if (PlayerGearSlotStructs[2].Price > 0)
-	{
-		PlayerCharacterRef->EquipArmorInventorySlot(true, PlayerGearSlotStructs[2].Stat);
-	}
-	else
-	{
-		PlayerCharacterRef->EquipArmorInventorySlot(false, 0);
-	}
-	if (PlayerGearSlotStructs[3].Price > 0)
-	{
-		PlayerCharacterRef->EquipMaskInventorySlot(true, PlayerGearSlotStructs[3].Stat);
-	}
-	else
-	{
-		PlayerCharacterRef->EquipMaskInventorySlot(false, 1);
-	}
-	if (PlayerGearSlotStructs[4].Price > 0)
-	{
-		PlayerCharacterRef->EquipHeadsetInventorySlot(true, PlayerGearSlotStructs[4].Stat);
-	}
-	else
-	{
-		PlayerCharacterRef->EquipHeadsetInventorySlot(false, 1);
-	}
+
 }

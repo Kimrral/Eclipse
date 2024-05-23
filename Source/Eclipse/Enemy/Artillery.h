@@ -19,6 +19,8 @@ public:
 
 	virtual void BeginPlay() override;
 
+	virtual void OnDestroy() override;
+
 	virtual void SetDissolveValue(float Value) override;
 
 	virtual void FireProcess() const override;

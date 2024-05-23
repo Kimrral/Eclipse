@@ -22,6 +22,9 @@ public:
 	UFUNCTION(Server, Reliable)
 	void DropSniperServer(const FTransform& EnemyTransform) const;
 
+	UFUNCTION(Server, Reliable)
+	void DropM249Server(const FTransform& EnemyTransform) const;
+
 	UFUNCTION()
 	void DropAmmunition(const FTransform& EnemyTransform) const;
 
@@ -35,6 +38,9 @@ public:
 	
 	UPROPERTY(EditAnywhere, Category=Factory)
 	TSubclassOf<class ASniperActor> SniperWeaponFactory;
+
+	UPROPERTY(EditAnywhere, Category=Factory)
+	TSubclassOf<class AM249Actor> M249WeaponFactory;
 
 	UPROPERTY(EditAnywhere, Category=Factory)
 	TSubclassOf<class APickableActor> PickableActorListFirst;

@@ -6,6 +6,7 @@
 #include "GuardianProjectile.h"
 #include "Eclipse/AI/EnemyFSM.h"
 #include "Eclipse/Character/PlayerCharacter.h"
+#include "Eclipse/Item/RewardManagerComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -23,6 +24,15 @@ void AArtillery::BeginPlay()
 	if (UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(Material, this))
 	{
 		LauncherComp->SetMaterial(0, DynamicMaterial);
+	}
+}
+
+void AArtillery::OnDestroy()
+{
+	Super::OnDestroy();
+	if(HasAuthority())
+	{		
+		RewardManager->DropM249Server(GetActorTransform());
 	}
 }
 

@@ -8,6 +8,7 @@
 #include "PistolAmmoPack.h"
 #include "RifleAmmoPack.h"
 #include "SniperAmmoPack.h"
+#include "Eclipse/Weapon/M249Actor.h"
 #include "Eclipse/Weapon/SniperActor.h"
 
 // Sets default values for this component's properties
@@ -24,6 +25,13 @@ void URewardManagerComponent::DropSniperServer_Implementation(const FTransform& 
 	FActorSpawnParameters Param;
 	Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	GetWorld()->SpawnActor<ASniperActor>(SniperWeaponFactory, EnemyTransform, Param);
+}
+
+void URewardManagerComponent::DropM249Server_Implementation(const FTransform& EnemyTransform) const
+{
+	FActorSpawnParameters Param;
+	Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	GetWorld()->SpawnActor<AM249Actor>(M249WeaponFactory, EnemyTransform, Param);
 }
 
 void URewardManagerComponent::DropAmmunition(const FTransform& EnemyTransform) const

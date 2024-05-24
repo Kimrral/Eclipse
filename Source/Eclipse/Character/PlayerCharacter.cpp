@@ -766,6 +766,12 @@ void APlayerCharacter::OnActionLookAroundPressed()
 
 void APlayerCharacter::OnActionLookAroundReleased()
 {
+	if(Controller)
+	{
+		const FRotator ControlRotation = Controller->GetControlRotation();
+		const FRotator CapsuleRotation = GetCapsuleComponent()->GetComponentRotation();
+		Controller->SetControlRotation(FRotator(ControlRotation.Pitch, CapsuleRotation.Yaw, ControlRotation.Roll));
+	}	
 	bFreeLook = false;
 	bUseControllerRotationYaw = true;
 }

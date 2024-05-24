@@ -531,6 +531,9 @@ public:
 	void UpdateTabWidgetHP();
 
 	UFUNCTION(BlueprintImplementableEvent)
+	void UpdateTabWidgetInventory();
+
+	UFUNCTION(BlueprintImplementableEvent)
 	void ResetTabWidget();
 
 	UFUNCTION()

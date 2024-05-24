@@ -2723,6 +2723,10 @@ void APlayerCharacter::MoveToHideout(const bool IsPlayerDeath)
 		ResetPlayerInventoryDataServer();
 		ResetTabWidget();
 	}
+	else
+	{
+		UpdateTabWidgetInventory();
+	}
 
 	if (IsLocallyControlled())
 	{

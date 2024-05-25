@@ -148,9 +148,21 @@ void UEnemyFSM::TickMove()
 			}
 			if (Dist <= AttackRange)
 			{
-				if (AIController) AIController->StopMovement();
-				// 플레이어가 공격 범위 내에 위치한다면, 공격 상태로 전이
-				SetState(EEnemyState::ATTACK);
+				if(Me->bPlayerInSight)
+				{
+					if (AIController) AIController->StopMovement();
+					// 플레이어가 공격 범위 내에 위치한다면, 공격 상태로 전이
+					SetState(EEnemyState::ATTACK);
+				}
+				else
+				{
+					if (AIController)
+					{
+						// 타임라인을 이용한 Enemy 캐릭터 회전 러프
+						Timeline.PlayFromStart();
+						AIController->MoveToPlayer(Player);
+					}
+				}
 			}
 		}
 		return;
@@ -208,15 +220,22 @@ void UEnemyFSM::TickAttack()
 			MoveBackToInitialPosition();
 			return;
 		}
-		// 플레이어와의 거리 도출
-		if (const float Dist = Player->GetDistanceTo(Me))
+		if(Me->bPlayerInSight)
 		{
-			// 공격거리보다 멀어졌다면
-			if (Dist > AttackRange)
+			// 플레이어와의 거리 도출
+			if (const float Dist = Player->GetDistanceTo(Me))
 			{
-				// 이동상태로 전이한다
-				SetState(EEnemyState::MOVE);
+				// 공격거리보다 멀어졌다면
+				if (Dist > AttackRange)
+				{
+					// 이동상태로 전이한다
+					SetState(EEnemyState::MOVE);
+				}
 			}
+		}
+		else
+		{
+			SetState(EEnemyState::MOVE);
 		}
 	}
 }

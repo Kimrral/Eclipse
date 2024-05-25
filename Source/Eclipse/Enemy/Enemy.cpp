@@ -102,6 +102,14 @@ void AEnemy::OnPawnDetected(APawn* Pawn)
 			EnemyFSM->Player = DetectedPawn;
 		}
 	}
+	bPlayerInSight=true;
+	FTimerHandle TimerHandle;
+	GetWorldTimerManager().SetTimer(TimerHandle, this, &AEnemy::ResetPawnDetection, 1.f, false);	
+}
+
+void AEnemy::ResetPawnDetection()
+{
+	bPlayerInSight=false;
 }
 
 void AEnemy::Damaged(const int Damage, AActor* DamageCauser)

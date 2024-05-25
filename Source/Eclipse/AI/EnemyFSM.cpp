@@ -158,7 +158,6 @@ void UEnemyFSM::TickMove()
 				{
 					if (AIController)
 					{
-						// 타임라인을 이용한 Enemy 캐릭터 회전 러프
 						Timeline.PlayFromStart();
 						AIController->MoveToPlayer(Player);
 					}

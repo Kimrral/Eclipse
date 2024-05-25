@@ -59,7 +59,10 @@ public:
 	void OnDie();
 
 	UFUNCTION()
-	void OnPawnDetected(APawn* Pawn); 
+	void OnPawnDetected(APawn* Pawn);
+
+	UFUNCTION()
+	void ResetPawnDetection(); 
 
 	UFUNCTION()
 	void Damaged(int Damage, AActor* DamageCauser);

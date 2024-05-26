@@ -25,7 +25,7 @@ void UCrunchAnim::AnimNotify_HitPoint() const
 			{
 				if (APlayerCharacter* Player = Cast<APlayerCharacter>(HitObj[i].GetActor()); Player&&Player->HasAuthority()&&Player->IsPlayerDeadImmediately==false)
 				{
-					Player->Damaged(50, GetOwningActor()); 
+					Player->Damaged(25, GetOwningActor()); 
 				}
 			}
 		}

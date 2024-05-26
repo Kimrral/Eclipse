@@ -170,7 +170,7 @@ void UEnemyFSM::TickMove()
 	if (IsMovingBack)
 	{
 		if (AIController) AIController->MoveToLocation(InitialPosition);
-		if (FVector::Dist(Me->GetActorLocation(), InitialPosition) < 100.f)
+		if (FVector::Dist(Me->GetActorLocation(), InitialPosition) < 20.f)
 		{
 			if (AIController)
 			{

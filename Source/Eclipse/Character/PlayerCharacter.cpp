@@ -579,7 +579,7 @@ void APlayerCharacter::ZoomRPCMulticast_Implementation(const bool IsZoomInput)
 	else if (weaponArray[3] == true)
 	{
 		if (IsLocallyControlled())
-		{			
+		{
 			if (IsZoomInput)
 			{
 				Timeline.PlayFromStart();
@@ -709,7 +709,7 @@ void APlayerCharacter::RunRPCMulticast_Implementation()
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), SniperZoomInSound, GetActorLocation());
 			isSniperZoomed = true;
 		}
-		else if (isSniperZoomed)
+		else
 		{
 			GetWorldTimerManager().ClearTimer(SniperZoomHandle);
 			SniperZoomOutBool = true;
@@ -755,7 +755,7 @@ void APlayerCharacter::RunRPCReleaseMulticast_Implementation()
 	{
 		return;
 	}
-	GetCharacterMovement()->MaxWalkSpeed = 360.f;
+	GetCharacterMovement()->MaxWalkSpeed = CharacterDefaultWalkSpeed;
 }
 
 void APlayerCharacter::OnActionLookAroundPressed()
@@ -766,12 +766,12 @@ void APlayerCharacter::OnActionLookAroundPressed()
 
 void APlayerCharacter::OnActionLookAroundReleased()
 {
-	if(Controller)
+	if (Controller)
 	{
 		const FRotator ControlRotation = Controller->GetControlRotation();
 		const FRotator CapsuleRotation = GetCapsuleComponent()->GetComponentRotation();
 		Controller->SetControlRotation(FRotator(ControlRotation.Pitch, CapsuleRotation.Yaw, ControlRotation.Roll));
-	}	
+	}
 	bFreeLook = false;
 	bUseControllerRotationYaw = true;
 }
@@ -2622,6 +2622,8 @@ void APlayerCharacter::MulticastRPCReload_Implementation()
 	{
 		if (weaponArray[0] == true && curRifleAmmo < 40 && maxRifleAmmo > 0)
 		{
+			PlayAnimMontage(UpperOnlyMontage, 1, FName("Reload"));
+
 			if (IsLocallyControlled())
 			{
 				SetFirstPersonModeRifle(false);
@@ -2632,11 +2634,11 @@ void APlayerCharacter::MulticastRPCReload_Implementation()
 			{
 				UGameplayStatics::PlaySoundAtLocation(GetWorld(), RifleReloadSound, GetActorLocation());
 			}
-
-			PlayAnimMontage(UpperOnlyMontage, 1, FName("Reload"));
 		}
 		else if (weaponArray[1] == true && curSniperAmmo < 5 && maxSniperAmmo > 0)
 		{
+			PlayAnimMontage(UpperOnlyMontage, 1, FName("Reload"));
+
 			if (IsLocallyControlled())
 			{
 				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
@@ -2646,10 +2648,11 @@ void APlayerCharacter::MulticastRPCReload_Implementation()
 			{
 				UGameplayStatics::PlaySoundAtLocation(GetWorld(), SniperReloadSound, GetActorLocation());
 			}
-			PlayAnimMontage(UpperOnlyMontage, 1, FName("Reload"));
 		}
 		else if (weaponArray[2] == true && curPistolAmmo < 8 && maxPistolAmmo > 0)
 		{
+			PlayAnimMontage(UpperOnlyMontage, 1, FName("PistolReload"));
+
 			if (IsLocallyControlled())
 			{
 				SetFirstPersonModePistol(false);
@@ -2660,10 +2663,11 @@ void APlayerCharacter::MulticastRPCReload_Implementation()
 			{
 				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PistolReloadSound, GetActorLocation());
 			}
-			PlayAnimMontage(UpperOnlyMontage, 1, FName("PistolReload"));
 		}
 		else if (weaponArray[3] == true && curM249Ammo < 100 && maxM249Ammo > 0)
 		{
+			PlayAnimMontage(UpperOnlyMontage, 1, FName("M249Reload"));
+
 			if (IsLocallyControlled())
 			{
 				crosshairUI->PlayAnimation(crosshairUI->ReloadAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
@@ -2673,7 +2677,6 @@ void APlayerCharacter::MulticastRPCReload_Implementation()
 			{
 				UGameplayStatics::PlaySoundAtLocation(GetWorld(), M249ReloadSound, GetActorLocation());
 			}
-			PlayAnimMontage(UpperOnlyMontage, 1, FName("M249Reload"));
 		}
 	}
 }
@@ -2761,8 +2764,8 @@ void APlayerCharacter::ResetPlayerInventoryDataServer_Implementation()
 	if (const auto ResetPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))
 	{
 		ResetPlayerState->ApplyGearInventoryEquipState(this);
-		ResetPlayerState->ResetPlayerInventoryData();		
-	}		
+		ResetPlayerState->ResetPlayerInventoryData();
+	}
 	Stat->SetHp(Stat->GetMaxHp());
 }
 
@@ -2965,6 +2968,7 @@ void APlayerCharacter::OnSpacecraftStreamingLevelLoadFinished()
 		informationUI->EnterSpacecraft();
 		UGameplayStatics::PlaySound2D(GetWorld(), PlayerSpawnSound, 0.6, 1, 0.25);
 		SpawnedSpacecraftSound = UGameplayStatics::SpawnSound2D(GetWorld(), SpacecraftAmbientSound);
+		GetCharacterMovement()->MaxWalkSpeed = CharacterDefaultWalkSpeed;
 
 		FTimerHandle TimerHandle;
 		GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()-> void
@@ -2999,6 +3003,7 @@ void APlayerCharacter::OnIntersectionStreamingLevelLoadFinished()
 		informationUI->EnterIntersection();
 		UGameplayStatics::PlaySound2D(GetWorld(), PlayerSpawnSound, 0.6, 1, 0.25);
 		SpawnedIntersectionSound = UGameplayStatics::SpawnSoundAtLocation(GetWorld(), IntersectionAmbientSound, FVector(234, -800, 0));
+		GetCharacterMovement()->MaxWalkSpeed = CharacterDefaultWalkSpeed;
 
 		FTimerHandle TimerHandle;
 		GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()-> void
@@ -3034,6 +3039,8 @@ void APlayerCharacter::OnHideoutStreamingLevelLoadFinished()
 		informationUI->EnterHideout();
 
 		UGameplayStatics::PlaySound2D(GetWorld(), PlayerSpawnSound, 0.6, 1, 0.25);
+
+		GetCharacterMovement()->MaxWalkSpeed = CharacterDefaultWalkSpeed;
 
 		FTimerHandle TimerHandle;
 		GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()-> void
@@ -3216,7 +3223,7 @@ void APlayerCharacter::OnRep_IsEquipArmor() const
 		if (IsEquipArmor)
 		{
 			ArmorSlot->SetVisibility(true);
-			if(IsLocallyControlled())
+			if (IsLocallyControlled())
 			{
 				UGameplayStatics::PlaySound2D(GetWorld(), gearEquipSound);
 			}
@@ -3224,12 +3231,11 @@ void APlayerCharacter::OnRep_IsEquipArmor() const
 		else
 		{
 			ArmorSlot->SetVisibility(false);
-			if(IsLocallyControlled())
+			if (IsLocallyControlled())
 			{
 				UGameplayStatics::PlaySound2D(GetWorld(), gearUnequipSound);
 			}
 		}
-		
 	}
 }
 
@@ -3240,7 +3246,7 @@ void APlayerCharacter::OnRep_IsEquipHelmet() const
 		if (IsEquipHelmet)
 		{
 			HelmetSlot->SetVisibility(true);
-			if(IsLocallyControlled())
+			if (IsLocallyControlled())
 			{
 				UGameplayStatics::PlaySound2D(GetWorld(), gearEquipSound);
 			}
@@ -3248,7 +3254,7 @@ void APlayerCharacter::OnRep_IsEquipHelmet() const
 		else
 		{
 			HelmetSlot->SetVisibility(false);
-			if(IsLocallyControlled())
+			if (IsLocallyControlled())
 			{
 				UGameplayStatics::PlaySound2D(GetWorld(), gearUnequipSound);
 			}
@@ -3263,7 +3269,7 @@ void APlayerCharacter::OnRep_IsEquipGoggle() const
 		if (IsEquipGoggle)
 		{
 			GoggleSlot->SetVisibility(true);
-			if(IsLocallyControlled())
+			if (IsLocallyControlled())
 			{
 				UGameplayStatics::PlaySound2D(GetWorld(), gearEquipSound);
 			}
@@ -3271,7 +3277,7 @@ void APlayerCharacter::OnRep_IsEquipGoggle() const
 		else
 		{
 			GoggleSlot->SetVisibility(false);
-			if(IsLocallyControlled())
+			if (IsLocallyControlled())
 			{
 				UGameplayStatics::PlaySound2D(GetWorld(), gearUnequipSound);
 			}
@@ -3286,7 +3292,7 @@ void APlayerCharacter::OnRep_IsEquipMask() const
 		if (IsEquipMask)
 		{
 			MaskSlot->SetVisibility(true);
-			if(IsLocallyControlled())
+			if (IsLocallyControlled())
 			{
 				UGameplayStatics::PlaySound2D(GetWorld(), gearEquipSound);
 			}
@@ -3294,7 +3300,7 @@ void APlayerCharacter::OnRep_IsEquipMask() const
 		else
 		{
 			MaskSlot->SetVisibility(false);
-			if(IsLocallyControlled())
+			if (IsLocallyControlled())
 			{
 				UGameplayStatics::PlaySound2D(GetWorld(), gearUnequipSound);
 			}
@@ -3309,7 +3315,7 @@ void APlayerCharacter::OnRep_IsEquipHeadset() const
 		if (IsEquipHeadset)
 		{
 			HeadSetSlot->SetVisibility(true);
-			if(IsLocallyControlled())
+			if (IsLocallyControlled())
 			{
 				UGameplayStatics::PlaySound2D(GetWorld(), gearEquipSound);
 			}
@@ -3317,7 +3323,7 @@ void APlayerCharacter::OnRep_IsEquipHeadset() const
 		else
 		{
 			HeadSetSlot->SetVisibility(false);
-			if(IsLocallyControlled())
+			if (IsLocallyControlled())
 			{
 				UGameplayStatics::PlaySound2D(GetWorld(), gearUnequipSound);
 			}
@@ -3588,7 +3594,6 @@ void APlayerCharacter::SetFirstPersonModeRifle(const bool IsFirstPerson)
 		FirstPersonCharacterMesh->SetVisibility(false);
 		FollowCamera->SetActive(true);
 		FirstPersonCamera->SetActive(false);
-		GetCharacterMovement()->MaxWalkSpeed = CharacterDefaultWalkSpeed;
 
 		FlashLight->SetWorldTransform(RifleComp->GetSocketTransform(FName("Flashlight")));
 		FlashLight->AttachToComponent(RifleComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("Flashlight"));
@@ -3633,7 +3638,6 @@ void APlayerCharacter::SetFirstPersonModePistol(const bool IsFirstPerson)
 		FirstPersonCharacterMesh->SetVisibility(false);
 		FollowCamera->SetActive(true);
 		FirstPersonCamera->SetActive(false);
-		GetCharacterMovement()->MaxWalkSpeed = CharacterDefaultWalkSpeed;
 
 		FlashLight->SetWorldTransform(PistolComp->GetSocketTransform(FName("Flashlight")));
 		FlashLight->AttachToComponent(PistolComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("Flashlight"));
@@ -3644,7 +3648,7 @@ void APlayerCharacter::EquipArmorInventorySlot(const bool IsEquipping, const flo
 {
 	if (IsEquipping)
 	{
-		if(HasAuthority())
+		if (HasAuthority())
 		{
 			Stat->AddMaxHp(EquipGearStat);
 		}
@@ -3653,7 +3657,7 @@ void APlayerCharacter::EquipArmorInventorySlot(const bool IsEquipping, const flo
 	}
 	else
 	{
-		if(HasAuthority())
+		if (HasAuthority())
 		{
 			Stat->SubtractMaxHp(EquipGearStat);
 		}
@@ -3680,7 +3684,7 @@ void APlayerCharacter::EquipGoggleInventorySlot(const bool IsEquipping, const fl
 {
 	if (IsEquipping)
 	{
-		if(HasAuthority())
+		if (HasAuthority())
 		{
 			Stat->RecoilStatMultiplier = EquipGearStat;
 		}
@@ -3689,7 +3693,7 @@ void APlayerCharacter::EquipGoggleInventorySlot(const bool IsEquipping, const fl
 	}
 	else
 	{
-		if(HasAuthority())
+		if (HasAuthority())
 		{
 			Stat->RecoilStatMultiplier = EquipGearStat;
 		}
@@ -3702,7 +3706,7 @@ void APlayerCharacter::EquipHeadsetInventorySlot(const bool IsEquipping, const f
 {
 	if (IsEquipping)
 	{
-		if(HasAuthority())
+		if (HasAuthority())
 		{
 			Stat->DamageStatMultiplier = EquipGearStat;
 		}
@@ -3711,7 +3715,7 @@ void APlayerCharacter::EquipHeadsetInventorySlot(const bool IsEquipping, const f
 	}
 	else
 	{
-		if(HasAuthority())
+		if (HasAuthority())
 		{
 			Stat->DamageStatMultiplier = EquipGearStat;
 		}
@@ -3724,7 +3728,7 @@ void APlayerCharacter::EquipMaskInventorySlot(const bool IsEquipping, const floa
 {
 	if (IsEquipping)
 	{
-		if(HasAuthority())
+		if (HasAuthority())
 		{
 			Stat->FireIntervalStatMultiplier = EquipGearStat;
 		}
@@ -3733,7 +3737,7 @@ void APlayerCharacter::EquipMaskInventorySlot(const bool IsEquipping, const floa
 	}
 	else
 	{
-		if(HasAuthority())
+		if (HasAuthority())
 		{
 			Stat->FireIntervalStatMultiplier = EquipGearStat;
 		}

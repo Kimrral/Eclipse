@@ -19,6 +19,11 @@ void UPlayerAnim::AnimNotify_ReloadStart() const
 {
 	GetWorld()->GetTimerManager().ClearTimer(me->ShootEnableHandle);
 	me->CanShoot = false;
+	FTimerHandle TimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()-> void
+	{
+		me->CanShoot = true;
+	}), 2.3f, false);
 }
 
 void UPlayerAnim::AnimNotify_ReloadEnd() const
@@ -75,7 +80,6 @@ void UPlayerAnim::AnimNotify_ReloadEnd() const
 			me->curM249Ammo += (100  - me->curM249Ammo);
 		}
 	}
-	me->CanShoot = true;
 }
 
 

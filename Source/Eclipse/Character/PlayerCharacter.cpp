@@ -2694,7 +2694,7 @@ bool APlayerCharacter::ServerRPCReload_Validate()
 void APlayerCharacter::MoveToIsolatedShip()
 {
 	MoveToAnotherLevel();
-	bHideout = false;
+	bHideout = false;	
 
 	FTimerHandle TimerHandle;
 	GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()-> void
@@ -2993,8 +2993,9 @@ void APlayerCharacter::OnSpacecraftStreamingLevelLoadFinished()
 
 void APlayerCharacter::OnSpacecraftStreamingLevelLoadFinishedServer_Implementation()
 {
+	bSpacecraft = true;
 	IsPlayerDeadImmediately = false;
-	ChoosePlayerStartByTagName(FName("Spacecraft"), 1000);
+	ChoosePlayerStartByTagName(FName("Spacecraft"), 50);
 }
 
 void APlayerCharacter::OnIntersectionStreamingLevelLoadFinished()
@@ -3029,6 +3030,7 @@ void APlayerCharacter::OnIntersectionStreamingLevelLoadFinished()
 
 void APlayerCharacter::OnIntersectionStreamingLevelLoadFinishedServer_Implementation()
 {
+	bSpacecraft = false;
 	IsPlayerDeadImmediately = false;
 	ChoosePlayerStartByTagName(FName("Intersection"), 3000);
 }
@@ -3065,9 +3067,10 @@ void APlayerCharacter::OnHideoutStreamingLevelLoadFinished()
 
 void APlayerCharacter::OnHideoutStreamingLevelLoadFinishedServer_Implementation()
 {
+	bSpacecraft = false;
 	IsPlayerDeadImmediately = false;
 	Stat->SetHp(Stat->GetMaxHp());
-	ChoosePlayerStartByTagName(FName("Hideout"), 100);
+	ChoosePlayerStartByTagName(FName("Hideout"), 50);
 	OnHideoutStreamingLevelLoadFinishedMulticast();
 }
 
@@ -3836,19 +3839,22 @@ void APlayerCharacter::ProcessRifleFire()
 		// Perform Linetrace
 		if (FHitResult RifleHitResult; GetWorld()->LineTraceSingleByChannel(RifleHitResult, RifleLineTraceStart, RifleLineTraceEnd, ECC_Visibility, Params))
 		{
-			// Player Character Casting
-			// 플레이어 적중
-			if (APlayerCharacter* Player = Cast<APlayerCharacter>(RifleHitResult.GetActor()))
+			if(!bSpacecraft)
 			{
-				if (RifleHitResult.BoneName == FName("head"))
+				// Player Character Casting
+				// 플레이어 적중
+				if (APlayerCharacter* Player = Cast<APlayerCharacter>(RifleHitResult.GetActor()))
 				{
-					OnPlayerHit(RifleHitResult, Player, true);
+					if (RifleHitResult.BoneName == FName("head"))
+					{
+						OnPlayerHit(RifleHitResult, Player, true);
+					}
+					else
+					{
+						OnPlayerHit(RifleHitResult, Player, false);
+					}
+					return;
 				}
-				else
-				{
-					OnPlayerHit(RifleHitResult, Player, false);
-				}
-				return;
 			}
 			// Enemy Casting
 			if (AEnemy* Enemy = Cast<AEnemy>(RifleHitResult.GetActor()))
@@ -3891,19 +3897,22 @@ void APlayerCharacter::ProcessSniperFire()
 		// 라인 트레이스가 적중했다면
 		if (FHitResult SniperHitResult; GetWorld()->LineTraceSingleByChannel(SniperHitResult, StartLoc, EndLoc, ECC_Visibility, params))
 		{
-			// Player Character Casting
-			// 플레이어 적중
-			if (APlayerCharacter* Player = Cast<APlayerCharacter>(SniperHitResult.GetActor()))
+			if(!bSpacecraft)
 			{
-				if (SniperHitResult.BoneName == FName("head"))
+				// Player Character Casting
+				// 플레이어 적중
+				if (APlayerCharacter* Player = Cast<APlayerCharacter>(SniperHitResult.GetActor()))
 				{
-					OnPlayerHit(SniperHitResult, Player, true);
+					if (SniperHitResult.BoneName == FName("head"))
+					{
+						OnPlayerHit(SniperHitResult, Player, true);
+					}
+					else
+					{
+						OnPlayerHit(SniperHitResult, Player, false);
+					}
+					return;
 				}
-				else
-				{
-					OnPlayerHit(SniperHitResult, Player, false);
-				}
-				return;
 			}
 			// Enemy Casting
 			if (AEnemy* Enemy = Cast<AEnemy>(SniperHitResult.GetActor()))
@@ -3991,19 +4000,22 @@ void APlayerCharacter::ProcessPistolFire()
 		// Perform Linetrace
 		if (FHitResult PistolHitResult; GetWorld()->LineTraceSingleByChannel(PistolHitResult, PistolLineTraceStart, PistolLineTraceEnd, ECC_Visibility, Params))
 		{
-			// Player Character Casting
-			// 플레이어 적중
-			if (APlayerCharacter* Player = Cast<APlayerCharacter>(PistolHitResult.GetActor()))
+			if(!bSpacecraft)
 			{
-				if (PistolHitResult.BoneName == FName("head"))
+				// Player Character Casting
+				// 플레이어 적중
+				if (APlayerCharacter* Player = Cast<APlayerCharacter>(PistolHitResult.GetActor()))
 				{
-					OnPlayerHit(PistolHitResult, Player, true);
+					if (PistolHitResult.BoneName == FName("head"))
+					{
+						OnPlayerHit(PistolHitResult, Player, true);
+					}
+					else
+					{
+						OnPlayerHit(PistolHitResult, Player, false);
+					}
+					return;
 				}
-				else
-				{
-					OnPlayerHit(PistolHitResult, Player, false);
-				}
-				return;
 			}
 			// Enemy Casting
 			if (AEnemy* Enemy = Cast<AEnemy>(PistolHitResult.GetActor()))
@@ -4091,19 +4103,22 @@ void APlayerCharacter::ProcessM249Fire()
 		// Perform Linetrace
 		if (FHitResult M249HitResult; GetWorld()->LineTraceSingleByChannel(M249HitResult, StartLoc, EndLoc, ECC_Visibility, params))
 		{
-			// Player Character Casting
-			// 플레이어 적중
-			if (APlayerCharacter* Player = Cast<APlayerCharacter>(M249HitResult.GetActor()))
+			if(!bSpacecraft)
 			{
-				if (M249HitResult.BoneName == FName("head"))
+				// Player Character Casting
+				// 플레이어 적중
+				if (APlayerCharacter* Player = Cast<APlayerCharacter>(M249HitResult.GetActor()))
 				{
-					OnPlayerHit(M249HitResult, Player, true);
+					if (M249HitResult.BoneName == FName("head"))
+					{
+						OnPlayerHit(M249HitResult, Player, true);
+					}
+					else
+					{
+						OnPlayerHit(M249HitResult, Player, false);
+					}
+					return;
 				}
-				else
-				{
-					OnPlayerHit(M249HitResult, Player, false);
-				}
-				return;
 			}
 			// Enemy Casting
 			if (AEnemy* Enemy = Cast<AEnemy>(M249HitResult.GetActor()))

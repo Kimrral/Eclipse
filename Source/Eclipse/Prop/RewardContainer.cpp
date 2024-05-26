@@ -38,7 +38,7 @@ void ARewardContainer::BeginPlay()
 {
 	Super::BeginPlay();
 
-	ContainerMesh->SetRenderCustomDepth(false);
+	ContainerMesh->SetRenderCustomDepth(true);
 	ContainerMesh->SetSimulatePhysics(true);
 }
 

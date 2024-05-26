@@ -6,8 +6,18 @@
 #include "GuardianProjectile.h"
 #include "Eclipse/AI/EnemyFSM.h"
 #include "Eclipse/Character/PlayerCharacter.h"
+#include "Eclipse/Item/RewardManagerComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
+
+void AGuardian::OnDestroy()
+{
+	if (HasAuthority())
+	{
+		RewardManager->DropRewardServer(GetActorTransform());
+		SetLifeSpan(30.f);
+	}
+}
 
 void AGuardian::FireProcess() const
 {

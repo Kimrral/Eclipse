@@ -1211,6 +1211,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bHideout = true;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	bool bSpacecraft = false;
 
 	UPROPERTY()
 	class AEclipsePlayerController* PC;

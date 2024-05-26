@@ -68,6 +68,7 @@
 #include "Eclipse/Prop/Trader.h"
 #include "Eclipse/UI/ExtractionCountdown.h"
 #include "Eclipse/UI/MenuWidget.h"
+#include "Eclipse/UI/TabWidget.h"
 #include "Eclipse/UI/TradeWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -1380,15 +1381,18 @@ void APlayerCharacter::Tab()
 
 void APlayerCharacter::OpenMenu()
 {
-	if (MenuWidgetUI && !MenuWidgetUI->IsInViewport())
+	if(MenuWidgetUI)
 	{
-		UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(PC, MenuWidgetUI);
-		PC->SetShowMouseCursor(true);
-		MenuWidgetUI->AddToViewport();
-	}
-	else
-	{
-		MenuWidgetUI->CloseWidgetFunc();
+		if (!MenuWidgetUI->IsInViewport())
+		{
+			UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(PC, MenuWidgetUI);
+			PC->SetShowMouseCursor(true);
+			MenuWidgetUI->AddToViewport();
+		}
+		else
+		{
+			MenuWidgetUI->CloseWidgetFunc();		
+		}
 	}
 }
 

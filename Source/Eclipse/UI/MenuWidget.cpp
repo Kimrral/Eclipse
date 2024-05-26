@@ -63,16 +63,7 @@ void UMenuWidget::ReturnToHideoutYesFunc()
 
 void UMenuWidget::ReturnToHideoutNoFunc()
 {
-	//Cancel Level Selection
-	UGameplayStatics::PlaySound2D(GetWorld(), QuitSound);
-	WidgetSwitcher_Menu->SetActiveWidgetIndex(0);
-	PlayAnimation(MenuStart);
-	FTimerHandle CursorHandle;
-	GetWorld()->GetTimerManager().SetTimer(CursorHandle, FTimerDelegate::CreateLambda([this]()-> void
-	{
-		pc->SetShowMouseCursor(true);
-		UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(pc, this);
-	}), 1.f, false);
+	CloseWidgetFunc();
 }
 
 void UMenuWidget::SelectExitGameFunc()
@@ -95,16 +86,19 @@ void UMenuWidget::SelectExitGameYesFunc()
 
 void UMenuWidget::SelectExitGameNoFunc()
 {
-	//Cancel Level Selection
-	UGameplayStatics::PlaySound2D(GetWorld(), QuitSound);
-	WidgetSwitcher_Menu->SetActiveWidgetIndex(0);
-	PlayAnimation(MenuStart);
-	FTimerHandle CursorHandle;
-	GetWorld()->GetTimerManager().SetTimer(CursorHandle, FTimerDelegate::CreateLambda([this]()-> void
+	CloseWidgetFunc();
+}
+
+void UMenuWidget::ShowKeyGuide()
+{
+	PlayAnimation(MenuEnd);
+	FTimerHandle EndHandle;
+	GetWorld()->GetTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
-		pc->SetShowMouseCursor(true);
-		UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(pc, this);
-	}), 1.f, false);
+		UGameplayStatics::PlaySound2D(GetWorld(), AskSound);
+		WidgetSwitcher_Menu->SetActiveWidgetIndex(3);
+		PlayAnimation(GuideStart);
+	}), 0.75f, false);
 }
 
 void UMenuWidget::CloseWidgetFunc()

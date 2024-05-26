@@ -23,7 +23,7 @@ public:
 	class UButton* Btn_ReturnToHideout;
 	
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
-	class UButton* btn_Settings;
+	class UButton* btn_KeyGuide;
 	
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UButton* btn_QuitGame;
@@ -38,7 +38,10 @@ public:
 	class UWidgetAnimation* HideOutSelectionStart;
 
 	UPROPERTY(BlueprintReadWrite, Transient, meta = (BindWidgetAnim))
-	class UWidgetAnimation* QuitSelectionStart;	
+	class UWidgetAnimation* QuitSelectionStart;
+	
+	UPROPERTY(BlueprintReadWrite, Transient, meta = (BindWidgetAnim))
+	class UWidgetAnimation* GuideStart;	
 
 	UPROPERTY()
 	class AEclipsePlayerController* pc;
@@ -78,6 +81,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SelectExitGameNoFunc();
+
+	UFUNCTION(BlueprintCallable)
+	void ShowKeyGuide();
 
 	UFUNCTION()
 	void CloseWidgetFunc();

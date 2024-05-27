@@ -2923,21 +2923,13 @@ void APlayerCharacter::OnRep_WeaponArrayChanged()
 	WeaponChangeDele.Broadcast();
 	if (!HasAuthority())
 	{
-		if (weaponArray[0] == true)
+		for (int32 i = 0; i < weaponArray.Num(); ++i)
 		{
-			ModifyFlashlightAttachment(0);
-		}
-		else if (weaponArray[1] == true)
-		{
-			ModifyFlashlightAttachment(1);
-		}
-		else if (weaponArray[2] == true)
-		{
-			ModifyFlashlightAttachment(2);
-		}
-		else if (weaponArray[3] == true)
-		{
-			ModifyFlashlightAttachment(3);
+			if (weaponArray[i] == true)
+			{
+				ModifyFlashlightAttachment(i);
+				return;
+			}
 		}
 	}
 }
@@ -3122,29 +3114,30 @@ void APlayerCharacter::ToggleFlashlightMulticast_Implementation()
 
 void APlayerCharacter::ModifyFlashlightAttachment(const int32 WeaponNum) const
 {
+	const FName SocketName = TEXT("Flashlight");
 	if (WeaponNum == 0)
 	{
-		FlashLight->SetWorldTransform(RifleComp->GetSocketTransform(FName("Flashlight")));
+		FlashLight->SetWorldTransform(RifleComp->GetSocketTransform(SocketName));
 		if (!RifleComp->IsRegistered()) RifleComp->RegisterComponent();
-		FlashLight->AttachToComponent(RifleComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("Flashlight"));
+		FlashLight->AttachToComponent(RifleComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, SocketName);
 	}
 	else if (WeaponNum == 1)
 	{
-		FlashLight->SetWorldTransform(SniperComp->GetSocketTransform(FName("Flashlight")));
+		FlashLight->SetWorldTransform(SniperComp->GetSocketTransform(SocketName));
 		if (!SniperComp->IsRegistered()) SniperComp->RegisterComponent();
-		FlashLight->AttachToComponent(SniperComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("Flashlight"));
+		FlashLight->AttachToComponent(SniperComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, SocketName);
 	}
 	else if (WeaponNum == 2)
 	{
-		FlashLight->SetWorldTransform(PistolComp->GetSocketTransform(FName("Flashlight")));
+		FlashLight->SetWorldTransform(PistolComp->GetSocketTransform(SocketName));
 		if (!PistolComp->IsRegistered()) PistolComp->RegisterComponent();
-		FlashLight->AttachToComponent(PistolComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("Flashlight"));
+		FlashLight->AttachToComponent(PistolComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, SocketName);
 	}
 	else if (WeaponNum == 3)
 	{
-		FlashLight->SetWorldTransform(M249Comp->GetSocketTransform(FName("Flashlight")));
+		FlashLight->SetWorldTransform(M249Comp->GetSocketTransform(SocketName));
 		if (!M249Comp->IsRegistered()) M249Comp->RegisterComponent();
-		FlashLight->AttachToComponent(M249Comp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("Flashlight"));
+		FlashLight->AttachToComponent(M249Comp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, SocketName);
 	}
 }
 

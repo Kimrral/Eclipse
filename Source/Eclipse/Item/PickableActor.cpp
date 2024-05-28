@@ -25,6 +25,11 @@ APickableActor::APickableActor()
 	bReplicates=true;
 }
 
+void APickableActor::SetSimulateDisabled()
+{
+	RootMesh->SetSimulatePhysics(false);
+}
+
 void APickableActor::AddToInventory(APlayerCharacter* PlayerCharacter) const
 {
 	if(PlayerCharacter)
@@ -41,6 +46,8 @@ void APickableActor::BeginPlay()
 	Super::BeginPlay();
 
 	RootMesh->SetRenderCustomDepth(true);
+	FTimerHandle TimerHandle;
+	GetWorldTimerManager().SetTimer(TimerHandle, this, &APickableActor::SetSimulateDisabled, 10.f, false);
 }
 
 

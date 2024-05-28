@@ -15,6 +15,9 @@ class ECLIPSE_API APickableActor : public AActor
 public:	
 	// Sets default values for this actor's properties
 	APickableActor();
+
+	UFUNCTION()
+	void SetSimulateDisabled();
 	
 	UFUNCTION()
 	virtual void AddToInventory(APlayerCharacter* PlayerCharacter) const;

@@ -16,14 +16,28 @@ class ECLIPSE_API AEclipseAIController : public AAIController
 	GENERATED_BODY()
 
 public:
-	virtual void OnPossess(APawn* InPawn) override;
-	virtual void OnUnPossess() override;
+	AEclipseAIController();
+	
 	void RandomMove();
 	void MoveToPlayer(const AActor* TargetPlayer);
 	void MoveToLocation(const FVector& TargetLocation);
+
+	void RunAI();
+	void StopAI() const;
 
 	FOnRandomMoveBegin AIControllerRandMoveDelegate;
 
 	FTimerHandle RepeatTimerHandle;
 	float RepeatInterval = 15.0f;
+
+protected:
+	virtual void OnPossess(APawn* InPawn) override;
+	virtual void OnUnPossess() override;
+
+private:
+	UPROPERTY()
+	TObjectPtr<class UBlackboardData> ECBlackboard;
+
+	UPROPERTY()
+	TObjectPtr<class UBehaviorTree> ECBehaviorTree;
 };

@@ -3,10 +3,14 @@
 
 #include "Eclipse/AI/EclipseAIController.h"
 
+#include "BehaviorTree/BehaviorTree.h"
+#include "BehaviorTree/BlackboardData.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "EnemyFSM.h"
 #include "NavigationSystem.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
+#include "EclipseAI.h"
 #include "Eclipse/Enemy/Enemy.h"
 
 AEclipseAIController::AEclipseAIController()
@@ -16,7 +20,7 @@ AEclipseAIController::AEclipseAIController()
 	{
 		ECBlackboard = BlackBoardAssetRef.Object;
 	}
-
+	
 	static ConstructorHelpers::FObjectFinder<UBehaviorTree> BehaviorTreeAssetRef(TEXT("/Script/AIModule.BehaviorTree'/Game/KHJContent/AI/BT_Enemy.BT_Enemy'"));
 	if (nullptr != BehaviorTreeAssetRef.Object)
 	{
@@ -51,6 +55,8 @@ void AEclipseAIController::RunAI()
 {
 	if (UBlackboardComponent* BlackboardPtr = Blackboard.Get(); UseBlackboard(ECBlackboard, BlackboardPtr))
 	{
+		Blackboard->SetValueAsVector(BBKEY_INITIALPOS, GetPawn()->GetActorLocation());
+		
 		RunBehaviorTree(ECBehaviorTree);
 	}
 }
@@ -67,22 +73,25 @@ void AEclipseAIController::RandomMove()
 {
 	if (const auto Enemy = Cast<AEnemy>(GetPawn()))
 	{
-		if (Enemy->EnemyFSM->State == EEnemyState::IDLE)
+		if(::IsValid(Enemy))
 		{
-			// 월드의 내비게이션 시스템을 가져온다
-			const UNavigationSystemV1* NavSystem = UNavigationSystemV1::GetNavigationSystem(GetWorld());
-
-			if (NavSystem == nullptr)
-				return;
-
-			// 월드의 내비게이션 범위중 원점(첫번째 매개변수)을 기준으로 반지름 만큼의 범위를 한정지어
-			// 랜덤한 좌표를 가져온다(RandomLocation에 저장됨)
-			if (FNavLocation RandomLocation; NavSystem->GetRandomPointInNavigableRadius(Enemy->GetActorLocation(), 1500.f, RandomLocation))
+			if (Enemy->EnemyFSM->State == EEnemyState::IDLE)
 			{
-				UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, RandomLocation);
-				AIControllerRandMoveDelegate.ExecuteIfBound(RandomLocation);
+				// 월드의 내비게이션 시스템을 가져온다
+				const UNavigationSystemV1* NavSystem = UNavigationSystemV1::GetNavigationSystem(GetWorld());
+
+				if (NavSystem == nullptr)
+					return;
+
+				// 월드의 내비게이션 범위중 원점(첫번째 매개변수)을 기준으로 반지름 만큼의 범위를 한정지어
+				// 랜덤한 좌표를 가져온다(RandomLocation에 저장됨)
+				if (FNavLocation RandomLocation; NavSystem->GetRandomPointInNavigableRadius(Enemy->GetActorLocation(), 1500.f, RandomLocation))
+				{
+					UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, RandomLocation);
+					AIControllerRandMoveDelegate.ExecuteIfBound(RandomLocation);
+				}
 			}
-		}
+		}		
 	}
 }
 

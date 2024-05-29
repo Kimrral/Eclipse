@@ -35,9 +35,9 @@ protected:
 	virtual void OnUnPossess() override;
 
 private:
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	TObjectPtr<class UBlackboardData> ECBlackboard;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	TObjectPtr<class UBehaviorTree> ECBehaviorTree;
 };

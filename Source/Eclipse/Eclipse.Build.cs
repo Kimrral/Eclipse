@@ -10,6 +10,6 @@ public class Eclipse : ModuleRules
 		MinFilesUsingPrecompiledHeaderOverride = 1;
 		bUseUnity = false;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "AdvancedWidgets", "SlateCore", "GeometryCollectionEngine", "AIModule", "NavigationSystem"});
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "AdvancedWidgets", "SlateCore", "GeometryCollectionEngine", "AIModule", "NavigationSystem", "GameplayTasks"});
 	}
 }

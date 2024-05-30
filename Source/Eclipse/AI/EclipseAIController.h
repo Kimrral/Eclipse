@@ -15,15 +15,10 @@ class ECLIPSE_API AEclipseAIController : public AAIController
 {
 	GENERATED_BODY()
 
-public:
-	AEclipseAIController();
-	
+public:	
 	void RandomMove();
 	void MoveToPlayer(const AActor* TargetPlayer);
 	void MoveToLocation(const FVector& TargetLocation);
-
-	void RunAI();
-	void StopAI() const;
 
 	FOnRandomMoveBegin AIControllerRandMoveDelegate;
 
@@ -34,10 +29,4 @@ protected:
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void OnUnPossess() override;
 
-private:
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<class UBlackboardData> ECBlackboard;
-
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<class UBehaviorTree> ECBehaviorTree;
 };

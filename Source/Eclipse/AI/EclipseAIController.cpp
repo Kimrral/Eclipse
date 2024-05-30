@@ -3,30 +3,10 @@
 
 #include "Eclipse/AI/EclipseAIController.h"
 
-#include "BehaviorTree/BehaviorTree.h"
-#include "BehaviorTree/BlackboardData.h"
-#include "BehaviorTree/BlackboardComponent.h"
 #include "EnemyFSM.h"
 #include "NavigationSystem.h"
-#include "BehaviorTree/BehaviorTreeComponent.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
-#include "EclipseAI.h"
 #include "Eclipse/Enemy/Enemy.h"
-
-AEclipseAIController::AEclipseAIController()
-{
-	static ConstructorHelpers::FObjectFinder<UBlackboardData> BlackBoardAssetRef(TEXT("/Script/AIModule.BlackboardData'/Game/KHJContent/AI/BB_Enemy.BB_Enemy'"));
-	if (nullptr != BlackBoardAssetRef.Object)
-	{
-		ECBlackboard = BlackBoardAssetRef.Object;
-	}
-	
-	static ConstructorHelpers::FObjectFinder<UBehaviorTree> BehaviorTreeAssetRef(TEXT("/Script/AIModule.BehaviorTree'/Game/KHJContent/AI/BT_Enemy.BT_Enemy'"));
-	if (nullptr != BehaviorTreeAssetRef.Object)
-	{
-		ECBehaviorTree = BehaviorTreeAssetRef.Object;
-	}
-}
 
 
 void AEclipseAIController::OnPossess(APawn* InPawn)
@@ -49,24 +29,6 @@ void AEclipseAIController::OnUnPossess()
 	Super::OnUnPossess();
 
 	GetWorld()->GetTimerManager().ClearTimer(RepeatTimerHandle);
-}
-
-void AEclipseAIController::RunAI()
-{
-	if (UBlackboardComponent* BlackboardPtr = Blackboard.Get(); UseBlackboard(ECBlackboard, BlackboardPtr))
-	{
-		Blackboard->SetValueAsVector(BBKEY_INITIALPOS, GetPawn()->GetActorLocation());
-		
-		RunBehaviorTree(ECBehaviorTree);
-	}
-}
-
-void AEclipseAIController::StopAI() const
-{
-	if (UBehaviorTreeComponent* BehaviorTreeComponent = Cast<UBehaviorTreeComponent>(BrainComponent))
-	{
-		BehaviorTreeComponent->StopTree();
-	}
 }
 
 void AEclipseAIController::RandomMove()

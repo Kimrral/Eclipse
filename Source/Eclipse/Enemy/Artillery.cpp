@@ -12,6 +12,9 @@
 
 AArtillery::AArtillery()
 {
+	// Enemy FSM
+	EnemyFSM = CreateDefaultSubobject<UEnemyFSM>(TEXT("EnemyFSM"));
+	
 	LauncherComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("LauncherComp"));
 	LauncherComp->SetupAttachment(GetMesh(), FName("hand_r"));
 }

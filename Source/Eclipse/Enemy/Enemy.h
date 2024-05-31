@@ -80,6 +80,9 @@ public:
 	void OnShieldDestroy();
 
 	UFUNCTION()
+	virtual void SetAIController();
+
+	UFUNCTION()
 	virtual void OnDestroy();
 
 	UFUNCTION(Server, Reliable)

@@ -3,10 +3,14 @@
 
 #include "Eclipse/Enemy/Shadow.h"
 
+#include "Eclipse/AI/EnemyFSM.h"
 #include "Kismet/KismetMathLibrary.h"
 
 AShadow::AShadow()
 {
+	// Enemy FSM
+	EnemyFSM = CreateDefaultSubobject<UEnemyFSM>(TEXT("EnemyFSM"));
+	
 	WeaponComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponComp"));
 	WeaponComp->SetupAttachment(GetMesh(), FName("hand_r"));
 }

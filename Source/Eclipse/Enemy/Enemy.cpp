@@ -30,13 +30,8 @@ AEnemy::AEnemy()
 	RewardManager = CreateDefaultSubobject<URewardManagerComponent>(TEXT("RewardManagerComponent"));
 	// Stat Component 
 	EnemyStat = CreateDefaultSubobject<UEnemyCharacterStatComponent>(TEXT("Stat"));
-	// Enemy FSM
-	EnemyFSM = CreateDefaultSubobject<UEnemyFSM>(TEXT("enemyFSM"));
-	
-	
-	// AI Controller
-	AIControllerClass = AEclipseAIController::StaticClass();
-	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
+	AEnemy::SetAIController();
 
 	GetCharacterMovement()->bUseControllerDesiredRotation = true;
 	
@@ -80,8 +75,11 @@ void AEnemy::OnDie()
 {
 	StopAnimMontage();
 	EnemyStat->IsStunned = false;
-	EnemyFSM->Timeline.Stop();
-	EnemyFSM->SetComponentTickEnabled(false);
+	if(::IsValid(EnemyFSM))
+	{
+		EnemyFSM->Timeline.Stop();
+		EnemyFSM->SetComponentTickEnabled(false);
+	}
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GetCharacterMovement()->SetMovementMode(MOVE_None);
 	GetCharacterMovement()->Deactivate();
@@ -97,14 +95,14 @@ void AEnemy::OnPawnDetected(APawn* Pawn)
 {
 	if (APlayerCharacter* DetectedPawn = Cast<APlayerCharacter>(Pawn))
 	{
-		if (EnemyFSM->Player == nullptr)
+		if (EnemyFSM && EnemyFSM->Player == nullptr)
 		{
 			EnemyFSM->Player = DetectedPawn;
 		}
-	}
-	bPlayerInSight=true;
-	FTimerHandle TimerHandle;
-	GetWorldTimerManager().SetTimer(TimerHandle, this, &AEnemy::ResetPawnDetection, 1.f, false);	
+		bPlayerInSight=true;
+		FTimerHandle TimerHandle;
+		GetWorldTimerManager().SetTimer(TimerHandle, this, &AEnemy::ResetPawnDetection, 1.f, false);	
+	}	
 }
 
 void AEnemy::ResetPawnDetection()
@@ -156,30 +154,44 @@ void AEnemy::ResetOverlayMaterial() const
 
 void AEnemy::OnShieldDestroy()
 {
-	EnemyStat->IsShieldBroken = true;
-	EnemyStat->IsStunned = true;
-	UGameplayStatics::PlaySoundAtLocation(GetWorld(), EnemyFSM->ShieldBreakSound, GetActorLocation(), FRotator::ZeroRotator);
-	FTransform EmitterTrans = GetMesh()->GetSocketTransform(FName("ShieldSocket"));
-	EmitterTrans.SetScale3D(FVector(4));
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), EnemyFSM->ShieldBreakEmitter, EmitterTrans);
-	// 움직임 즉시 중단
-	GetCharacterMovement()->StopMovementImmediately();
-	// Movement Mode = None [움직임 차단]
-	GetCharacterMovement()->SetMovementMode(MOVE_None);
-	StopAnimMontage();
-	PlayAnimMontage(StunMontage, 1, FName("StunStart"));
-	GetWorld()->GetTimerManager().SetTimer(StunHandle, FTimerDelegate::CreateLambda([this]()-> void
+	if(::IsValid(EnemyStat))
 	{
-		EnemyStat->IsStunned = false;
+		EnemyStat->IsShieldBroken = true;
+		EnemyStat->IsStunned = true;
+		if(::IsValid(EnemyFSM))
+		{
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), EnemyFSM->ShieldBreakSound, GetActorLocation(), FRotator::ZeroRotator);
+			FTransform EmitterTrans = GetMesh()->GetSocketTransform(FName("ShieldSocket"));
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), EnemyFSM->ShieldBreakEmitter, EmitterTrans);
+			EmitterTrans.SetScale3D(FVector(4));
+		}
+		// 움직임 즉시 중단
+		GetCharacterMovement()->StopMovementImmediately();
+		// Movement Mode = None [움직임 차단]
+		GetCharacterMovement()->SetMovementMode(MOVE_None);
 		StopAnimMontage();
-		// Movement Mode = Walking [움직임 재개]
-		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-		// Shield 회복
-		EnemyStat->SetShield(EnemyStat->GetMaxShield());
-		EnemyStat->IsShieldBroken = false;
-		EnemyFSM->SetState(EEnemyState::MOVE);
-	}), 7.0f, false);
+		PlayAnimMontage(StunMontage, 1, FName("StunStart"));
+		GetWorld()->GetTimerManager().SetTimer(StunHandle, FTimerDelegate::CreateLambda([this]()-> void
+		{
+			EnemyStat->IsStunned = false;
+			StopAnimMontage();
+			// Movement Mode = Walking [움직임 재개]
+			GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+			// Shield 회복
+			EnemyStat->SetShield(EnemyStat->GetMaxShield());
+			EnemyStat->IsShieldBroken = false;
+			if(::IsValid(EnemyFSM)) EnemyFSM->SetState(EEnemyState::MOVE);
+		}), 7.0f, false);
+	}
 }
+
+void AEnemy::SetAIController()
+{
+	// AI Controller
+	AIControllerClass = AEclipseAIController::StaticClass();
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+}
+
 
 void AEnemy::OnDestroy()
 {

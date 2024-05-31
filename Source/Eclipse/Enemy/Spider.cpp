@@ -3,8 +3,15 @@
 
 #include "Eclipse/Enemy/Spider.h"
 
+#include "Eclipse/AI/EnemyFSM.h"
 #include "Eclipse/Item/PoisonOfSpider.h"
 
+
+ASpider::ASpider()
+{
+	// Enemy FSM
+	EnemyFSM = CreateDefaultSubobject<UEnemyFSM>(TEXT("EnemyFSM"));
+}
 
 void ASpider::BeginPlay()
 {

@@ -15,6 +15,8 @@ class ECLIPSE_API ACrunch : public AEnemy
 	GENERATED_BODY()
 
 public:
+	ACrunch();
+	
 	virtual void OnDestroy() override;
 	
 	virtual void SetDissolveMaterial() override;

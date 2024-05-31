@@ -3,12 +3,19 @@
 
 #include "Crunch.h"
 
+#include "Eclipse/AI/EnemyFSM.h"
 #include "Eclipse/Item/RewardManagerComponent.h"
 
 
 void ACrunch::SetDissolveValue(float Value)
 {
 	return;
+}
+
+ACrunch::ACrunch()
+{
+	// Enemy FSM
+	EnemyFSM = CreateDefaultSubobject<UEnemyFSM>(TEXT("EnemyFSM"));
 }
 
 void ACrunch::OnDestroy()

@@ -11,6 +11,9 @@
 
 ATrooper::ATrooper()
 {
+	// Enemy FSM
+	EnemyFSM = CreateDefaultSubobject<UEnemyFSM>(TEXT("EnemyFSM"));
+	
 	WeaponComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponComp"));
 	WeaponComp->SetupAttachment(GetMesh(), FName("hand_r"));
 }

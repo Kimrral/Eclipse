@@ -23,7 +23,7 @@ AEnemy::AEnemy()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = false;
-	
+
 	// Pawn Sensor
 	PawnSensingComponent = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComponent"));
 	// Reward Manager
@@ -34,7 +34,7 @@ AEnemy::AEnemy()
 	AEnemy::SetAIController();
 
 	GetCharacterMovement()->bUseControllerDesiredRotation = true;
-	
+
 	SetReplicates(true);
 }
 
@@ -75,7 +75,7 @@ void AEnemy::OnDie()
 {
 	StopAnimMontage();
 	EnemyStat->IsStunned = false;
-	if(::IsValid(EnemyFSM))
+	if (::IsValid(EnemyFSM))
 	{
 		EnemyFSM->Timeline.Stop();
 		EnemyFSM->SetComponentTickEnabled(false);
@@ -99,15 +99,15 @@ void AEnemy::OnPawnDetected(APawn* Pawn)
 		{
 			EnemyFSM->Player = DetectedPawn;
 		}
-		bPlayerInSight=true;
+		bPlayerInSight = true;
 		FTimerHandle TimerHandle;
-		GetWorldTimerManager().SetTimer(TimerHandle, this, &AEnemy::ResetPawnDetection, 1.f, false);	
-	}	
+		GetWorldTimerManager().SetTimer(TimerHandle, this, &AEnemy::ResetPawnDetection, 1.f, false);
+	}
 }
 
 void AEnemy::ResetPawnDetection()
 {
-	bPlayerInSight=false;
+	bPlayerInSight = false;
 }
 
 void AEnemy::Damaged(const int Damage, AActor* DamageCauser)
@@ -128,7 +128,7 @@ bool AEnemy::DamagedRPCServer_Validate(int Damage, AActor* DamageCauser)
 
 void AEnemy::DamagedRPCMulticast_Implementation(int Damage, AActor* DamageCauser)
 {
-	if(!HasAuthority())
+	if (!HasAuthority())
 	{
 		if (EnemyStat->IsShieldBroken)
 		{
@@ -142,7 +142,7 @@ void AEnemy::DamagedRPCMulticast_Implementation(int Damage, AActor* DamageCauser
 			FTimerHandle OverlayMatHandle;
 			GetMesh()->SetOverlayMaterial(HitOverlayMatShield);
 			GetWorldTimerManager().ClearTimer(OverlayMatHandle);
-			GetWorldTimerManager().SetTimer(OverlayMatHandle, this, &AEnemy::ResetOverlayMaterial, 0.3f, false);		
+			GetWorldTimerManager().SetTimer(OverlayMatHandle, this, &AEnemy::ResetOverlayMaterial, 0.3f, false);
 		}
 	}
 }
@@ -154,17 +154,16 @@ void AEnemy::ResetOverlayMaterial() const
 
 void AEnemy::OnShieldDestroy()
 {
-	if(::IsValid(EnemyStat))
+	if (::IsValid(EnemyStat))
 	{
 		EnemyStat->IsShieldBroken = true;
 		EnemyStat->IsStunned = true;
-		if(::IsValid(EnemyFSM))
-		{
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), EnemyFSM->ShieldBreakSound, GetActorLocation(), FRotator::ZeroRotator);
-			FTransform EmitterTrans = GetMesh()->GetSocketTransform(FName("ShieldSocket"));
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), EnemyFSM->ShieldBreakEmitter, EmitterTrans);
-			EmitterTrans.SetScale3D(FVector(4));
-		}
+
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ShieldBreakSound, GetActorLocation(), FRotator::ZeroRotator);
+		FTransform EmitterTrans = GetMesh()->GetSocketTransform(FName("ShieldSocket"));
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldBreakEmitter, EmitterTrans);
+		EmitterTrans.SetScale3D(FVector(4));
+		
 		// 움직임 즉시 중단
 		GetCharacterMovement()->StopMovementImmediately();
 		// Movement Mode = None [움직임 차단]
@@ -180,7 +179,7 @@ void AEnemy::OnShieldDestroy()
 			// Shield 회복
 			EnemyStat->SetShield(EnemyStat->GetMaxShield());
 			EnemyStat->IsShieldBroken = false;
-			if(::IsValid(EnemyFSM)) EnemyFSM->SetState(EEnemyState::MOVE);
+			if (::IsValid(EnemyFSM)) EnemyFSM->SetState(EEnemyState::MOVE);
 		}), 7.0f, false);
 	}
 }

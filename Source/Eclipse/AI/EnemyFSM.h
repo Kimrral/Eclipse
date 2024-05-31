@@ -82,13 +82,7 @@ public:
 
 	UFUNCTION()
 	void OnRep_EnemyState() const;
-
-	UPROPERTY(EditAnywhere)
-	class USoundBase* ShieldBreakSound;
-
-	UPROPERTY(EditAnywhere)
-	class UParticleSystem* ShieldBreakEmitter;
-
+	
 	UPROPERTY(ReplicatedUsing=OnRep_EnemyState)
 	EEnemyState State;
 

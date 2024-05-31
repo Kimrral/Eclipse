@@ -18,6 +18,8 @@ public:
 	virtual void SetAIController() override;
 	virtual void SetDissolveMaterial() override;	
 	virtual void SetDissolveValue(float Value) override;
+	
+	
 
 protected:
 	// Called when the game starts or when spawned

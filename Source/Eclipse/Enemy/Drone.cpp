@@ -3,3 +3,10 @@
 
 #include "Eclipse/Enemy/Drone.h"
 
+#include "Eclipse/AI/EnemyFSM.h"
+
+ADrone::ADrone()
+{
+	// Enemy FSM
+	EnemyFSM = CreateDefaultSubobject<UEnemyFSM>(TEXT("EnemyFSM"));
+}

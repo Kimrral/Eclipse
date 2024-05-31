@@ -10,6 +10,12 @@
 #include "Kismet/KismetMathLibrary.h"
 
 
+AGuardian::AGuardian()
+{
+	// Enemy FSM
+	EnemyFSM = CreateDefaultSubobject<UEnemyFSM>(TEXT("EnemyFSM"));
+}
+
 void AGuardian::OnDestroy()
 {
 	if (HasAuthority())

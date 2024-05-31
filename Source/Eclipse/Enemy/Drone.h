@@ -13,7 +13,8 @@ UCLASS()
 class ECLIPSE_API ADrone : public AEnemy
 {
 	GENERATED_BODY()
-
+public:
+	ADrone();
 	
 	
 };

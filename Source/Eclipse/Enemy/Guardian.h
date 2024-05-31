@@ -15,6 +15,8 @@ class ECLIPSE_API AGuardian : public AEnemy
 	GENERATED_BODY()
 
 public:
+	AGuardian();
+	
 	virtual void OnDestroy() override;
 	
 	virtual void FireProcess() const override;

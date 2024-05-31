@@ -13,6 +13,8 @@ UCLASS()
 class ECLIPSE_API ASpider : public AEnemy
 {
 	GENERATED_BODY()
+public:
+	ASpider();
 
 protected:
 	virtual void BeginPlay() override;	

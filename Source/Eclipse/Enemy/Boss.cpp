@@ -4,37 +4,39 @@
 #include "Eclipse/Enemy/Boss.h"
 
 #include "Eclipse/AI/EclipseBossAIController.h"
-#include "Eclipse/CharacterStat/EnemyCharacterStatComponent.h"
-#include "Eclipse/Item/RewardManagerComponent.h"
 
 // Sets default values
 ABoss::ABoss()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = false;
 
-	// Reward Manager
-	RewardManager = CreateDefaultSubobject<URewardManagerComponent>(TEXT("RewardManagerComponent"));
-	// Stat Component 
-	EnemyStat = CreateDefaultSubobject<UEnemyCharacterStatComponent>(TEXT("Stat"));
-
-	// AI Controller
-	AIControllerClass = AEclipseBossAIController::StaticClass();
-	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
-
+	ABoss::SetAIController();
 }
+
 
 // Called when the game starts or when spawned
 void ABoss::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
-// Called every frame
-void ABoss::Tick(float DeltaTime)
+
+void ABoss::SetAIController()
 {
-	Super::Tick(DeltaTime);
-
+	// AI Controller
+	AIControllerClass = AEclipseBossAIController::StaticClass();
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
 
+
+void ABoss::SetDissolveMaterial()
+{
+	return;
+}
+
+void ABoss::SetDissolveValue(float Value)
+{
+	return;
+}

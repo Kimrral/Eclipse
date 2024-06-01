@@ -20,6 +20,13 @@ public:
 	virtual void SetAIController() override;
 	virtual void SetDissolveMaterial() override;	
 	virtual void SetDissolveValue(float Value) override;
+
+	UFUNCTION()
+	void PlayAnimMontageBySectionName(const FName& SectionName);
+	UFUNCTION(Server, Reliable)
+	void PlayAnimMontageBySectionNameServer(const FName& SectionName);
+	UFUNCTION(NetMulticast, Unreliable)
+	void PlayAnimMontageBySectionNameMulticast(const FName& SectionName);
 	
 	
 

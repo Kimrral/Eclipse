@@ -31,7 +31,7 @@ void ABoss::OnDie()
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	OnDestroy();
 	
-	PlayAnimMontage(StunMontage, 1, FName("Death"));
+	PlayAnimMontage(AnimMontage, 1, FName("Death"));
 }
 
 void ABoss::OnDestroy()
@@ -70,4 +70,23 @@ void ABoss::SetDissolveMaterial()
 void ABoss::SetDissolveValue(float Value)
 {
 	return;
+}
+
+void ABoss::PlayAnimMontageBySectionName(const FName& SectionName)
+{
+	PlayAnimMontageBySectionNameServer(SectionName);
+}
+
+void ABoss::PlayAnimMontageBySectionNameServer_Implementation(const FName& SectionName)
+{
+	PlayAnimMontageBySectionNameMulticast(SectionName);
+}
+
+void ABoss::PlayAnimMontageBySectionNameMulticast_Implementation(const FName& SectionName)
+{
+	if(!HasAuthority())
+	{
+		PlayAnimMontage(AnimMontage, 1, SectionName);
+		UE_LOG(LogTemp, Warning, TEXT("Play Montage"))
+	}
 }

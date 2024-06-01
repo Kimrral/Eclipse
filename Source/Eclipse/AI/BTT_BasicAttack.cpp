@@ -1,17 +1,17 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Eclipse/AI/BTT_PlayMontage.h"
+#include "Eclipse/AI/BTT_BasicAttack.h"
 
 #include "AIController.h"
 #include "Eclipse/Animation/BossAnim.h"
 #include "Eclipse/Enemy/Boss.h"
 
-UBTT_PlayMontage::UBTT_PlayMontage()
+UBTT_BasicAttack::UBTT_BasicAttack()
 {
 }
 
-EBTNodeResult::Type UBTT_PlayMontage::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+EBTNodeResult::Type UBTT_BasicAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	EBTNodeResult::Type Result = Super::ExecuteTask(OwnerComp, NodeMemory);
 
@@ -21,7 +21,7 @@ EBTNodeResult::Type UBTT_PlayMontage::ExecuteTask(UBehaviorTreeComponent& OwnerC
 		{
 			if (::IsValid(ControllingBoss))
 			{
-				ControllingBoss->PlayAnimMontageBySectionName(MontageSectionName);
+				ControllingBoss->PlayAnimMontageBySectionName(FName("BasicAttack"));
 				if (const auto BossAnimInstance = Cast<UBossAnim>(ControllingBoss->GetMesh()->GetAnimInstance()); ::IsValid(BossAnimInstance))
 				{
 					BossAnimInstance->MontageSectionFinishedDelegate.BindLambda(
@@ -33,6 +33,10 @@ EBTNodeResult::Type UBTT_PlayMontage::ExecuteTask(UBehaviorTreeComponent& OwnerC
 				}
 			}
 		}
+	}
+	else
+	{
+		return EBTNodeResult::Failed;
 	}
 
 	return EBTNodeResult::InProgress;

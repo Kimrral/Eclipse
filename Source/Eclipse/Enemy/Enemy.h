@@ -41,7 +41,7 @@ public:
 	UAnimMontage* DamageMontage;
 
 	UPROPERTY(EditAnywhere, Category=EnemySettings)
-	UAnimMontage* StunMontage;
+	UAnimMontage* AnimMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=EnemySettings)
 	TObjectPtr<class UMaterialInterface> HitOverlayMat;

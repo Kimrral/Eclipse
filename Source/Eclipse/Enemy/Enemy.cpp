@@ -159,14 +159,16 @@ void AEnemy::OnShieldDestroy()
 		GetCharacterMovement()->StopMovementImmediately();
 		// Movement Mode = None [움직임 차단]
 		GetCharacterMovement()->SetMovementMode(MOVE_None);
+		bUseControllerRotationYaw=false;
 		StopAnimMontage();
-		PlayAnimMontage(StunMontage, 1, FName("StunStart"));
+		PlayAnimMontage(AnimMontage, 1, FName("StunStart"));
 		GetWorld()->GetTimerManager().SetTimer(StunHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
 			EnemyStat->IsStunned = false;
 			StopAnimMontage();
 			// Movement Mode = Walking [움직임 재개]
 			GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+			bUseControllerRotationYaw=true;
 			// Shield 회복
 			EnemyStat->SetShield(EnemyStat->GetMaxShield());
 			EnemyStat->IsShieldBroken = false;

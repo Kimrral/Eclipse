@@ -75,6 +75,11 @@ void ABoss::SetDissolveValue(float Value)
 	return;
 }
 
+void ABoss::LaunchBossCharacter()
+{
+	LaunchCharacter(GetActorForwardVector()*DashForce, false, false);
+}
+
 void ABoss::PlayAnimMontageBySectionName(const FName& SectionName)
 {
 	PlayAnimMontageBySectionNameServer(SectionName);

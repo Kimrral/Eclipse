@@ -22,13 +22,17 @@ public:
 	virtual void SetDissolveValue(float Value) override;
 
 	UFUNCTION()
+	void LaunchBossCharacter();
+
+	UFUNCTION()
 	void PlayAnimMontageBySectionName(const FName& SectionName);
 	UFUNCTION(Server, Reliable)
 	void PlayAnimMontageBySectionNameServer(const FName& SectionName);
 	UFUNCTION(NetMulticast, Unreliable)
 	void PlayAnimMontageBySectionNameMulticast(const FName& SectionName);
 	
-	
+	UPROPERTY(EditAnywhere, Category=Variable)
+	float DashForce;
 
 protected:
 	// Called when the game starts or when spawned

@@ -38,7 +38,7 @@ void UBTS_Detection::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemo
 		Center,
 		FQuat::Identity,
 		ECC_Pawn,
-		FCollisionShape::MakeSphere(800.f),
+		FCollisionShape::MakeSphere(DetectionRange),
 		CollisionQueryParam
 	))
 	{

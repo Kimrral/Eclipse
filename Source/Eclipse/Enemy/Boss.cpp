@@ -3,7 +3,11 @@
 
 #include "Eclipse/Enemy/Boss.h"
 
+#include "Components/CapsuleComponent.h"
 #include "Eclipse/AI/EclipseBossAIController.h"
+#include "Eclipse/Item/RewardManagerComponent.h"
+#include "Eclipse/CharacterStat/EnemyCharacterStatComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 ABoss::ABoss()
@@ -15,11 +19,38 @@ ABoss::ABoss()
 	ABoss::SetAIController();
 }
 
+void ABoss::OnDie()
+{
+	StopAnimMontage();
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+	GetCharacterMovement()->SetMovementMode(MOVE_None);
+	GetCharacterMovement()->Deactivate();
+	GetWorld()->GetTimerManager().ClearTimer(StunHandle);
+	UCapsuleComponent* const Capsule = GetCapsuleComponent();
+	Capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	OnDestroy();
+	
+	PlayAnimMontage(StunMontage, 1, FName("Death"));
+}
+
+void ABoss::OnDestroy()
+{
+	if (HasAuthority())
+	{
+		SetLifeSpan(30.f);
+		RewardManager->DropRewardServer(GetActorTransform());
+	}
+}
+
 
 // Called when the game starts or when spawned
 void ABoss::BeginPlay()
 {
 	Super::BeginPlay();
+
+	EnemyStat->OnHpZero.AddUObject(this, &ABoss::OnDie);
+	
 }
 
 

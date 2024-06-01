@@ -56,7 +56,7 @@ public:
 	class UPawnSensingComponent* PawnSensingComponent;
 
 	UFUNCTION()
-	void OnDie();
+	virtual void OnDie();
 
 	UFUNCTION()
 	void OnPawnDetected(APawn* Pawn);
@@ -93,6 +93,9 @@ public:
 
 	UFUNCTION()
 	virtual void SetDissolveMaterial();
+
+	UFUNCTION()
+	void SetDamagedOverlayMaterial();
 
 	UPROPERTY()
 	FTimerHandle StunHandle;

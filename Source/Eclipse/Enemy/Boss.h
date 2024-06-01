@@ -15,6 +15,8 @@ public:
 	// Sets default values for this character's properties
 	ABoss();
 
+	virtual void OnDie() override;
+	virtual void OnDestroy() override;
 	virtual void SetAIController() override;
 	virtual void SetDissolveMaterial() override;	
 	virtual void SetDissolveValue(float Value) override;

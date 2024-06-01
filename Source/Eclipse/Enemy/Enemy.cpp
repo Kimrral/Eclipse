@@ -112,6 +112,7 @@ void AEnemy::ResetPawnDetection()
 
 void AEnemy::Damaged(const int Damage, AActor* DamageCauser)
 {
+	SetDamagedOverlayMaterial();
 	DamagedRPCServer(Damage, DamageCauser);
 	EnemyStat->ApplyDamage(Damage, DamageCauser);
 }
@@ -130,19 +131,9 @@ void AEnemy::DamagedRPCMulticast_Implementation(int Damage, AActor* DamageCauser
 {
 	if (!HasAuthority())
 	{
-		if (EnemyStat->IsShieldBroken)
+		if (!IsLocallyControlled())
 		{
-			FTimerHandle OverlayMatHandle;
-			GetMesh()->SetOverlayMaterial(HitOverlayMat);
-			GetWorldTimerManager().ClearTimer(OverlayMatHandle);
-			GetWorldTimerManager().SetTimer(OverlayMatHandle, this, &AEnemy::ResetOverlayMaterial, 0.3f, false);
-		}
-		else
-		{
-			FTimerHandle OverlayMatHandle;
-			GetMesh()->SetOverlayMaterial(HitOverlayMatShield);
-			GetWorldTimerManager().ClearTimer(OverlayMatHandle);
-			GetWorldTimerManager().SetTimer(OverlayMatHandle, this, &AEnemy::ResetOverlayMaterial, 0.3f, false);
+			SetDamagedOverlayMaterial();
 		}
 	}
 }
@@ -162,8 +153,8 @@ void AEnemy::OnShieldDestroy()
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ShieldBreakSound, GetActorLocation(), FRotator::ZeroRotator);
 		FTransform EmitterTrans = GetMesh()->GetSocketTransform(FName("ShieldSocket"));
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldBreakEmitter, EmitterTrans);
-		EmitterTrans.SetScale3D(FVector(4));
-		
+		EmitterTrans.SetScale3D(FVector(6));
+
 		// 움직임 즉시 중단
 		GetCharacterMovement()->StopMovementImmediately();
 		// Movement Mode = None [움직임 차단]
@@ -234,5 +225,23 @@ void AEnemy::SetDissolveMaterial()
 			}
 			++MaterialIndex;
 		}
+	}
+}
+
+void AEnemy::SetDamagedOverlayMaterial()
+{
+	if (EnemyStat->IsShieldBroken)
+	{
+		FTimerHandle OverlayMatHandle;
+		GetMesh()->SetOverlayMaterial(HitOverlayMat);
+		GetWorldTimerManager().ClearTimer(OverlayMatHandle);
+		GetWorldTimerManager().SetTimer(OverlayMatHandle, this, &AEnemy::ResetOverlayMaterial, 0.3f, false);
+	}
+	else
+	{
+		FTimerHandle OverlayMatHandle;
+		GetMesh()->SetOverlayMaterial(HitOverlayMatShield);
+		GetWorldTimerManager().ClearTimer(OverlayMatHandle);
+		GetWorldTimerManager().SetTimer(OverlayMatHandle, this, &AEnemy::ResetOverlayMaterial, 0.3f, false);
 	}
 }

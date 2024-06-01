@@ -21,6 +21,10 @@ ABoss::ABoss()
 
 void ABoss::OnDie()
 {
+	if(const auto AIController = Cast<AEclipseBossAIController>(GetController()); ::IsValid(AIController))
+	{
+		AIController->StopAI();
+	}
 	StopAnimMontage();
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GetCharacterMovement()->SetMovementMode(MOVE_None);
@@ -30,7 +34,7 @@ void ABoss::OnDie()
 	Capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	OnDestroy();
-	
+
 	PlayAnimMontage(AnimMontage, 1, FName("Death"));
 }
 
@@ -50,7 +54,6 @@ void ABoss::BeginPlay()
 	Super::BeginPlay();
 
 	EnemyStat->OnHpZero.AddUObject(this, &ABoss::OnDie);
-	
 }
 
 
@@ -84,9 +87,7 @@ void ABoss::PlayAnimMontageBySectionNameServer_Implementation(const FName& Secti
 
 void ABoss::PlayAnimMontageBySectionNameMulticast_Implementation(const FName& SectionName)
 {
-	if(!HasAuthority())
-	{
-		PlayAnimMontage(AnimMontage, 1, SectionName);
-		UE_LOG(LogTemp, Warning, TEXT("Play Montage"))
-	}
+	StopAnimMontage();
+	PlayAnimMontage(AnimMontage, 1, SectionName);
+	UE_LOG(LogTemp, Warning, TEXT("Play Montage"))
 }

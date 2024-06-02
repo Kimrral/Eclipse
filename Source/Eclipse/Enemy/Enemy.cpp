@@ -112,7 +112,7 @@ void AEnemy::ResetPawnDetection()
 
 void AEnemy::Damaged(const int Damage, AActor* DamageCauser)
 {
-	SetDamagedOverlayMaterial();
+	if(IsLocallyViewed()) SetDamagedOverlayMaterial();
 	DamagedRPCServer(Damage, DamageCauser);
 	EnemyStat->ApplyDamage(Damage, DamageCauser);
 }
@@ -131,7 +131,7 @@ void AEnemy::DamagedRPCMulticast_Implementation(int Damage, AActor* DamageCauser
 {
 	if (!HasAuthority())
 	{
-		if (!IsLocallyControlled())
+		if (!IsLocallyViewed())
 		{
 			SetDamagedOverlayMaterial();
 		}
@@ -237,13 +237,13 @@ void AEnemy::SetDamagedOverlayMaterial()
 		FTimerHandle OverlayMatHandle;
 		GetMesh()->SetOverlayMaterial(HitOverlayMat);
 		GetWorldTimerManager().ClearTimer(OverlayMatHandle);
-		GetWorldTimerManager().SetTimer(OverlayMatHandle, this, &AEnemy::ResetOverlayMaterial, 0.3f, false);
+		GetWorldTimerManager().SetTimer(OverlayMatHandle, this, &AEnemy::ResetOverlayMaterial, 0.1f, false);
 	}
 	else
 	{
 		FTimerHandle OverlayMatHandle;
 		GetMesh()->SetOverlayMaterial(HitOverlayMatShield);
 		GetWorldTimerManager().ClearTimer(OverlayMatHandle);
-		GetWorldTimerManager().SetTimer(OverlayMatHandle, this, &AEnemy::ResetOverlayMaterial, 0.3f, false);
+		GetWorldTimerManager().SetTimer(OverlayMatHandle, this, &AEnemy::ResetOverlayMaterial, 0.1f, false);
 	}
 }

@@ -4,22 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "AIModule/Classes/BehaviorTree/BTTaskNode.h"
-#include "BTT_PlayMontage.generated.h"
+#include "BTT_ChainGrasp.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class ECLIPSE_API UBTT_PlayMontage : public UBTTaskNode
+class ECLIPSE_API UBTT_ChainGrasp : public UBTTaskNode
 {
 	GENERATED_BODY()
-	
+
 public:
-	UBTT_PlayMontage();
+	UBTT_ChainGrasp();
 
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
-
-	UPROPERTY(EditAnywhere)
-	FName MontageSectionName;
-	
 };

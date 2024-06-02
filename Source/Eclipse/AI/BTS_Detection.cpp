@@ -6,6 +6,7 @@
 #include "AIController.h"
 #include "EclipseAI.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Eclipse/Character/PlayerCharacter.h"
 
 UBTS_Detection::UBTS_Detection()
 {
@@ -13,7 +14,7 @@ UBTS_Detection::UBTS_Detection()
 	Interval = 1.0f;
 }
 
-void UBTS_Detection::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
+void UBTS_Detection::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, const float DeltaSeconds)
 {
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 
@@ -44,9 +45,14 @@ void UBTS_Detection::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemo
 	{
 		for (auto const& OverlapResult : OverlapResults)
 		{
-			if (APawn* Pawn = Cast<APawn>(OverlapResult.GetActor()); Pawn && Pawn->GetController()->IsPlayerController())
+			if (APlayerCharacter* Player = Cast<APlayerCharacter>(OverlapResult.GetActor()); ::IsValid(Player))
 			{
-				OwnerComp.GetBlackboardComponent()->SetValueAsObject(BBKEY_TARGET, Pawn);				
+				if(Player->IsPlayerDeadImmediately)
+				{
+					OwnerComp.GetBlackboardComponent()->SetValueAsObject(BBKEY_TARGET, nullptr);				
+					return;
+				}
+				OwnerComp.GetBlackboardComponent()->SetValueAsObject(BBKEY_TARGET, Player);				
 				return;
 			}
 		}

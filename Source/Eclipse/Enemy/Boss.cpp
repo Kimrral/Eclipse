@@ -96,7 +96,7 @@ void ABoss::OnShieldDestroy()
 			{
 				AIController->RunAI();
 			}
-		}), 7.0f, false);
+		}), 10.0f, false);
 	}
 }
 

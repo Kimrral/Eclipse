@@ -8,6 +8,7 @@
 #include "Eclipse/Item/RewardManagerComponent.h"
 #include "Eclipse/CharacterStat/EnemyCharacterStatComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ABoss::ABoss()
@@ -18,6 +19,15 @@ ABoss::ABoss()
 
 	ABoss::SetAIController();
 }
+
+// Called when the game starts or when spawned
+void ABoss::BeginPlay()
+{
+	Super::BeginPlay();
+
+	EnemyStat->OnHpZero.AddUObject(this, &ABoss::OnDie);
+}
+
 
 void ABoss::OnDie()
 {
@@ -47,14 +57,50 @@ void ABoss::OnDestroy()
 	}
 }
 
-
-// Called when the game starts or when spawned
-void ABoss::BeginPlay()
+void ABoss::OnShieldDestroy()
 {
-	Super::BeginPlay();
+	if (::IsValid(EnemyStat))
+	{
+		EnemyStat->IsShieldBroken = true;
+		EnemyStat->IsStunned = true;
 
-	EnemyStat->OnHpZero.AddUObject(this, &ABoss::OnDie);
+		if(const auto AIController = Cast<AEclipseBossAIController>(GetController()); ::IsValid(AIController))
+		{
+			AIController->StopAI();
+		}
+		
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ShieldBreakSound, GetActorLocation(), FRotator::ZeroRotator);
+		FTransform EmitterTrans = GetMesh()->GetSocketTransform(FName("ShieldSocket"));
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldBreakEmitter, EmitterTrans);
+		EmitterTrans.SetScale3D(FVector(6));
+
+		// 움직임 즉시 중단
+		GetCharacterMovement()->StopMovementImmediately();
+		// Movement Mode = None [움직임 차단]
+		GetCharacterMovement()->SetMovementMode(MOVE_None);
+		bUseControllerRotationYaw=false;
+		StopAnimMontage();
+		PlayAnimMontage(AnimMontage, 1, FName("StunStart"));
+		GetWorld()->GetTimerManager().SetTimer(StunHandle, FTimerDelegate::CreateLambda([this]()-> void
+		{
+			EnemyStat->IsStunned = false;
+			StopAnimMontage();
+			// Movement Mode = Walking [움직임 재개]
+			GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+			bUseControllerRotationYaw=true;
+			// Shield 회복
+			EnemyStat->SetShield(EnemyStat->GetMaxShield());
+			EnemyStat->IsShieldBroken = false;
+
+			if(const auto AIController = Cast<AEclipseBossAIController>(GetController()); ::IsValid(AIController))
+			{
+				AIController->RunAI();
+			}
+		}), 7.0f, false);
+	}
 }
+
+
 
 
 void ABoss::SetAIController()

@@ -77,7 +77,7 @@ public:
 	void ResetOverlayMaterial() const;
 
 	UFUNCTION()
-	void OnShieldDestroy();
+	virtual void OnShieldDestroy();
 
 	UFUNCTION()
 	virtual void SetAIController();

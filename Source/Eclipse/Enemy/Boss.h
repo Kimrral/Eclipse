@@ -17,6 +17,8 @@ public:
 
 	virtual void OnDie() override;
 	virtual void OnDestroy() override;
+	virtual void OnShieldDestroy() override;
+	
 	virtual void SetAIController() override;
 	virtual void SetDissolveMaterial() override;	
 	virtual void SetDissolveValue(float Value) override;

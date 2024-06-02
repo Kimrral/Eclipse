@@ -1265,4 +1265,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	float MouseSensitivityRate = 0.5f;
+
+	UPROPERTY()
+	bool IsAlreadyDamaged = false;
 };

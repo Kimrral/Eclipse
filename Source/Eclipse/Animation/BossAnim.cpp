@@ -38,11 +38,18 @@ void UBossAnim::AnimNotify_GroundSmashHitPoint() const
 			{
 				if (const auto PlayerChar = Cast<APlayerCharacter>(OverlapResult.GetActor()); ::IsValid(PlayerChar))
 				{
-					if (!PlayerChar->GetMovementComponent()->IsFalling() && !PlayerChar->IsPlayerDeadImmediately)
+					if (!PlayerChar->GetMovementComponent()->IsFalling() && !PlayerChar->IsPlayerDeadImmediately && !PlayerChar->IsAlreadyDamaged)
 					{
 						PlayerChar->Damaged(50.f, GetOwningActor());
-						return;
+						PlayerChar->IsAlreadyDamaged = true;
 					}
+				}
+			}
+			for (auto const& OverlapResult : OverlapResults)
+			{
+				if (const auto PlayerChar = Cast<APlayerCharacter>(OverlapResult.GetActor()); ::IsValid(PlayerChar))
+				{
+					PlayerChar->IsAlreadyDamaged = false;
 				}
 			}
 		}

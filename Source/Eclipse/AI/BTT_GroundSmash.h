@@ -3,21 +3,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AIModule/Classes/BehaviorTree/BTTaskNode.h"
-#include "BTT_BasicAttack.generated.h"
+#include "BehaviorTree/BTTaskNode.h"
+#include "BTT_GroundSmash.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class ECLIPSE_API UBTT_BasicAttack : public UBTTaskNode
+class ECLIPSE_API UBTT_GroundSmash : public UBTTaskNode
 {
 	GENERATED_BODY()
 
 public:
-	UBTT_BasicAttack();
+	UBTT_GroundSmash();
 
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
-
-	
 };

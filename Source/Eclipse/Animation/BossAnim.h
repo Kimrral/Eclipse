@@ -18,7 +18,10 @@ class ECLIPSE_API UBossAnim : public UAnimInstance
 
 public:
 	UFUNCTION()
-	void AnimNotify_MontageEnd();
+	void AnimNotify_MontageEnd() const;
+
+	UFUNCTION()
+	void AnimNotify_GroundSmashHitPoint() const;
 
 	FOnMontageSectionFinished MontageSectionFinishedDelegate;
 	

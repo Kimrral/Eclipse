@@ -2882,8 +2882,8 @@ void APlayerCharacter::SetTiltingRightValue(const float Value)
 
 void APlayerCharacter::Damaged(const int Damage, AActor* DamageCauser)
 {
-	DamagedRPCServer(Damage, DamageCauser);
 	Stat->ApplyDamage(Damage, DamageCauser);
+	DamagedRPCServer(Damage, DamageCauser);
 }
 
 void APlayerCharacter::DamagedRPCServer_Implementation(int Damage, AActor* DamageCauser)

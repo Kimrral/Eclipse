@@ -72,7 +72,7 @@ void ABoss::OnShieldDestroy()
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ShieldBreakSound, GetActorLocation(), FRotator::ZeroRotator);
 		FTransform EmitterTrans = GetMesh()->GetSocketTransform(FName("ShieldSocket"));
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldBreakEmitter, EmitterTrans);
-		EmitterTrans.SetScale3D(FVector(6));
+		EmitterTrans.SetScale3D(FVector(5));
 
 		// 움직임 즉시 중단
 		GetCharacterMovement()->StopMovementImmediately();

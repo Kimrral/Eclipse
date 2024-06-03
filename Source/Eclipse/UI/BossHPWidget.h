@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/TextBlock.h"
 #include "BossHPWidget.generated.h"
 
 /**
@@ -17,12 +18,28 @@ class ECLIPSE_API UBossHPWidget : public UUserWidget
 public:
 
 	virtual void NativeConstruct() override;
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
+	UFUNCTION()
+	void UpdateHPWidget(float NewCurrentHP, float MaxHP);
+	UFUNCTION()
+	void UpdateShieldWidget(float NewCurrentShield, float MaxShield) const;
 	
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
-	class UProgressBar* progressBar;
+	TObjectPtr<class UProgressBar> ProgressBar;
 
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
-	class UProgressBar* shieldProgressBar;
+	TObjectPtr<class UProgressBar> ShieldProgressBar;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	TObjectPtr<class UTextBlock> HpStat;
+	
+	FString GetHPStatText() const;
+
+	UPROPERTY()
+	float WidgetCurrentHP;
+
+	UPROPERTY()
+	float WidgetMaxHP;
+	
 	
 };

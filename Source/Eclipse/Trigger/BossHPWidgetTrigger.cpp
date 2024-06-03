@@ -5,6 +5,7 @@
 
 #include "Eclipse/Character/PlayerCharacter.h"
 #include "Components/BoxComponent.h"
+#include "Eclipse/Player/EclipsePlayerController.h"
 
 // Sets default values
 ABossHPWidgetTrigger::ABossHPWidgetTrigger()
@@ -13,9 +14,9 @@ ABossHPWidgetTrigger::ABossHPWidgetTrigger()
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled=false;
 
-	boxCollision=CreateDefaultSubobject<UBoxComponent>(TEXT("boxCollision"));
-	SetRootComponent(boxCollision);
-	boxCollision->SetGenerateOverlapEvents(true);
+	BoxCollision=CreateDefaultSubobject<UBoxComponent>(TEXT("boxCollision"));
+	SetRootComponent(BoxCollision);
+	BoxCollision->SetGenerateOverlapEvents(true);
 }
 
 // Called when the game starts or when spawned
@@ -23,28 +24,35 @@ void ABossHPWidgetTrigger::BeginPlay()
 {
 	Super::BeginPlay();
 
-	boxCollision->OnComponentBeginOverlap.AddDynamic(this, &ABossHPWidgetTrigger::OnOverlap);
+	BoxCollision->OnComponentBeginOverlap.AddDynamic(this, &ABossHPWidgetTrigger::OnOverlap);
+	BoxCollision->OnComponentEndOverlap.AddDynamic(this, &ABossHPWidgetTrigger::EndOverlap);
 	
 }
 
-// Called every frame
-void ABossHPWidgetTrigger::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
 
 void ABossHPWidgetTrigger::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if(OtherActor)
 	{
-		auto player=Cast<APlayerCharacter>(OtherActor);
-		if(player)
+		if(const auto Player=Cast<APlayerCharacter>(OtherActor))
 		{
-			if(!player->bossHPUI->IsInViewport())
-			{
-				player->bossHPUI->AddToViewport();
-				this->Destroy();
+			if(::IsValid(Player) && Player->IsLocallyControlled())
+			{				
+				Player->PC->AddBossHpWidgetToViewport();				
+			}
+		}
+	}
+}
+
+void ABossHPWidgetTrigger::EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if(OtherActor)
+	{
+		if(const auto Player=Cast<APlayerCharacter>(OtherActor))
+		{
+			if(::IsValid(Player) && Player->IsLocallyControlled())
+			{				
+				Player->PC->RemoveBossHpWidgetFromViewport();
 			}
 		}
 	}

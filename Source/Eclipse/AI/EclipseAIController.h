@@ -25,6 +25,12 @@ public:
 	FTimerHandle RepeatTimerHandle;
 	float RepeatInterval = 15.0f;
 
+	UPROPERTY(EditAnywhere, Category=Widget)
+	TSubclassOf<class UBossHPWidget> BossHPWidgetFactory;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class UBossHPWidget> BossHPWidget;
+
 protected:
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void OnUnPossess() override;

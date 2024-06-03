@@ -7,6 +7,7 @@
 #include "Eclipse/AI/EclipseBossAIController.h"
 #include "Eclipse/Item/RewardManagerComponent.h"
 #include "Eclipse/CharacterStat/EnemyCharacterStatComponent.h"
+#include "Eclipse/UI/BossShieldWidget.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -18,6 +19,10 @@ ABoss::ABoss()
 	PrimaryActorTick.bStartWithTickEnabled = false;
 
 	ABoss::SetAIController();
+
+	ShieldWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("ShieldWidgetComponent"));
+	ShieldWidgetComponent->SetupAttachment(GetMesh());
+	ShieldWidgetComponent->SetVisibility(false);	
 }
 
 // Called when the game starts or when spawned
@@ -26,12 +31,14 @@ void ABoss::BeginPlay()
 	Super::BeginPlay();
 
 	EnemyStat->OnHpZero.AddUObject(this, &ABoss::OnDie);
+	EnemyStat->OnShieldChanged.AddUObject(this, &ABoss::SetBossShieldWidgetDelegate);
 }
+
 
 
 void ABoss::OnDie()
 {
-	if(const auto AIController = Cast<AEclipseBossAIController>(GetController()); ::IsValid(AIController))
+	if (const auto AIController = Cast<AEclipseBossAIController>(GetController()); ::IsValid(AIController))
 	{
 		AIController->StopAI();
 	}
@@ -61,14 +68,21 @@ void ABoss::OnShieldDestroy()
 {
 	if (::IsValid(EnemyStat))
 	{
+		ShieldDestroySuccessDelegate.ExecuteIfBound();
+
 		EnemyStat->IsShieldBroken = true;
 		EnemyStat->IsStunned = true;
 
-		if(const auto AIController = Cast<AEclipseBossAIController>(GetController()); ::IsValid(AIController))
+		if (const auto AIController = Cast<AEclipseBossAIController>(GetController()); ::IsValid(AIController))
 		{
 			AIController->StopAI();
 		}
-		
+
+		if(ShieldWidgetComponent->IsVisible())
+		{
+			ShieldWidgetComponent->SetVisibility(false);
+		}
+
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ShieldBreakSound, GetActorLocation(), FRotator::ZeroRotator);
 		FTransform EmitterTrans = GetMesh()->GetSocketTransform(FName("ShieldSocket"));
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldBreakEmitter, EmitterTrans);
@@ -78,7 +92,7 @@ void ABoss::OnShieldDestroy()
 		GetCharacterMovement()->StopMovementImmediately();
 		// Movement Mode = None [움직임 차단]
 		GetCharacterMovement()->SetMovementMode(MOVE_None);
-		bUseControllerRotationYaw=false;
+		bUseControllerRotationYaw = false;
 		StopAnimMontage();
 		PlayAnimMontage(AnimMontage, 1, FName("StunStart"));
 		GetWorld()->GetTimerManager().SetTimer(StunHandle, FTimerDelegate::CreateLambda([this]()-> void
@@ -87,20 +101,18 @@ void ABoss::OnShieldDestroy()
 			StopAnimMontage();
 			// Movement Mode = Walking [움직임 재개]
 			GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-			bUseControllerRotationYaw=true;
+			bUseControllerRotationYaw = true;
 			// Shield 회복
 			EnemyStat->SetShield(EnemyStat->GetMaxShield());
 			EnemyStat->IsShieldBroken = false;
 
-			if(const auto AIController = Cast<AEclipseBossAIController>(GetController()); ::IsValid(AIController))
+			if (const auto AIController = Cast<AEclipseBossAIController>(GetController()); ::IsValid(AIController))
 			{
 				AIController->RunAI();
 			}
 		}), 10.0f, false);
 	}
 }
-
-
 
 
 void ABoss::SetAIController()
@@ -121,9 +133,18 @@ void ABoss::SetDissolveValue(float Value)
 	return;
 }
 
+void ABoss::SetBossShieldWidgetDelegate(const float InCurShield, const float InMaxShield) const
+{
+	if(const UBossShieldWidget* BossShieldWidget =Cast<UBossShieldWidget>(ShieldWidgetComponent->GetUserWidgetObject()); ::IsValid(BossShieldWidget))
+	{
+		BossShieldWidget->UpdateShieldWidget(InCurShield, InMaxShield);
+	}
+
+}
+
 void ABoss::LaunchBossCharacter()
 {
-	LaunchCharacter(GetActorForwardVector()*DashForce, false, false);
+	LaunchCharacter(GetActorForwardVector() * DashForce, false, false);
 }
 
 void ABoss::PlayAnimMontageBySectionName(const FName& SectionName)
@@ -140,5 +161,4 @@ void ABoss::PlayAnimMontageBySectionNameMulticast_Implementation(const FName& Se
 {
 	StopAnimMontage();
 	PlayAnimMontage(AnimMontage, 1, SectionName);
-	UE_LOG(LogTemp, Warning, TEXT("Play Montage"))
 }

@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Eclipse/UI/BossHPWidget.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "Eclipse/Weapon/RifleActor.h"
@@ -480,9 +479,6 @@ public:
 	void TiltingRightReleaseRPCMulticast();
 
 	UFUNCTION()
-	void SetBossHPWidget(const AEnemy* Enemy) const;
-
-	UFUNCTION()
 	void SetDamageWidget(int Damage, const FVector& SpawnLoc, bool bIsShieldIconEnable, FLinearColor DamageTextColor);
 
 	UFUNCTION(BlueprintImplementableEvent)
@@ -723,9 +719,6 @@ public:
 	TSubclassOf<class UDamageWidget> damageWidgetUIFactory;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
-	TSubclassOf<class UBossHPWidget> bossHPWidgetFactory;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
 	TSubclassOf<class UExtractionCountdown> ExtractionCountdownWidgetFactory;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
@@ -748,9 +741,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = widget)
 	class UDamageWidget* damageWidgetUI;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = widget)
-	class UBossHPWidget* bossHPUI;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
 	TSubclassOf<class UQuitWidget> quitWidgetFactory;

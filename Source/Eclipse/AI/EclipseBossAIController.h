@@ -16,7 +16,6 @@ class ECLIPSE_API AEclipseBossAIController : public AAIController
 
 public:
 	AEclipseBossAIController();
-	
 	void RunAI();
 	void StopAI() const;
 	

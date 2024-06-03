@@ -21,7 +21,8 @@ EBTNodeResult::Type UBTT_RoarAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 		{
 			if (::IsValid(ControllingBoss))
 			{
-				ControllingBoss->PlayAnimMontageBySectionName(FName("Roar"));
+				const FName& SectionName = FName("Roar");
+				ControllingBoss->PlayAnimMontageBySectionName(SectionName);
 				if (const auto BossAnimInstance = Cast<UBossAnim>(ControllingBoss->GetMesh()->GetAnimInstance()); ::IsValid(BossAnimInstance))
 				{
 					BossAnimInstance->MontageSectionFinishedDelegate.BindLambda(

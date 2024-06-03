@@ -4,7 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Enemy.h"
+#include "Components/WidgetComponent.h"
 #include "Boss.generated.h"
+
+DECLARE_DELEGATE(FOnShieldDestroySuccessed);
 
 UCLASS()
 class ECLIPSE_API ABoss : public AEnemy
@@ -24,6 +27,9 @@ public:
 	virtual void SetDissolveValue(float Value) override;
 
 	UFUNCTION()
+	void SetBossShieldWidgetDelegate(const float InCurShield, const float InMaxShield) const;
+	
+	UFUNCTION()
 	void LaunchBossCharacter();
 
 	UFUNCTION()
@@ -35,6 +41,11 @@ public:
 	
 	UPROPERTY(EditAnywhere, Category=Variable)
 	float DashForce;
+
+	UPROPERTY(EditAnywhere, Category=Widget)
+	TObjectPtr<class UWidgetComponent> ShieldWidgetComponent;
+	
+	FOnShieldDestroySuccessed ShieldDestroySuccessDelegate;
 
 protected:
 	// Called when the game starts or when spawned

@@ -23,6 +23,9 @@ public:
 	UFUNCTION()
 	void AnimNotify_GroundSmashHitPoint() const;
 
+	UFUNCTION()
+	void AnimNotify_UltimateHitPoint() const;
+
 	FOnMontageSectionFinished MontageSectionFinishedDelegate;
 	
 };

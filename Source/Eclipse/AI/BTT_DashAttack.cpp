@@ -21,7 +21,8 @@ EBTNodeResult::Type UBTT_DashAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 		{
 			if (::IsValid(ControllingBoss))
 			{
-				ControllingBoss->PlayAnimMontageBySectionName(FName("Dash"));
+				const FName& SectionName = FName("Dash");
+				ControllingBoss->PlayAnimMontageBySectionName(SectionName);
 				ControllingBoss->LaunchBossCharacter();
 				if (const auto BossAnimInstance = Cast<UBossAnim>(ControllingBoss->GetMesh()->GetAnimInstance()); ::IsValid(BossAnimInstance))
 				{

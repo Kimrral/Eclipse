@@ -21,7 +21,8 @@ EBTNodeResult::Type UBTT_ChainGrasp::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 		{
 			if (::IsValid(ControllingBoss))
 			{
-				ControllingBoss->PlayAnimMontageBySectionName(FName("ChainGrasp"));
+				const FName& SectionName = FName("ChainGrasp");
+				ControllingBoss->PlayAnimMontageBySectionName(SectionName);
 				if (const auto BossAnimInstance = Cast<UBossAnim>(ControllingBoss->GetMesh()->GetAnimInstance()); ::IsValid(BossAnimInstance))
 				{
 					BossAnimInstance->MontageSectionFinishedDelegate.BindLambda(

@@ -22,7 +22,7 @@ ABoss::ABoss()
 
 	ShieldWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("ShieldWidgetComponent"));
 	ShieldWidgetComponent->SetupAttachment(GetMesh());
-	ShieldWidgetComponent->SetVisibility(false);	
+	ShieldWidgetComponent->SetVisibility(false);
 }
 
 // Called when the game starts or when spawned
@@ -31,9 +31,7 @@ void ABoss::BeginPlay()
 	Super::BeginPlay();
 
 	EnemyStat->OnHpZero.AddUObject(this, &ABoss::OnDie);
-	EnemyStat->OnShieldChanged.AddUObject(this, &ABoss::SetBossShieldWidgetDelegate);
 }
-
 
 
 void ABoss::OnDie()
@@ -43,6 +41,7 @@ void ABoss::OnDie()
 		AIController->StopAI();
 	}
 	StopAnimMontage();
+	PlayAnimMontage(AnimMontage, 1, FName("Death"));
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GetCharacterMovement()->SetMovementMode(MOVE_None);
 	GetCharacterMovement()->Deactivate();
@@ -51,8 +50,6 @@ void ABoss::OnDie()
 	Capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	OnDestroy();
-
-	PlayAnimMontage(AnimMontage, 1, FName("Death"));
 }
 
 void ABoss::OnDestroy()
@@ -78,7 +75,7 @@ void ABoss::OnShieldDestroy()
 			AIController->StopAI();
 		}
 
-		if(ShieldWidgetComponent->IsVisible())
+		if (ShieldWidgetComponent->IsVisible())
 		{
 			ShieldWidgetComponent->SetVisibility(false);
 		}
@@ -133,13 +130,32 @@ void ABoss::SetDissolveValue(float Value)
 	return;
 }
 
+void ABoss::SetBossShieldWidget()
+{
+	EnemyStat->SetShield(EnemyStat->GetMaxShield());
+	SetBossShieldWidgetServer();
+}
+
+void ABoss::SetBossShieldWidgetServer_Implementation()
+{
+	SetBossShieldWidgetMulticast();
+}
+
+void ABoss::SetBossShieldWidgetMulticast_Implementation()
+{
+	EnemyStat->OnShieldChanged.AddUObject(this, &ABoss::SetBossShieldWidgetDelegate);
+
+	ShieldWidgetComponent->SetVisibility(true);
+	if (BossShieldWidget = Cast<UBossShieldWidget>(ShieldWidgetComponent->GetUserWidgetObject()); ::IsValid(BossShieldWidget))
+	{
+		BossShieldWidget->UpdateShieldWidget(EnemyStat->GetCurrentShield(), EnemyStat->GetMaxShield());
+		BossShieldWidget->PlayAnimation(BossShieldWidget->WidgetStart, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
+	}
+}
+
 void ABoss::SetBossShieldWidgetDelegate(const float InCurShield, const float InMaxShield) const
 {
-	if(const UBossShieldWidget* BossShieldWidget =Cast<UBossShieldWidget>(ShieldWidgetComponent->GetUserWidgetObject()); ::IsValid(BossShieldWidget))
-	{
-		BossShieldWidget->UpdateShieldWidget(InCurShield, InMaxShield);
-	}
-
+	BossShieldWidget->UpdateShieldWidget(InCurShield, InMaxShield);
 }
 
 void ABoss::LaunchBossCharacter()

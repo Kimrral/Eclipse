@@ -7,7 +7,7 @@
 
 void UBossShieldWidget::UpdateShieldWidget(const float NewCurrentShield, const float MaxShield) const
 {
-	if(GetOwningPlayerPawn()->IsLocallyControlled())
+	if(::IsValid(GetOwningPlayerPawn()) && GetOwningPlayerPawn()->IsLocallyViewed())
 	{
 		const float WidgetCurrentShield = NewCurrentShield;
 		const float WidgetMaxShield = MaxShield;

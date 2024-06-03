@@ -237,13 +237,13 @@ void AEnemy::SetDamagedOverlayMaterial()
 		FTimerHandle OverlayMatHandle;
 		GetMesh()->SetOverlayMaterial(HitOverlayMat);
 		GetWorldTimerManager().ClearTimer(OverlayMatHandle);
-		GetWorldTimerManager().SetTimer(OverlayMatHandle, this, &AEnemy::ResetOverlayMaterial, 0.1f, false);
+		GetWorldTimerManager().SetTimer(OverlayMatHandle, this, &AEnemy::ResetOverlayMaterial, 0.2f, false);
 	}
 	else
 	{
 		FTimerHandle OverlayMatHandle;
 		GetMesh()->SetOverlayMaterial(HitOverlayMatShield);
 		GetWorldTimerManager().ClearTimer(OverlayMatHandle);
-		GetWorldTimerManager().SetTimer(OverlayMatHandle, this, &AEnemy::ResetOverlayMaterial, 0.1f, false);
+		GetWorldTimerManager().SetTimer(OverlayMatHandle, this, &AEnemy::ResetOverlayMaterial, 0.2f, false);
 	}
 }

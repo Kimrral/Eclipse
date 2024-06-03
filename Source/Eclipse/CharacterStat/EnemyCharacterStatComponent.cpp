@@ -51,11 +51,12 @@ float UEnemyCharacterStatComponent::ApplyDamage(float InDamage, AActor* DamageCa
 		{
 			PlayerCharacter->OnEnemyKill();
 		}
-	}
+	}	
+	
 	return ActualDamage;
 }
 
-float UEnemyCharacterStatComponent::ApplyShieldDamage(float InShieldDamage, AActor* DamageCauser)
+float UEnemyCharacterStatComponent::ApplyShieldDamage(const float InShieldDamage, AActor* DamageCauser)
 {
 	const float PrevShield = CurrentEnemyShield;
 	const float ActualShieldDamage = FMath::Clamp<float>(InShieldDamage, 0, InShieldDamage);
@@ -64,7 +65,8 @@ float UEnemyCharacterStatComponent::ApplyShieldDamage(float InShieldDamage, AAct
 	if (CurrentEnemyShield <= 0.0f)
 	{
 		OnShieldZero.Broadcast();
-	}
+	}	
+	
 	return ActualShieldDamage;
 }
 
@@ -97,41 +99,43 @@ void UEnemyCharacterStatComponent::InitShieldBoolean()
 	}
 }
 
-void UEnemyCharacterStatComponent::SetHp(float NewHp)
+void UEnemyCharacterStatComponent::SetHp(const float NewHp)
 {
 	CurrentEnemyHp = FMath::Clamp<float>(NewHp, 0.0f, MaxEnemyHp);
+	OnHpChanged.Broadcast(GetCurrentHp(), GetMaxHp());
 }
 
-void UEnemyCharacterStatComponent::SetShield(float NewShield)
+void UEnemyCharacterStatComponent::SetShield(const float NewShield)
 {
 	CurrentEnemyShield = FMath::Clamp<float>(NewShield, 0.0f, MaxEnemyShield);
+	OnShieldChanged.Broadcast(GetCurrentShield(), GetMaxShield());
 }
 
 
-void UEnemyCharacterStatComponent::OnRep_CurrentEnemyHp()
+void UEnemyCharacterStatComponent::OnRep_CurrentEnemyHp() const
 {
-	OnHpChanged.Broadcast();
+	OnHpChanged.Broadcast(GetCurrentHp(), GetMaxHp());
 	if (CurrentEnemyHp <= 0.0f)
 	{
 		OnHpZero.Broadcast();
 	}
 }
 
-void UEnemyCharacterStatComponent::OnRep_MaxEnemyHp()
+void UEnemyCharacterStatComponent::OnRep_MaxEnemyHp() const
 {
-	OnHpChanged.Broadcast();
+	OnHpChanged.Broadcast(GetCurrentHp(), GetMaxHp());
 }
 
-void UEnemyCharacterStatComponent::OnRep_CurrentEnemyShield()
+void UEnemyCharacterStatComponent::OnRep_CurrentEnemyShield() const
 {
-	OnShieldChanged.Broadcast();
+	OnShieldChanged.Broadcast(GetCurrentShield(), GetMaxShield());
 	if (CurrentEnemyShield <= 0.0f)
 	{
 		OnShieldZero.Broadcast();
 	}
 }
 
-void UEnemyCharacterStatComponent::OnRep_MaxEnemyShield()
+void UEnemyCharacterStatComponent::OnRep_MaxEnemyShield() const
 {
-	OnShieldChanged.Broadcast();
+	OnShieldChanged.Broadcast(GetCurrentShield(), GetMaxShield());
 }

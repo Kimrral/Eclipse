@@ -1,17 +1,18 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "BTT_RoarAttack.h"
+#include "Eclipse/AI/BTT_ChargeUltimate.h"
 
 #include "AIController.h"
 #include "Eclipse/Animation/BossAnim.h"
+#include "Eclipse/CharacterStat/EnemyCharacterStatComponent.h"
 #include "Eclipse/Enemy/Boss.h"
 
-UBTT_RoarAttack::UBTT_RoarAttack()
+UBTT_ChargeUltimate::UBTT_ChargeUltimate()
 {
 }
 
-EBTNodeResult::Type UBTT_RoarAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+EBTNodeResult::Type UBTT_ChargeUltimate::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	EBTNodeResult::Type Result = Super::ExecuteTask(OwnerComp, NodeMemory);
 
@@ -21,8 +22,16 @@ EBTNodeResult::Type UBTT_RoarAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 		{
 			if (::IsValid(ControllingBoss))
 			{
-				const FName& SectionName = FName("Roar");
+				const FName& SectionName = FName("ChargeUltimate");
 				ControllingBoss->PlayAnimMontageBySectionName(SectionName);
+				ControllingBoss->EnemyStat->SetShield(ControllingBoss->EnemyStat->GetMaxShield());
+				ControllingBoss->ShieldWidgetComponent->SetVisibility(true);
+				ControllingBoss->ShieldDestroySuccessDelegate.BindLambda(
+					[&]()
+					{
+						FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+					}
+				);
 				if (const auto BossAnimInstance = Cast<UBossAnim>(ControllingBoss->GetMesh()->GetAnimInstance()); ::IsValid(BossAnimInstance))
 				{
 					BossAnimInstance->MontageSectionFinishedDelegate.BindLambda(
@@ -35,7 +44,10 @@ EBTNodeResult::Type UBTT_RoarAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 			}
 		}
 	}
+	else
+	{
+		return EBTNodeResult::Failed;
+	}
 
 	return EBTNodeResult::InProgress;
 }
-

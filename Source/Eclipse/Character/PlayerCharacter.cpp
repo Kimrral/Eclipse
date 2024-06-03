@@ -193,7 +193,6 @@ void APlayerCharacter::BeginPlay()
 	infoWidgetUI = CreateWidget<UWeaponInfoWidget>(GetWorld(), infoWidgetFactory);
 	sniperScopeUI = CreateWidget<UUserWidget>(GetWorld(), sniperScopeFactory);
 	damageWidgetUI = CreateWidget<UDamageWidget>(GetWorld(), damageWidgetUIFactory);
-	bossHPUI = CreateWidget<UBossHPWidget>(GetWorld(), bossHPWidgetFactory);
 	informationUI = CreateWidget<UInformationWidget>(GetWorld(), informationWidgetFactory);
 	levelSelectionUI = CreateWidget<ULevelSelection>(GetWorld(), levelSelectionWidgetFactory);
 	ExtractionCountdownUI = CreateWidget<UExtractionCountdown>(GetWorld(), ExtractionCountdownWidgetFactory);
@@ -1550,17 +1549,6 @@ bool APlayerCharacter::DoorInteractionRPCServer_Validate()
 void APlayerCharacter::DoorInteractionRPCMulticast_Implementation()
 {
 	DoorInteractionDele.ExecuteIfBound();
-}
-
-void APlayerCharacter::SetBossHPWidget(const AEnemy* Enemy) const
-{
-	if (Enemy && bossHPUI)
-	{
-		const float BossHP = Enemy->EnemyStat->GetCurrentHp() * 0.0001;
-		bossHPUI->progressBar->SetPercent(BossHP);
-		const float BossShield = Enemy->EnemyStat->GetCurrentShield() * 0.01;
-		bossHPUI->shieldProgressBar->SetPercent(BossShield);
-	}
 }
 
 void APlayerCharacter::SetDamageWidget(const int Damage, const FVector& SpawnLoc, const bool bIsShieldIconEnable, const FLinearColor DamageTextColor)

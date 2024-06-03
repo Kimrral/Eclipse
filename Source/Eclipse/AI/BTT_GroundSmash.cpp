@@ -21,7 +21,8 @@ EBTNodeResult::Type UBTT_GroundSmash::ExecuteTask(UBehaviorTreeComponent& OwnerC
 		{
 			if (::IsValid(ControllingBoss))
 			{
-				ControllingBoss->PlayAnimMontageBySectionName(FName("GroundSmash"));
+				const FName& SectionName = FName("GroundSmash");
+				ControllingBoss->PlayAnimMontageBySectionName(SectionName);
 				if (const auto BossAnimInstance = Cast<UBossAnim>(ControllingBoss->GetMesh()->GetAnimInstance()); ::IsValid(BossAnimInstance))
 				{
 					BossAnimInstance->MontageSectionFinishedDelegate.BindLambda(

@@ -21,22 +21,12 @@ EBTNodeResult::Type UBTT_BasicAttack::ExecuteTask(UBehaviorTreeComponent& OwnerC
 		{
 			if (::IsValid(ControllingBoss))
 			{
-				if (const auto RandIndex = FMath::RandRange(0, 3); RandIndex == 0)
+				if (const auto RandIndex = FMath::RandRange(0, 3); RandIndex >= 0 && RandIndex <= 3)
 				{
-					ControllingBoss->PlayAnimMontageBySectionName(FName("PrimaryAttack1"));
+					const FString SectionName = FString::Printf(TEXT("PrimaryAttack%d"), RandIndex + 1);
+					ControllingBoss->PlayAnimMontageBySectionName(FName(*SectionName));
 				}
-				else if (RandIndex == 1)
-				{
-					ControllingBoss->PlayAnimMontageBySectionName(FName("PrimaryAttack2"));
-				}
-				else if (RandIndex == 2)
-				{
-					ControllingBoss->PlayAnimMontageBySectionName(FName("PrimaryAttack3"));
-				}
-				else if (RandIndex == 3)
-				{
-					ControllingBoss->PlayAnimMontageBySectionName(FName("PrimaryAttack4"));
-				}				
+				
 				if (const auto BossAnimInstance = Cast<UBossAnim>(ControllingBoss->GetMesh()->GetAnimInstance()); ::IsValid(BossAnimInstance))
 				{
 					BossAnimInstance->MontageSectionFinishedDelegate.BindLambda(

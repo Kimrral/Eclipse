@@ -22,13 +22,30 @@ public:
 	void UpdateTabWidget() const;
 
 	UFUNCTION()
+	void UpdateBossHpWidget(const float InCurrentHp, const float InMaxHp) const;
+
+	UFUNCTION()
+	void UpdateBossShieldWidget(const float InCurrentShield, const float InMaxShield) const;
+
+	UFUNCTION()
 	void PlayerDeath() const;
+
+	UFUNCTION()
+	void AddBossHpWidgetToViewport() const;
+	UFUNCTION()
+	void RemoveBossHpWidgetFromViewport() const;
 	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<APlayerStart> PlayerStartFactory;	
 
 	UPROPERTY()
 	class APlayerCharacter* PlayerCharacter;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
+	TSubclassOf<class UBossHPWidget> BossHPWidgetFactory;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
+	TObjectPtr<class UBossHPWidget> BossHPWidget;
 
 protected:
 	virtual void BeginPlay() override;

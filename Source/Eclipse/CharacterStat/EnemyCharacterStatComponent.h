@@ -7,9 +7,9 @@
 #include "EnemyCharacterStatComponent.generated.h"
 
 DECLARE_MULTICAST_DELEGATE(FOnEnemyHpZeroDelegate);
-DECLARE_MULTICAST_DELEGATE(FOnEnemyHpChangedDelegate);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnEnemyHpChangedDelegate, float, float);
 DECLARE_MULTICAST_DELEGATE(FOnEnemyShieldZeroDelegate);
-DECLARE_MULTICAST_DELEGATE(FOnEnemyShieldChangedDelegate);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnEnemyShieldChangedDelegate, float, float);
 DECLARE_MULTICAST_DELEGATE(FOnEnemyDamagedDelegate);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -73,14 +73,14 @@ protected:
 	int MaxEnemyShield = 100.f;
 
 	UFUNCTION()
-	void OnRep_CurrentEnemyHp();
+	void OnRep_CurrentEnemyHp() const;
 
 	UFUNCTION()
-	void OnRep_MaxEnemyHp();
+	void OnRep_MaxEnemyHp() const;
 
 	UFUNCTION()
-	void OnRep_CurrentEnemyShield();
+	void OnRep_CurrentEnemyShield() const;
 
 	UFUNCTION()
-	void OnRep_MaxEnemyShield();
+	void OnRep_MaxEnemyShield() const;
 };

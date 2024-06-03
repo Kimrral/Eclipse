@@ -8,12 +8,32 @@
 void UBossHPWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	progressBar->SetPercent(1);
-	shieldProgressBar->SetPercent(1);
 }
 
-void UBossHPWidget::NativeTick(const FGeometry& MyGeometry, const float InDeltaTime)
+FString UBossHPWidget::GetHPStatText() const
 {
-	Super::NativeTick(MyGeometry, InDeltaTime);
+	return FString::Printf(TEXT("%.0f/%0.f"), WidgetCurrentHP, WidgetMaxHP);
+}
+
+void UBossHPWidget::UpdateHPWidget(const float NewCurrentHP, const float MaxHP)
+{
+	if(GetOwningPlayerPawn()->IsLocallyControlled())
+	{
+		WidgetCurrentHP = NewCurrentHP;
+		WidgetMaxHP = MaxHP;
+
+		ProgressBar->SetPercent(WidgetCurrentHP / WidgetMaxHP);
+		HpStat->SetText(FText::FromString(GetHPStatText()));
+	}
+}
+
+void UBossHPWidget::UpdateShieldWidget(const float NewCurrentShield, const float MaxShield) const
+{
+	if(GetOwningPlayerPawn()->IsLocallyControlled())
+	{
+		const float WidgetCurrentShield = NewCurrentShield;
+		const float WidgetMaxShield = MaxShield;
+
+		ShieldProgressBar->SetPercent(WidgetCurrentShield / WidgetMaxShield);
+	}
 }

@@ -55,3 +55,48 @@ void UBossAnim::AnimNotify_GroundSmashHitPoint() const
 		}
 	}
 }
+
+void UBossAnim::AnimNotify_UltimateHitPoint() const
+{
+	if (const AActor* OwnerActor = TryGetPawnOwner(); ::IsValid(OwnerActor) && OwnerActor->HasAuthority())
+	{
+		const FVector Center = OwnerActor->GetActorLocation();
+		const UWorld* World = OwnerActor->GetWorld();
+		if (nullptr == World)
+		{
+			return;
+		}
+
+		TArray<FOverlapResult> OverlapResults;
+		const FCollisionQueryParams CollisionQueryParam(SCENE_QUERY_STAT(Detect), false, OwnerActor);
+
+		if (bool bResult = World->OverlapMultiByChannel(
+			OverlapResults,
+			Center,
+			FQuat::Identity,
+			ECC_Pawn,
+			FCollisionShape::MakeSphere(5000.f),
+			CollisionQueryParam
+		))
+		{
+			for (auto const& OverlapResult : OverlapResults)
+			{
+				if (const auto PlayerChar = Cast<APlayerCharacter>(OverlapResult.GetActor()); ::IsValid(PlayerChar))
+				{
+					if (!PlayerChar->IsPlayerDeadImmediately && !PlayerChar->IsAlreadyDamaged)
+					{
+						PlayerChar->Damaged(200.f, GetOwningActor());
+						PlayerChar->IsAlreadyDamaged = true;
+					}
+				}
+			}
+			for (auto const& OverlapResult : OverlapResults)
+			{
+				if (const auto PlayerChar = Cast<APlayerCharacter>(OverlapResult.GetActor()); ::IsValid(PlayerChar))
+				{
+					PlayerChar->IsAlreadyDamaged = false;
+				}
+			}
+		}
+	}
+}

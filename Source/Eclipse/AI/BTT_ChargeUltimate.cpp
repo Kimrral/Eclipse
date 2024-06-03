@@ -7,6 +7,7 @@
 #include "Eclipse/Animation/BossAnim.h"
 #include "Eclipse/CharacterStat/EnemyCharacterStatComponent.h"
 #include "Eclipse/Enemy/Boss.h"
+#include "Eclipse/UI/BossShieldWidget.h"
 
 UBTT_ChargeUltimate::UBTT_ChargeUltimate()
 {
@@ -24,8 +25,7 @@ EBTNodeResult::Type UBTT_ChargeUltimate::ExecuteTask(UBehaviorTreeComponent& Own
 			{
 				const FName& SectionName = FName("ChargeUltimate");
 				ControllingBoss->PlayAnimMontageBySectionName(SectionName);
-				ControllingBoss->EnemyStat->SetShield(ControllingBoss->EnemyStat->GetMaxShield());
-				ControllingBoss->ShieldWidgetComponent->SetVisibility(true);
+				ControllingBoss->SetBossShieldWidget();
 				ControllingBoss->ShieldDestroySuccessDelegate.BindLambda(
 					[&]()
 					{

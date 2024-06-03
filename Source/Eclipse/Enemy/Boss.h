@@ -27,6 +27,15 @@ public:
 	virtual void SetDissolveValue(float Value) override;
 
 	UFUNCTION()
+	void SetBossShieldWidget();
+	
+	UFUNCTION(Server, Reliable)
+	void SetBossShieldWidgetServer();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void SetBossShieldWidgetMulticast();
+	
+	UFUNCTION()
 	void SetBossShieldWidgetDelegate(const float InCurShield, const float InMaxShield) const;
 	
 	UFUNCTION()
@@ -46,6 +55,9 @@ public:
 	TObjectPtr<class UWidgetComponent> ShieldWidgetComponent;
 	
 	FOnShieldDestroySuccessed ShieldDestroySuccessDelegate;
+
+	UPROPERTY()
+	class UBossShieldWidget* BossShieldWidget;
 
 protected:
 	// Called when the game starts or when spawned

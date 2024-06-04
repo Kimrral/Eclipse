@@ -32,13 +32,21 @@ public:
 
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	TObjectPtr<class UTextBlock> HpStat;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	TObjectPtr<class UTextBlock> MaxHpStat;
 	
-	FString GetHPStatText() const;
+	FString GetHpStatText() const;
+
+	FString GetMaxHpStatText() const;
 
 	UPROPERTY()
+	bool MaxHpAlreadySet;
+
+	UPROPERTY(Transient)
 	float WidgetCurrentHP;
 
-	UPROPERTY()
+	UPROPERTY(Transient)
 	float WidgetMaxHP;
 	
 	

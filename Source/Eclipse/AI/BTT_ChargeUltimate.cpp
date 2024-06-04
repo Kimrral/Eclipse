@@ -25,7 +25,7 @@ EBTNodeResult::Type UBTT_ChargeUltimate::ExecuteTask(UBehaviorTreeComponent& Own
 			{
 				const FName& SectionName = FName("ChargeUltimate");
 				ControllingBoss->PlayAnimMontageBySectionName(SectionName);
-				ControllingBoss->SetBossShieldWidget();
+				ControllingBoss->SetBossShieldWidget(true);
 				ControllingBoss->ShieldDestroySuccessDelegate.BindLambda(
 					[&]()
 					{

@@ -130,26 +130,34 @@ void ABoss::SetDissolveValue(float Value)
 	return;
 }
 
-void ABoss::SetBossShieldWidget()
+void ABoss::SetBossShieldWidget(const bool bEnable)
 {
-	EnemyStat->SetShield(EnemyStat->GetMaxShield());
-	SetBossShieldWidgetServer();
+	if(bEnable) EnemyStat->SetShield(EnemyStat->GetMaxShield());
+	SetBossShieldWidgetServer(bEnable);
 }
 
-void ABoss::SetBossShieldWidgetServer_Implementation()
+void ABoss::SetBossShieldWidgetServer_Implementation(const bool bEnable)
 {
-	SetBossShieldWidgetMulticast();
+	SetBossShieldWidgetMulticast(bEnable);
 }
 
-void ABoss::SetBossShieldWidgetMulticast_Implementation()
+void ABoss::SetBossShieldWidgetMulticast_Implementation(const bool bEnable)
 {
-	EnemyStat->OnShieldChanged.AddUObject(this, &ABoss::SetBossShieldWidgetDelegate);
-
-	ShieldWidgetComponent->SetVisibility(true);
-	if (BossShieldWidget = Cast<UBossShieldWidget>(ShieldWidgetComponent->GetUserWidgetObject()); ::IsValid(BossShieldWidget))
+	if(bEnable)
 	{
-		BossShieldWidget->UpdateShieldWidget(EnemyStat->GetCurrentShield(), EnemyStat->GetMaxShield());
-		BossShieldWidget->PlayAnimation(BossShieldWidget->WidgetStart, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
+		EnemyStat->OnShieldChanged.AddUObject(this, &ABoss::SetBossShieldWidgetDelegate);
+
+		 ShieldWidgetComponent->SetVisibility(true);
+		if (BossShieldWidget = Cast<UBossShieldWidget>(ShieldWidgetComponent->GetUserWidgetObject()); ::IsValid(BossShieldWidget))
+		{
+			BossShieldWidget->UpdateShieldWidget(EnemyStat->GetCurrentShield(), EnemyStat->GetMaxShield());
+			BossShieldWidget->PlayAnimation(BossShieldWidget->WidgetStart, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
+		}
+	}
+	else
+	{
+		EnemyStat->OnShieldChanged.Clear();
+		ShieldWidgetComponent->SetVisibility(false);
 	}
 }
 

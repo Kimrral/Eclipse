@@ -27,13 +27,13 @@ public:
 	virtual void SetDissolveValue(float Value) override;
 
 	UFUNCTION()
-	void SetBossShieldWidget();
+	void SetBossShieldWidget(const bool bEnable);
 	
 	UFUNCTION(Server, Reliable)
-	void SetBossShieldWidgetServer();
+	void SetBossShieldWidgetServer(const bool bEnable);
 
 	UFUNCTION(NetMulticast, Unreliable)
-	void SetBossShieldWidgetMulticast();
+	void SetBossShieldWidgetMulticast(const bool bEnable);
 	
 	UFUNCTION()
 	void SetBossShieldWidgetDelegate(const float InCurShield, const float InMaxShield) const;

@@ -4,6 +4,8 @@
 #include "Eclipse/AI/BTT_DashAttack.h"
 
 #include "AIController.h"
+#include "EclipseAI.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "Eclipse/Animation/BossAnim.h"
 #include "Eclipse/Enemy/Boss.h"
 
@@ -23,7 +25,12 @@ EBTNodeResult::Type UBTT_DashAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 			{
 				const FName& SectionName = FName("Dash");
 				ControllingBoss->PlayAnimMontageBySectionName(SectionName);
-				ControllingBoss->LaunchBossCharacter();
+				if (const APawn* Target = Cast<APawn>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(BBKEY_TARGET)); ::IsValid(Target))
+				{
+					const FVector TargetLocation = Target->GetActorLocation();
+					ControllingBoss->LaunchBossCharacter(TargetLocation);
+				}
+
 				if (const auto BossAnimInstance = Cast<UBossAnim>(ControllingBoss->GetMesh()->GetAnimInstance()); ::IsValid(BossAnimInstance))
 				{
 					BossAnimInstance->MontageSectionFinishedDelegate.BindLambda(

@@ -5,6 +5,7 @@
 
 #include "Eclipse/Character/PlayerCharacter.h"
 #include "Eclipse/Enemy/Boss.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
 
 void UBossAnim::AnimNotify_MontageEnd() const
@@ -105,4 +106,16 @@ void UBossAnim::AnimNotify_UltimateHitPoint() const
 			}
 		}
 	}
+}
+
+void UBossAnim::AnimNotify_DashEnd() const
+{
+	if(const auto BossCharacter = Cast<ABoss>(TryGetPawnOwner()); ::IsValid(BossCharacter))
+	{
+		const FName& WarpTargetName = FName("SwiftTargetLocation");
+		BossCharacter->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+		BossCharacter->MotionWarpingComponent->RemoveWarpTarget(WarpTargetName);
+
+		UE_LOG(LogTemp, Warning, TEXT("DashEnd"))
+	}	
 }

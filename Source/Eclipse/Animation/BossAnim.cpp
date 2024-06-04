@@ -4,6 +4,7 @@
 #include "Eclipse/Animation/BossAnim.h"
 
 #include "Eclipse/Character/PlayerCharacter.h"
+#include "Eclipse/Enemy/Boss.h"
 #include "GameFramework/PawnMovementComponent.h"
 
 void UBossAnim::AnimNotify_MontageEnd() const
@@ -58,13 +59,18 @@ void UBossAnim::AnimNotify_GroundSmashHitPoint() const
 
 void UBossAnim::AnimNotify_UltimateHitPoint() const
 {
-	if (const AActor* OwnerActor = TryGetPawnOwner(); ::IsValid(OwnerActor) && OwnerActor->HasAuthority())
+	if (AActor* OwnerActor = TryGetPawnOwner(); ::IsValid(OwnerActor) && OwnerActor->HasAuthority())
 	{
 		const FVector Center = OwnerActor->GetActorLocation();
 		const UWorld* World = OwnerActor->GetWorld();
 		if (nullptr == World)
 		{
 			return;
+		}
+
+		if(ABoss* OwnerBoss = Cast<ABoss>(OwnerActor); ::IsValid(OwnerBoss))
+		{
+			OwnerBoss->SetBossShieldWidget(false);
 		}
 
 		TArray<FOverlapResult> OverlapResults;

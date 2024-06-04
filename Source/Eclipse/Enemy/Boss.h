@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Enemy.h"
+#include "MotionWarpingComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Boss.generated.h"
 
@@ -27,6 +28,9 @@ public:
 	virtual void SetDissolveValue(float Value) override;
 
 	UFUNCTION()
+	void SwiftAttack();
+
+	UFUNCTION()
 	void SetBossShieldWidget(const bool bEnable);
 	
 	UFUNCTION(Server, Reliable)
@@ -39,7 +43,7 @@ public:
 	void SetBossShieldWidgetDelegate(const float InCurShield, const float InMaxShield) const;
 	
 	UFUNCTION()
-	void LaunchBossCharacter();
+	void LaunchBossCharacter(const FVector& TargetLocation) const;
 
 	UFUNCTION()
 	void PlayAnimMontageBySectionName(const FName& SectionName);
@@ -53,6 +57,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category=Widget)
 	TObjectPtr<class UWidgetComponent> ShieldWidgetComponent;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UMotionWarpingComponent> MotionWarpingComponent;
 	
 	FOnShieldDestroySuccessed ShieldDestroySuccessDelegate;
 

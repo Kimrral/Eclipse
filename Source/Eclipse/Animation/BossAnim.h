@@ -26,6 +26,9 @@ public:
 	UFUNCTION()
 	void AnimNotify_UltimateHitPoint() const;
 
+	UFUNCTION()
+	void AnimNotify_DashEnd() const;
+
 	FOnMontageSectionFinished MontageSectionFinishedDelegate;
 	
 };

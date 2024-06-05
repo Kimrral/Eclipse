@@ -29,6 +29,12 @@ public:
 	UFUNCTION()
 	void AnimNotify_DashEnd() const;
 
+	UFUNCTION()
+	void AnimNotify_JumpAttackHitPoint() const;
+
+	UFUNCTION()
+	void GroundNotifyAttack(const float InDamage) const;
+
 	FOnMontageSectionFinished MontageSectionFinishedDelegate;
 	
 };

@@ -28,9 +28,6 @@ public:
 	virtual void SetDissolveValue(float Value) override;
 
 	UFUNCTION()
-	void SwiftAttack();
-
-	UFUNCTION()
 	void SetBossShieldWidget(const bool bEnable);
 	
 	UFUNCTION(Server, Reliable)

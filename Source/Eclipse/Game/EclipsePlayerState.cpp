@@ -368,6 +368,7 @@ void AEclipsePlayerState::DragFromInventoryServer_Implementation(APlayerCharacte
 			}
 			return;
 		}
+		// Drop Item
 		if (DropArrayIndex == 45)
 		{
 			if (PlayerInventoryStacks[DragArrayIndex] > 1)

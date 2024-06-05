@@ -11,7 +11,6 @@
 #include "Eclipse/UI/BossShieldWidget.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 ABoss::ABoss()
@@ -132,10 +131,6 @@ void ABoss::SetDissolveMaterial()
 void ABoss::SetDissolveValue(float Value)
 {
 	return;
-}
-
-void ABoss::SwiftAttack()
-{
 }
 
 void ABoss::SetBossShieldWidget(const bool bEnable)

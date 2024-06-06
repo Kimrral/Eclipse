@@ -28,8 +28,8 @@ void AEclipseBossAIController::RunAI()
 {
 	if (UBlackboardComponent* BlackboardPtr = Blackboard.Get(); UseBlackboard(ECBlackboard, BlackboardPtr))
 	{
-		//const FVector& InitialPos = FVector(-4595,14075,-529.259879);
-		const FVector& InitialPos = FVector(290,2660,-90);
+		const FVector& InitialPos = FVector(-4595,14075,-529.259879);
+		//const FVector& InitialPos = FVector(290,2660,-90);
 		Blackboard->SetValueAsVector(BBKEY_INITIALPOS, InitialPos);
 		
 		
@@ -45,22 +45,12 @@ void AEclipseBossAIController::StopAI() const
 	}
 }
 
-void AEclipseBossAIController::MoveToInitialPosition(const FVector& TargetPosition)
-{
-	FAIMoveRequest MoveRequest;
-	MoveRequest.SetGoalLocation(TargetPosition);
-	MoveTo(MoveRequest);
-	GetPathFollowingComponent()->OnRequestFinished.AddUFunction(this, FName("BossInitialize"));
-}
-
 void AEclipseBossAIController::BossInitialize() const
 {
-	ReturnMovementSuccessDelegate.ExecuteIfBound();
 	if(const ABoss* const ControllingBoss = Cast<ABoss>(GetPawn()); ::IsValid(ControllingBoss))
 	{
 		ControllingBoss->InitializeStat();
 	}
-	GetPathFollowingComponent()->OnRequestFinished.Clear();
 }
 
 void AEclipseBossAIController::OnPossess(APawn* InPawn)

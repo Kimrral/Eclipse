@@ -21,9 +21,6 @@ public:
 	void StopAI() const;
 
 	UFUNCTION()
-	void MoveToInitialPosition(const FVector& TargetPosition);
-
-	UFUNCTION()
 	void BossInitialize() const;
 
 	FOnReturnMovementSuccess ReturnMovementSuccessDelegate;

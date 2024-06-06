@@ -112,8 +112,8 @@ void AEnemy::ResetPawnDetection()
 
 void AEnemy::Damaged(const int Damage, AActor* DamageCauser)
 {
-	if(IsLocallyViewed()) SetDamagedOverlayMaterial();
-	DamagedRPCServer(Damage, DamageCauser);
+	//if(IsLocallyViewed()) SetDamagedOverlayMaterial();
+	//DamagedRPCServer(Damage, DamageCauser);
 	EnemyStat->ApplyDamage(Damage, DamageCauser);
 }
 

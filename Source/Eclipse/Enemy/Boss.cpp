@@ -140,6 +140,10 @@ void ABoss::InitializeStat() const
 
 void ABoss::InitializeStatServer_Implementation() const
 {
+	if (EnemyStat->GetMaxHp() == EnemyStat->GetCurrentHp() && EnemyStat->GetMaxShield() == EnemyStat->GetCurrentShield())
+	{
+		return;
+	}
 	EnemyStat->SetHp(EnemyStat->GetMaxHp());
 	EnemyStat->SetShield(EnemyStat->GetMaxShield());
 	UE_LOG(LogTemp, Warning, TEXT("Initialize"))

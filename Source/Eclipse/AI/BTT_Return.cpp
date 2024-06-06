@@ -3,7 +3,6 @@
 
 #include "Eclipse/AI/BTT_Return.h"
 
-#include "EclipseAI.h"
 #include "EclipseBossAIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
@@ -15,23 +14,12 @@ EBTNodeResult::Type UBTT_Return::ExecuteTask(UBehaviorTreeComponent& OwnerComp, 
 {
 	EBTNodeResult::Type Result = Super::ExecuteTask(OwnerComp, NodeMemory);
 
-	const FVector InitialPosition = OwnerComp.GetBlackboardComponent()->GetValueAsVector(BBKEY_INITIALPOS);
-	if(const FVector PawnPosition = OwnerComp.GetAIOwner()->GetPawn()->GetActorLocation(); FVector::Dist(InitialPosition, PawnPosition)<10.f)
-	{
-		return EBTNodeResult::Failed;
-	}
-	
 	if (const auto BossController = Cast<AEclipseBossAIController>(OwnerComp.GetAIOwner()))
 	{
 		if (::IsValid(BossController))
 		{			
-			BossController->MoveToInitialPosition(InitialPosition);
-			BossController->ReturnMovementSuccessDelegate.BindLambda(
-				[&]()
-				{
-					FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-				}
-			);		
+			BossController->BossInitialize();
+			return EBTNodeResult::Succeeded;
 		}
 	}
 	else
@@ -39,5 +27,5 @@ EBTNodeResult::Type UBTT_Return::ExecuteTask(UBehaviorTreeComponent& OwnerComp, 
 		return EBTNodeResult::Failed;
 	}
 
-	return EBTNodeResult::InProgress;
+	return EBTNodeResult::Failed;
 }

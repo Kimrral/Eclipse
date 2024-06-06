@@ -658,6 +658,9 @@ public:
 	void ModifyFlashlightAttachment(const int32 WeaponNum) const;
 
 	UFUNCTION()
+	void InitializeAccumulatedDamage();
+
+	UFUNCTION()
 	void ChoosePlayerStartByTagName(const FName& PlayerStartTagName, const int32 DetectionSphereRadius);
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;

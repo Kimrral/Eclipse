@@ -22,23 +22,28 @@ public:
 	virtual void OnDie() override;
 	virtual void OnDestroy() override;
 	virtual void OnShieldDestroy() override;
-	
+
 	virtual void SetAIController() override;
-	virtual void SetDissolveMaterial() override;	
+	virtual void SetDissolveMaterial() override;
 	virtual void SetDissolveValue(float Value) override;
 
 	UFUNCTION()
+	void InitializeStat() const;
+	UFUNCTION(Server, Reliable)
+	void InitializeStatServer() const;
+
+	UFUNCTION()
 	void SetBossShieldWidget(const bool bEnable);
-	
+
 	UFUNCTION(Server, Reliable)
 	void SetBossShieldWidgetServer(const bool bEnable);
 
 	UFUNCTION(NetMulticast, Unreliable)
 	void SetBossShieldWidgetMulticast(const bool bEnable);
-	
+
 	UFUNCTION()
 	void SetBossShieldWidgetDelegate(const float InCurShield, const float InMaxShield) const;
-	
+
 	UFUNCTION()
 	void LaunchBossCharacter(const FVector& TargetLocation) const;
 
@@ -48,7 +53,7 @@ public:
 	void PlayAnimMontageBySectionNameServer(const FName& SectionName);
 	UFUNCTION(NetMulticast, Unreliable)
 	void PlayAnimMontageBySectionNameMulticast(const FName& SectionName);
-	
+
 	UPROPERTY(EditAnywhere, Category=Variable)
 	float DashForce;
 
@@ -57,7 +62,7 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UMotionWarpingComponent> MotionWarpingComponent;
-	
+
 	FOnShieldDestroySuccessed ShieldDestroySuccessDelegate;
 
 	UPROPERTY()
@@ -66,7 +71,4 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-
-
 };

@@ -110,7 +110,7 @@ void ABoss::OnShieldDestroy()
 			{
 				AIController->RunAI();
 			}
-		}), 10.0f, false);
+		}), 8.0f, false);
 	}
 }
 
@@ -131,6 +131,18 @@ void ABoss::SetDissolveMaterial()
 void ABoss::SetDissolveValue(float Value)
 {
 	return;
+}
+
+void ABoss::InitializeStat() const
+{
+	InitializeStatServer();
+}
+
+void ABoss::InitializeStatServer_Implementation() const
+{
+	EnemyStat->SetHp(EnemyStat->GetMaxHp());
+	EnemyStat->SetShield(EnemyStat->GetMaxShield());
+	UE_LOG(LogTemp, Warning, TEXT("Initialize"))
 }
 
 void ABoss::SetBossShieldWidget(const bool bEnable)

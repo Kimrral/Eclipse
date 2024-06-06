@@ -44,7 +44,6 @@
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Components/AudioComponent.h"
 #include "Components/Image.h"
-#include "Components/ProgressBar.h"
 #include "Components/SpotLightComponent.h"
 #include "Components/TextBlock.h"
 #include "Components/WidgetComponent.h"
@@ -54,6 +53,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Eclipse/CharacterStat/PlayerCharacterStatComponent.h"
+#include "Eclipse/Enemy/Boss.h"
 #include "Eclipse/Game/EclipsePlayerState.h"
 #include "Eclipse/Item/AdrenalineSyringe.h"
 #include "Eclipse/Item/FirstAidKitActor.h"
@@ -68,7 +68,6 @@
 #include "Eclipse/Prop/Trader.h"
 #include "Eclipse/UI/ExtractionCountdown.h"
 #include "Eclipse/UI/MenuWidget.h"
-#include "Eclipse/UI/TabWidget.h"
 #include "Eclipse/UI/TradeWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -1174,13 +1173,27 @@ void APlayerCharacter::OnEnemyHitRPCMulticast_Implementation(const FHitResult& H
 		{
 			DamageAmount = Stat->GetAttackDamage(weaponArray, false);
 			HitEnemy->Damaged(DamageAmount * 2, this);
-			Stat->AccumulatedDamageToEnemy += DamageAmount * 2;
+			if(const auto HitBoss = Cast<ABoss>(HitEnemy); ::IsValid(HitBoss))
+			{
+				Stat->AccumulatedDamageToBoss += DamageAmount * 2;
+			}
+			else
+			{
+				Stat->AccumulatedDamageToEnemy += DamageAmount * 2;
+			}			
 		}
 		else
 		{
 			DamageAmount = Stat->GetAttackDamage(weaponArray, false);
 			HitEnemy->Damaged(DamageAmount, this);
-			Stat->AccumulatedDamageToEnemy += DamageAmount;
+			if(const auto HitBoss = Cast<ABoss>(HitEnemy); ::IsValid(HitBoss))
+			{
+				Stat->AccumulatedDamageToBoss += DamageAmount;
+			}
+			else
+			{
+				Stat->AccumulatedDamageToEnemy += DamageAmount;
+			}			
 		}
 	}
 	else
@@ -2975,6 +2988,7 @@ void APlayerCharacter::OnSpacecraftStreamingLevelLoadFinishedServer_Implementati
 {
 	bSpacecraft = true;
 	IsPlayerDeadImmediately = false;
+	InitializeAccumulatedDamage();	
 	ChoosePlayerStartByTagName(FName("Spacecraft"), 50);
 }
 
@@ -3012,6 +3026,7 @@ void APlayerCharacter::OnIntersectionStreamingLevelLoadFinishedServer_Implementa
 {
 	bSpacecraft = false;
 	IsPlayerDeadImmediately = false;
+	InitializeAccumulatedDamage();	
 	ChoosePlayerStartByTagName(FName("Intersection"), 3000);
 }
 
@@ -3050,6 +3065,7 @@ void APlayerCharacter::OnHideoutStreamingLevelLoadFinishedServer_Implementation(
 	bSpacecraft = false;
 	IsPlayerDeadImmediately = false;
 	Stat->SetHp(Stat->GetMaxHp());
+	InitializeAccumulatedDamage();	
 	ChoosePlayerStartByTagName(FName("Hideout"), 50);
 	OnHideoutStreamingLevelLoadFinishedMulticast();
 }
@@ -3127,6 +3143,13 @@ void APlayerCharacter::ModifyFlashlightAttachment(const int32 WeaponNum) const
 		if (!M249Comp->IsRegistered()) M249Comp->RegisterComponent();
 		FlashLight->AttachToComponent(M249Comp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, SocketName);
 	}
+}
+
+void APlayerCharacter::InitializeAccumulatedDamage()
+{
+	Stat->AccumulatedDamageToBoss = 0;
+	Stat->AccumulatedDamageToEnemy = 0;
+	Stat->AccumulatedDamageToPlayer = 0;
 }
 
 void APlayerCharacter::ChoosePlayerStartByTagName(const FName& PlayerStartTagName, const int32 DetectionSphereRadius)

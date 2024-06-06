@@ -3,23 +3,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BehaviorTree/BTService.h"
-#include "Eclipse/Character/PlayerCharacter.h"
-#include "BTS_Detection.generated.h"
+#include "AIModule/Classes/BehaviorTree/BTService.h"
+#include "BTS_CheckChaseLimit.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class ECLIPSE_API UBTS_Detection : public UBTService
+class ECLIPSE_API UBTS_CheckChaseLimit : public UBTService
 {
 	GENERATED_BODY()
 
 public:
-	UBTS_Detection();
-
-	UPROPERTY(EditAnywhere)
-	float DetectionRange;
+	UBTS_CheckChaseLimit();
 
 protected:
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;

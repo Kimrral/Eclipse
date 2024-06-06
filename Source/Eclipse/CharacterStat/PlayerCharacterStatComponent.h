@@ -88,6 +88,9 @@ public:
 	float AccumulatedDamageToEnemy;
 
 	UPROPERTY(Replicated, VisibleInstanceOnly, Category = Score)
+	float AccumulatedDamageToBoss;
+
+	UPROPERTY(Replicated, VisibleInstanceOnly, Category = Score)
 	float AccumulatedDamageToPlayer;
 
 	UPROPERTY(Replicated, VisibleInstanceOnly, Category = Stat)

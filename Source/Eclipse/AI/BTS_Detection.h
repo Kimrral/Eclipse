@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTService.h"
+#include "Eclipse/Character/PlayerCharacter.h"
 #include "BTS_Detection.generated.h"
 
 /**

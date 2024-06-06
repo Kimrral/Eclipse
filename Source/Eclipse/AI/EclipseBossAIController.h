@@ -6,6 +6,7 @@
 #include "AIController.h"
 #include "EclipseBossAIController.generated.h"
 
+DECLARE_DELEGATE(FOnReturnMovementSuccess);
 /**
  * 
  */
@@ -18,10 +19,19 @@ public:
 	AEclipseBossAIController();
 	void RunAI();
 	void StopAI() const;
+
+	UFUNCTION()
+	void MoveToInitialPosition(const FVector& TargetPosition);
+
+	UFUNCTION()
+	void BossInitialize() const;
+
+	FOnReturnMovementSuccess ReturnMovementSuccessDelegate;
 	
 protected:
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void OnUnPossess() override;
+	
 	
 private:
 	UPROPERTY(EditAnywhere)

@@ -33,6 +33,9 @@ public:
 	void AnimNotify_JumpAttackHitPoint() const;
 
 	UFUNCTION()
+	void AnimNotify_BasicAttackHitPoint() const;
+
+	UFUNCTION()
 	void GroundNotifyAttack(const float InDamage) const;
 
 	FOnMontageSectionFinished MontageSectionFinishedDelegate;

@@ -32,10 +32,6 @@ void UBTS_Detection::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemo
 		return;
 	}
 
-	TArray<APlayerCharacter*> PlayerCharacterArray;
-
-	// 함수 호출마다 캐릭터 배열 리셋
-	PlayerCharacterArray.Reset();
 
 	const FCollisionQueryParams CollisionQueryParam(SCENE_QUERY_STAT(Detect), false, ControllingPawn);
 
@@ -48,6 +44,7 @@ void UBTS_Detection::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemo
 		CollisionQueryParam
 	))
 	{
+		TArray<APlayerCharacter*> PlayerCharacterArray;
 		int MaxDamageIndex = 0;
 		for (auto const& OverlapResult : OverlapResults)
 		{
@@ -86,4 +83,6 @@ void UBTS_Detection::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemo
 	}
 
 	OwnerComp.GetBlackboardComponent()->SetValueAsObject(BBKEY_TARGET, nullptr);
+
+	
 }

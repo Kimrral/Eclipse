@@ -207,7 +207,7 @@ void APlayerCharacter::BeginPlay()
 	gi->IsWidgetOn = false;
 
 	//Add Input Mapping Context
-	if (PC)
+	if (PC&&IsLocallyControlled())
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
 		{

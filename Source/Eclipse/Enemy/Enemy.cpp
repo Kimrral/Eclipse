@@ -47,7 +47,7 @@ void AEnemy::BeginPlay()
 
 	PawnSensingComponent->OnSeePawn.AddDynamic(this, &AEnemy::OnPawnDetected);
 
-	EnemyStat->OnShieldZero.AddUObject(this, &AEnemy::OnShieldDestroy);
+	EnemyStat->OnShieldZero.AddUFunction(this, FName("OnShieldDestroy"));
 
 	EnemyAnim = Cast<UEnemyAnim>(GetMesh()->GetAnimInstance());
 	GameMode = Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());
@@ -110,37 +110,9 @@ void AEnemy::ResetPawnDetection()
 	bPlayerInSight = false;
 }
 
-void AEnemy::Damaged(const int Damage, AActor* DamageCauser)
+void AEnemy::Damaged(const int Damage, AActor* DamageCauser) const
 {
-	//if(IsLocallyViewed()) SetDamagedOverlayMaterial();
-	//DamagedRPCServer(Damage, DamageCauser);
 	EnemyStat->ApplyDamage(Damage, DamageCauser);
-}
-
-void AEnemy::DamagedRPCServer_Implementation(const int Damage, AActor* DamageCauser)
-{
-	DamagedRPCMulticast(Damage, DamageCauser);
-}
-
-bool AEnemy::DamagedRPCServer_Validate(int Damage, AActor* DamageCauser)
-{
-	return true;
-}
-
-void AEnemy::DamagedRPCMulticast_Implementation(int Damage, AActor* DamageCauser)
-{
-	if (!HasAuthority())
-	{
-		if (!IsLocallyViewed())
-		{
-			SetDamagedOverlayMaterial();
-		}
-	}
-}
-
-void AEnemy::ResetOverlayMaterial() const
-{
-	GetMesh()->SetOverlayMaterial(nullptr);
 }
 
 void AEnemy::OnShieldDestroy()
@@ -230,20 +202,3 @@ void AEnemy::SetDissolveMaterial()
 	}
 }
 
-void AEnemy::SetDamagedOverlayMaterial()
-{
-	if (EnemyStat->IsShieldBroken)
-	{
-		FTimerHandle OverlayMatHandle;
-		GetMesh()->SetOverlayMaterial(HitOverlayMat);
-		GetWorldTimerManager().ClearTimer(OverlayMatHandle);
-		GetWorldTimerManager().SetTimer(OverlayMatHandle, this, &AEnemy::ResetOverlayMaterial, 0.2f, false);
-	}
-	else
-	{
-		FTimerHandle OverlayMatHandle;
-		GetMesh()->SetOverlayMaterial(HitOverlayMatShield);
-		GetWorldTimerManager().ClearTimer(OverlayMatHandle);
-		GetWorldTimerManager().SetTimer(OverlayMatHandle, this, &AEnemy::ResetOverlayMaterial, 0.2f, false);
-	}
-}

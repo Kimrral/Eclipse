@@ -33,7 +33,7 @@ void ABoss::BeginPlay()
 {
 	Super::BeginPlay();
 
-	EnemyStat->OnHpZero.AddUObject(this, &ABoss::OnDie);
+	EnemyStat->OnHpZero.AddUFunction(this, FName("OnDie"));
 }
 
 

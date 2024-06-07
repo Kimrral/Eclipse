@@ -65,16 +65,7 @@ public:
 	void ResetPawnDetection(); 
 
 	UFUNCTION()
-	void Damaged(int Damage, AActor* DamageCauser);
-
-	UFUNCTION(Reliable, Server, WithValidation)
-	void DamagedRPCServer(int Damage, AActor* DamageCauser);
-
-	UFUNCTION(Unreliable, NetMulticast)
-	void DamagedRPCMulticast(int Damage, AActor* DamageCauser);
-
-	UFUNCTION()
-	void ResetOverlayMaterial() const;
+	void Damaged(int Damage, AActor* DamageCauser) const;
 
 	UFUNCTION()
 	virtual void OnShieldDestroy();
@@ -93,9 +84,6 @@ public:
 
 	UFUNCTION()
 	virtual void SetDissolveMaterial();
-
-	UFUNCTION()
-	void SetDamagedOverlayMaterial();
 
 	UPROPERTY()
 	FTimerHandle StunHandle;

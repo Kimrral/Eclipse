@@ -44,11 +44,7 @@ void UEnemyFSM::BeginPlay()
 
 	// Set MoveSpeed
 	Me->GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
-	if(const ABoss* const CastBoss = Cast<ABoss>(GetOwner()); !CastBoss)
-	{
-		Me->EnemyStat->OnHpZero.AddUniqueDynamic(this, &UEnemyFSM::DieProcess);
-		Me->EnemyStat->OnEnemyDamaged.AddUniqueDynamic(this, &UEnemyFSM::FindAggressivePlayer);
-	}
+	Me->EnemyStat->OnEnemyDamaged.AddUniqueDynamic(this, &UEnemyFSM::FindAggressivePlayer);
 
 	// Timeline Binding
 	if (CurveFloat)
@@ -252,12 +248,6 @@ void UEnemyFSM::TickDie()
 {
 }
 
-void UEnemyFSM::DieProcess()
-{
-	// Die 상태로 전이한다.
-	SetState(EEnemyState::DIE);
-	Me->OnDie();
-}
 
 void UEnemyFSM::RandomMoveSettings(FVector TargetLocation)
 {

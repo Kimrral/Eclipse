@@ -52,12 +52,9 @@ public:
 
 	UFUNCTION()
 	void TickDamage();
-
+	
 	UFUNCTION()
 	void TickDie();
-
-	UFUNCTION()
-	void DieProcess();
 
 	UFUNCTION()
 	void RandomMoveSettings(FVector TargetLocation);

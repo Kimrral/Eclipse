@@ -33,11 +33,10 @@ void ABoss::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	if (!EnemyStat->OnHpZero.Contains(this, TEXT("OnDie")))
-	{
-		EnemyStat->OnHpZero.AddUniqueDynamic(this, &ABoss::OnDie);
-	}
-
+	// if (!EnemyStat->OnHpZero.Contains(this, TEXT("OnDie")))
+	// {
+	// 	EnemyStat->OnHpZero.AddUniqueDynamic(this, &ABoss::OnDie);
+	// }
 }
 
 
@@ -189,7 +188,7 @@ void ABoss::SetBossShieldWidgetMulticast_Implementation(const bool bEnable)
 	else
 	{
 		// 델리게이트 해제
-		EnemyStat->OnShieldChanged.Clear();
+		EnemyStat->OnShieldChanged.RemoveDynamic(this, &ABoss::SetBossShieldWidgetDelegate);
 		// 위젯 컴포넌트 Visibility 설정
 		ShieldWidgetComponent->SetVisibility(false);
 	}

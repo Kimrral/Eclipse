@@ -50,7 +50,12 @@ void AEnemy::BeginPlay()
 	if (!EnemyStat->OnShieldZero.Contains(this, TEXT("OnShieldDestroy")))
 	{
 		EnemyStat->OnShieldZero.AddUniqueDynamic(this, &AEnemy::OnShieldDestroy);
-	}	
+	}
+	if (!EnemyStat->OnHpZero.Contains(this, TEXT("OnDie")))
+	{
+		EnemyStat->OnHpZero.AddUniqueDynamic(this, &AEnemy::OnDie);
+	}
+
 
 	EnemyAnim = Cast<UEnemyAnim>(GetMesh()->GetAnimInstance());
 	GameMode = Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());
@@ -82,6 +87,7 @@ void AEnemy::OnDie()
 	{
 		EnemyFSM->Timeline.Stop();
 		EnemyFSM->SetComponentTickEnabled(false);
+		EnemyFSM->SetState(EEnemyState::DIE);
 	}
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GetCharacterMovement()->SetMovementMode(MOVE_None);

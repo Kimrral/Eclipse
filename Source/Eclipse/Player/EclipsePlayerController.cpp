@@ -31,7 +31,7 @@ void AEclipsePlayerController::UpdateTabWidget() const
 	}
 }
 
-void AEclipsePlayerController::UpdateBossHpWidget(const float InCurrentHp, const float InMaxHp) const
+void AEclipsePlayerController::UpdateBossHpWidget(const float InCurrentHp, const float InMaxHp)
 {
 	if(::IsValid(BossHPWidget))
 	{
@@ -39,7 +39,7 @@ void AEclipsePlayerController::UpdateBossHpWidget(const float InCurrentHp, const
 	}
 }
 
-void AEclipsePlayerController::UpdateBossShieldWidget(const float InCurrentShield, const float InMaxShield) const
+void AEclipsePlayerController::UpdateBossShieldWidget(const float InCurrentShield, const float InMaxShield)
 {
 	if(::IsValid(BossHPWidget))
 	{
@@ -56,7 +56,7 @@ void AEclipsePlayerController::PlayerDeath() const
 	}
 }
 
-void AEclipsePlayerController::AddBossHpWidgetToViewport() const
+void AEclipsePlayerController::AddBossHpWidgetToViewport()
 {
 	TArray<class AActor*> OutActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABoss::StaticClass(), OutActors);
@@ -64,8 +64,8 @@ void AEclipsePlayerController::AddBossHpWidgetToViewport() const
 	{
 		if(const auto Boss = Cast<ABoss>(Bosses))
 		{
-			Boss->EnemyStat->OnHpChanged.AddUObject(this, &AEclipsePlayerController::UpdateBossHpWidget);			
-			Boss->EnemyStat->OnShieldChanged.AddUObject(this, &AEclipsePlayerController::UpdateBossShieldWidget);
+			Boss->EnemyStat->OnHpChanged.AddUniqueDynamic(this, &AEclipsePlayerController::UpdateBossHpWidget);			
+			Boss->EnemyStat->OnShieldChanged.AddUniqueDynamic(this, &AEclipsePlayerController::UpdateBossShieldWidget);
 			UpdateBossHpWidget(Boss->EnemyStat->GetCurrentHp(), Boss->EnemyStat->GetMaxHp());
 			UpdateBossShieldWidget(Boss->EnemyStat->GetCurrentShield(), Boss->EnemyStat->GetMaxShield());
 			break;

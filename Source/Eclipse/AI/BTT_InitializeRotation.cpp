@@ -20,7 +20,7 @@ EBTNodeResult::Type UBTT_InitializeRotation::ExecuteTask(UBehaviorTreeComponent&
 	}
 
 
-	const FRotator LookRotator = FRotator(0, -45, 0);
+	const FRotator LookRotator = FRotator(0, -50, 0);
 	ControllingPawn->SetActorRotation(FMath::RInterpTo(ControllingPawn->GetActorRotation(), LookRotator, GetWorld()->GetDeltaSeconds(), TurnSpeed));
 
 	return EBTNodeResult::Succeeded;

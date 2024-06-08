@@ -12,6 +12,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Eclipse/CharacterStat/PlayerCharacterStatComponent.h"
+#include "Eclipse/Enemy/Boss.h"
 #include "Net/UnrealNetwork.h"
 
 // Sets default values for this component's properties
@@ -43,9 +44,11 @@ void UEnemyFSM::BeginPlay()
 
 	// Set MoveSpeed
 	Me->GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
-
-	Me->EnemyStat->OnHpZero.AddUObject(this, &UEnemyFSM::DieProcess);
-	Me->EnemyStat->OnEnemyDamaged.AddUObject(this, &UEnemyFSM::FindAggressivePlayer);
+	if(const ABoss* const CastBoss = Cast<ABoss>(GetOwner()); !CastBoss)
+	{
+		Me->EnemyStat->OnHpZero.AddUniqueDynamic(this, &UEnemyFSM::DieProcess);
+		Me->EnemyStat->OnEnemyDamaged.AddUniqueDynamic(this, &UEnemyFSM::FindAggressivePlayer);
+	}
 
 	// Timeline Binding
 	if (CurveFloat)

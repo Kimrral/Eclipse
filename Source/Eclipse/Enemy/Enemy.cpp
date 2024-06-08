@@ -47,7 +47,10 @@ void AEnemy::BeginPlay()
 
 	PawnSensingComponent->OnSeePawn.AddDynamic(this, &AEnemy::OnPawnDetected);
 
-	EnemyStat->OnShieldZero.AddUFunction(this, FName("OnShieldDestroy"));
+	if (!EnemyStat->OnShieldZero.Contains(this, TEXT("OnShieldDestroy")))
+	{
+		EnemyStat->OnShieldZero.AddUniqueDynamic(this, &AEnemy::OnShieldDestroy);
+	}	
 
 	EnemyAnim = Cast<UEnemyAnim>(GetMesh()->GetAnimInstance());
 	GameMode = Cast<AEclipseGameMode>(GetWorld()->GetAuthGameMode());

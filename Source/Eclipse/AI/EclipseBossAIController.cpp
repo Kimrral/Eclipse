@@ -28,7 +28,7 @@ void AEclipseBossAIController::RunAI()
 {
 	if (UBlackboardComponent* BlackboardPtr = Blackboard.Get(); UseBlackboard(ECBlackboard, BlackboardPtr))
 	{
-		const FVector& InitialPos = FVector(-4595,14075,-529.259879);
+		const FVector& InitialPos = FVector(-5265,14628,-532);
 		//const FVector& InitialPos = FVector(290,2660,-90);
 		Blackboard->SetValueAsVector(BBKEY_INITIALPOS, InitialPos);
 		

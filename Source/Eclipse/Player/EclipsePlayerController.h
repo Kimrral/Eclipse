@@ -22,16 +22,16 @@ public:
 	void UpdateTabWidget() const;
 
 	UFUNCTION()
-	void UpdateBossHpWidget(const float InCurrentHp, const float InMaxHp) const;
+	void UpdateBossHpWidget(const float InCurrentHp, const float InMaxHp);
 
 	UFUNCTION()
-	void UpdateBossShieldWidget(const float InCurrentShield, const float InMaxShield) const;
+	void UpdateBossShieldWidget(const float InCurrentShield, const float InMaxShield);
 
 	UFUNCTION()
 	void PlayerDeath() const;
 
 	UFUNCTION()
-	void AddBossHpWidgetToViewport() const;
+	void AddBossHpWidgetToViewport();
 	UFUNCTION()
 	void RemoveBossHpWidgetFromViewport() const;
 	

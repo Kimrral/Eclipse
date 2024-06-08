@@ -42,7 +42,7 @@ public:
 	void SetBossShieldWidgetMulticast(const bool bEnable);
 
 	UFUNCTION()
-	void SetBossShieldWidgetDelegate(const float InCurShield, const float InMaxShield) const;
+	void SetBossShieldWidgetDelegate(float InCurShield, float InMaxShield);
 
 	UFUNCTION()
 	void LaunchBossCharacter(const FVector& TargetLocation) const;

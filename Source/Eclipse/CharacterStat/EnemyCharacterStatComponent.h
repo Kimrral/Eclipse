@@ -6,11 +6,15 @@
 #include "Components/ActorComponent.h"
 #include "EnemyCharacterStatComponent.generated.h"
 
-DECLARE_MULTICAST_DELEGATE(FOnEnemyHpZeroDelegate);
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnEnemyHpChangedDelegate, float, float);
-DECLARE_MULTICAST_DELEGATE(FOnEnemyShieldZeroDelegate);
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnEnemyShieldChangedDelegate, float, float);
-DECLARE_MULTICAST_DELEGATE(FOnEnemyDamagedDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEnemyHpZeroDelegate);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnEnemyHpChangedDelegate, float, InCurrentHP, float, InMaxHP);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEnemyShieldZeroDelegate);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnEnemyShieldChangedDelegate, float, InCurShield, float, InMaxShield);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEnemyDamagedDelegate);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class ECLIPSE_API UEnemyCharacterStatComponent : public UActorComponent

@@ -32,8 +32,12 @@ ABoss::ABoss()
 void ABoss::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	if (!EnemyStat->OnHpZero.Contains(this, TEXT("OnDie")))
+	{
+		EnemyStat->OnHpZero.AddUniqueDynamic(this, &ABoss::OnDie);
+	}
 
-	EnemyStat->OnHpZero.AddUFunction(this, FName("OnDie"));
 }
 
 
@@ -165,8 +169,11 @@ void ABoss::SetBossShieldWidgetMulticast_Implementation(const bool bEnable)
 	// 보스 실드 위젯 활성화
 	if (bEnable)
 	{
-		// 전멸기 차징 외에는 실드 변동사항을 전달받을 이유가 없으므로, 동적으로 델리게이트 바인딩과 해제
-		EnemyStat->OnShieldChanged.AddUObject(this, &ABoss::SetBossShieldWidgetDelegate);
+		if (!EnemyStat->OnShieldChanged.Contains(this, TEXT("SetBossShieldWidgetDelegate")))
+		{
+			// 전멸기 차징 외에는 실드 변동사항을 전달받을 이유가 없으므로, 동적으로 델리게이트 바인딩과 해제
+			EnemyStat->OnShieldChanged.AddUniqueDynamic(this, &ABoss::SetBossShieldWidgetDelegate);
+		}
 
 		// 위젯 컴포넌트 Visibility 설정
 		ShieldWidgetComponent->SetVisibility(true);
@@ -188,7 +195,7 @@ void ABoss::SetBossShieldWidgetMulticast_Implementation(const bool bEnable)
 	}
 }
 
-void ABoss::SetBossShieldWidgetDelegate(const float InCurShield, const float InMaxShield) const
+void ABoss::SetBossShieldWidgetDelegate(const float InCurShield, const float InMaxShield)
 {
 	BossShieldWidget->UpdateShieldWidget(InCurShield, InMaxShield);
 }

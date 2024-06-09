@@ -49,11 +49,11 @@ void AEnemy::BeginPlay()
 
 	if (!EnemyStat->OnShieldZero.Contains(this, TEXT("OnShieldDestroy")))
 	{
-		EnemyStat->OnShieldZero.AddUniqueDynamic(this, &AEnemy::OnShieldDestroy);
+		EnemyStat->OnShieldZero.AddDynamic(this, &AEnemy::OnShieldDestroy);
 	}
 	if (!EnemyStat->OnHpZero.Contains(this, TEXT("OnDie")))
 	{
-		EnemyStat->OnHpZero.AddUniqueDynamic(this, &AEnemy::OnDie);
+		EnemyStat->OnHpZero.AddDynamic(this, &AEnemy::OnDie);
 	}
 
 
@@ -69,6 +69,20 @@ void AEnemy::BeginPlay()
 		FOnTimelineFloat TimelineProgress;
 		TimelineProgress.BindDynamic(this, &AEnemy::SetDissolveValue);
 		DissolveTimeline.AddInterpFloat(DissolveCurveFloat, TimelineProgress);
+	}
+}
+
+void AEnemy::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	if (EnemyStat->OnShieldZero.Contains(this, TEXT("OnShieldDestroy")))
+	{
+		EnemyStat->OnShieldZero.RemoveDynamic(this, &AEnemy::OnShieldDestroy);
+	}
+	if (EnemyStat->OnHpZero.Contains(this, TEXT("OnDie")))
+	{
+		EnemyStat->OnHpZero.RemoveDynamic(this, &AEnemy::OnDie);
 	}
 }
 

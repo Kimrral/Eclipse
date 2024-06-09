@@ -32,11 +32,6 @@ ABoss::ABoss()
 void ABoss::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	// if (!EnemyStat->OnHpZero.Contains(this, TEXT("OnDie")))
-	// {
-	// 	EnemyStat->OnHpZero.AddUniqueDynamic(this, &ABoss::OnDie);
-	// }
 }
 
 
@@ -159,7 +154,10 @@ void ABoss::SetBossShieldWidget(const bool bEnable)
 
 void ABoss::SetBossShieldWidgetServer_Implementation(const bool bEnable)
 {
-	if (bEnable) EnemyStat->SetShield(EnemyStat->GetMaxShield());
+	if (bEnable)
+	{
+		EnemyStat->SetShield(EnemyStat->GetMaxShield());
+	}
 	SetBossShieldWidgetMulticast(bEnable);
 }
 
@@ -168,14 +166,16 @@ void ABoss::SetBossShieldWidgetMulticast_Implementation(const bool bEnable)
 	// 보스 실드 위젯 활성화
 	if (bEnable)
 	{
-		if (!EnemyStat->OnShieldChanged.Contains(this, TEXT("SetBossShieldWidgetDelegate")))
+		if(!HasAuthority())
 		{
-			// 전멸기 차징 외에는 실드 변동사항을 전달받을 이유가 없으므로, 동적으로 델리게이트 바인딩과 해제
-			EnemyStat->OnShieldChanged.AddUniqueDynamic(this, &ABoss::SetBossShieldWidgetDelegate);
-		}
-
-		// 위젯 컴포넌트 Visibility 설정
-		ShieldWidgetComponent->SetVisibility(true);
+			if (!EnemyStat->OnShieldChanged.Contains(this, TEXT("SetBossShieldWidgetDelegate")))
+			{
+				// 전멸기 차징 외에는 실드 변동사항을 전달받을 이유가 없으므로, 동적으로 델리게이트 바인딩과 해제
+				EnemyStat->OnShieldChanged.AddDynamic(this, &ABoss::SetBossShieldWidgetDelegate);
+			}
+			// 위젯 컴포넌트 Visibility 설정
+			ShieldWidgetComponent->SetVisibility(true);
+		}		
 
 		// 위젯을 보여주기 전에, 현재 실드 값 업데이트
 		if (BossShieldWidget = Cast<UBossShieldWidget>(ShieldWidgetComponent->GetUserWidgetObject()); ::IsValid(BossShieldWidget))
@@ -187,23 +187,33 @@ void ABoss::SetBossShieldWidgetMulticast_Implementation(const bool bEnable)
 	// 보스 실드 위젯 비활성화
 	else
 	{
-		// 델리게이트 해제
-		EnemyStat->OnShieldChanged.RemoveDynamic(this, &ABoss::SetBossShieldWidgetDelegate);
-		// 위젯 컴포넌트 Visibility 설정
-		ShieldWidgetComponent->SetVisibility(false);
+		if(!HasAuthority())
+		{
+			if (EnemyStat->OnShieldChanged.Contains(this, TEXT("SetBossShieldWidgetDelegate")))
+			{
+				// 델리게이트 해제
+				EnemyStat->OnShieldChanged.RemoveDynamic(this, &ABoss::SetBossShieldWidgetDelegate);
+			}
+			// 위젯 컴포넌트 Visibility 설정
+			ShieldWidgetComponent->SetVisibility(false);
+		}
 	}
 }
 
 void ABoss::SetBossShieldWidgetDelegate(const float InCurShield, const float InMaxShield)
 {
-	BossShieldWidget->UpdateShieldWidget(InCurShield, InMaxShield);
+	if (::IsValid(BossShieldWidget))
+	{
+		BossShieldWidget->UpdateShieldWidget(InCurShield, InMaxShield);
+	}
 }
 
 void ABoss::LaunchBossCharacter(const FVector& TargetLocation) const
 {
 	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
 	const FName& WarpTargetName = FName("SwiftTargetLocation");
-	MotionWarpingComponent->AddOrUpdateWarpTargetFromLocation(WarpTargetName, TargetLocation);
+	const FVector FinalLocation = TargetLocation + (GetActorLocation() - TargetLocation) * 150.f;
+	MotionWarpingComponent->AddOrUpdateWarpTargetFromLocation(WarpTargetName, FinalLocation);
 }
 
 

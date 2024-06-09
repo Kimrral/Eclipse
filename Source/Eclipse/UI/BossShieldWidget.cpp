@@ -7,11 +7,8 @@
 
 void UBossShieldWidget::UpdateShieldWidget(const float NewCurrentShield, const float MaxShield) const
 {
-	if(::IsValid(GetOwningPlayerPawn()) && GetOwningPlayerPawn()->IsLocallyViewed())
-	{
-		const float WidgetCurrentShield = NewCurrentShield;
-		const float WidgetMaxShield = MaxShield;
+	const float WidgetCurrentShield = NewCurrentShield;
+	const float WidgetMaxShield = MaxShield;
 
-		ShieldProgressBar->SetPercent(WidgetCurrentShield / WidgetMaxShield);
-	}
+	ShieldProgressBar->SetPercent(WidgetCurrentShield / WidgetMaxShield);
 }

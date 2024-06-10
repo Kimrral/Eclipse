@@ -50,6 +50,7 @@ void ABoss::OnDie()
 	UCapsuleComponent* const Capsule = GetCapsuleComponent();
 	Capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	BossDeathDelegate.Broadcast();
 	OnDestroy();
 }
 

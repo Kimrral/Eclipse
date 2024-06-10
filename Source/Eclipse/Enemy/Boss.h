@@ -9,6 +9,7 @@
 #include "Boss.generated.h"
 
 DECLARE_DELEGATE(FOnShieldDestroySuccessed);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBossDeath);
 
 UCLASS()
 class ECLIPSE_API ABoss : public AEnemy
@@ -63,6 +64,7 @@ public:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UMotionWarpingComponent> MotionWarpingComponent;
 
+	FOnBossDeath BossDeathDelegate;
 	FOnShieldDestroySuccessed ShieldDestroySuccessDelegate;
 
 	UPROPERTY()

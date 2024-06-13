@@ -23,7 +23,7 @@ void ADeadPlayerContainer::BeginPlay()
 {
 	Super::BeginPlay();
 
-	SetLifeSpan(60.f);
+	SetLifeSpan(90.f);
 }
 
 

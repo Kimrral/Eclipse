@@ -6,6 +6,7 @@
 void UWeaponInfoWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+	
 }
 
 void UWeaponInfoWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)

@@ -79,7 +79,6 @@ void ULineTraceDetectionComponent::LineTraceDetection()
 			MissionChecker = Cast<AMissionChecker>(ActorHitResult.GetActor());
 			PickableItemActor = Cast<APickableActor>(ActorHitResult.GetActor());
 			StageBoard = Cast<AStageBoard>(ActorHitResult.GetActor());
-			Stash = Cast<AStash>(ActorHitResult.GetActor());
 			Trader = Cast<ATrader>(ActorHitResult.GetActor());
 			QuitGameActor = Cast<AQuitGameActor>(ActorHitResult.GetActor());
 			DeadPlayerContainer = Cast<ADeadPlayerContainer>(ActorHitResult.GetActor());
@@ -515,8 +514,6 @@ void ULineTraceDetectionComponent::LineTraceDetection()
 				if (TickOverlapBoolean == false)
 				{
 					TickOverlapBoolean = true;
-					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-					StageBoard->boardMesh->SetRenderCustomDepth(true);
 					// Widget Switcher 이용한 무기 정보 위젯 스위칭
 					Owner->infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(16);
 					// Radial Slider Value 초기화
@@ -524,31 +521,13 @@ void ULineTraceDetectionComponent::LineTraceDetection()
 					// Weapon Info Widget 뷰포트에 배치
 					Owner->infoWidgetUI->AddToViewport();
 				}
-			}
-			else if (Stash)
-			{
-				// 1회 실행 불리언
-				if (TickOverlapBoolean == false)
-				{
-					TickOverlapBoolean = true;
-					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-					Stash->stashMesh->SetRenderCustomDepth(true);
-					// Widget Switcher 이용한 무기 정보 위젯 스위칭
-					Owner->infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(17);
-					// Radial Slider Value 초기화
-					Owner->infoWidgetUI->weaponHoldPercent = 0;
-					// Weapon Info Widget 뷰포트에 배치
-					Owner->infoWidgetUI->AddToViewport();
-				}
-			}
+			}			
 			else if (Trader)
 			{
 				// 1회 실행 불리언
 				if (TickOverlapBoolean == false)
 				{
-					TickOverlapBoolean = true;
-					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-					Trader->TraderCharacterMesh->SetRenderCustomDepth(true);
+					TickOverlapBoolean = true;					
 					// Widget Switcher 이용한 무기 정보 위젯 스위칭
 					Owner->infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(25);
 					// Radial Slider Value 초기화
@@ -563,8 +542,6 @@ void ULineTraceDetectionComponent::LineTraceDetection()
 				if (TickOverlapBoolean == false)
 				{
 					TickOverlapBoolean = true;
-					// Render Custom Depth 활용한 무기 액터 외곽선 활성화
-					QuitGameActor->quitGameMesh->SetRenderCustomDepth(true);
 					// Widget Switcher 이용한 무기 정보 위젯 스위칭
 					Owner->infoWidgetUI->WidgetSwitcher_Weapon->SetActiveWidgetIndex(18);
 					// Radial Slider Value 초기화
@@ -635,10 +612,6 @@ void ULineTraceDetectionComponent::LineTraceDetection()
 							SniperAmmoPack = Cast<ASniperAmmoPack>(HitObj[i].GetActor());
 							PistolAmmoPack = Cast<APistolAmmoPack>(HitObj[i].GetActor());
 							M249AmmoPack = Cast<AM249AmmoPack>(HitObj[i].GetActor());
-							StageBoard = Cast<AStageBoard>(HitObj[i].GetActor());
-							Stash = Cast<AStash>(HitObj[i].GetActor());
-							Trader = Cast<ATrader>(HitObj[i].GetActor());
-							QuitGameActor = Cast<AQuitGameActor>(HitObj[i].GetActor());
 							DeadPlayerContainer = Cast<ADeadPlayerContainer>(HitObj[i].GetActor());
 
 							if (rifleActor)
@@ -765,27 +738,7 @@ void ULineTraceDetectionComponent::LineTraceDetection()
 							{
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제
 								M249AmmoPack->RootMesh->SetRenderCustomDepth(false);
-							}
-							else if (StageBoard)
-							{
-								// Render Custom Depth 활용한 무기 액터 외곽선 해제
-								StageBoard->boardMesh->SetRenderCustomDepth(false);
-							}
-							else if (Stash)
-							{
-								// Render Custom Depth 활용한 무기 액터 외곽선 해제
-								Stash->stashMesh->SetRenderCustomDepth(false);
-							}
-							else if (Trader)
-							{
-								// Render Custom Depth 활용한 무기 액터 외곽선 해제
-								Trader->TraderCharacterMesh->SetRenderCustomDepth(false);
-							}
-							else if (QuitGameActor)
-							{
-								// Render Custom Depth 활용한 무기 액터 외곽선 해제
-								QuitGameActor->quitGameMesh->SetRenderCustomDepth(false);
-							}
+							}																
 							else if (DeadPlayerContainer)
 							{
 								// Render Custom Depth 활용한 무기 액터 외곽선 해제

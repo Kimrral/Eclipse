@@ -12,6 +12,7 @@ AQuitGameActor::AQuitGameActor()
 	quitGameMesh=CreateDefaultSubobject<UStaticMeshComponent>(TEXT("quitGameMesh"));
 	SetRootComponent(quitGameMesh);
 	quitGameMesh->SetGenerateOverlapEvents(true);
+	quitGameMesh->SetRenderCustomDepth(true);
 
 }
 

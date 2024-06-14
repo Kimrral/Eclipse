@@ -13,6 +13,7 @@ AStageBoard::AStageBoard()
 	boardMesh=CreateDefaultSubobject<UStaticMeshComponent>(TEXT("checkerMesh"));
 	SetRootComponent(boardMesh);
 	boardMesh->SetGenerateOverlapEvents(true);
+	boardMesh->SetRenderCustomDepth(true);
 
 }
 

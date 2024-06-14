@@ -13,5 +13,6 @@ ATrader::ATrader()
 	TraderCharacterMesh=CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("TraderCharacterMesh"));
 	SetRootComponent(TraderCharacterMesh);
 	TraderCharacterMesh->SetGenerateOverlapEvents(true);
+	TraderCharacterMesh->SetRenderCustomDepth(true);
 
 }

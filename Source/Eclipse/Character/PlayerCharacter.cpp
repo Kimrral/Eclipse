@@ -207,7 +207,7 @@ void APlayerCharacter::BeginPlay()
 	gi->IsWidgetOn = false;
 
 	//Add Input Mapping Context
-	if (PC&&IsLocallyControlled())
+	if (PC && IsLocallyControlled())
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
 		{
@@ -403,6 +403,9 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 		//Toggle Flashlight
 		EnhancedInputComponent->BindAction(FlashAction, ETriggerEvent::Started, this, &APlayerCharacter::ToggleFlashlight);
+
+		//Remove Widgets
+		EnhancedInputComponent->BindAction(EscAction, ETriggerEvent::Started, this, &APlayerCharacter::RemoveAllWidgets);
 	}
 }
 
@@ -1173,27 +1176,27 @@ void APlayerCharacter::OnEnemyHitRPCMulticast_Implementation(const FHitResult& H
 		{
 			DamageAmount = Stat->GetAttackDamage(weaponArray, false);
 			HitEnemy->Damaged(DamageAmount * 2, this);
-			if(const auto HitBoss = Cast<ABoss>(HitEnemy); ::IsValid(HitBoss))
+			if (const auto HitBoss = Cast<ABoss>(HitEnemy); ::IsValid(HitBoss))
 			{
 				Stat->AccumulatedDamageToBoss += DamageAmount * 2;
 			}
 			else
 			{
 				Stat->AccumulatedDamageToEnemy += DamageAmount * 2;
-			}			
+			}
 		}
 		else
 		{
 			DamageAmount = Stat->GetAttackDamage(weaponArray, false);
 			HitEnemy->Damaged(DamageAmount, this);
-			if(const auto HitBoss = Cast<ABoss>(HitEnemy); ::IsValid(HitBoss))
+			if (const auto HitBoss = Cast<ABoss>(HitEnemy); ::IsValid(HitBoss))
 			{
 				Stat->AccumulatedDamageToBoss += DamageAmount;
 			}
 			else
 			{
 				Stat->AccumulatedDamageToEnemy += DamageAmount;
-			}			
+			}
 		}
 	}
 	else
@@ -1393,7 +1396,7 @@ void APlayerCharacter::Tab()
 
 void APlayerCharacter::OpenMenu()
 {
-	if(MenuWidgetUI)
+	if (MenuWidgetUI)
 	{
 		if (!MenuWidgetUI->IsInViewport())
 		{
@@ -1403,7 +1406,7 @@ void APlayerCharacter::OpenMenu()
 		}
 		else
 		{
-			MenuWidgetUI->CloseWidgetFunc();		
+			MenuWidgetUI->CloseWidgetFunc();
 		}
 	}
 }
@@ -1424,6 +1427,19 @@ void APlayerCharacter::TiltingLeft()
 			TiltingRightTimeline.Stop();
 		}
 		TiltingLeftTimeline.PlayFromStart();
+	}
+}
+
+void APlayerCharacter::RemoveAllWidgets()
+{
+	if (IsLocallyControlled())
+	{
+		if (IsValid(TradeWidgetUI) && TradeWidgetUI->IsInViewport()) TradeWidgetUI->RemoveFromParent();
+		if (IsValid(MenuWidgetUI) && MenuWidgetUI->IsInViewport()) MenuWidgetUI->RemoveFromParent();
+		if (IsValid(levelSelectionUI) && levelSelectionUI->IsInViewport()) levelSelectionUI->RemoveFromParent();
+		if (IsValid(quitWidgetUI) && quitWidgetUI->IsInViewport()) quitWidgetUI->RemoveFromParent();
+		if (IsValid(infoWidgetUI) && infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
+		CloseTabWidget();
 	}
 }
 
@@ -2695,7 +2711,7 @@ bool APlayerCharacter::ServerRPCReload_Validate()
 void APlayerCharacter::MoveToIsolatedShip()
 {
 	MoveToAnotherLevel();
-	bHideout = false;	
+	bHideout = false;
 
 	FTimerHandle TimerHandle;
 	GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()-> void
@@ -2988,7 +3004,7 @@ void APlayerCharacter::OnSpacecraftStreamingLevelLoadFinishedServer_Implementati
 {
 	bSpacecraft = true;
 	IsPlayerDeadImmediately = false;
-	InitializeAccumulatedDamage();	
+	InitializeAccumulatedDamage();
 	ChoosePlayerStartByTagName(FName("Spacecraft"), 50);
 }
 
@@ -3026,7 +3042,7 @@ void APlayerCharacter::OnIntersectionStreamingLevelLoadFinishedServer_Implementa
 {
 	bSpacecraft = false;
 	IsPlayerDeadImmediately = false;
-	InitializeAccumulatedDamage();	
+	InitializeAccumulatedDamage();
 	ChoosePlayerStartByTagName(FName("Intersection"), 3000);
 }
 
@@ -3065,7 +3081,7 @@ void APlayerCharacter::OnHideoutStreamingLevelLoadFinishedServer_Implementation(
 	bSpacecraft = false;
 	IsPlayerDeadImmediately = false;
 	Stat->SetHp(Stat->GetMaxHp());
-	InitializeAccumulatedDamage();	
+	InitializeAccumulatedDamage();
 	ChoosePlayerStartByTagName(FName("Hideout"), 50);
 	OnHideoutStreamingLevelLoadFinishedMulticast();
 }
@@ -3843,7 +3859,7 @@ void APlayerCharacter::ProcessRifleFire()
 		// Perform Linetrace
 		if (FHitResult RifleHitResult; GetWorld()->LineTraceSingleByChannel(RifleHitResult, RifleLineTraceStart, RifleLineTraceEnd, ECC_Visibility, Params))
 		{
-			if(!bSpacecraft)
+			if (!bSpacecraft)
 			{
 				// Player Character Casting
 				// 플레이어 적중
@@ -3901,7 +3917,7 @@ void APlayerCharacter::ProcessSniperFire()
 		// 라인 트레이스가 적중했다면
 		if (FHitResult SniperHitResult; GetWorld()->LineTraceSingleByChannel(SniperHitResult, StartLoc, EndLoc, ECC_Visibility, params))
 		{
-			if(!bSpacecraft)
+			if (!bSpacecraft)
 			{
 				// Player Character Casting
 				// 플레이어 적중
@@ -4004,7 +4020,7 @@ void APlayerCharacter::ProcessPistolFire()
 		// Perform Linetrace
 		if (FHitResult PistolHitResult; GetWorld()->LineTraceSingleByChannel(PistolHitResult, PistolLineTraceStart, PistolLineTraceEnd, ECC_Visibility, Params))
 		{
-			if(!bSpacecraft)
+			if (!bSpacecraft)
 			{
 				// Player Character Casting
 				// 플레이어 적중
@@ -4107,7 +4123,7 @@ void APlayerCharacter::ProcessM249Fire()
 		// Perform Linetrace
 		if (FHitResult M249HitResult; GetWorld()->LineTraceSingleByChannel(M249HitResult, StartLoc, EndLoc, ECC_Visibility, params))
 		{
-			if(!bSpacecraft)
+			if (!bSpacecraft)
 			{
 				// Player Character Casting
 				// 플레이어 적중

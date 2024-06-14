@@ -141,6 +141,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* MenuAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* EscAction;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FOnDoorInteraction DoorInteractionDele;
 
@@ -448,6 +451,8 @@ public:
 
 	void TiltingLeft();
 
+	void RemoveAllWidgets();
+
 	UFUNCTION(Reliable, Server, WithValidation)
 	void TiltingLeftRPCServer();
 
@@ -531,6 +536,9 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void ResetTabWidget();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void CloseTabWidget();
 
 	UFUNCTION()
 	void OnRep_WeaponArrayChanged();

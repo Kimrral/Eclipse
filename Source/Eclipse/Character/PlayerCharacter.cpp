@@ -67,6 +67,7 @@
 #include "Eclipse/Prop/DeadPlayerContainer.h"
 #include "Eclipse/Prop/Trader.h"
 #include "Eclipse/UI/ExtractionCountdown.h"
+#include "Eclipse/UI/GuideScriptWidget.h"
 #include "Eclipse/UI/MenuWidget.h"
 #include "Eclipse/UI/TradeWidget.h"
 #include "Kismet/GameplayStatics.h"
@@ -197,7 +198,8 @@ void APlayerCharacter::BeginPlay()
 	ExtractionCountdownUI = CreateWidget<UExtractionCountdown>(GetWorld(), ExtractionCountdownWidgetFactory);
 	MenuWidgetUI = CreateWidget<UMenuWidget>(GetWorld(), MenuWidgetFactory);
 	TradeWidgetUI = CreateWidget<UTradeWidget>(GetWorld(), TradeWidgetFactory);
-
+	GuideScriptWidgetUI = CreateWidget<UGuideScriptWidget>(GetWorld(), GuideScriptWidgetFactory);
+	
 	// Casting
 	gi = Cast<UEclipseGameInstance>(GetGameInstance());
 	PC = Cast<AEclipsePlayerController>(gi->GetFirstLocalPlayerController());
@@ -212,9 +214,7 @@ void APlayerCharacter::BeginPlay()
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
 		{
 			const FInputModeGameOnly InputModeData;
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
-			PC->SetInputMode(InputModeData);
-			PC->SetShowMouseCursor(false);
+			Subsystem->AddMappingContext(DefaultMappingContext, 0);			
 			PC->EnableInput(PC);
 		}
 	}
@@ -293,6 +293,18 @@ void APlayerCharacter::BeginPlay()
 
 	// Update Tab Widget Before Widget Constructor
 	UpdateTabWidget();
+
+	FTimerHandle ScriptHandle;
+	GetWorldTimerManager().SetTimer(ScriptHandle, FTimerDelegate::CreateLambda([&]
+	{
+		if(IsValid(GuideScriptWidgetUI) && IsValid(PC) && IsLocallyControlled())
+		{
+			GuideScriptWidgetUI->PC=PC;
+			GuideScriptWidgetUI->AddToViewport();
+			UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(PC, GuideScriptWidgetUI);
+			PC->SetShowMouseCursor(true);
+		}		
+	}), 2.f, false);
 }
 
 void APlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)

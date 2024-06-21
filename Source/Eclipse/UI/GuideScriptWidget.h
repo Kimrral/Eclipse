@@ -17,6 +17,6 @@ class ECLIPSE_API UGuideScriptWidget : public UUserWidget
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TObjectPtr<AEclipsePlayerController> PC;
+	TObjectPtr<APlayerCharacter> Player;
 	
 };

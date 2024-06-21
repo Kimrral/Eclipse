@@ -215,7 +215,6 @@ void APlayerCharacter::BeginPlay()
 		{
 			const FInputModeGameOnly InputModeData;
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);			
-			PC->EnableInput(PC);
 		}
 	}
 
@@ -299,9 +298,10 @@ void APlayerCharacter::BeginPlay()
 	{
 		if(IsValid(GuideScriptWidgetUI) && IsValid(PC) && IsLocallyControlled())
 		{
-			GuideScriptWidgetUI->PC=PC;
+			DisableInput(PC);
+			GuideScriptWidgetUI->Player=this;
 			GuideScriptWidgetUI->AddToViewport();
-			UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(PC, GuideScriptWidgetUI);
+			UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(PC, GuideScriptWidgetUI, EMouseLockMode::DoNotLock, false, true);			
 			PC->SetShowMouseCursor(true);
 		}		
 	}), 2.f, false);
@@ -1452,6 +1452,7 @@ void APlayerCharacter::RemoveAllWidgets()
 		if (IsValid(quitWidgetUI) && quitWidgetUI->IsInViewport()) quitWidgetUI->RemoveFromParent();
 		if (IsValid(infoWidgetUI) && infoWidgetUI->IsInViewport()) infoWidgetUI->RemoveFromParent();
 		CloseTabWidget();
+		if(IsValid(PC)) EnableInput(PC);
 	}
 }
 

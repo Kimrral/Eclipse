@@ -742,6 +742,12 @@ public:
 	TSubclassOf<class UTradeWidget> TradeWidgetFactory;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = widget)
+	class UGuideScriptWidget* GuideScriptWidgetUI;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)
+	TSubclassOf<class UGuideScriptWidget> GuideScriptWidgetFactory;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = widget)
 	class UMenuWidget* MenuWidgetUI;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = factory)

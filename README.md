@@ -1,4 +1,4 @@
-# [README] PROJECT ECLIPSE
+# PROJECT ECLIPSE
 ![Eclipse Thumbnail](https://github.com/user-attachments/assets/a9c5d5e5-a2de-4af5-bec3-4cc7784a8c5d)
 
 # NOTION URL

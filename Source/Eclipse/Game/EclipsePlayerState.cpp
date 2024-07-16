@@ -40,40 +40,45 @@ void AEclipsePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 
 void AEclipsePlayerState::AddToInventory(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct)
 {
+	// 클라이언트에서 아이템 습득 시각적 효과를 우선 실행
+	if (IsValid(PlayerCharacterRef) && PlayerCharacterRef->IsLocallyControlled())
+	{
+		// 로컬 인벤토리 로직 실행
+		AddToInventoryLocal(PlayerCharacterRef, PlayerInventoryStruct);
+		// UI 업데이트 및 효과 실행
+		AddToInventoryWidget(PlayerCharacterRef, PlayerInventoryStruct);
+		// 대상 아이템을 즉시 로컬에서 숨김 처리
+		HidePickedUpItem(PlayerCharacterRef, PlayerInventoryStruct);
+	}
+
+	// 서버에 인벤토리 로직 요청
 	AddToInventoryServer(PlayerCharacterRef, PlayerInventoryStruct);
 }
 
 void AEclipsePlayerState::AddToInventoryServer_Implementation(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct)
 {
-	AddToInventoryMulticast(PlayerCharacterRef, PlayerInventoryStruct);
-}
-
-void AEclipsePlayerState::AddToInventoryMulticast_Implementation(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct)
-{
-	if (PlayerCharacterRef)
-	{
-		if (PlayerCharacterRef->IsLocallyControlled())
-		{
-			AddToInventoryWidget(PlayerCharacterRef, PlayerInventoryStruct);
-		}
-	}
+	// 서버에서 아이템 습득 처리 로직
 	if (HasAuthority())
 	{
+		// 기존에 같은 이름의 아이템이 있는지 확인
 		for (int i = 0; i < PlayerInventoryStructs.Num(); ++i)
 		{
 			if (PlayerInventoryStructs[i].Name == PlayerInventoryStruct.Name)
 			{
 				const int32 InventoryArrayIndex = i;
-				PlayerInventoryStacks[InventoryArrayIndex]++;
+				PlayerInventoryStacks[InventoryArrayIndex]++; // 기존 아이템 스택 증가
 				IsAlreadySet = true;
 			}
 		}
+		// 이미 처리가 완료되었다면
 		if (IsAlreadySet)
 		{
 			IsAlreadySet = false;
 		}
+		// 중복 아이템이 없다면
 		else
 		{
+			// 빈 슬롯을 검색하고 새로운 아이템 추가
 			for (int i = 0; i < PlayerInventoryStacks.Num(); ++i)
 			{
 				if (PlayerInventoryStacks[i] == 0)
@@ -85,8 +90,123 @@ void AEclipsePlayerState::AddToInventoryMulticast_Implementation(APlayerCharacte
 				}
 			}
 		}
+
+		// 처리 이후 클라이언트와 서버의 인벤토리 데이터 일치 여부 검증
+		// 대상 플레이어의 클라이언트 위젯 클래스 데이터와 비교
+		if (UInventoryWidget* InventoryUI = PlayerCharacterRef->GetInventoryUI())
+		{
+			bool bIsInventorySynced = true;
+
+			// 클라이언트의 인벤토리 데이터 가져오기
+			TArray<FPlayerInventoryStruct> ClientInventoryStructs = InventoryUI->GetInventoryData();
+			TArray<int32> ClientInventoryStacks = InventoryUI->GetInventoryStacks();
+
+			// 서버와 클라이언트의 인벤토리 데이터를 비교
+			for (int32 i = 0; i < PlayerInventoryStructs.Num(); i++)
+			{
+				if (PlayerInventoryStructs[i].Name != ClientInventoryStructs[i].Name ||
+					PlayerInventoryStacks[i] != ClientInventoryStacks[i])
+				{
+					bIsInventorySynced = false;
+					break;
+				}
+			}
+
+			// 데이터 검증 실패 시
+			if (!bIsInventorySynced)
+			{
+				// 서버의 인벤토리 데이터로 재출력 요청
+				ServerRequestInventorySync(PlayerCharacterRef, PlayerInventoryStruct);
+				return;
+			}
+			// 데이터 검증 성공 시
+			else
+			{
+				// 확정 로직 실행
+				AddToInventoryMulticast(PlayerCharacterRef, PlayerInventoryStruct);
+			}
+		}
 	}
 }
+
+void AEclipsePlayerState::AddToInventoryMulticast_Implementation(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct)
+{
+	// 클라이언트와 서버에서 동시에 실행될 로직
+	if (IsValid(PlayerCharacterRef) && !PlayerCharacterRef->IsLocallyControlled())
+	{
+		// 시뮬레이트 프록시에서 아이템 습득 시각적 효과 실행
+		AddToInventoryWidget(PlayerCharacterRef, PlayerInventoryStruct);
+	}
+	if (HasAuthority())
+	{
+		// 서버에서 최종적으로 아이템을 파괴
+		DestroyPickedUpItem(PlayerCharacterRef, PlayerInventoryStruct);
+	}
+}
+
+void AEclipsePlayerState::AddToInventoryWidget(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct)
+{
+	// 클라이언트에서 아이템 습득 시각적 효과 실행
+	// UI 업데이트, 파티클 효과, 사운드 재생 등
+	if (IsValid(PlayerCharacterRef))
+	{
+		// UI 업데이트
+		if (UInventoryWidget* InventoryUI = PlayerCharacterRef->GetInventoryUI())
+		{
+			InventoryUI->UpdateInventory(PlayerInventoryStruct);
+		}
+
+		// 파티클 효과 재생
+		if (UWorld* World = GetWorld())
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(World, PickupParticleEffect, PlayerCharacterRef->GetActorLocation());
+		}
+
+		// 사운드 재생
+		UGameplayStatics::PlaySoundAtLocation(this, PickupSound, PlayerCharacterRef->GetActorLocation());
+	}
+}
+
+void AEclipsePlayerState::HidePickedUpItem(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct)
+{
+	// 로컬에서 아이템을 즉시 숨김 처리
+	// 아이템 메쉬를 숨기거나 비활성화
+	if (IsValid(PlayerCharacterRef))
+	{
+		if (APickableActor* PickedUpItem = PlayerCharacterRef->FindItemByName(PlayerInventoryStruct.Name))
+		{
+			PickedUpItem->SetActorHiddenInGame(true); // 아이템 메쉬 숨기기
+			PickedUpItem->SetActorEnableCollision(false); // 아이템 충돌 비활성화
+		}
+	}
+}
+
+void AEclipsePlayerState::DestroyPickedUpItem(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct)
+{
+	// 서버에서 최종적으로 아이템을 파괴
+	// 아이템 액터를 파괴하거나 메모리에서 제거
+	if (IsValid(PlayerCharacterRef) && HasAuthority())
+	{
+		if (APickableActor* PickedUpItem = PlayerCharacterRef->FindItemByName(PlayerInventoryStruct.Name))
+		{
+			PickedUpItem->Destroy(); // 아이템 액터 파괴
+		}
+	}
+}
+
+void AEclipsePlayerState::ServerRequestInventorySync(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct)
+{
+	// 클라이언트에서 아이템 습득 시각적 효과를 되돌림
+	if (IsValid(PlayerCharacterRef))
+	{
+		// UI 업데이트
+		if (UInventoryWidget* InventoryUI = PlayerCharacterRef->GetInventoryUI())
+		{
+			InventoryUI->UpdateInventoryData(PlayerInventoryStruct); // 클라이언트 인벤토리 데이터 업데이트
+		}
+	}
+}
+
 
 void AEclipsePlayerState::OnUseConsumableItem(APlayerCharacter* PlayerCharacterRef, const FString& ConsumableItemName, const float HealAmount)
 {

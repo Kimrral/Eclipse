@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Eclipse/GameData/PlayerInventoryStruct.h"
 #include "TabWidget.generated.h"
 
 /**
@@ -26,6 +27,18 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void UpdateHealthPoint();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void AddToInventoryLocal(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetInventoryData(TArray<FPlayerInventoryStruct> PlayerInventoryStructs, TArray<int32>PlayerInventoryStacks);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	TArray<FPlayerInventoryStruct> GetInventoryData();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	TArray<int32> GetInventoryStacks();
 
 	UPROPERTY()
 	class AEclipsePlayerController* pc;

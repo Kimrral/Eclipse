@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "InputActionValue.h"
 #include "Eclipse/Weapon/RifleActor.h"
 #include "Eclipse/UI/StashWidget.h"
 #include "Components/TimelineComponent.h"
@@ -58,6 +57,10 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	// Player input component
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	class UPlayerInputComponent* PlayerInputComponentRef;
+
 	// Stat Actor Component
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UPlayerCharacterStatComponent> Stat;
@@ -74,277 +77,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputMappingContext* DefaultMappingContext;
 
-	/** Jump Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* JumpAction;
-
-	/** Move Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* MoveAction;
-
-	/** Look Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* LookAction;
-
-	/** Fire Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* FireAction;
-
-	/** Zoom Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* ZoomAction;
-
-	/** Run Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* RunAction;
-
-	/** Crouch Action Input */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* CrouchAction;
-
-	/** Change Weapon Input */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* ChangeWeaponAction;
-
-	/** Reload Input */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* ReloadAction;
-	
-	/** Flash Input */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* FlashAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* LookAroundAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* ZoomInAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* ZoomOutAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* FirstWeaponSwapAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* SecondWeaponSwapAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* TabAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* QAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* EAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* MenuAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* EscAction;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FOnDoorInteraction DoorInteractionDele;
 
 	FOnWeaponChange WeaponChangeDele;
 
-	/** Called for movement input */
-	void Move(const FInputActionValue& Value);
-
-	/** Called for looking input */
-	void Look(const FInputActionValue& Value);
-
-	virtual void Jump() override;
-	virtual void StopJumping() override;
-
-	//=======================================//
-
-	/** Called for zooming input */
-	void Zoom(const bool IsZoomInput);
-	void ZoomRelease(const bool IsZoomInput);
-	void ZoomInput();
-	void ZoomReleaseInput();
-
-	UFUNCTION(Reliable, Server, WithValidation)
-	void ZoomRPCServer(const bool IsZoomInput);
-
-	UFUNCTION(Unreliable, NetMulticast)
-	void ZoomRPCMulticast(const bool IsZoomInput);
-
-	UFUNCTION(Reliable, Server, WithValidation)
-	void ZoomRPCReleaseServer(const bool IsZoomInput);
-
-	UFUNCTION(Unreliable, NetMulticast)
-	void ZoomRPCReleaseMulticast(const bool IsZoomInput);
-
-	//=======================================//
-
-	/** Called for fire input */
-	UFUNCTION()
-	void Fire();
-
-	UFUNCTION()
-	void FireLocal();
-
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerRPCFire();
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastRPCFire();
-
-	void FireRelease();
-
-	UFUNCTION()
-	void ProcessRifleFire();
-	UFUNCTION()
-	void ProcessRifleFireAnim();
-	UFUNCTION()
-	void ProcessRifleFireLocal();
-	UFUNCTION()
-	void ProcessRifleFireSimulatedProxy() const;
-
-	UFUNCTION()
-	void ProcessSniperFire();
-	UFUNCTION()
-	void ProcessSniperFireAnim();
-	UFUNCTION()
-	void ProcessSniperFireLocal();
-	UFUNCTION()
-	void ProcessSniperFireSimulatedProxy() const;
-
-	UFUNCTION()
-	void ProcessPistolFire();
-	UFUNCTION()
-	void ProcessPistolFireAnim();
-	UFUNCTION()
-	void ProcessPistolFireLocal();
-	UFUNCTION()
-	void ProcessPistolFireSimulatedProxy() const;
-
-
-	UFUNCTION()
-	void ProcessM249Fire();
-	UFUNCTION()
-	void ProcessM249FireAnim();
-	UFUNCTION()
-	void ProcessM249FireLocal();
-	UFUNCTION()
-	void ProcessM249FireSimulatedProxy() const;
-
-	UFUNCTION()
-	void ChangeWeaponToRifle(ARifleActor* RifleActor);
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ChangeWeaponToRifleRPCServer(ARifleActor* RifleActor);
-	UFUNCTION(NetMulticast, UnReliable)
-	void ChangeWeaponToRifleRPCMulticast(ARifleActor* RifleActor);
-
-	UFUNCTION()
-	void ChangeWeaponToSniper(ASniperActor* SniperActor);
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ChangeWeaponToSniperRPCServer(ASniperActor* SniperActor);
-	UFUNCTION(NetMulticast, UnReliable)
-	void ChangeWeaponToSniperRPCMulticast(ASniperActor* SniperActor);
-
-
-	UFUNCTION()
-	void ChangeWeaponToPistol(APistolActor* PistolActor);
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ChangeWeaponToPistolRPCServer(APistolActor* PistolActor);
-	UFUNCTION(NetMulticast, UnReliable)
-	void ChangeWeaponToPistolRPCMulticast(APistolActor* PistolActor);
-
-
-	UFUNCTION()
-	void ChangeWeaponToM249(AM249Actor* M249Actor);
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ChangeWeaponToM249RPCServer(AM249Actor* M249Actor);
-	UFUNCTION(NetMulticast, UnReliable)
-	void ChangeWeaponToM249RPCMulticast(AM249Actor* M249Actor);
-
-	//=======================================//
-
-	/** Called for running input */
-	UFUNCTION()
-	void Run();
-	UFUNCTION()
-	void RunRelease();
-
-	UFUNCTION(Reliable, Server, WithValidation)
-	void RunRPCServer();
-
-	UFUNCTION(Unreliable, NetMulticast)
-	void RunRPCMulticast();
-
-	UFUNCTION(Reliable, Server, WithValidation)
-	void RunRPCReleaseServer();
-
-	UFUNCTION(Unreliable, NetMulticast)
-	void RunRPCReleaseMulticast();
-
-	//=======================================//
-
-	/** Called for zooming input */
-	void Crouching();
-
-	//=======================================//
-
-	/** Called for change weapon input */
-	UFUNCTION()
-	void ChangeWeapon();
-
-	UFUNCTION()
-	void PickableItemActorInteraction(APickableActor* PickableActor);
-	UFUNCTION(Reliable, Server, WithValidation)
-	void PickableItemActorInteractionRPCServer(APickableActor* PickableActor);
-	UFUNCTION(Unreliable, NetMulticast)
-	void PickableItemActorInteractionRPCMutlicast(APickableActor* PickableActor);
-
-	UFUNCTION()
-	void DeadBodyInteraction(ADeadPlayerContainer* DeadPlayerCharacterBox);
-	UFUNCTION(Reliable, Server, WithValidation)
-	void DeadBodyInteractionRPCServer(ADeadPlayerContainer* DeadPlayerCharacterBox);
-	UFUNCTION(Unreliable, NetMulticast)
-	void DeadBodyInteractionRPCMutlicast(ADeadPlayerContainer* DeadPlayerCharacterBox);
-
-
-	//=======================================//
-
-	UFUNCTION()
-	void Reload();
-
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerRPCReload();
-
-	UFUNCTION(NetMulticast, UnReliable)
-	void MulticastRPCReload();
-
-	//=======================================//
-
-	void OnActionLookAroundPressed();
-	void OnActionLookAroundReleased();
-
-	//=======================================//
-
-	UFUNCTION()
-	void SwapFirstWeapon();
-
-	UFUNCTION(Reliable, Server, WithValidation)
-	void SwapFirstWeaponRPCServer();
-
-	UFUNCTION(Unreliable, NetMulticast)
-	void SwapFirstWeaponRPCMulticast();
-
-	UFUNCTION()
-	void SwapSecondWeapon();
-
-	UFUNCTION(Reliable, Server, WithValidation)
-	void SwapSecondWeaponRPCServer();
-
-	UFUNCTION(Unreliable, NetMulticast)
-	void SwapSecondWeaponRPCMulticast();
-
-	//=======================================//
 
 	UFUNCTION()
 	void PlayerDeath();
@@ -424,6 +161,16 @@ public:
 	//=======================================//
 
 	UFUNCTION()
+	void DeadBodyInteraction(ADeadPlayerContainer* DeadPlayerCharacterBox);
+
+	UFUNCTION(Reliable, Server, WithValidation)
+	void DeadBodyInteractionRPCServer(ADeadPlayerContainer* DeadPlayerCharacterBox);
+
+	UFUNCTION(Unreliable, NetMulticast)
+	void DeadBodyInteractionRPCMutlicast(ADeadPlayerContainer* DeadPlayerCharacterBox);
+
+	//=======================================//
+	UFUNCTION()
 	void OnContainerHit(const FHitResult& HitResult, ARewardContainer* HitContainer);
 
 	UFUNCTION(Reliable, Server, WithValidation)
@@ -433,55 +180,6 @@ public:
 	void OnContainerHitRPCMulticast(const FHitResult& HitResult, ARewardContainer* HitContainer);
 
 	//=======================================//
-
-	UFUNCTION()
-	void DoorInteraction();
-
-	UFUNCTION(Reliable, Server, WithValidation)
-	void DoorInteractionRPCServer();
-
-	UFUNCTION(Unreliable, NetMulticast)
-	void DoorInteractionRPCMulticast();
-
-	//=======================================//
-
-	void Tab();
-
-	void OpenMenu();
-
-	void TiltingLeft();
-
-	void RemoveAllWidgets();
-
-	UFUNCTION(Reliable, Server, WithValidation)
-	void TiltingLeftRPCServer();
-
-	UFUNCTION(Unreliable, NetMulticast)
-	void TiltingLeftRPCMulticast();
-	
-	void TiltingLeftRelease();
-
-	UFUNCTION(Reliable, Server, WithValidation)
-	void TiltingLeftReleaseRPCServer();
-
-	UFUNCTION(Unreliable, NetMulticast)
-	void TiltingLeftReleaseRPCMulticast();
-	
-	void TiltingRight();
-
-	UFUNCTION(Reliable, Server, WithValidation)
-	void TiltingRightRPCServer();
-
-	UFUNCTION(Unreliable, NetMulticast)
-	void TiltingRightRPCMulticast();
-	
-	void TiltingRightRelease();
-
-	UFUNCTION(Reliable, Server, WithValidation)
-	void TiltingRightReleaseRPCServer();
-
-	UFUNCTION(Unreliable, NetMulticast)
-	void TiltingRightReleaseRPCMulticast();
 
 	UFUNCTION()
 	void SetDamageWidget(int Damage, const FVector& SpawnLoc, bool bIsShieldIconEnable, FLinearColor DamageTextColor);
@@ -642,9 +340,6 @@ public:
 	void MoveToAnotherLevelMulticast();
 
 	UFUNCTION()
-	void ResetFireBoolean();
-
-	UFUNCTION()
 	void UnloadMultipleStreamingLevels(const FName& FirstLevelName, const FName& SecondLevelName);
 
 	UFUNCTION(BlueprintCallable)
@@ -652,15 +347,6 @@ public:
 
 	UFUNCTION(Server, Reliable)
 	void PurchaseAmmoServer(const int32 AmmoIndex);
-
-	UFUNCTION()
-	void ToggleFlashlight();
-
-	UFUNCTION(Server, Reliable)
-	void ToggleFlashlightServer();
-	
-	UFUNCTION(NetMulticast, Unreliable)
-	void ToggleFlashlightMulticast();
 
 	UFUNCTION()
 	void ModifyFlashlightAttachment(const int32 WeaponNum) const;
@@ -1024,7 +710,6 @@ public:
 	bool IsEquipMask;
 
 
-
 	//Sounds
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* BulletEmptySound;
@@ -1130,7 +815,7 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	class USoundBase* GroundHitSound;
-	
+
 	UPROPERTY()
 	FTimerHandle ShootEnableHandle;
 
@@ -1183,7 +868,7 @@ public:
 
 	UPROPERTY(EditAnywhere) // Timeline 생성
 	FTimeline TiltingLeftTimeline;
-	
+
 	UPROPERTY(EditAnywhere) // Timeline 생성
 	FTimeline TiltingRightTimeline;
 
@@ -1218,7 +903,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bHideout = true;
-	
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bSpacecraft = false;
 
@@ -1248,16 +933,16 @@ public:
 
 	UPROPERTY()
 	class ARifleMagActor* RifleMagActor;
-	
+
 	UPROPERTY()
 	class ASniperMagActor* SniperMagActor;
-	
+
 	UPROPERTY()
 	class APistolMagActor* PistolMagActor;
-	
+
 	UPROPERTY()
 	class AM249MagActor* M249MagActor;
-	
+
 	UPROPERTY()
 	float CharacterDefaultWalkSpeed = 360.f;
 

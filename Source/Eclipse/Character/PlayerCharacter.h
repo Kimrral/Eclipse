@@ -960,4 +960,16 @@ public:
 
 	UPROPERTY()
 	bool IsAlreadyDamaged = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 AdditionalRifleMag = 40;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 AdditionalPistolMag = 8;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 AdditionalSniperMag = 5;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 AdditionalM249Mag = 50;
 };

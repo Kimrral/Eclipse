@@ -338,7 +338,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+	// Set up action bindings
+	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		PlayerInputComponentRef->SetupInputBindings(EnhancedInputComponent);
 	}
@@ -1221,19 +1222,19 @@ void APlayerCharacter::AddAmmunitionByInputString(const FString& InventoryStruct
 {
 	if (InventoryStructName.Contains(TEXT("Rifle")))
 	{
-		maxRifleAmmo += 40;
+		maxRifleAmmo += AdditionalRifleMag;
 	}
 	else if (InventoryStructName.Contains(TEXT("Sniper")))
 	{
-		maxSniperAmmo += 5;
+		maxSniperAmmo += AdditionalSniperMag;
 	}
 	else if (InventoryStructName.Contains(TEXT("Pistol")))
 	{
-		maxPistolAmmo += 8;
+		maxPistolAmmo += AdditionalPistolMag;
 	}
 	else if (InventoryStructName.Contains(TEXT("M249")))
 	{
-		maxM249Ammo += 50;
+		maxM249Ammo += AdditionalM249Mag;
 	}
 }
 

@@ -40,178 +40,177 @@ void AEclipsePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 
 void AEclipsePlayerState::AddToInventory(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct)
 {
-    // 클라이언트에서 아이템 습득 시각적 효과를 우선 실행
-    if (IsValid(PlayerCharacterRef) && PlayerCharacterRef->IsLocallyControlled())
-    {
-        // 로컬 인벤토리 로직 실행, 클라이언트 UI 업데이트
-        AddToInventoryLocal(PlayerCharacterRef, PlayerInventoryStruct);
-        // 클라이언트 측 시각적 효과 출력
-        AddToInventoryWidget(PlayerCharacterRef, PlayerInventoryStruct); 
-        // 대상 아이템을 즉시 로컬에서 숨김 처리
-        HidePickedUpItem(PlayerCharacterRef, PlayerInventoryStruct); 
-    }
+	// 클라이언트에서 아이템 습득 시각적 효과를 우선 실행
+	if (IsValid(PlayerCharacterRef) && PlayerCharacterRef->IsLocallyControlled())
+	{
+		// 로컬 인벤토리 로직 실행, 클라이언트 UI 업데이트
+		AddToInventoryLocal(PlayerCharacterRef, PlayerInventoryStruct);
+		// 클라이언트 측 시각적 효과 출력
+		AddToInventoryWidgetClass(PlayerCharacterRef, PlayerInventoryStruct);
+		// 대상 아이템을 즉시 로컬에서 숨김 처리
+		HidePickedUpItem(PlayerCharacterRef, PlayerInventoryStruct);
+	}
 
-    // 서버에 인벤토리 로직 요청
-    AddToInventoryServer(PlayerCharacterRef, PlayerInventoryStruct);
+	// 서버에 인벤토리 로직 요청
+	AddToInventoryServer(PlayerCharacterRef, PlayerInventoryStruct);
 }
 
 void AEclipsePlayerState::AddToInventoryServer_Implementation(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct)
 {
-    // 서버에서 아이템 습득 처리 로직
-    if (HasAuthority())
-    {
-        // 현재 인벤토리 상태를 캐싱
-        TArray<FPlayerInventoryStruct> CachedPlayerInventoryStructs = PlayerInventoryStructs;
-        TArray<int32> CachedPlayerInventoryStacks = PlayerInventoryStacks;
+	// 서버에서 아이템 습득 처리 로직
+	if (HasAuthority())
+	{
+		// 현재 인벤토리 상태를 캐싱
+		const TArray<FPlayerInventoryStruct> CachedPlayerInventoryStructs = PlayerInventoryStructs;
+		const TArray<int32> CachedPlayerInventoryStacks = PlayerInventoryStacks;
 
-        // 기존에 같은 이름의 아이템이 있는지 확인
-        bool bIsAlreadySet = false;
+		// 기존에 같은 이름의 아이템이 있는지 확인
+		bool bIsAlreadySet = false;
 
-        for (int i = 0; i < PlayerInventoryStructs.Num(); ++i)
-        {
-            if (PlayerInventoryStructs[i].Name == PlayerInventoryStruct.Name)
-            {
-                PlayerInventoryStacks[i]++; // 기존 아이템 스택 증가
-                bIsAlreadySet = true;
-                break;
-            }
-        }
+		for (int i = 0; i < PlayerInventoryStructs.Num(); ++i)
+		{
+			if (PlayerInventoryStructs[i].Name == PlayerInventoryStruct.Name)
+			{
+				PlayerInventoryStacks[i]++; // 기존 아이템 스택 증가
+				bIsAlreadySet = true;
+				break;
+			}
+		}
 
-        // 중복 아이템이 없다면
-        if (!bIsAlreadySet)
-        {
-            // 빈 슬롯을 검색하고 새로운 아이템 추가
-            for (int i = 0; i < PlayerInventoryStacks.Num(); ++i)
-            {
-                if (PlayerInventoryStacks[i] == 0)
-                {
-                    PlayerInventoryStructs[i] = PlayerInventoryStruct;
-                    PlayerInventoryStacks[i]++;
-                    break;
-                }
-            }
-        }
+		// 중복 아이템이 없다면
+		if (!bIsAlreadySet)
+		{
+			// 빈 슬롯을 검색하고 새로운 아이템 추가
+			for (int i = 0; i < PlayerInventoryStacks.Num(); ++i)
+			{
+				if (PlayerInventoryStacks[i] == 0)
+				{
+					PlayerInventoryStructs[i] = PlayerInventoryStruct;
+					PlayerInventoryStacks[i]++;
+					break;
+				}
+			}
+		}
 
-        // 처리 이후 클라이언트와 서버의 인벤토리 데이터 일치 여부 검증
-        // 대상 플레이어의 클라이언트 위젯 클래스 데이터와 비교
-        if (UInventoryWidget* InventoryUI = PlayerCharacterRef->GetInventoryUI())        
-        {
-            bool bIsInventorySynced = true;
+		// 처리 이후 클라이언트와 서버의 인벤토리 데이터 일치 여부 검증
+		// 대상 플레이어의 클라이언트 위젯 클래스 데이터와 비교
+		if (UInventoryWidget* InventoryUI = PlayerCharacterRef->GetInventoryUI())
+		{
+			bool bIsInventorySynced = true;
 
-            // 클라이언트의 인벤토리 데이터 가져오기
-            TArray<FPlayerInventoryStruct> ClientInventoryStructs = InventoryUI->GetInventoryData();
-            TArray<int32> ClientInventoryStacks = InventoryUI->GetInventoryStacks();
+			// 클라이언트의 인벤토리 데이터 가져오기
+			TArray<FPlayerInventoryStruct> ClientInventoryStructs = InventoryUI->GetInventoryData();
+			TArray<int32> ClientInventoryStacks = InventoryUI->GetInventoryStacks();
 
-            // 서버와 클라이언트의 인벤토리 데이터를 비교
-            for (int32 i = 0; i < PlayerInventoryStructs.Num(); i++)
-            {
-                if (PlayerInventoryStructs[i].Name != ClientInventoryStructs[i].Name ||
-                    PlayerInventoryStacks[i] != ClientInventoryStacks[i])
-                {
-                    bIsInventorySynced = false;
-                    break;
-                }
-            }
+			// 서버와 클라이언트의 인벤토리 데이터를 비교
+			for (int32 i = 0; i < PlayerInventoryStructs.Num(); i++)
+			{
+				if (PlayerInventoryStructs[i].Name != ClientInventoryStructs[i].Name ||
+					PlayerInventoryStacks[i] != ClientInventoryStacks[i])
+				{
+					bIsInventorySynced = false;
+					break;
+				}
+			}
 
-            // 데이터 검증 실패 시
-            if (!bIsInventorySynced)
-            {
-                // 서버의 인벤토리 데이터를 롤백
-                PlayerInventoryStructs = CachedPlayerInventoryStructs;
-                PlayerInventoryStacks = CachedPlayerInventoryStacks;
-                
-                // 서버의 인벤토리 데이터로 재출력 요청
-                ServerSyncInventory(PlayerCharacterRef);
-                return;
-            }
-            // 데이터 검증 성공 시
-            else
-            {
-                // 확정 로직 실행
-                AddToInventoryMulticast(PlayerCharacterRef, PlayerInventoryStruct);
-            }
-        }
-    }
+			// 데이터 검증 실패 시
+			if (!bIsInventorySynced)
+			{
+				// 서버의 인벤토리 데이터를 롤백
+				PlayerInventoryStructs = CachedPlayerInventoryStructs;
+				PlayerInventoryStacks = CachedPlayerInventoryStacks;
+
+				// 서버의 인벤토리 데이터로 재출력 요청
+				ServerSyncInventory(PlayerCharacterRef);
+				return;
+			}
+			// 데이터 검증 성공 시
+			else
+			{
+				// 확정 로직 실행
+				AddToInventoryMulticast(PlayerCharacterRef, PlayerInventoryStruct);
+			}
+		}
+	}
 }
 
 // 서버 검증 성공 시 실행되는 확정 로직
 void AEclipsePlayerState::AddToInventoryMulticast_Implementation(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct)
-{    
-    if (IsValid(PlayerCharacterRef) && !PlayerCharacterRef->IsLocallyControlled())
-    {   
-        // 시뮬레이트 프록시에서 아이템 습득 시각적 효과 실행     
-        AddToInventoryWidget(PlayerCharacterRef, PlayerInventoryStruct);
-    }
+{
+	if (IsValid(PlayerCharacterRef) && !PlayerCharacterRef->IsLocallyControlled())
+	{
+		// 시뮬레이트 프록시에서 아이템 습득 시각적 효과 실행     
+		AddToInventoryWidget(PlayerCharacterRef, PlayerInventoryStruct);
+	}
 
-    if (HasAuthority())
-    {
-        // 서버에서 최종적으로 아이템을 파괴
-        DestroyPickedUpItem(PlayerCharacterRef, PlayerInventoryStruct);
-    }
+	if (HasAuthority())
+	{
+		// 서버에서 최종적으로 아이템을 파괴
+		DestroyPickedUpItem(PlayerCharacterRef, PlayerInventoryStruct);
+	}
 }
 
 void AEclipsePlayerState::DestroyPickedUpItem(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct)
 {
-    // 서버에서 최종적으로 아이템을 파괴
-    // 아이템 액터를 파괴하거나 메모리에서 제거
-    if (IsValid(PlayerCharacterRef) && HasAuthority())
-    {
-        if (APickableActor* PickedUpItem = PlayerCharacterRef->FindItemByName(PlayerInventoryStruct.Name))
-        {
-            if (PickedUpItem)
-            {
-                PickedUpItem->Destroy(); // 아이템 액터 파괴
-            }
-        }
-    }
+	// 서버에서 최종적으로 아이템을 파괴
+	// 아이템 액터를 파괴하거나 메모리에서 제거
+	if (IsValid(PlayerCharacterRef) && HasAuthority())
+	{
+		if (APickableActor* PickedUpItem = PlayerCharacterRef->FindItemByName(PlayerInventoryStruct.Name))
+		{
+			if (PickedUpItem)
+			{
+				PickedUpItem->Destroy(); // 아이템 액터 파괴
+			}
+		}
+	}
 }
 
-void AEclipsePlayerState::AddToInventoryWidget(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct)
+void AEclipsePlayerState::AddToInventoryWidgetClass(const APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct)
 {
-    // 클라이언트에서 아이템 습득 시각적 효과 실행
-    // UI 업데이트, 파티클 효과, 사운드 재생 등
-    if (IsValid(PlayerCharacterRef))
-    {
-        // 파티클 효과 재생
-        if (UWorld* World = GetWorld())
-        {
-            UGameplayStatics::SpawnEmitterAtLocation(World, PickupParticleEffect, PlayerCharacterRef->GetActorLocation());
-        }
-
-        // 사운드 재생
-        UGameplayStatics::PlaySoundAtLocation(this, PickupSound, PlayerCharacterRef->GetActorLocation());
-    }
+	// 클라이언트에서 아이템 습득 시각적 효과 실행
+	// UI 업데이트, 파티클 효과, 사운드 재생 등
+	if (IsValid(PlayerCharacterRef))
+	{
+		// 파티클 효과 재생
+		if (const UWorld* World = GetWorld())
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(World, PickupParticleEffect, PlayerCharacterRef->GetActorLocation());
+			// 사운드 재생
+			UGameplayStatics::PlaySoundAtLocation(World, PickupSound, PlayerCharacterRef->GetActorLocation());
+		}		
+	}
 }
 
 void AEclipsePlayerState::HidePickedUpItem(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct)
 {
-    // 로컬에서 아이템을 즉시 숨김 처리
-    // 아이템 메쉬를 숨기거나 비활성화
-    if (IsValid(PlayerCharacterRef))
-    {
-        if (APickableActor* PickedUpItem = PlayerCharacterRef->FindItemByName(PlayerInventoryStruct.Name))
-        {
-            PickedUpItem->SetActorHiddenInGame(true); // 아이템 메쉬 숨기기
-            PickedUpItem->SetActorEnableCollision(false); // 아이템 충돌 비활성화
-        }
-    }
+	// 로컬에서 아이템을 즉시 숨김 처리
+	// 아이템 메쉬를 숨기거나 비활성화
+	if (IsValid(PlayerCharacterRef))
+	{
+		if (APickableActor* PickedUpItem = PlayerCharacterRef->FindItemByName(PlayerInventoryStruct.Name))
+		{
+			PickedUpItem->SetActorHiddenInGame(true); // 아이템 메쉬 숨기기
+			PickedUpItem->SetActorEnableCollision(false); // 아이템 충돌 비활성화
+		}
+	}
 }
 
 // 서버 검증 실패 시 실행되는 동기화 로직
 void AEclipsePlayerState::ServerSyncInventory(APlayerCharacter* PlayerCharacterRef)
 {
-    // 클라이언트의 인벤토리 데이터를 서버의 데이터와 동기화
-    if (IsValid(PlayerCharacterRef))
-    {
-        if (UInventoryWidget* InventoryUI = PlayerCharacterRef->GetInventoryUI())
-        {
-            InventoryUI->SetInventoryData(PlayerInventoryStructs, PlayerInventoryStacks); // 서버 데이터를 클라이언트로 동기화
-        }
-        if (APickableActor* PickedUpItem = PlayerCharacterRef->FindItemByName(PlayerInventoryStruct.Name))
-        {
-            PickedUpItem->SetActorHiddenInGame(false); // 숨김 처리 비활성화
-        }
-    }
+	// 클라이언트의 인벤토리 데이터를 서버의 데이터와 동기화
+	if (IsValid(PlayerCharacterRef))
+	{
+		if (UInventoryWidget* InventoryUI = PlayerCharacterRef->GetInventoryUI())
+		{
+			InventoryUI->SetInventoryData(PlayerInventoryStructs, PlayerInventoryStacks); // 서버 데이터를 클라이언트로 동기화
+		}
+		if (APickableActor* PickedUpItem = PlayerCharacterRef->FindItemByName(PlayerInventoryStruct.Name))
+		{
+			PickedUpItem->SetActorHiddenInGame(false); // 숨김 처리 비활성화
+		}
+	}
 }
 
 void AEclipsePlayerState::OnUseConsumableItem(APlayerCharacter* PlayerCharacterRef, const FString& ConsumableItemName, const float HealAmount)

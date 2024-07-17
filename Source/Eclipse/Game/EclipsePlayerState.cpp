@@ -4,6 +4,7 @@
 #include "Eclipse/Game/EclipsePlayerState.h"
 
 #include "Eclipse/CharacterStat/PlayerCharacterStatComponent.h"
+#include "Eclipse/UI/TabWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
@@ -44,7 +45,7 @@ void AEclipsePlayerState::AddToInventory(APlayerCharacter* PlayerCharacterRef, c
 	if (IsValid(PlayerCharacterRef) && PlayerCharacterRef->IsLocallyControlled())
 	{
 		// 로컬 인벤토리 로직 실행, 클라이언트 UI 업데이트
-		AddToInventoryLocal(PlayerCharacterRef, PlayerInventoryStruct);
+		PlayerCharacterRef->tabWidgetUI->AddToInventoryLocal(PlayerCharacterRef, PlayerInventoryStruct);
 		// 클라이언트 측 시각적 효과 출력
 		AddToInventoryWidgetClass(PlayerCharacterRef, PlayerInventoryStruct);
 		// 대상 아이템을 즉시 로컬에서 숨김 처리
@@ -94,13 +95,13 @@ void AEclipsePlayerState::AddToInventoryServer_Implementation(APlayerCharacter* 
 
 		// 처리 이후 클라이언트와 서버의 인벤토리 데이터 일치 여부 검증
 		// 대상 플레이어의 클라이언트 위젯 클래스 데이터와 비교
-		if (UInventoryWidget* InventoryUI = PlayerCharacterRef->GetInventoryUI())
+		if (IsValid(PlayerCharacterRef->tabWidgetUI))
 		{
 			bool bIsInventorySynced = true;
 
 			// 클라이언트의 인벤토리 데이터 가져오기
-			TArray<FPlayerInventoryStruct> ClientInventoryStructs = InventoryUI->GetInventoryData();
-			TArray<int32> ClientInventoryStacks = InventoryUI->GetInventoryStacks();
+			TArray<FPlayerInventoryStruct> ClientInventoryStructs = PlayerCharacterRef->tabWidgetUI->GetInventoryData();
+			TArray<int32> ClientInventoryStacks = PlayerCharacterRef->tabWidgetUI->GetInventoryStacks();
 
 			// 서버와 클라이언트의 인벤토리 데이터를 비교
 			for (int32 i = 0; i < PlayerInventoryStructs.Num(); i++)
@@ -150,7 +151,7 @@ void AEclipsePlayerState::AddToInventoryMulticast_Implementation(APlayerCharacte
 	}
 }
 
-void AEclipsePlayerState::DestroyPickedUpItem(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct)
+void AEclipsePlayerState::DestroyPickedUpItem(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct) const
 {
 	// 서버에서 최종적으로 아이템을 파괴
 	// 아이템 액터를 파괴하거나 메모리에서 제거
@@ -166,18 +167,18 @@ void AEclipsePlayerState::DestroyPickedUpItem(APlayerCharacter* PlayerCharacterR
 	}
 }
 
-void AEclipsePlayerState::AddToInventoryWidgetClass(const APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct)
+void AEclipsePlayerState::AddToInventoryWidgetClass(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct) const
 {
 	// 클라이언트에서 아이템 습득 시각적 효과 실행
-	// UI 업데이트, 파티클 효과, 사운드 재생 등
 	if (IsValid(PlayerCharacterRef))
-	{
+	{		
 		// 파티클 효과 재생
 		if (const UWorld* World = GetWorld())
 		{
-			UGameplayStatics::SpawnEmitterAtLocation(World, PickupParticleEffect, PlayerCharacterRef->GetActorLocation());
+			// 아이템 습득 몽타주 재생
+			PlayerCharacterRef->PlayAnimMontage(PlayerCharacterRef->UpperOnlyMontage, 1, FName("WeaponEquip"));
 			// 사운드 재생
-			UGameplayStatics::PlaySoundAtLocation(World, PickupSound, PlayerCharacterRef->GetActorLocation());
+			UGameplayStatics::PlaySoundAtLocation(World, PlayerCharacterRef->PickUpSound, PlayerCharacterRef->GetActorLocation());
 		}		
 	}
 }
@@ -197,18 +198,14 @@ void AEclipsePlayerState::HidePickedUpItem(APlayerCharacter* PlayerCharacterRef,
 }
 
 // 서버 검증 실패 시 실행되는 동기화 로직
-void AEclipsePlayerState::ServerSyncInventory(APlayerCharacter* PlayerCharacterRef)
+void AEclipsePlayerState::ServerSyncInventory(APlayerCharacter* PlayerCharacterRef) const
 {
 	// 클라이언트의 인벤토리 데이터를 서버의 데이터와 동기화
 	if (IsValid(PlayerCharacterRef))
 	{
-		if (UInventoryWidget* InventoryUI = PlayerCharacterRef->GetInventoryUI())
+		if (UTabWidget* InventoryUI = PlayerCharacterRef->tabWidgetUI())
 		{
 			InventoryUI->SetInventoryData(PlayerInventoryStructs, PlayerInventoryStacks); // 서버 데이터를 클라이언트로 동기화
-		}
-		if (APickableActor* PickedUpItem = PlayerCharacterRef->FindItemByName(PlayerInventoryStruct.Name))
-		{
-			PickedUpItem->SetActorHiddenInGame(false); // 숨김 처리 비활성화
 		}
 	}
 }

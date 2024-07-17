@@ -354,6 +354,9 @@ public:
 	UFUNCTION()
 	void InitializeAccumulatedDamage();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	APickableActor* FindItemByName(const FString& ItemName);
+
 	UFUNCTION()
 	void ChoosePlayerStartByTagName(const FName& PlayerStartTagName, const int32 DetectionSphereRadius);
 

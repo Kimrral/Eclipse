@@ -16,9 +16,10 @@ UCLASS()
 class ECLIPSE_API AEclipsePlayerState : public APlayerState
 {
 	GENERATED_BODY()
+
 public:
 	AEclipsePlayerState();
-	
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -33,13 +34,14 @@ public:
 	void DeadBodyWidgetSettingsMulticast(ADeadPlayerContainer* DeadPlayerContainer, APlayerCharacter* InstigatorPlayerRef);
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void DeadBodySettingsOnWidgetClass(APlayerCharacter* PlayerCharacterRef, const TArray<FPlayerInventoryStruct> &DeadPlayerInventoryArrayRef, const TArray<int32> &DeadPlayerStackArrayRef, const TArray<FPlayerInventoryStruct> &DeadPlayerGearArrayRef);
+	void DeadBodySettingsOnWidgetClass(APlayerCharacter* PlayerCharacterRef, const TArray<FPlayerInventoryStruct>& DeadPlayerInventoryArrayRef, const TArray<int32>& DeadPlayerStackArrayRef, const TArray<FPlayerInventoryStruct>& DeadPlayerGearArrayRef);
 
-	void DestroyPickedUpItem(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct);
-	
+	UFUNCTION()
+	void DestroyPickedUpItem(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct) const;
+
 	UFUNCTION(BlueprintImplementableEvent)
 	void AddToInventoryWidget(const APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct);
-	
+
 	static void HidePickedUpItem(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct);
 
 	UFUNCTION(BlueprintCallable)
@@ -52,9 +54,11 @@ public:
 	void AddToInventoryMulticast(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct);
 
 	UFUNCTION()
-	void AddToInventoryWidgetClass(const APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct);
+	void AddToInventoryWidgetClass(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct) const;
 
-	void ServerSyncInventory(APlayerCharacter* PlayerCharacterRef);
+	UFUNCTION()
+	void ServerSyncInventory(APlayerCharacter* PlayerCharacterRef) const;
+	
 	UFUNCTION(BlueprintCallable)
 	void OnUseConsumableItem(APlayerCharacter* PlayerCharacterRef, const FString& ConsumableItemName, float HealAmount);
 
@@ -66,7 +70,7 @@ public:
 
 	UFUNCTION(Server, Reliable)
 	void DragFromDeadBodyServer(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex);
-	
+
 	UFUNCTION(BlueprintCallable)
 	void DragFromGearSlot(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex);
 
@@ -74,13 +78,13 @@ public:
 	void DragFromGearSlotServer(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex);
 
 	UFUNCTION(BlueprintCallable)
-	void DragFromGround(APlayerCharacter* PlayerCharacterRef,  const FPlayerInventoryStruct& PlayerInventoryStruct, const int32 DropArrayIndex, const bool IsAmmunition);
+	void DragFromGround(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct, const int32 DropArrayIndex, const bool IsAmmunition);
 
 	UFUNCTION(Server, Reliable)
-	void DragFromGroundServer(APlayerCharacter* PlayerCharacterRef,  const FPlayerInventoryStruct& PlayerInventoryStruct, const int32 DropArrayIndex, const bool IsAmmunition);
+	void DragFromGroundServer(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct, const int32 DropArrayIndex, const bool IsAmmunition);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void DragFromGroundMulticast(APlayerCharacter* PlayerCharacterRef,  const FPlayerInventoryStruct& PlayerInventoryStruct, const int32 DropArrayIndex, const bool IsAmmunition);
+	void DragFromGroundMulticast(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct, const int32 DropArrayIndex, const bool IsAmmunition);
 
 	UFUNCTION(BlueprintCallable)
 	void DragFromInventory(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex);
@@ -89,7 +93,7 @@ public:
 	void DragFromInventoryServer(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex);
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void GroundDetectAndDestroy(FVector PlayerCharacterLocation, const FString &InputItemString);
+	void GroundDetectAndDestroy(FVector PlayerCharacterLocation, const FString& InputItemString);
 
 	UFUNCTION(BlueprintCallable)
 	void RemoveSoldInventoryIndex(APlayerCharacter* PlayerCharacterRef, const TArray<int32>& SoldInventoryIndexArray, const int32 SoldRoubleAmount);
@@ -110,7 +114,7 @@ public:
 	void ApplyGearInventoryEquipState(APlayerCharacter* PlayerCharacterRef);
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	
+
 	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite)
 	TArray<FPlayerInventoryStruct> PlayerInventoryStructs;
 
@@ -131,7 +135,7 @@ public:
 
 	UPROPERTY()
 	FPlayerInventoryStruct InventoryStructDefault;
-	
+
 	UPROPERTY()
 	FPlayerInventoryStruct InventoryDropStructCache;
 

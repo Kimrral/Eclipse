@@ -33,10 +33,14 @@ public:
 	void DeadBodyWidgetSettingsMulticast(ADeadPlayerContainer* DeadPlayerContainer, APlayerCharacter* InstigatorPlayerRef);
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void DeadBodySettingsOnWidgetClass(APlayerCharacter* PlayerCharacterRef, const TArray<FPlayerInventoryStruct> &DeadPlayerInventoryArrayRef, const TArray<int32> &DeadPlayerStackArrayRef, const TArray<FPlayerInventoryStruct> &DeadPlayerGearArrayRef);	
+	void DeadBodySettingsOnWidgetClass(APlayerCharacter* PlayerCharacterRef, const TArray<FPlayerInventoryStruct> &DeadPlayerInventoryArrayRef, const TArray<int32> &DeadPlayerStackArrayRef, const TArray<FPlayerInventoryStruct> &DeadPlayerGearArrayRef);
 
+	void DestroyPickedUpItem(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct);
+	
 	UFUNCTION(BlueprintImplementableEvent)
-	void AddToInventoryWidget(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct);
+	void AddToInventoryWidget(const APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct);
+	
+	static void HidePickedUpItem(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct);
 
 	UFUNCTION(BlueprintCallable)
 	void AddToInventory(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct);
@@ -47,6 +51,10 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void AddToInventoryMulticast(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct);
 
+	UFUNCTION()
+	void AddToInventoryWidgetClass(const APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct);
+
+	void ServerSyncInventory(APlayerCharacter* PlayerCharacterRef);
 	UFUNCTION(BlueprintCallable)
 	void OnUseConsumableItem(APlayerCharacter* PlayerCharacterRef, const FString& ConsumableItemName, float HealAmount);
 

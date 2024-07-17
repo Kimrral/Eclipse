@@ -3,7 +3,6 @@
 
 #include "Eclipse/Character/PlayerInputComponent.h"
 
-#include "PlayerInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "PlayerCharacter.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
@@ -51,6 +50,7 @@
 UPlayerInputComponent::UPlayerInputComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
+	bWantsInitializeComponent = true;
 }
 
 void UPlayerInputComponent::BeginPlay()
@@ -66,6 +66,14 @@ void UPlayerInputComponent::BeginPlay()
 			SetupInputBindings(EnhancedInputComponent);
 		}
 	}
+}
+
+void UPlayerInputComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+
+	// 이 컴포넌트가 네트워크에서 복제되도록 설정합니다.
+	SetIsReplicated(true);
 }
 
 //////////////////////////////////////////////////////////////////////////

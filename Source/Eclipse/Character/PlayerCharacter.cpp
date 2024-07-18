@@ -1735,21 +1735,28 @@ void APlayerCharacter::SetFirstPersonModePistol(const bool IsFirstPerson)
 
 void APlayerCharacter::EquipArmorInventorySlot(const bool IsEquipping, const float EquipGearStat)
 {
+    // 장착 중인지 확인
 	if (IsEquipping)
 	{
+        // 서버 권한이 있는지 확인
 		if (HasAuthority())
 		{
+            // 최대 체력 증가
 			Stat->AddMaxHp(EquipGearStat);
 		}
+        // 갑옷 장착 상태를 true로 설정
 		IsEquipArmor = true;
 		OnRep_IsEquipArmor();
 	}
 	else
 	{
+        // 서버 권한이 있는지 확인
 		if (HasAuthority())
 		{
+            // 최대 체력 감소
 			Stat->SubtractMaxHp(EquipGearStat);
 		}
+        // 갑옷 장착 상태를 false로 설정
 		IsEquipArmor = false;
 		OnRep_IsEquipArmor();
 	}
@@ -1757,13 +1764,16 @@ void APlayerCharacter::EquipArmorInventorySlot(const bool IsEquipping, const flo
 
 void APlayerCharacter::EquipHelmetInventorySlot(const bool IsEquipping, const float EquipGearStat)
 {
+    // 헬멧 장착 중인지 확인
 	if (IsEquipping)
 	{
+        // 헬멧 장착 상태를 true로 설정
 		IsEquipHelmet = true;
 		OnRep_IsEquipHelmet();
 	}
 	else
 	{
+        // 헬멧 장착 상태를 false로 설정
 		IsEquipHelmet = false;
 		OnRep_IsEquipHelmet();
 	}
@@ -1771,21 +1781,28 @@ void APlayerCharacter::EquipHelmetInventorySlot(const bool IsEquipping, const fl
 
 void APlayerCharacter::EquipGoggleInventorySlot(const bool IsEquipping, const float EquipGearStat)
 {
+    // 고글 장착 중인지 확인
 	if (IsEquipping)
 	{
+        // 서버 권한이 있는지 확인
 		if (HasAuthority())
 		{
+            // 반동 통계 배율 설정
 			Stat->RecoilStatMultiplier = EquipGearStat;
 		}
+        // 고글 장착 상태를 true로 설정
 		IsEquipGoggle = true;
 		OnRep_IsEquipGoggle();
 	}
 	else
 	{
+        // 서버 권한이 있는지 확인
 		if (HasAuthority())
 		{
+            // 반동 통계 배율 설정
 			Stat->RecoilStatMultiplier = EquipGearStat;
 		}
+        // 고글 장착 상태를 false로 설정
 		IsEquipGoggle = false;
 		OnRep_IsEquipGoggle();
 	}
@@ -1793,21 +1810,28 @@ void APlayerCharacter::EquipGoggleInventorySlot(const bool IsEquipping, const fl
 
 void APlayerCharacter::EquipHeadsetInventorySlot(const bool IsEquipping, const float EquipGearStat)
 {
+    // 헤드셋 장착 중인지 확인
 	if (IsEquipping)
 	{
+        // 서버 권한이 있는지 확인
 		if (HasAuthority())
 		{
+            // 데미지 통계 배율 설정
 			Stat->DamageStatMultiplier = EquipGearStat;
 		}
+        // 헤드셋 장착 상태를 true로 설정
 		IsEquipHeadset = true;
 		OnRep_IsEquipHeadset();
 	}
 	else
 	{
+        // 서버 권한이 있는지 확인
 		if (HasAuthority())
 		{
+            // 데미지 통계 배율 설정
 			Stat->DamageStatMultiplier = EquipGearStat;
 		}
+        // 헤드셋 장착 상태를 false로 설정
 		IsEquipHeadset = false;
 		OnRep_IsEquipHeadset();
 	}
@@ -1815,21 +1839,28 @@ void APlayerCharacter::EquipHeadsetInventorySlot(const bool IsEquipping, const f
 
 void APlayerCharacter::EquipMaskInventorySlot(const bool IsEquipping, const float EquipGearStat)
 {
+    // 마스크 장착 중인지 확인
 	if (IsEquipping)
 	{
+        // 서버 권한이 있는지 확인
 		if (HasAuthority())
 		{
+            // 발사 간격 통계 배율 설정
 			Stat->FireIntervalStatMultiplier = EquipGearStat;
 		}
+        // 마스크 장착 상태를 true로 설정
 		IsEquipMask = true;
 		OnRep_IsEquipMask();
 	}
 	else
 	{
+        // 서버 권한이 있는지 확인
 		if (HasAuthority())
 		{
+            // 발사 간격 통계 배율 설정
 			Stat->FireIntervalStatMultiplier = EquipGearStat;
 		}
+        // 마스크 장착 상태를 false로 설정
 		IsEquipMask = false;
 		OnRep_IsEquipMask();
 	}
@@ -1837,10 +1868,13 @@ void APlayerCharacter::EquipMaskInventorySlot(const bool IsEquipping, const floa
 
 void APlayerCharacter::DeadPlayerContainerSettings(ADeadPlayerContainer* DeadPlayerContainers) const
 {
+    // DeadPlayerContainers가 유효한지 확인
 	if (DeadPlayerContainers)
 	{
+        // 플레이어 상태를 AEclipsePlayerState로 캐스팅
 		if (const AEclipsePlayerState* EcPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))
 		{
+            // 사망한 플레이어의 인벤토리 데이터 설정
 			DeadPlayerContainers->DeadPlayerInventoryStructArray = EcPlayerState->PlayerInventoryStructs;
 			DeadPlayerContainers->DeadPlayerInventoryStackArray = EcPlayerState->PlayerInventoryStacks;
 			DeadPlayerContainers->DeadPlayerGearSlotArray = EcPlayerState->PlayerGearSlotStructs;
@@ -1848,70 +1882,92 @@ void APlayerCharacter::DeadPlayerContainerSettings(ADeadPlayerContainer* DeadPla
 	}
 }
 
-
 void APlayerCharacter::PlayerDeath()
 {
+    // 로컬 플레이어인지 확인
 	if (IsLocallyControlled())
 	{
+        // 줌 해제
 		PlayerInputComponentRef->ZoomRelease(false);
+        // 1인칭 소총 모드 해제
 		SetFirstPersonModeRifle(false);
+        // 1인칭 권총 모드 해제
 		SetFirstPersonModePistol(false);
+        // 입력 무시 설정
 		PC->SetIgnoreLookInput(true);
 		PC->SetIgnoreMoveInput(true);
+        // 모든 위젯 제거
 		UWidgetLayoutLibrary::RemoveAllWidgets(GetWorld());
+        // 플레이어 카메라 관리자 가져오기
 		APlayerCameraManager* PlayerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
-		// 카메라 페이드 연출
+        // 카메라 페이드 연출
 		PlayerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
+        // 시야각 설정
 		FollowCamera->SetFieldOfView(90.f);
 	}
+    // 타이머 핸들러 설정
 	FTimerHandle TimerHandle;
 	GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
+        // 은신처로 이동
 		MoveToHideout(true);
 	}), 10.f, false);
 }
 
 void APlayerCharacter::PlayerDeathRPCServer_Implementation()
 {
+    // 멀티캐스트 호출
 	PlayerDeathRPCMulticast();
 }
 
 bool APlayerCharacter::PlayerDeathRPCServer_Validate()
 {
+    // 유효성 검사
 	return true;
 }
 
 void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 {
+    // 플레이어 즉시 사망 상태 설정
 	IsPlayerDeadImmediately = true;
+    // 서버 권한이 없는 경우
 	if (!HasAuthority())
 	{
-		// 몽타주 재생 중단
+        // 몽타주 재생 중단
 		StopAnimMontage();
-		// 사망 몽타주 재생
+        // 사망 몽타주 재생
 		PlayAnimMontage(FullBodyMontage, 1, FName("Death"));
 	}
+    // 타이머 핸들러 설정
 	FTimerHandle PlayerDeadHandle;
 	GetWorld()->GetTimerManager().SetTimer(PlayerDeadHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
+        // 서버 권한이 있는 경우
 		if (HasAuthority())
 		{
+            // 플레이어 사망 상태 설정
 			IsPlayerDead = true;
+            // 캡슐 컴포넌트 충돌 비활성화
 			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+            // 메시 충돌 비활성화
 			GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+            // 사망한 플레이어 컨테이너 생성
 			FActorSpawnParameters Params;
 			Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 			ADeadPlayerContainer* DeadPlayerBodyActor = GetWorld()->SpawnActor<ADeadPlayerContainer>(DeadPlayerContainerFactory, GetMesh()->GetComponentTransform(), Params);
+            // 사망한 플레이어 컨테이너 설정
 			DeadPlayerContainerSettings(DeadPlayerBodyActor);
 		}
 		else
 		{
+            // 로컬 제어가 아닌 경우 메시 가시성 비활성화
 			if (!IsLocallyControlled())
 			{
 				GetMesh()->SetVisibility(false);
 			}
 		}
 
+        // 로컬 제어인 경우 사망 소리 재생
 		if (IsLocallyControlled())
 		{
 			UGameplayStatics::PlaySound2D(GetWorld(), DeathSound);
@@ -1921,13 +1977,16 @@ void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 
 void APlayerCharacter::PurchaseAmmo(const int32 AmmoIndex)
 {
+    // 서버에서 PurchaseAmmo 함수 호출
 	PurchaseAmmoServer(AmmoIndex);
 }
 
 void APlayerCharacter::PurchaseAmmoServer_Implementation(const int32 AmmoIndex)
 {
+    // 서버 권한이 있는지 확인
 	if (HasAuthority())
 	{
+        // 탄약 인덱스에 따라 탄약 수량 증가
 		if (AmmoIndex == 0)
 		{
 			maxRifleAmmo += 40;
@@ -1949,45 +2008,59 @@ void APlayerCharacter::PurchaseAmmoServer_Implementation(const int32 AmmoIndex)
 
 void APlayerCharacter::MoveToAnotherLevel()
 {
+    // 엔딩 상태 설정
 	bEnding = true;
 	gi->IsWidgetOn = false;
 	IsPlayerDeadImmediately = true;
 
+    // 로컬 제어인 경우
 	if (IsLocallyControlled())
 	{
+        // 입력 무시 설정
 		PC->SetIgnoreMoveInput(true);
 		PC->SetIgnoreLookInput(true);
+        // 위젯 제거
 		infoWidgetUI->RemoveFromParent();
 		informationUI->RemoveFromParent();
 		crosshairUI->RemoveFromParent();
 
+        // 플레이어 카메라 관리자 가져오기
 		APlayerCameraManager* PlayerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+        // 카메라 페이드 연출
 		PlayerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
+        // 포털 소리 재생
 		UGameplayStatics::PlaySound2D(GetWorld(), PortalSound);
 	}
 
+    // 서버에서 MoveToAnotherLevel 함수 호출
 	MoveToAnotherLevelServer();
 }
 
 void APlayerCharacter::MoveToAnotherLevelServer_Implementation()
 {
+    // 멀티캐스트 호출
 	MoveToAnotherLevelMulticast();
 }
 
 void APlayerCharacter::MoveToAnotherLevelMulticast_Implementation()
 {
+    // 서버 권한이 없는 경우
 	if (!HasAuthority())
 	{
+        // 이펙트 스폰
 		const FTransform SpawnTrans = this->GetTransform();
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), recallParticle, SpawnTrans);
+        // 레벨 종료 몽타주 재생
 		PlayAnimMontage(FullBodyMontage, 1, FName("LevelEnd"));
 	}
 }
 
 void APlayerCharacter::UnloadMultipleStreamingLevels(const FName& FirstLevelName, const FName& SecondLevelName)
 {
+    // 언로드할 스트리밍 레벨 배열 설정
 	TArray<FName> StreamingLevelArray = {FirstLevelName, SecondLevelName};
 	int32 StreamingLevelID = 0;
+    // 각 레벨에 대해 언로드 실행
 	for (const auto LevelName : StreamingLevelArray)
 	{
 		FLatentActionInfo LatentActionInfo;

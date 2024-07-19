@@ -352,7 +352,7 @@ public:
 	void ModifyFlashlightAttachment(const int32 WeaponNum) const;
 
 	UFUNCTION()
-	void InitializeAccumulatedDamage();
+	void InitializeAccumulatedDamage() const;
 
 	UFUNCTION(BlueprintImplementableEvent)
 	APickableActor* FindItemByName(const FString& ItemName);

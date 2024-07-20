@@ -10,7 +10,7 @@
 ## 관련 교육과정
  - [[SMILEGATE, EPICGAMES] UNSEEN 2기](https://unseen.futurelab.center/)
 
-<br> 
+<br>
 
 ## 프로젝트 소개
 

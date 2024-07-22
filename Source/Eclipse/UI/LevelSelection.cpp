@@ -11,113 +11,117 @@
 
 void ULevelSelection::NativeConstruct()
 {
-	Super::NativeConstruct();
+    Super::NativeConstruct();
 
-	PlayAnimation(LevelSelectionStartAnim);
+    // 레벨 선택 시작 애니메이션을 재생합니다.
+    PlayAnimation(LevelSelectionStartAnim);
 
-	player = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	pc = Cast<AEclipsePlayerController>(GetWorld()->GetFirstPlayerController());
-	gi = Cast<UEclipseGameInstance>(GetWorld()->GetGameInstance());
-	gi->IsWidgetOn = true;
+    // 플레이어 캐릭터, 플레이어 컨트롤러, 게임 인스턴스를 캐스팅합니다.
+    player = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+    pc = Cast<AEclipsePlayerController>(GetWorld()->GetFirstPlayerController());
+    gi = Cast<UEclipseGameInstance>(GetWorld()->GetGameInstance());
+    gi->IsWidgetOn = true;  // 위젯이 활성화되었음을 나타냅니다.
 
-	WidgetSwitcher_Level->SetActiveWidgetIndex(0);
+    // 레벨 선택 위젯 스위처의 활성화된 위젯 인덱스를 0으로 설정합니다.
+    WidgetSwitcher_Level->SetActiveWidgetIndex(0);
 
-	quitBool = false;
+    // quitBool 변수를 초기화합니다.
+    quitBool = false;
 }
 
 void ULevelSelection::Level1Y()
 {
-	//Move to Isolation Ship
-	if (quitBool == false)
-	{
-		quitBool = true;
-		UWidgetBlueprintLibrary::SetInputMode_GameOnly(pc);
-		pc->SetShowMouseCursor(false);
-		this->RemoveFromParent();
-		player->MoveToIsolatedShip();
-	}
+    // 격리된 우주선으로 이동합니다.
+    if (quitBool == false)
+    {
+        quitBool = true;  // quitBool 변수를 true로 설정하여 중복 실행을 방지합니다.
+        UWidgetBlueprintLibrary::SetInputMode_GameOnly(pc);  // 게임 전용 입력 모드로 설정합니다.
+        pc->SetShowMouseCursor(false);  // 마우스 커서를 숨깁니다.
+        this->RemoveFromParent();  // 현재 위젯을 부모에서 제거합니다.
+        player->MoveToIsolatedShip();  // 플레이어를 격리된 우주선으로 이동시킵니다.
+    }
 }
 
 void ULevelSelection::Level1N()
 {
-	//Cancel Level Selection
-	UGameplayStatics::PlaySound2D(GetWorld(), QuitSound);
-	WidgetSwitcher_Level->SetActiveWidgetIndex(0);
-	PlayAnimation(LevelSelectionStartAnim);
+    // 레벨 선택을 취소합니다.
+    UGameplayStatics::PlaySound2D(GetWorld(), QuitSound);  // 취소 소리를 재생합니다.
+    WidgetSwitcher_Level->SetActiveWidgetIndex(0);  // 레벨 선택 위젯 스위처의 활성화된 위젯 인덱스를 0으로 설정합니다.
+    PlayAnimation(LevelSelectionStartAnim);  // 레벨 선택 시작 애니메이션을 재생합니다.
 }
 
 void ULevelSelection::Level2N()
 {
-	//Cancel Level Selection
-	UGameplayStatics::PlaySound2D(GetWorld(), QuitSound);
-	WidgetSwitcher_Level->SetActiveWidgetIndex(0);
-	PlayAnimation(LevelSelectionStartAnim);
-	FTimerHandle CursorHandle;
-	GetWorld()->GetTimerManager().SetTimer(CursorHandle, FTimerDelegate::CreateLambda([this]()-> void
-	{
-		pc->SetShowMouseCursor(true);
-		UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(pc, this);
-	}), 1.f, false);
+    // 레벨 선택을 취소합니다.
+    UGameplayStatics::PlaySound2D(GetWorld(), QuitSound);  // 취소 소리를 재생합니다.
+    WidgetSwitcher_Level->SetActiveWidgetIndex(0);  // 레벨 선택 위젯 스위처의 활성화된 위젯 인덱스를 0으로 설정합니다.
+    PlayAnimation(LevelSelectionStartAnim);  // 레벨 선택 시작 애니메이션을 재생합니다.
+    FTimerHandle CursorHandle;
+    GetWorld()->GetTimerManager().SetTimer(CursorHandle, FTimerDelegate::CreateLambda([this]()-> void
+    {
+        pc->SetShowMouseCursor(true);  // 마우스 커서를 다시 표시합니다.
+        UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(pc, this);  // 게임 및 UI 입력 모드로 설정합니다.
+    }), 1.f, false);  // 1초 후에 실행합니다.
 }
 
 void ULevelSelection::Level2Y()
 {
-	//Move to Blocked Intersection
-	if (quitBool == false)
-	{
-		quitBool = true;
-		UWidgetBlueprintLibrary::SetInputMode_GameOnly(pc);
-		pc->SetShowMouseCursor(false);
-		this->RemoveFromParent();
-		player->MoveToBlockedIntersection();
-	}	
+    // 차단된 교차로로 이동합니다.
+    if (quitBool == false)
+    {
+        quitBool = true;  // quitBool 변수를 true로 설정하여 중복 실행을 방지합니다.
+        UWidgetBlueprintLibrary::SetInputMode_GameOnly(pc);  // 게임 전용 입력 모드로 설정합니다.
+        pc->SetShowMouseCursor(false);  // 마우스 커서를 숨깁니다.
+        this->RemoveFromParent();  // 현재 위젯을 부모에서 제거합니다.
+        player->MoveToBlockedIntersection();  // 플레이어를 차단된 교차로로 이동시킵니다.
+    }   
 }
 
 void ULevelSelection::ShowSingleLevelInfoFunc()
 {
-	UGameplayStatics::PlaySound2D(GetWorld(), AskSound);
-	WidgetSwitcher_LevelSelect->SetActiveWidgetIndex(0);
-	PlayAnimation(SingleLevelStartAnim);
+    UGameplayStatics::PlaySound2D(GetWorld(), AskSound);  // 소리를 재생합니다.
+    WidgetSwitcher_LevelSelect->SetActiveWidgetIndex(0);  // 단일 레벨 선택 위젯 스위처의 활성화된 위젯 인덱스를 0으로 설정합니다.
+    PlayAnimation(SingleLevelStartAnim);  // 단일 레벨 시작 애니메이션을 재생합니다.
 }
 
 void ULevelSelection::ShowMultiLevelInfoFunc()
 {
-	UGameplayStatics::PlaySound2D(GetWorld(), AskSound);
-	WidgetSwitcher_LevelSelect->SetActiveWidgetIndex(1);
-	PlayAnimation(MultiLevelStartAnim);
+    UGameplayStatics::PlaySound2D(GetWorld(), AskSound);  // 소리를 재생합니다.
+    WidgetSwitcher_LevelSelect->SetActiveWidgetIndex(1);  // 다중 레벨 선택 위젯 스위처의 활성화된 위젯 인덱스를 1로 설정합니다.
+    PlayAnimation(MultiLevelStartAnim);  // 다중 레벨 시작 애니메이션을 재생합니다.
 }
 
 void ULevelSelection::SelectExitGame()
 {
-	UGameplayStatics::PlaySound2D(GetWorld(), CloseSound);
+    UGameplayStatics::PlaySound2D(GetWorld(), CloseSound);  // 소리를 재생합니다.
 
-	//Exit Level Selection
-	UWidgetBlueprintLibrary::SetInputMode_GameOnly(pc);
-	pc->SetShowMouseCursor(false);
-	gi->IsWidgetOn = false;
-	this->RemoveFromParent();
+    // 레벨 선택을 종료합니다.
+    UWidgetBlueprintLibrary::SetInputMode_GameOnly(pc);  // 게임 전용 입력 모드로 설정합니다.
+    pc->SetShowMouseCursor(false);  // 마우스 커서를 숨깁니다.
+    gi->IsWidgetOn = false;  // 위젯이 비활성화되었음을 나타냅니다.
+    this->RemoveFromParent();  // 현재 위젯을 부모에서 제거합니다.
 }
 
 void ULevelSelection::OpenMoveIsolatedShipSelection()
 {
-	PlayAnimation(LevelSelectionEndAnim);
-	FTimerHandle endHandle;
-	GetWorld()->GetTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()-> void
-	{
-		UGameplayStatics::PlaySound2D(GetWorld(), AskSound);
-		WidgetSwitcher_Level->SetActiveWidgetIndex(1);
-		PlayAnimation(LevelSelectionStartAnim);
-	}), 0.75f, false);
+    PlayAnimation(LevelSelectionEndAnim);  // 레벨 선택 종료 애니메이션을 재생합니다.
+    FTimerHandle endHandle;
+    GetWorld()->GetTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()-> void
+    {
+        UGameplayStatics::PlaySound2D(GetWorld(), AskSound);  // 소리를 재생합니다.
+        WidgetSwitcher_Level->SetActiveWidgetIndex(1);  // 레벨 선택 위젯 스위처의 활성화된 위젯 인덱스를 1로 설정합니다.
+        PlayAnimation(LevelSelectionStartAnim);  // 레벨 선택 시작 애니메이션을 재생합니다.
+    }), 0.75f, false);  // 0.75초 후에 실행합니다.
 }
 
 void ULevelSelection::OpenDesertedRoadSelection()
 {
-	PlayAnimation(LevelSelectionEndAnim);
-	FTimerHandle endHandle;
-	GetWorld()->GetTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()-> void
-	{
-		UGameplayStatics::PlaySound2D(GetWorld(), AskSound);
-		WidgetSwitcher_Level->SetActiveWidgetIndex(2);
-		PlayAnimation(LevelSelectionStartAnim);
-	}), 0.75f, false);
+    PlayAnimation(LevelSelectionEndAnim);  // 레벨 선택 종료 애니메이션을 재생합니다.
+    FTimerHandle endHandle;
+    GetWorld()->GetTimerManager().SetTimer(endHandle, FTimerDelegate::CreateLambda([this]()-> void
+    {
+        UGameplayStatics::PlaySound2D(GetWorld(), AskSound);  // 소리를 재생합니다.
+        WidgetSwitcher_Level->SetActiveWidgetIndex(2);  // 레벨 선택 위젯 스위처의 활성화된 위젯 인덱스를 2로 설정합니다.
+        PlayAnimation(LevelSelectionStartAnim);  // 레벨 선택 시작 애니메이션을 재생합니다.
+    }), 0.75f, false);  // 0.75초 후에 실행합니다.
 }

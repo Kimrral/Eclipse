@@ -1033,6 +1033,7 @@ void APlayerCharacter::MoveToIsolatedShip()
 	bHideout = false;
 
 	FTimerHandle TimerHandle;
+	// 타이머를 설정하여 8초 후에 MoveToIsolatedShipClient 함수를 호출
 	GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
 		MoveToIsolatedShipClient();
@@ -1043,6 +1044,7 @@ void APlayerCharacter::MoveToIsolatedShipClient()
 {
 	if (IsLocallyControlled())
 	{
+		// 플레이어 컨트롤러 입력 허용 설정
 		PC->SetIgnoreMoveInput(false);
 		PC->SetIgnoreLookInput(false);
 		const FName IntersectionLevelName = FName("Deserted_Road");
@@ -1054,7 +1056,9 @@ void APlayerCharacter::MoveToIsolatedShipClient()
 		LoadLatentInfo.Linkage = 0;
 		LoadLatentInfo.ExecutionFunction = OnSpacecraftStreamingLevelLoadFinished;
 
+		// 우주선 레벨을 스트리밍 방식으로 로드
 		UGameplayStatics::LoadStreamLevel(this, SpacecraftLevelName, true, true, LoadLatentInfo);
+		// 여러 스트리밍 레벨 언로드
 		UnloadMultipleStreamingLevels(IntersectionLevelName, HideoutLevelName);
 	}
 }
@@ -1094,7 +1098,9 @@ void APlayerCharacter::MoveToHideout(const bool IsPlayerDeath)
 		LoadLatentInfo.Linkage = 0;
 		LoadLatentInfo.ExecutionFunction = OnHideoutLevelLoadFinishedFunc;
 
+		// 은신처 레벨을 스트리밍 방식으로 로드
 		UGameplayStatics::LoadStreamLevel(this, HideoutLevelName, true, true, LoadLatentInfo);
+		// 여러 스트리밍 레벨 언로드
 		UnloadMultipleStreamingLevels(IntersectionLevelName, SpacecraftLevelName);
 	}
 }
@@ -1115,6 +1121,7 @@ void APlayerCharacter::MoveToBlockedIntersection()
 	bHideout = false;
 
 	FTimerHandle EndHandle;
+	// 타이머를 설정하여 8초 후에 MoveToBlockedIntersectionClient 함수를 호출
 	GetWorldTimerManager().SetTimer(EndHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
 		MoveToBlockedIntersectionClient();
@@ -1125,6 +1132,7 @@ void APlayerCharacter::MoveToBlockedIntersectionClient()
 {
 	if (IsLocallyControlled())
 	{
+		// 플레이어 컨트롤러 입력 허용 설정
 		PC->SetIgnoreMoveInput(false);
 		PC->SetIgnoreLookInput(false);
 		const FName IntersectionLevelName = FName("Deserted_Road");
@@ -1136,7 +1144,9 @@ void APlayerCharacter::MoveToBlockedIntersectionClient()
 		LoadLatentInfo.Linkage = 0;
 		LoadLatentInfo.ExecutionFunction = OnIntersectionLevelLoadFinishedFunc;
 
+		// 교차로 레벨을 스트리밍 방식으로 로드
 		UGameplayStatics::LoadStreamLevel(this, IntersectionLevelName, true, true, LoadLatentInfo);
+		// 여러 스트리밍 레벨 언로드
 		UnloadMultipleStreamingLevels(HideoutLevelName, SpacecraftLevelName);
 	}
 }

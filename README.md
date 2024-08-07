@@ -9,7 +9,7 @@
  - 2023년 11월 28일 → 2024년 6월 28일 
 ## 관련 교육과정 
  - [[SMILEGATE, EPICGAMES] UNSEEN 2기](https://unseen.futurelab.center/)
-
+ 
 <br>
 
 ## 프로젝트 소개

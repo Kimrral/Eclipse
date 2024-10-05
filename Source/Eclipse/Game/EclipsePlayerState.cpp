@@ -20,6 +20,7 @@ AEclipsePlayerState::AEclipsePlayerState()
 	NetUpdateFrequency = 5.f;
 }
 
+
 void AEclipsePlayerState::BeginPlay()
 {
 	Super::BeginPlay();
@@ -605,6 +606,7 @@ void AEclipsePlayerState::DragFromInventoryServer_Implementation(APlayerCharacte
 	}
 }
 
+
 void AEclipsePlayerState::DeadBodyWidgetSettings(ADeadPlayerContainer* DeadPlayerContainer, APlayerCharacter* InstigatorPlayerRef)
 {
 	// 서버에서 DeadBodyWidgetSettings 함수 호출
@@ -717,4 +719,19 @@ void AEclipsePlayerState::ResetPlayerInventoryData()
 	PlayerInventoryStructs.Init(InventoryStructDefault, 30); // 인벤토리 구조체 배열 초기화
 	PlayerInventoryStacks.Init(0, 30); // 인벤토리 스택 배열 초기화
 	PlayerGearSlotStructs.Init(InventoryStructDefault, 5); // 기어 슬롯 배열 초기화
+}
+
+void AEclipsePlayerState::SetInventoryStructs(const TArray<FPlayerInventoryStruct>& NewPlayerInventoryStructs)
+{
+	PlayerInventoryStructs = NewPlayerInventoryStructs;
+}
+
+void AEclipsePlayerState::SetInventoryStacks(const TArray<int32>& NewPlayerInventoryStacks)
+{
+	PlayerInventoryStacks = NewPlayerInventoryStacks;
+}
+
+void AEclipsePlayerState::SetGearSlotStructs(const TArray<FPlayerInventoryStruct>& NewGearSlotStructs)
+{
+	PlayerGearSlotStructs = NewGearSlotStructs;
 }

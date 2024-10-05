@@ -425,358 +425,358 @@ void APlayerCharacter::OnPlayerHitRPCMulticast_Implementation(const FHitResult& 
 // 플레이어가 다른 플레이어를 처치했을 때 호출되는 함수
 void APlayerCharacter::OnPlayerKill()
 {
-    OnPlayerKillRPCServer();
+	OnPlayerKillRPCServer();
 }
 
 // 서버에서 플레이어 처치를 처리하는 RPC 함수의 구현 부분
 void APlayerCharacter::OnPlayerKillRPCServer_Implementation()
 {
-    OnPlayerKillRPCClient();
+	OnPlayerKillRPCClient();
 }
 
 // 서버에서 플레이어 처치를 처리하는 RPC 함수의 유효성 검사 함수
 bool APlayerCharacter::OnPlayerKillRPCServer_Validate()
 {
-    return true;
+	return true;
 }
 
 // 클라이언트에서 플레이어 처치를 처리하는 RPC 함수의 구현 부분
 void APlayerCharacter::OnPlayerKillRPCClient_Implementation()
 {
-    // 크로스헤어 UI에서 처치 애니메이션을 재생
-    crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
-    // 처치 사운드를 재생
-    UGameplayStatics::PlaySound2D(GetWorld(), PlayerKillSound, 1, 1, 0.25);
+	// 크로스헤어 UI에서 처치 애니메이션을 재생
+	crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
+	// 처치 사운드를 재생
+	UGameplayStatics::PlaySound2D(GetWorld(), PlayerKillSound, 1, 1, 0.25);
 }
 
 // 적을 맞혔을 때 호출되는 함수
 void APlayerCharacter::OnEnemyHit(const FHitResult& HitResult, AEnemy* HitEnemy, bool IsHeadshot)
 {
-    // 적의 체력이 0보다 클 때만 서버 RPC 호출
-    if (HitEnemy->EnemyStat->GetCurrentHp() > 0)
-    {
-        OnEnemyHitRPCServer(HitResult, HitEnemy, IsHeadshot);
-    }
+	// 적의 체력이 0보다 클 때만 서버 RPC 호출
+	if (HitEnemy->EnemyStat->GetCurrentHp() > 0)
+	{
+		OnEnemyHitRPCServer(HitResult, HitEnemy, IsHeadshot);
+	}
 }
 
 // 적을 처치했을 때 호출되는 함수
 void APlayerCharacter::OnEnemyKill()
 {
-    OnEnemyKillRPCServer();
+	OnEnemyKillRPCServer();
 }
 
 // 서버에서 적 처치를 처리하는 RPC 함수의 구현 부분
 void APlayerCharacter::OnEnemyKillRPCServer_Implementation()
 {
-    // 무기에 따라 탄약을 증가시킴
-    if (weaponArray[0]) maxRifleAmmo += 20;
-    else if (weaponArray[1]) maxSniperAmmo += 4;
-    else if (weaponArray[2]) maxPistolAmmo += 6;
-    else if (weaponArray[3]) maxM249Ammo += 30;
+	// 무기에 따라 탄약을 증가시킴
+	if (weaponArray[0]) maxRifleAmmo += 20;
+	else if (weaponArray[1]) maxSniperAmmo += 4;
+	else if (weaponArray[2]) maxPistolAmmo += 6;
+	else if (weaponArray[3]) maxM249Ammo += 30;
 
-    OnEnemyKillRPCClient();
+	OnEnemyKillRPCClient();
 }
 
 // 서버에서 적 처치를 처리하는 RPC 함수의 유효성 검사 함수
 bool APlayerCharacter::OnEnemyKillRPCServer_Validate()
 {
-    return true;
+	return true;
 }
 
 // 클라이언트에서 적 처치를 처리하는 RPC 함수의 구현 부분
 void APlayerCharacter::OnEnemyKillRPCClient_Implementation()
 {
-    // 크로스헤어 UI에서 처치 애니메이션을 재생
-    crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
-    // 처치 사운드를 재생
-    UGameplayStatics::PlaySound2D(GetWorld(), KillSound);
-    // 정보 UI 업데이트
-    informationUI->ChargeAmmunitionInfoWidget();
-    informationUI->PlayAnimation(informationUI->ChargeAmmunition, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
-    informationUI->UpdateAmmo_Secondary();
-    // 탄약 픽업 사운드를 일정 시간 후 재생
-    FTimerHandle AmmoPickHandle;
-    GetWorldTimerManager().SetTimer(AmmoPickHandle, FTimerDelegate::CreateLambda([this]()-> void
-    {
-        UGameplayStatics::PlaySound2D(GetWorld(), AmmoPickupSound);
-    }), 1.f, false);
+	// 크로스헤어 UI에서 처치 애니메이션을 재생
+	crosshairUI->PlayAnimation(crosshairUI->KillAppearAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
+	// 처치 사운드를 재생
+	UGameplayStatics::PlaySound2D(GetWorld(), KillSound);
+	// 정보 UI 업데이트
+	informationUI->ChargeAmmunitionInfoWidget();
+	informationUI->PlayAnimation(informationUI->ChargeAmmunition, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
+	informationUI->UpdateAmmo_Secondary();
+	// 탄약 픽업 사운드를 일정 시간 후 재생
+	FTimerHandle AmmoPickHandle;
+	GetWorldTimerManager().SetTimer(AmmoPickHandle, FTimerDelegate::CreateLambda([this]()-> void
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), AmmoPickupSound);
+	}), 1.f, false);
 }
 
 // 서버에서 적을 맞혔을 때 호출되는 RPC 함수의 구현 부분
 void APlayerCharacter::OnEnemyHitRPCServer_Implementation(const FHitResult& HitResult, AEnemy* HitEnemy, bool IsHeadshot)
 {
-    OnEnemyHitRPCMulticast(HitResult, HitEnemy, IsHeadshot);
+	OnEnemyHitRPCMulticast(HitResult, HitEnemy, IsHeadshot);
 }
 
 // 서버에서 적을 맞혔을 때 호출되는 RPC 함수의 유효성 검사 함수
 bool APlayerCharacter::OnEnemyHitRPCServer_Validate(const FHitResult& HitResult, AEnemy* HitEnemy, bool IsHeadshot)
 {
-    return true;
+	return true;
 }
 
 // 멀티캐스트 RPC: 모든 클라이언트에서 적을 맞혔을 때 호출되는 함수
 void APlayerCharacter::OnEnemyHitRPCMulticast_Implementation(const FHitResult& HitResult, AEnemy* HitEnemy, const bool IsHeadshot)
 {
-    if (HasAuthority())
-    {
-        if (IsHeadshot)
-        {
-            // 헤드샷일 때 데미지 계산 및 처리
-            DamageAmount = Stat->GetAttackDamage(weaponArray, false);
-            HitEnemy->Damaged(DamageAmount * 2, this);
-            if (const auto HitBoss = Cast<ABoss>(HitEnemy); ::IsValid(HitBoss))
-            {
-                Stat->AccumulatedDamageToBoss += DamageAmount * 2;
-            }
-            else
-            {
-                Stat->AccumulatedDamageToEnemy += DamageAmount * 2;
-            }
-        }
-        else
-        {
-            // 일반 적중일 때 데미지 계산 및 처리
-            DamageAmount = Stat->GetAttackDamage(weaponArray, false);
-            HitEnemy->Damaged(DamageAmount, this);
-            if (const auto HitBoss = Cast<ABoss>(HitEnemy); ::IsValid(HitBoss))
-            {
-                Stat->AccumulatedDamageToBoss += DamageAmount;
-            }
-            else
-            {
-                Stat->AccumulatedDamageToEnemy += DamageAmount;
-            }
-        }
-    }
-    else
-    {
-        // 클라이언트에서 적을 맞혔을 때 효과 처리
-        if (IsLocallyControlled())
-        {
-            const FRotator HitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
-            if (HitEnemy->EnemyStat->IsStunned)
-            {
-                if (IsHeadshot)
-                {
-                    UGameplayStatics::PlaySound2D(GetWorld(), BulletHeadHitSound);
-                    // 적중 UI 애니메이션 재생
-                    crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
-                    // 데미지 위젯 설정 및 파티클 생성
-                    SetDamageWidget(DamageAmount * 4, HitResult.Location, false, FLinearColor::Red);
-                    UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(2.f));
-                }
-                else
-                {
-                    UGameplayStatics::PlaySound2D(GetWorld(), BulletHitSound);
-                    // 적중 UI 애니메이션 재생
-                    crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
-                    // 데미지 위젯 설정 및 파티클 생성
-                    SetDamageWidget(DamageAmount * 2, HitResult.Location, false, FLinearColor::Red);
-                    UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(1.f));
-                }
-            }
-            else
-            {
-                if (HitEnemy->EnemyStat->IsShieldBroken)
-                {
-                    if (IsHeadshot)
-                    {
-                        UGameplayStatics::PlaySound2D(GetWorld(), BulletHeadHitSound);
-                        // 적중 UI 애니메이션 재생
-                        crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
-                        // 데미지 위젯 설정 및 파티클 생성
-                        SetDamageWidget(DamageAmount * 2, HitResult.Location, false, FLinearColor::Yellow);
-                        UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(2.f));
-                    }
-                    else
-                    {
-                        UGameplayStatics::PlaySound2D(GetWorld(), BulletHitSound);
-                        // 적중 UI 애니메이션 재생
-                        crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
-                        // 데미지 위젯 설정 및 파티클 생성
-                        SetDamageWidget(DamageAmount, HitResult.Location, false, FLinearColor::White);
-                        UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(1.f));
-                    }
-                }
-                else
-                {
-                    if (IsHeadshot)
-                    {
-                        UGameplayStatics::PlaySound2D(GetWorld(), BulletHeadHitSound);
-                        // 적중 UI 애니메이션 재생
-                        crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
-                        // 데미지 위젯 설정 및 파티클 생성
-                        SetDamageWidget(DamageAmount * 0.1f, HitResult.Location, true, FLinearColor::Gray);
-                        UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(2.f));
-                    }
-                    else
-                    {
-                        UGameplayStatics::PlaySound2D(GetWorld(), BulletHitSound);
-                        // 적중 UI 애니메이션 재생
-                        crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
-                        // 데미지 위젯 설정 및 파티클 생성
-                        SetDamageWidget(DamageAmount * 0.05f, HitResult.Location, true, FLinearColor::Gray);
-                        UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(1.f));
-                    }
-                }
-            }
-        }
-        else
-        {
-            const FRotator HitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
-            if (IsHeadshot)
-            {
-                // 적중 사운드 재생
-                UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHeadHitSound, HitResult.Location);
-                // 적중 파티클 생성
-                UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(2.f));
-            }
-            else
-            {
-                // 적중 사운드 재생
-                UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, HitResult.Location);
-                // 적중 파티클 생성
-                UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(1.f));
-            }
-        }
-    }
+	if (HasAuthority())
+	{
+		if (IsHeadshot)
+		{
+			// 헤드샷일 때 데미지 계산 및 처리
+			DamageAmount = Stat->GetAttackDamage(weaponArray, false);
+			HitEnemy->Damaged(DamageAmount * 2, this);
+			if (const auto HitBoss = Cast<ABoss>(HitEnemy); ::IsValid(HitBoss))
+			{
+				Stat->AccumulatedDamageToBoss += DamageAmount * 2;
+			}
+			else
+			{
+				Stat->AccumulatedDamageToEnemy += DamageAmount * 2;
+			}
+		}
+		else
+		{
+			// 일반 적중일 때 데미지 계산 및 처리
+			DamageAmount = Stat->GetAttackDamage(weaponArray, false);
+			HitEnemy->Damaged(DamageAmount, this);
+			if (const auto HitBoss = Cast<ABoss>(HitEnemy); ::IsValid(HitBoss))
+			{
+				Stat->AccumulatedDamageToBoss += DamageAmount;
+			}
+			else
+			{
+				Stat->AccumulatedDamageToEnemy += DamageAmount;
+			}
+		}
+	}
+	else
+	{
+		// 클라이언트에서 적을 맞혔을 때 효과 처리
+		if (IsLocallyControlled())
+		{
+			const FRotator HitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
+			if (HitEnemy->EnemyStat->IsStunned)
+			{
+				if (IsHeadshot)
+				{
+					UGameplayStatics::PlaySound2D(GetWorld(), BulletHeadHitSound);
+					// 적중 UI 애니메이션 재생
+					crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
+					// 데미지 위젯 설정 및 파티클 생성
+					SetDamageWidget(DamageAmount * 4, HitResult.Location, false, FLinearColor::Red);
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(2.f));
+				}
+				else
+				{
+					UGameplayStatics::PlaySound2D(GetWorld(), BulletHitSound);
+					// 적중 UI 애니메이션 재생
+					crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
+					// 데미지 위젯 설정 및 파티클 생성
+					SetDamageWidget(DamageAmount * 2, HitResult.Location, false, FLinearColor::Red);
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(1.f));
+				}
+			}
+			else
+			{
+				if (HitEnemy->EnemyStat->IsShieldBroken)
+				{
+					if (IsHeadshot)
+					{
+						UGameplayStatics::PlaySound2D(GetWorld(), BulletHeadHitSound);
+						// 적중 UI 애니메이션 재생
+						crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
+						// 데미지 위젯 설정 및 파티클 생성
+						SetDamageWidget(DamageAmount * 2, HitResult.Location, false, FLinearColor::Yellow);
+						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(2.f));
+					}
+					else
+					{
+						UGameplayStatics::PlaySound2D(GetWorld(), BulletHitSound);
+						// 적중 UI 애니메이션 재생
+						crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
+						// 데미지 위젯 설정 및 파티클 생성
+						SetDamageWidget(DamageAmount, HitResult.Location, false, FLinearColor::White);
+						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(1.f));
+					}
+				}
+				else
+				{
+					if (IsHeadshot)
+					{
+						UGameplayStatics::PlaySound2D(GetWorld(), BulletHeadHitSound);
+						// 적중 UI 애니메이션 재생
+						crosshairUI->PlayAnimation(crosshairUI->HeadHitAppearAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
+						// 데미지 위젯 설정 및 파티클 생성
+						SetDamageWidget(DamageAmount * 0.1f, HitResult.Location, true, FLinearColor::Gray);
+						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(2.f));
+					}
+					else
+					{
+						UGameplayStatics::PlaySound2D(GetWorld(), BulletHitSound);
+						// 적중 UI 애니메이션 재생
+						crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation, 0, 1, EUMGSequencePlayMode::Forward, 1, true);
+						// 데미지 위젯 설정 및 파티클 생성
+						SetDamageWidget(DamageAmount * 0.05f, HitResult.Location, true, FLinearColor::Gray);
+						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(1.f));
+					}
+				}
+			}
+		}
+		else
+		{
+			const FRotator HitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
+			if (IsHeadshot)
+			{
+				// 적중 사운드 재생
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHeadHitSound, HitResult.Location);
+				// 적중 파티클 생성
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(2.f));
+			}
+			else
+			{
+				// 적중 사운드 재생
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, HitResult.Location);
+				// 적중 파티클 생성
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(1.f));
+			}
+		}
+	}
 }
 
 
 void APlayerCharacter::OnContainerHit(const FHitResult& HitResult, ARewardContainer* HitContainer)
 {
-    // 컨테이너가 파괴되지 않은 경우
+	// 컨테이너가 파괴되지 않은 경우
 	if (!HitContainer->IsBoxDestroyed)
 	{
-        // 서버에서 OnContainerHitRPCServer 함수 호출
+		// 서버에서 OnContainerHitRPCServer 함수 호출
 		OnContainerHitRPCServer(HitResult, HitContainer);
 	}
 }
 
 void APlayerCharacter::OnContainerHitRPCServer_Implementation(const FHitResult& HitResult, ARewardContainer* HitContainer)
 {
-    // 멀티캐스트 함수 호출
+	// 멀티캐스트 함수 호출
 	OnContainerHitRPCMulticast(HitResult, HitContainer);
 }
 
 bool APlayerCharacter::OnContainerHitRPCServer_Validate(const FHitResult& HitResult, ARewardContainer* HitContainer)
 {
-    // 유효성 검사
+	// 유효성 검사
 	return true;
 }
 
 void APlayerCharacter::OnContainerHitRPCMulticast_Implementation(const FHitResult& HitResult, ARewardContainer* HitContainer)
 {
-    // 서버 권한이 있는 경우
+	// 서버 권한이 있는 경우
 	if (HasAuthority())
 	{
-        // 컨테이너의 현재 HP가 1 이하인 경우
+		// 컨테이너의 현재 HP가 1 이하인 경우
 		if (HitContainer->CurBoxHP <= 1)
 		{
-            // 컨테이너 파괴 함수 호출
+			// 컨테이너 파괴 함수 호출
 			HitContainer->BoxDestroyed();
 		}
 		else
 		{
-            // 컨테이너의 HP 감소
+			// 컨테이너의 HP 감소
 			HitContainer->CurBoxHP = FMath::Clamp(HitContainer->CurBoxHP - 1, 0, 5);
 		}
 	}
 	else
 	{
-        // 로컬 플레이어인 경우
+		// 로컬 플레이어인 경우
 		if (IsLocallyControlled())
 		{
-            // 크로스헤어 애니메이션 재생
+			// 크로스헤어 애니메이션 재생
 			crosshairUI->PlayAnimation(crosshairUI->HitAppearAnimation);
-            // 총알 히트 사운드 재생
+			// 총알 히트 사운드 재생
 			UGameplayStatics::PlaySound2D(GetWorld(), BulletHitSound);
 		}
 		else
 		{
-            // 총알 히트 사운드를 컨테이너 위치에서 재생
+			// 총알 히트 사운드를 컨테이너 위치에서 재생
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, HitContainer->GetActorLocation());
 		}
-        // 히트 방향을 회전으로 변환
+		// 히트 방향을 회전으로 변환
 		const FRotator HitRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
-        // 히트 위치에서 이펙트 스폰
+		// 히트 위치에서 이펙트 스폰
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletImpactFactory, HitResult.Location, HitRot, FVector(1.f));
 	}
 }
 
 void APlayerCharacter::OnGroundHit(const FHitResult& HitResult)
 {
-    // 서버에서 OnGroundHitRPCServer 함수 호출
+	// 서버에서 OnGroundHitRPCServer 함수 호출
 	OnGroundHitRPCServer(HitResult);
 }
 
 void APlayerCharacter::OnGroundHitRPCServer_Implementation(const FHitResult& HitResult)
 {
-    // 멀티캐스트 함수 호출
+	// 멀티캐스트 함수 호출
 	OnGroundHitRPCMulticast(HitResult);
 }
 
 bool APlayerCharacter::OnGroundHitRPCServer_Validate(const FHitResult& HitResult)
 {
-    // 유효성 검사
+	// 유효성 검사
 	return true;
 }
 
 void APlayerCharacter::OnGroundHitRPCMulticast_Implementation(const FHitResult& HitResult)
 {
-    // 로컬 플레이어인 경우
+	// 로컬 플레이어인 경우
 	if (IsLocallyControlled())
 	{
-        // 히트 방향을 회전으로 변환
+		// 히트 방향을 회전으로 변환
 		const FRotator DecalRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
-        // 히트 위치를 네트워크 양식으로 저장
+		// 히트 위치를 네트워크 양식으로 저장
 		const FVector_NetQuantize DecalLoc = HitResult.Location;
-        // 히트 위치와 방향을 변환으로 생성
+		// 히트 위치와 방향을 변환으로 생성
 		const FTransform DecalTrans = UKismetMathLibrary::MakeTransform(DecalLoc, DecalRot);
-        // 데칼 스폰
+		// 데칼 스폰
 		GetWorld()->SpawnActor<AActor>(ShotDecalFactory, DecalTrans);
-        // 히트 위치에 파티클 이펙트 스폰
+		// 히트 위치에 파티클 이펙트 스폰
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, DecalLoc, DecalRot + FRotator(-90, 0, 0), FVector(0.5f));
 	}
 	else
 	{
-        // 로컬 플레이어가 아닌 경우
+		// 로컬 플레이어가 아닌 경우
 		const FRotator DecalRot = UKismetMathLibrary::Conv_VectorToRotator(HitResult.ImpactNormal);
 		const FVector_NetQuantize DecalLoc = HitResult.Location;
 		const FTransform DecalTrans = UKismetMathLibrary::MakeTransform(DecalLoc, DecalRot);
 		GetWorld()->SpawnActor<AActor>(ShotDecalFactory, DecalTrans);
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletMarksParticle, DecalLoc, DecalRot + FRotator(-90, 0, 0), FVector(0.5f));
-        // 히트 사운드 재생
+		// 히트 사운드 재생
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), GroundHitSound, DecalLoc);
 	}
 }
 
 int32 APlayerCharacter::GenerateRandomDamage(const float InDamage) const
 {
-    // 주어진 데미지를 기반으로 무작위 데미지 생성
+	// 주어진 데미지를 기반으로 무작위 데미지 생성
 	const double DoubleRandDamage = FMath::FRandRange(InDamage * 0.8, InDamage * 1.2);
-    // 반올림하여 정수로 변환
+	// 반올림하여 정수로 변환
 	const int32 RoundedRandDamage = FMath::RoundHalfToEven(DoubleRandDamage);
 	return RoundedRandDamage;
 }
 
 void APlayerCharacter::SetDamageWidget(const int Damage, const FVector& SpawnLoc, const bool bIsShieldIconEnable, const FLinearColor DamageTextColor)
 {
-    // 데미지 위젯 액터 생성
+	// 데미지 위젯 액터 생성
 	if (const ADamageWidgetActor* DamWidget = GetWorld()->SpawnActor<ADamageWidgetActor>(damageWidgetFactory, SpawnLoc + FVector(0, 0, 50), FRotator::ZeroRotator))
 	{
-        // 위젯 컴포넌트에서 사용자 위젯 객체 가져오기
+		// 위젯 컴포넌트에서 사용자 위젯 객체 가져오기
 		if (UUserWidget* Widui = DamWidget->DamageWidgetComponent->GetUserWidgetObject())
 		{
-            // 사용자 위젯을 UDamageWidget으로 캐스팅
+			// 사용자 위젯을 UDamageWidget으로 캐스팅
 			damageWidgetUI = Cast<UDamageWidget>(Widui);
 			if (damageWidgetUI)
 			{
-                // 데미지 텍스트 색상 설정
+				// 데미지 텍스트 색상 설정
 				damageWidgetUI->damageText->SetColorAndOpacity(DamageTextColor);
-                // 데미지 설정
+				// 데미지 설정
 				damageWidgetUI->damage = Damage;
-                // 실드 아이콘 표시 설정
+				// 실드 아이콘 표시 설정
 				if (bIsShieldIconEnable)
 				{
 					damageWidgetUI->ShieldImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
@@ -785,7 +785,7 @@ void APlayerCharacter::SetDamageWidget(const int Damage, const FVector& SpawnLoc
 				{
 					damageWidgetUI->ShieldImage->SetVisibility(ESlateVisibility::Hidden);
 				}
-                // 무기 타입에 따라 탄약 이미지 설정
+				// 무기 타입에 따라 탄약 이미지 설정
 				if (weaponArray[0] == true)
 				{
 					damageWidgetUI->rifleBulletImage->SetVisibility(ESlateVisibility::Visible);
@@ -814,7 +814,7 @@ void APlayerCharacter::SetDamageWidget(const int Damage, const FVector& SpawnLoc
 					damageWidgetUI->pistolBulletImage->SetVisibility(ESlateVisibility::Hidden);
 					damageWidgetUI->M249BulletImage->SetVisibility(ESlateVisibility::Visible);
 				}
-                // 데미지 애니메이션 재생
+				// 데미지 애니메이션 재생
 				damageWidgetUI->PlayAnimation(damageWidgetUI->DamageFloat);
 			}
 		}
@@ -1797,28 +1797,28 @@ void APlayerCharacter::SetFirstPersonModePistol(const bool IsFirstPerson)
 
 void APlayerCharacter::EquipArmorInventorySlot(const bool IsEquipping, const float EquipGearStat)
 {
-    // 장착 중인지 확인
+	// 장착 중인지 확인
 	if (IsEquipping)
 	{
-        // 서버 권한이 있는지 확인
+		// 서버 권한이 있는지 확인
 		if (HasAuthority())
 		{
-            // 최대 체력 증가
+			// 최대 체력 증가
 			Stat->AddMaxHp(EquipGearStat);
 		}
-        // 갑옷 장착 상태를 true로 설정
+		// 갑옷 장착 상태를 true로 설정
 		IsEquipArmor = true;
 		OnRep_IsEquipArmor();
 	}
 	else
 	{
-        // 서버 권한이 있는지 확인
+		// 서버 권한이 있는지 확인
 		if (HasAuthority())
 		{
-            // 최대 체력 감소
+			// 최대 체력 감소
 			Stat->SubtractMaxHp(EquipGearStat);
 		}
-        // 갑옷 장착 상태를 false로 설정
+		// 갑옷 장착 상태를 false로 설정
 		IsEquipArmor = false;
 		OnRep_IsEquipArmor();
 	}
@@ -1826,16 +1826,16 @@ void APlayerCharacter::EquipArmorInventorySlot(const bool IsEquipping, const flo
 
 void APlayerCharacter::EquipHelmetInventorySlot(const bool IsEquipping, const float EquipGearStat)
 {
-    // 헬멧 장착 중인지 확인
+	// 헬멧 장착 중인지 확인
 	if (IsEquipping)
 	{
-        // 헬멧 장착 상태를 true로 설정
+		// 헬멧 장착 상태를 true로 설정
 		IsEquipHelmet = true;
 		OnRep_IsEquipHelmet();
 	}
 	else
 	{
-        // 헬멧 장착 상태를 false로 설정
+		// 헬멧 장착 상태를 false로 설정
 		IsEquipHelmet = false;
 		OnRep_IsEquipHelmet();
 	}
@@ -1843,28 +1843,28 @@ void APlayerCharacter::EquipHelmetInventorySlot(const bool IsEquipping, const fl
 
 void APlayerCharacter::EquipGoggleInventorySlot(const bool IsEquipping, const float EquipGearStat)
 {
-    // 고글 장착 중인지 확인
+	// 고글 장착 중인지 확인
 	if (IsEquipping)
 	{
-        // 서버 권한이 있는지 확인
+		// 서버 권한이 있는지 확인
 		if (HasAuthority())
 		{
-            // 반동 통계 배율 설정
+			// 반동 통계 배율 설정
 			Stat->RecoilStatMultiplier = EquipGearStat;
 		}
-        // 고글 장착 상태를 true로 설정
+		// 고글 장착 상태를 true로 설정
 		IsEquipGoggle = true;
 		OnRep_IsEquipGoggle();
 	}
 	else
 	{
-        // 서버 권한이 있는지 확인
+		// 서버 권한이 있는지 확인
 		if (HasAuthority())
 		{
-            // 반동 통계 배율 설정
+			// 반동 통계 배율 설정
 			Stat->RecoilStatMultiplier = EquipGearStat;
 		}
-        // 고글 장착 상태를 false로 설정
+		// 고글 장착 상태를 false로 설정
 		IsEquipGoggle = false;
 		OnRep_IsEquipGoggle();
 	}
@@ -1872,28 +1872,28 @@ void APlayerCharacter::EquipGoggleInventorySlot(const bool IsEquipping, const fl
 
 void APlayerCharacter::EquipHeadsetInventorySlot(const bool IsEquipping, const float EquipGearStat)
 {
-    // 헤드셋 장착 중인지 확인
+	// 헤드셋 장착 중인지 확인
 	if (IsEquipping)
 	{
-        // 서버 권한이 있는지 확인
+		// 서버 권한이 있는지 확인
 		if (HasAuthority())
 		{
-            // 데미지 통계 배율 설정
+			// 데미지 통계 배율 설정
 			Stat->DamageStatMultiplier = EquipGearStat;
 		}
-        // 헤드셋 장착 상태를 true로 설정
+		// 헤드셋 장착 상태를 true로 설정
 		IsEquipHeadset = true;
 		OnRep_IsEquipHeadset();
 	}
 	else
 	{
-        // 서버 권한이 있는지 확인
+		// 서버 권한이 있는지 확인
 		if (HasAuthority())
 		{
-            // 데미지 통계 배율 설정
+			// 데미지 통계 배율 설정
 			Stat->DamageStatMultiplier = EquipGearStat;
 		}
-        // 헤드셋 장착 상태를 false로 설정
+		// 헤드셋 장착 상태를 false로 설정
 		IsEquipHeadset = false;
 		OnRep_IsEquipHeadset();
 	}
@@ -1901,28 +1901,28 @@ void APlayerCharacter::EquipHeadsetInventorySlot(const bool IsEquipping, const f
 
 void APlayerCharacter::EquipMaskInventorySlot(const bool IsEquipping, const float EquipGearStat)
 {
-    // 마스크 장착 중인지 확인
+	// 마스크 장착 중인지 확인
 	if (IsEquipping)
 	{
-        // 서버 권한이 있는지 확인
+		// 서버 권한이 있는지 확인
 		if (HasAuthority())
 		{
-            // 발사 간격 통계 배율 설정
+			// 발사 간격 통계 배율 설정
 			Stat->FireIntervalStatMultiplier = EquipGearStat;
 		}
-        // 마스크 장착 상태를 true로 설정
+		// 마스크 장착 상태를 true로 설정
 		IsEquipMask = true;
 		OnRep_IsEquipMask();
 	}
 	else
 	{
-        // 서버 권한이 있는지 확인
+		// 서버 권한이 있는지 확인
 		if (HasAuthority())
 		{
-            // 발사 간격 통계 배율 설정
+			// 발사 간격 통계 배율 설정
 			Stat->FireIntervalStatMultiplier = EquipGearStat;
 		}
-        // 마스크 장착 상태를 false로 설정
+		// 마스크 장착 상태를 false로 설정
 		IsEquipMask = false;
 		OnRep_IsEquipMask();
 	}
@@ -1930,106 +1930,106 @@ void APlayerCharacter::EquipMaskInventorySlot(const bool IsEquipping, const floa
 
 void APlayerCharacter::DeadPlayerContainerSettings(ADeadPlayerContainer* DeadPlayerContainers) const
 {
-    // DeadPlayerContainers가 유효한지 확인
+	// DeadPlayerContainers가 유효한지 확인
 	if (DeadPlayerContainers)
 	{
-        // 플레이어 상태를 AEclipsePlayerState로 캐스팅
+		// 플레이어 상태를 AEclipsePlayerState로 캐스팅
 		if (const AEclipsePlayerState* EcPlayerState = Cast<AEclipsePlayerState>(GetPlayerState()))
 		{
-            // 사망한 플레이어의 인벤토리 데이터 설정
-			DeadPlayerContainers->DeadPlayerInventoryStructArray = EcPlayerState->PlayerInventoryStructs;
-			DeadPlayerContainers->DeadPlayerInventoryStackArray = EcPlayerState->PlayerInventoryStacks;
-			DeadPlayerContainers->DeadPlayerGearSlotArray = EcPlayerState->PlayerGearSlotStructs;
+			// 사망한 플레이어의 인벤토리 데이터 설정
+			DeadPlayerContainers->DeadPlayerInventoryStructArray = EcPlayerState->GetInventoryStructs();
+			DeadPlayerContainers->DeadPlayerInventoryStackArray = EcPlayerState->GetInventoryStacks();
+			DeadPlayerContainers->DeadPlayerGearSlotArray = EcPlayerState->GetGearSlotStructs();
 		}
 	}
 }
 
 void APlayerCharacter::PlayerDeath()
 {
-    // 로컬 플레이어인지 확인
+	// 로컬 플레이어인지 확인
 	if (IsLocallyControlled())
 	{
-        // 줌 해제
+		// 줌 해제
 		PlayerInputComponentRef->ZoomRelease(false);
-        // 1인칭 소총 모드 해제
+		// 1인칭 소총 모드 해제
 		SetFirstPersonModeRifle(false);
-        // 1인칭 권총 모드 해제
+		// 1인칭 권총 모드 해제
 		SetFirstPersonModePistol(false);
-        // 입력 무시 설정
+		// 입력 무시 설정
 		PC->SetIgnoreLookInput(true);
 		PC->SetIgnoreMoveInput(true);
-        // 모든 위젯 제거
+		// 모든 위젯 제거
 		UWidgetLayoutLibrary::RemoveAllWidgets(GetWorld());
-        // 플레이어 카메라 관리자 가져오기
+		// 플레이어 카메라 관리자 가져오기
 		APlayerCameraManager* PlayerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
-        // 카메라 페이드 연출
+		// 카메라 페이드 연출
 		PlayerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
-        // 시야각 설정
+		// 시야각 설정
 		FollowCamera->SetFieldOfView(90.f);
 	}
-    // 타이머 핸들러 설정
+	// 타이머 핸들러 설정
 	FTimerHandle TimerHandle;
 	GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
-        // 은신처로 이동
+		// 은신처로 이동
 		MoveToHideout(true);
 	}), 10.f, false);
 }
 
 void APlayerCharacter::PlayerDeathRPCServer_Implementation()
 {
-    // 멀티캐스트 호출
+	// 멀티캐스트 호출
 	PlayerDeathRPCMulticast();
 }
 
 bool APlayerCharacter::PlayerDeathRPCServer_Validate()
 {
-    // 유효성 검사
+	// 유효성 검사
 	return true;
 }
 
 void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 {
-    // 플레이어 즉시 사망 상태 설정
+	// 플레이어 즉시 사망 상태 설정
 	IsPlayerDeadImmediately = true;
-    // 서버 권한이 없는 경우
+	// 서버 권한이 없는 경우
 	if (!HasAuthority())
 	{
-        // 몽타주 재생 중단
+		// 몽타주 재생 중단
 		StopAnimMontage();
-        // 사망 몽타주 재생
+		// 사망 몽타주 재생
 		PlayAnimMontage(FullBodyMontage, 1, FName("Death"));
 	}
-    // 타이머 핸들러 설정
+	// 타이머 핸들러 설정
 	FTimerHandle PlayerDeadHandle;
 	GetWorld()->GetTimerManager().SetTimer(PlayerDeadHandle, FTimerDelegate::CreateLambda([this]()-> void
 	{
-        // 서버 권한이 있는 경우
+		// 서버 권한이 있는 경우
 		if (HasAuthority())
 		{
-            // 플레이어 사망 상태 설정
+			// 플레이어 사망 상태 설정
 			IsPlayerDead = true;
-            // 캡슐 컴포넌트 충돌 비활성화
+			// 캡슐 컴포넌트 충돌 비활성화
 			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-            // 메시 충돌 비활성화
+			// 메시 충돌 비활성화
 			GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-            // 사망한 플레이어 컨테이너 생성
+			// 사망한 플레이어 컨테이너 생성
 			FActorSpawnParameters Params;
 			Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 			ADeadPlayerContainer* DeadPlayerBodyActor = GetWorld()->SpawnActor<ADeadPlayerContainer>(DeadPlayerContainerFactory, GetMesh()->GetComponentTransform(), Params);
-            // 사망한 플레이어 컨테이너 설정
+			// 사망한 플레이어 컨테이너 설정
 			DeadPlayerContainerSettings(DeadPlayerBodyActor);
 		}
 		else
 		{
-            // 로컬 제어가 아닌 경우 메시 가시성 비활성화
+			// 로컬 제어가 아닌 경우 메시 가시성 비활성화
 			if (!IsLocallyControlled())
 			{
 				GetMesh()->SetVisibility(false);
 			}
 		}
 
-        // 로컬 제어인 경우 사망 소리 재생
+		// 로컬 제어인 경우 사망 소리 재생
 		if (IsLocallyControlled())
 		{
 			UGameplayStatics::PlaySound2D(GetWorld(), DeathSound);
@@ -2039,16 +2039,16 @@ void APlayerCharacter::PlayerDeathRPCMulticast_Implementation()
 
 void APlayerCharacter::PurchaseAmmo(const int32 AmmoIndex)
 {
-    // 서버에서 PurchaseAmmo 함수 호출
+	// 서버에서 PurchaseAmmo 함수 호출
 	PurchaseAmmoServer(AmmoIndex);
 }
 
 void APlayerCharacter::PurchaseAmmoServer_Implementation(const int32 AmmoIndex)
 {
-    // 서버 권한이 있는지 확인
+	// 서버 권한이 있는지 확인
 	if (HasAuthority())
 	{
-        // 탄약 인덱스에 따라 탄약 수량 증가
+		// 탄약 인덱스에 따라 탄약 수량 증가
 		if (AmmoIndex == 0)
 		{
 			maxRifleAmmo += 40;
@@ -2070,59 +2070,59 @@ void APlayerCharacter::PurchaseAmmoServer_Implementation(const int32 AmmoIndex)
 
 void APlayerCharacter::MoveToAnotherLevel()
 {
-    // 엔딩 상태 설정
+	// 엔딩 상태 설정
 	bEnding = true;
 	gi->IsWidgetOn = false;
 	IsPlayerDeadImmediately = true;
 
-    // 로컬 제어인 경우
+	// 로컬 제어인 경우
 	if (IsLocallyControlled())
 	{
-        // 입력 무시 설정
+		// 입력 무시 설정
 		PC->SetIgnoreMoveInput(true);
 		PC->SetIgnoreLookInput(true);
-        // 위젯 제거
+		// 위젯 제거
 		infoWidgetUI->RemoveFromParent();
 		informationUI->RemoveFromParent();
 		crosshairUI->RemoveFromParent();
 
-        // 플레이어 카메라 관리자 가져오기
+		// 플레이어 카메라 관리자 가져오기
 		APlayerCameraManager* PlayerCam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
-        // 카메라 페이드 연출
+		// 카메라 페이드 연출
 		PlayerCam->StartCameraFade(0, 1, 7.0, FLinearColor::Black, false, true);
-        // 포털 소리 재생
+		// 포털 소리 재생
 		UGameplayStatics::PlaySound2D(GetWorld(), PortalSound);
 	}
 
-    // 서버에서 MoveToAnotherLevel 함수 호출
+	// 서버에서 MoveToAnotherLevel 함수 호출
 	MoveToAnotherLevelServer();
 }
 
 void APlayerCharacter::MoveToAnotherLevelServer_Implementation()
 {
-    // 멀티캐스트 호출
+	// 멀티캐스트 호출
 	MoveToAnotherLevelMulticast();
 }
 
 void APlayerCharacter::MoveToAnotherLevelMulticast_Implementation()
 {
-    // 서버 권한이 없는 경우
+	// 서버 권한이 없는 경우
 	if (!HasAuthority())
 	{
-        // 이펙트 스폰
+		// 이펙트 스폰
 		const FTransform SpawnTrans = this->GetTransform();
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), recallParticle, SpawnTrans);
-        // 레벨 종료 몽타주 재생
+		// 레벨 종료 몽타주 재생
 		PlayAnimMontage(FullBodyMontage, 1, FName("LevelEnd"));
 	}
 }
 
 void APlayerCharacter::UnloadMultipleStreamingLevels(const FName& FirstLevelName, const FName& SecondLevelName)
 {
-    // 언로드할 스트리밍 레벨 배열 설정
+	// 언로드할 스트리밍 레벨 배열 설정
 	TArray<FName> StreamingLevelArray = {FirstLevelName, SecondLevelName};
 	int32 StreamingLevelID = 0;
-    // 각 레벨에 대해 언로드 실행
+	// 각 레벨에 대해 언로드 실행
 	for (const auto LevelName : StreamingLevelArray)
 	{
 		FLatentActionInfo LatentActionInfo;

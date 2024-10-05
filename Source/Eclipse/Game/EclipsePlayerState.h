@@ -20,10 +20,17 @@ class ECLIPSE_API AEclipsePlayerState : public APlayerState
 public:
 	AEclipsePlayerState();
 
-protected:
-	virtual void BeginPlay() override;
+	UFUNCTION()
+	FORCEINLINE TArray<FPlayerInventoryStruct> GetInventoryStructs() const { return PlayerInventoryStructs; }
+	void SetInventoryStructs(const TArray<FPlayerInventoryStruct>& NewPlayerInventoryStructs);
 
-public:
+	UFUNCTION()
+	FORCEINLINE TArray<int32> GetInventoryStacks() const { return PlayerInventoryStacks; }
+	void SetInventoryStacks(const TArray<int32>& NewPlayerInventoryStacks);
+
+	FORCEINLINE TArray<FPlayerInventoryStruct> GetGearSlotStructs() const { return PlayerGearSlotStructs; }
+	void SetGearSlotStructs(const TArray<FPlayerInventoryStruct>& NewGearSlotStructs);
+	
 	UFUNCTION()
 	void DeadBodyWidgetSettings(ADeadPlayerContainer* DeadPlayerContainer, APlayerCharacter* InstigatorPlayerRef);
 
@@ -115,24 +122,6 @@ public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite)
-	TArray<FPlayerInventoryStruct> PlayerInventoryStructs;
-
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite)
-	TArray<int32> PlayerInventoryStacks;
-
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite)
-	TArray<FPlayerInventoryStruct> PlayerGearSlotStructs;
-
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite)
-	TArray<FPlayerInventoryStruct> DeadPlayerInventoryStructs;
-
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite)
-	TArray<int32> DeadPlayerInventoryStacks;
-
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite)
-	TArray<FPlayerInventoryStruct> DeadPlayerGearSlotStructs;
-
 	UPROPERTY()
 	FPlayerInventoryStruct InventoryStructDefault;
 
@@ -150,4 +139,27 @@ public:
 
 	UPROPERTY()
 	bool IsAlreadySet = false;
+
+
+protected:
+	virtual void BeginPlay() override;
+
+private:
+	UPROPERTY(Replicated, VisibleAnywhere)
+	TArray<FPlayerInventoryStruct> PlayerInventoryStructs;
+
+	UPROPERTY(Replicated, VisibleAnywhere)
+	TArray<int32> PlayerInventoryStacks;
+
+	UPROPERTY(Replicated, VisibleAnywhere)
+	TArray<FPlayerInventoryStruct> PlayerGearSlotStructs;
+
+	UPROPERTY(Replicated, VisibleAnywhere)
+	TArray<FPlayerInventoryStruct> DeadPlayerInventoryStructs;
+
+	UPROPERTY(Replicated, VisibleAnywhere)
+	TArray<int32> DeadPlayerInventoryStacks;
+
+	UPROPERTY(Replicated, VisibleAnywhere)
+	TArray<FPlayerInventoryStruct> DeadPlayerGearSlotStructs;
 };

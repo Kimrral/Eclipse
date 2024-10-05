@@ -12,19 +12,23 @@
 #include "Eclipse/UI/BossHPWidget.h"
 #include "Kismet/GameplayStatics.h"
 
+AEclipsePlayerController::AEclipsePlayerController()
+{
+	InventoryController = CreateDefaultSubobject<UInventoryControllerComponent>(TEXT("InventoryController"));
+	EnemyHpWidgetController = CreateDefaultSubobject<UEnemyHpWidgetControllerComponent>(TEXT("EnemyHpWidgetController"));
+}
+
+
 void AEclipsePlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
 	PlayerCharacter = Cast<APlayerCharacter>(GetPawn());
 	if (::IsValid(PlayerCharacter))
-	{		
+	{
 		PlayerCharacter->Stat->OnHpChanged.AddUObject(this, &AEclipsePlayerController::UpdateTabWidget);
 		PlayerCharacter->Stat->OnHpZero.AddUObject(this, &AEclipsePlayerController::PlayerDeath);
 	}
-	
-	InventoryController = CreateDefaultSubobject<UInventoryControllerComponent>(TEXT("InventoryController"));
-	EnemyHpWidgetController = CreateDefaultSubobject<UEnemyHpWidgetControllerComponent>(TEXT("EnemyHpWidgetController"));
 }
 
 void AEclipsePlayerController::UpdateTabWidget() const
@@ -43,7 +47,3 @@ void AEclipsePlayerController::PlayerDeath() const
 		PlayerCharacter->PlayerDeathRPCServer();
 	}
 }
-
-
-
-

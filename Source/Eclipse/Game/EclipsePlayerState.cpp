@@ -206,7 +206,7 @@ void AEclipsePlayerState::ServerSyncInventory(APlayerCharacter* PlayerCharacterR
 	// // 클라이언트의 인벤토리 데이터를 서버의 데이터와 동기화
 	// if (IsValid(PlayerCharacterRef))
 	// {
-	// 	if (UTabWidget* InventoryUI = PlayerCharacterRef->tabWidgetUI())
+	// 	if (const UTabWidget* InventoryUI = PlayerCharacterRef->tabWidgetUI())
 	// 	{
 	// 		InventoryUI->SetInventoryData(PlayerInventoryStructs, PlayerInventoryStacks); // 서버 데이터를 클라이언트로 동기화
 	// 	}
@@ -352,7 +352,7 @@ void AEclipsePlayerState::DragFromGearSlotServer_Implementation(APlayerCharacter
 }
 
 // 그라운드 아이템 리스트 드래그
-void AEclipsePlayerState::DragFromGround(APlayerCharacter* PlayerCharacterRef, FPlayerInventoryStruct& PlayerInventoryStruct, const int32 DropArrayIndex, const bool IsAmmunition)
+void AEclipsePlayerState::DragFromGround(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct, const int32 DropArrayIndex, const bool IsAmmunition)
 {
 	DragFromGroundServer(PlayerCharacterRef, PlayerInventoryStruct, DropArrayIndex, IsAmmunition);
 }

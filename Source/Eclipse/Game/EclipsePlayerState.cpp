@@ -56,6 +56,7 @@ void AEclipsePlayerState::AddToInventory(APlayerCharacter* PlayerCharacterRef, c
 	AddToInventoryServer(PlayerCharacterRef, PlayerInventoryStruct);
 }
 
+
 void AEclipsePlayerState::AddToInventoryServer_Implementation(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct)
 {
 	// 서버에서 아이템 습득 처리 로직
@@ -171,7 +172,7 @@ void AEclipsePlayerState::AddToInventoryWidgetClass(APlayerCharacter* PlayerChar
 {
 	// 클라이언트에서 아이템 습득 시각적 효과 실행
 	if (IsValid(PlayerCharacterRef))
-	{		
+	{
 		// 파티클 효과 재생
 		if (const UWorld* World = GetWorld())
 		{
@@ -179,9 +180,11 @@ void AEclipsePlayerState::AddToInventoryWidgetClass(APlayerCharacter* PlayerChar
 			PlayerCharacterRef->PlayAnimMontage(PlayerCharacterRef->UpperOnlyMontage, 1, FName("WeaponEquip"));
 			// 사운드 재생
 			UGameplayStatics::PlaySoundAtLocation(World, PlayerCharacterRef->PickUpSound, PlayerCharacterRef->GetActorLocation());
-		}		
+		}
 	}
 }
+
+
 
 void AEclipsePlayerState::HidePickedUpItem(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct)
 {
@@ -200,30 +203,30 @@ void AEclipsePlayerState::HidePickedUpItem(APlayerCharacter* PlayerCharacterRef,
 // 서버 검증 실패 시 실행되는 동기화 로직
 void AEclipsePlayerState::ServerSyncInventory(APlayerCharacter* PlayerCharacterRef) const
 {
-	// 클라이언트의 인벤토리 데이터를 서버의 데이터와 동기화
-	if (IsValid(PlayerCharacterRef))
-	{
-		if (UTabWidget* InventoryUI = PlayerCharacterRef->tabWidgetUI())
-		{
-			InventoryUI->SetInventoryData(PlayerInventoryStructs, PlayerInventoryStacks); // 서버 데이터를 클라이언트로 동기화
-		}
-	}
+	// // 클라이언트의 인벤토리 데이터를 서버의 데이터와 동기화
+	// if (IsValid(PlayerCharacterRef))
+	// {
+	// 	if (UTabWidget* InventoryUI = PlayerCharacterRef->tabWidgetUI())
+	// 	{
+	// 		InventoryUI->SetInventoryData(PlayerInventoryStructs, PlayerInventoryStacks); // 서버 데이터를 클라이언트로 동기화
+	// 	}
+	// }
 }
 
 void AEclipsePlayerState::OnUseConsumableItem(APlayerCharacter* PlayerCharacterRef, const FString& ConsumableItemName, const float HealAmount)
 {
-    // 소모품 사용 함수 호출 - 서버 측 함수 호출
+	// 소모품 사용 함수 호출 - 서버 측 함수 호출
 	OnUseConsumableItemServer(PlayerCharacterRef, ConsumableItemName, HealAmount);
 }
 
 void AEclipsePlayerState::OnUseConsumableItemServer_Implementation(APlayerCharacter* PlayerCharacterRef, const FString& ConsumableItemName, const float HealAmount)
 {
-    // 플레이어 캐릭터가 유효한지 확인
+	// 플레이어 캐릭터가 유효한지 확인
 	if (PlayerCharacterRef)
 	{
-        // 플레이어 캐릭터의 체력을 회복
+		// 플레이어 캐릭터의 체력을 회복
 		PlayerCharacterRef->Stat->HealHp(HealAmount);
-        // 플레이어 인벤토리에서 소모품을 찾아서 사용 처리
+		// 플레이어 인벤토리에서 소모품을 찾아서 사용 처리
 		for (int i = 0; i < PlayerInventoryStructs.Num(); ++i)
 		{
 			if (PlayerInventoryStructs[i].Name == ConsumableItemName)
@@ -231,11 +234,11 @@ void AEclipsePlayerState::OnUseConsumableItemServer_Implementation(APlayerCharac
 				const int32 ConsumableItemArrayIndex = i;
 				if (PlayerInventoryStacks[ConsumableItemArrayIndex] > 1)
 				{
-                    // 소모품의 수량이 1보다 많으면 하나 감소
+					// 소모품의 수량이 1보다 많으면 하나 감소
 					PlayerInventoryStacks[ConsumableItemArrayIndex]--;
 					return;
 				}
-                // 소모품의 수량이 1개일 경우 기본 값으로 설정하고 수량 감소
+				// 소모품의 수량이 1개일 경우 기본 값으로 설정하고 수량 감소
 				PlayerInventoryStructs[ConsumableItemArrayIndex] = InventoryStructDefault;
 				PlayerInventoryStacks[ConsumableItemArrayIndex]--;
 				return;
@@ -246,23 +249,23 @@ void AEclipsePlayerState::OnUseConsumableItemServer_Implementation(APlayerCharac
 
 void AEclipsePlayerState::DragFromDeadBody(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex)
 {
-    // 사체에서 아이템을 드래그하는 함수 호출 - 서버 측 함수 호출
+	// 사체에서 아이템을 드래그하는 함수 호출 - 서버 측 함수 호출
 	DragFromDeadBodyServer(PlayerCharacterRef, DragArrayIndex, DropArrayIndex);
 }
 
 void AEclipsePlayerState::DragFromDeadBodyServer_Implementation(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex)
 {
-	constexpr uint32 DeadBodySlotIndexNum_1 = 81;  // 첫 번째 사체 인벤토리 슬롯 인덱스 시작 번호
-	if (DropArrayIndex >= DeadBodySlotIndexNum_1) return;  // 드롭 인덱스가 유효한 범위인지 확인
+	constexpr uint32 DeadBodySlotIndexNum_1 = 81; // 첫 번째 사체 인벤토리 슬롯 인덱스 시작 번호
+	if (DropArrayIndex >= DeadBodySlotIndexNum_1) return; // 드롭 인덱스가 유효한 범위인지 확인
 	if (DragArrayIndex >= 111)
 	{
-        // 사체 기어 슬롯에서 인벤토리로 아이템 이동
-		if (constexpr uint32 DeadBodySlotIndexNum_2 = 111; 
-            PlayerInventoryStructs.IsValidIndex(DropArrayIndex) && 
-            PlayerInventoryStacks.IsValidIndex(DropArrayIndex) && 
-            DeadPlayerGearSlotStructs.IsValidIndex(DragArrayIndex - DeadBodySlotIndexNum_2))
+		// 사체 기어 슬롯에서 인벤토리로 아이템 이동
+		if (constexpr uint32 DeadBodySlotIndexNum_2 = 111;
+			PlayerInventoryStructs.IsValidIndex(DropArrayIndex) &&
+			PlayerInventoryStacks.IsValidIndex(DropArrayIndex) &&
+			DeadPlayerGearSlotStructs.IsValidIndex(DragArrayIndex - DeadBodySlotIndexNum_2))
 		{
-            // 인벤토리 슬롯에 아이템 복사 및 초기화
+			// 인벤토리 슬롯에 아이템 복사 및 초기화
 			PlayerInventoryStructs[DropArrayIndex] = DeadPlayerGearSlotStructs[DragArrayIndex - DeadBodySlotIndexNum_2];
 			PlayerInventoryStacks[DropArrayIndex] = 1;
 			DeadPlayerGearSlotStructs[DragArrayIndex - DeadBodySlotIndexNum_2] = InventoryStructDefault;
@@ -270,19 +273,19 @@ void AEclipsePlayerState::DragFromDeadBodyServer_Implementation(APlayerCharacter
 	}
 	else
 	{
-        // 사체 일반 인벤토리에서 인벤토리로 아이템 이동
-		if (PlayerInventoryStructs.IsValidIndex(DropArrayIndex) && 
-            PlayerInventoryStacks.IsValidIndex(DropArrayIndex) && 
-            DeadPlayerInventoryStructs.IsValidIndex(DragArrayIndex - DeadBodySlotIndexNum_1))
+		// 사체 일반 인벤토리에서 인벤토리로 아이템 이동
+		if (PlayerInventoryStructs.IsValidIndex(DropArrayIndex) &&
+			PlayerInventoryStacks.IsValidIndex(DropArrayIndex) &&
+			DeadPlayerInventoryStructs.IsValidIndex(DragArrayIndex - DeadBodySlotIndexNum_1))
 		{
-            // 인벤토리 슬롯에 아이템 복사 및 초기화
+			// 인벤토리 슬롯에 아이템 복사 및 초기화
 			PlayerInventoryStructs[DropArrayIndex] = DeadPlayerInventoryStructs[DragArrayIndex - DeadBodySlotIndexNum_1];
 			PlayerInventoryStacks[DropArrayIndex] = DeadPlayerInventoryStacks[DragArrayIndex - DeadBodySlotIndexNum_1];
 			DeadPlayerInventoryStructs[DragArrayIndex - DeadBodySlotIndexNum_1] = InventoryStructDefault;
 			DeadPlayerInventoryStacks[DragArrayIndex - DeadBodySlotIndexNum_1] = 0;
 		}
 	}
-    // 사체 컨테이너 참조가 유효한 경우 업데이트
+	// 사체 컨테이너 참조가 유효한 경우 업데이트
 	if (DeadPlayerContainerRef)
 	{
 		DeadPlayerContainerRef->DeadPlayerInventoryStructArray = DeadPlayerInventoryStructs;
@@ -293,22 +296,22 @@ void AEclipsePlayerState::DragFromDeadBodyServer_Implementation(APlayerCharacter
 
 void AEclipsePlayerState::DragFromGearSlot(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex)
 {
-    // 기어 슬롯에서 드래그하는 함수 호출 - 서버 측 함수 호출
+	// 기어 슬롯에서 드래그하는 함수 호출 - 서버 측 함수 호출
 	DragFromGearSlotServer(PlayerCharacterRef, DragArrayIndex, DropArrayIndex);
 }
 
 void AEclipsePlayerState::DragFromGearSlotServer_Implementation(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex)
 {
-    // 플레이어 캐릭터가 유효한지 확인
+	// 플레이어 캐릭터가 유효한지 확인
 	if (PlayerCharacterRef)
 	{
-        // 기어 슬롯 인덱스 범위 확인
-		if (constexpr uint32 GearSlotIndexNum = 38; 
-            PlayerInventoryStructs.IsValidIndex(DropArrayIndex) && 
-            PlayerInventoryStacks.IsValidIndex(DropArrayIndex) && 
-            PlayerGearSlotStructs.IsValidIndex(DragArrayIndex - GearSlotIndexNum))
+		// 기어 슬롯 인덱스 범위 확인
+		if (constexpr uint32 GearSlotIndexNum = 38;
+			PlayerInventoryStructs.IsValidIndex(DropArrayIndex) &&
+			PlayerInventoryStacks.IsValidIndex(DropArrayIndex) &&
+			PlayerGearSlotStructs.IsValidIndex(DragArrayIndex - GearSlotIndexNum))
 		{
-            // 각 기어 슬롯의 아이템을 인벤토리로 이동
+			// 각 기어 슬롯의 아이템을 인벤토리로 이동
 			if (DragArrayIndex == GearSlotIndexNum && PlayerInventoryStacks[DropArrayIndex] == 0)
 			{
 				PlayerCharacterRef->EquipHelmetInventorySlot(false, 1);
@@ -349,7 +352,7 @@ void AEclipsePlayerState::DragFromGearSlotServer_Implementation(APlayerCharacter
 }
 
 // 그라운드 아이템 리스트 드래그
-void AEclipsePlayerState::DragFromGround(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct, const int32 DropArrayIndex, const bool IsAmmunition)
+void AEclipsePlayerState::DragFromGround(APlayerCharacter* PlayerCharacterRef, FPlayerInventoryStruct& PlayerInventoryStruct, const int32 DropArrayIndex, const bool IsAmmunition)
 {
 	DragFromGroundServer(PlayerCharacterRef, PlayerInventoryStruct, DropArrayIndex, IsAmmunition);
 }
@@ -412,32 +415,32 @@ void AEclipsePlayerState::DragFromGroundMulticast_Implementation(APlayerCharacte
 
 void AEclipsePlayerState::DragFromInventory(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex)
 {
-    // 인벤토리에서 드래그하는 함수 호출 - 서버 측 함수 호출
+	// 인벤토리에서 드래그하는 함수 호출 - 서버 측 함수 호출
 	DragFromInventoryServer(PlayerCharacterRef, DragArrayIndex, DropArrayIndex);
 }
 
 void AEclipsePlayerState::DragFromInventoryServer_Implementation(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex)
 {
-    // 플레이어 캐릭터가 유효한지 확인
+	// 플레이어 캐릭터가 유효한지 확인
 	if (PlayerCharacterRef)
 	{
-        // 드롭 인덱스가 헬멧 슬롯일 경우
+		// 드롭 인덱스가 헬멧 슬롯일 경우
 		if (DropArrayIndex == 38)
 		{
-            // 아이템 타입이 헬멧인지 확인
+			// 아이템 타입이 헬멧인지 확인
 			if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Helmet"))
 			{
-                // 헬멧 장착
+				// 헬멧 장착
 				PlayerCharacterRef->EquipHelmetInventorySlot(true, PlayerInventoryStructs[DragArrayIndex].Stat);
 				if (PlayerInventoryStacks[DragArrayIndex] > 1)
 				{
-                    // 헬멧 수량이 1보다 많으면 감소
+					// 헬멧 수량이 1보다 많으면 감소
 					PlayerGearSlotStructs[0] = PlayerInventoryStructs[DragArrayIndex];
 					PlayerInventoryStacks[DragArrayIndex]--;
 				}
 				else
 				{
-                    // 헬멧 수량이 1개일 경우 슬롯 초기화
+					// 헬멧 수량이 1개일 경우 슬롯 초기화
 					PlayerGearSlotStructs[0] = PlayerInventoryStructs[DragArrayIndex];
 					PlayerInventoryStacks[DragArrayIndex]--;
 					PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
@@ -445,23 +448,23 @@ void AEclipsePlayerState::DragFromInventoryServer_Implementation(APlayerCharacte
 			}
 			return;
 		}
-        // 드롭 인덱스가 고글 슬롯일 경우
+		// 드롭 인덱스가 고글 슬롯일 경우
 		if (DropArrayIndex == 39)
 		{
-            // 아이템 타입이 고글인지 확인
+			// 아이템 타입이 고글인지 확인
 			if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Goggle"))
 			{
-                // 고글 장착
+				// 고글 장착
 				PlayerCharacterRef->EquipGoggleInventorySlot(true, PlayerInventoryStructs[DragArrayIndex].Stat);
 				if (PlayerInventoryStacks[DragArrayIndex] > 1)
 				{
-                    // 고글 수량이 1보다 많으면 감소
+					// 고글 수량이 1보다 많으면 감소
 					PlayerGearSlotStructs[1] = PlayerInventoryStructs[DragArrayIndex];
 					PlayerInventoryStacks[DragArrayIndex]--;
 				}
 				else
 				{
-                    // 고글 수량이 1개일 경우 슬롯 초기화
+					// 고글 수량이 1개일 경우 슬롯 초기화
 					PlayerGearSlotStructs[1] = PlayerInventoryStructs[DragArrayIndex];
 					PlayerInventoryStacks[DragArrayIndex]--;
 					PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
@@ -469,23 +472,23 @@ void AEclipsePlayerState::DragFromInventoryServer_Implementation(APlayerCharacte
 			}
 			return;
 		}
-        // 드롭 인덱스가 갑옷 슬롯일 경우
+		// 드롭 인덱스가 갑옷 슬롯일 경우
 		if (DropArrayIndex == 40)
 		{
-            // 아이템 타입이 갑옷인지 확인
+			// 아이템 타입이 갑옷인지 확인
 			if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Armor"))
 			{
-                // 갑옷 장착
+				// 갑옷 장착
 				PlayerCharacterRef->EquipArmorInventorySlot(true, PlayerInventoryStructs[DragArrayIndex].Stat);
 				if (PlayerInventoryStacks[DragArrayIndex] > 1)
 				{
-                    // 갑옷 수량이 1보다 많으면 감소
+					// 갑옷 수량이 1보다 많으면 감소
 					PlayerGearSlotStructs[2] = PlayerInventoryStructs[DragArrayIndex];
 					PlayerInventoryStacks[DragArrayIndex]--;
 				}
 				else
 				{
-                    // 갑옷 수량이 1개일 경우 슬롯 초기화
+					// 갑옷 수량이 1개일 경우 슬롯 초기화
 					PlayerGearSlotStructs[2] = PlayerInventoryStructs[DragArrayIndex];
 					PlayerInventoryStacks[DragArrayIndex]--;
 					PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
@@ -493,23 +496,23 @@ void AEclipsePlayerState::DragFromInventoryServer_Implementation(APlayerCharacte
 			}
 			return;
 		}
-        // 드롭 인덱스가 마스크 슬롯일 경우
+		// 드롭 인덱스가 마스크 슬롯일 경우
 		if (DropArrayIndex == 41)
 		{
-            // 아이템 타입이 마스크인지 확인
+			// 아이템 타입이 마스크인지 확인
 			if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Mask"))
 			{
-                // 마스크 장착
+				// 마스크 장착
 				PlayerCharacterRef->EquipMaskInventorySlot(true, PlayerInventoryStructs[DragArrayIndex].Stat);
 				if (PlayerInventoryStacks[DragArrayIndex] > 1)
 				{
-                    // 마스크 수량이 1보다 많으면 감소
+					// 마스크 수량이 1보다 많으면 감소
 					PlayerGearSlotStructs[3] = PlayerInventoryStructs[DragArrayIndex];
 					PlayerInventoryStacks[DragArrayIndex]--;
 				}
 				else
 				{
-                    // 마스크 수량이 1개일 경우 슬롯 초기화
+					// 마스크 수량이 1개일 경우 슬롯 초기화
 					PlayerGearSlotStructs[3] = PlayerInventoryStructs[DragArrayIndex];
 					PlayerInventoryStacks[DragArrayIndex]--;
 					PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
@@ -517,23 +520,23 @@ void AEclipsePlayerState::DragFromInventoryServer_Implementation(APlayerCharacte
 			}
 			return;
 		}
-        // 드롭 인덱스가 헤드셋 슬롯일 경우
+		// 드롭 인덱스가 헤드셋 슬롯일 경우
 		if (DropArrayIndex == 42)
 		{
-            // 아이템 타입이 헤드셋인지 확인
+			// 아이템 타입이 헤드셋인지 확인
 			if (PlayerInventoryStructs[DragArrayIndex].ItemType == FString("Headset"))
 			{
-                // 헤드셋 장착
+				// 헤드셋 장착
 				PlayerCharacterRef->EquipHeadsetInventorySlot(true, PlayerInventoryStructs[DragArrayIndex].Stat);
 				if (PlayerInventoryStacks[DragArrayIndex] > 1)
 				{
-                    // 헤드셋 수량이 1보다 많으면 감소
+					// 헤드셋 수량이 1보다 많으면 감소
 					PlayerGearSlotStructs[4] = PlayerInventoryStructs[DragArrayIndex];
 					PlayerInventoryStacks[DragArrayIndex]--;
 				}
 				else
 				{
-                    // 헤드셋 수량이 1개일 경우 슬롯 초기화
+					// 헤드셋 수량이 1개일 경우 슬롯 초기화
 					PlayerGearSlotStructs[4] = PlayerInventoryStructs[DragArrayIndex];
 					PlayerInventoryStacks[DragArrayIndex]--;
 					PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
@@ -541,52 +544,52 @@ void AEclipsePlayerState::DragFromInventoryServer_Implementation(APlayerCharacte
 			}
 			return;
 		}
-        // 아이템을 드롭하는 경우
+		// 아이템을 드롭하는 경우
 		if (DropArrayIndex == 45)
 		{
-            // 아이템 수량이 1보다 많으면 감소
+			// 아이템 수량이 1보다 많으면 감소
 			if (PlayerInventoryStacks[DragArrayIndex] > 1)
 			{
 				FActorSpawnParameters Param;
 				Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-                // 아이템 드롭 액터 생성
+				// 아이템 드롭 액터 생성
 				GetWorld()->SpawnActor<AActor>(PlayerInventoryStructs[DragArrayIndex].ActorReference, PlayerCharacterRef->GetMesh()->GetSocketTransform(FName("ItemDrop")), Param);
 				PlayerInventoryStacks[DragArrayIndex]--;
 			}
 			else
 			{
-                // 아이템 수량이 1개일 경우 슬롯 초기화
+				// 아이템 수량이 1개일 경우 슬롯 초기화
 				FActorSpawnParameters Param;
 				Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-                // 아이템 드롭 액터 생성
+				// 아이템 드롭 액터 생성
 				GetWorld()->SpawnActor<AActor>(PlayerInventoryStructs[DragArrayIndex].ActorReference, PlayerCharacterRef->GetMesh()->GetSocketTransform(FName("ItemDrop")), Param);
 				PlayerInventoryStacks[DragArrayIndex]--;
 				PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
 			}
 			return;
 		}
-        // 아이템을 이동하는 경우
+		// 아이템을 이동하는 경우
 		if (PlayerInventoryStacks[DropArrayIndex] == 0)
 		{
-            // 아이템 이동 및 슬롯 초기화
+			// 아이템 이동 및 슬롯 초기화
 			PlayerInventoryStructs[DropArrayIndex] = PlayerInventoryStructs[DragArrayIndex];
 			PlayerInventoryStacks[DropArrayIndex] = PlayerInventoryStacks[DragArrayIndex];
 			PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
 			PlayerInventoryStacks[DragArrayIndex] = 0;
 			return;
 		}
-        // 아이템을 병합하는 경우
+		// 아이템을 병합하는 경우
 		if (PlayerInventoryStructs[DragArrayIndex].Name == PlayerInventoryStructs[DropArrayIndex].Name)
 		{
-            // 아이템 스택 증가 및 슬롯 초기화
+			// 아이템 스택 증가 및 슬롯 초기화
 			PlayerInventoryStacks[DropArrayIndex] += PlayerInventoryStacks[DragArrayIndex];
 			PlayerInventoryStructs[DragArrayIndex] = InventoryStructDefault;
 			return;
 		}
-        // 아이템을 교환하는 경우
+		// 아이템을 교환하는 경우
 		if (PlayerInventoryStructs[DragArrayIndex].Name != PlayerInventoryStructs[DropArrayIndex].Name)
 		{
-            // 아이템 교환
+			// 아이템 교환
 			InventoryDropStructCache = PlayerInventoryStructs[DropArrayIndex];
 			InventoryDropStackCache = PlayerInventoryStacks[DropArrayIndex];
 			PlayerInventoryStructs[DropArrayIndex] = PlayerInventoryStructs[DragArrayIndex];
@@ -626,9 +629,9 @@ void AEclipsePlayerState::DeadBodyWidgetSettingsMulticast_Implementation(ADeadPl
 	{
 		// 위젯 설정 함수 호출
 		DeadBodySettingsOnWidgetClass(InstigatorPlayerRef,
-									  DeadPlayerContainer->DeadPlayerInventoryStructArray,
-									  DeadPlayerContainer->DeadPlayerInventoryStackArray,
-									  DeadPlayerContainer->DeadPlayerGearSlotArray);
+		                              DeadPlayerContainer->DeadPlayerInventoryStructArray,
+		                              DeadPlayerContainer->DeadPlayerInventoryStackArray,
+		                              DeadPlayerContainer->DeadPlayerGearSlotArray);
 	}
 }
 
@@ -706,7 +709,7 @@ void AEclipsePlayerState::ApplyGearInventoryEquipState(APlayerCharacter* PlayerC
 void AEclipsePlayerState::ResetPlayerInventoryData()
 {
 	// 플레이어 인벤토리 데이터 초기화
-	PlayerInventoryStructs.Init(InventoryStructDefault, 30);  // 인벤토리 구조체 배열 초기화
-	PlayerInventoryStacks.Init(0, 30);  // 인벤토리 스택 배열 초기화
-	PlayerGearSlotStructs.Init(InventoryStructDefault, 5);  // 기어 슬롯 배열 초기화
+	PlayerInventoryStructs.Init(InventoryStructDefault, 30); // 인벤토리 구조체 배열 초기화
+	PlayerInventoryStacks.Init(0, 30); // 인벤토리 스택 배열 초기화
+	PlayerGearSlotStructs.Init(InventoryStructDefault, 5); // 기어 슬롯 배열 초기화
 }

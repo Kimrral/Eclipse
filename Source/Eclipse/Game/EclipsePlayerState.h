@@ -78,7 +78,7 @@ public:
 	void DragFromGearSlotServer(APlayerCharacter* PlayerCharacterRef, const int32 DragArrayIndex, const int32 DropArrayIndex);
 
 	UFUNCTION(BlueprintCallable)
-	void DragFromGround(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct, const int32 DropArrayIndex, const bool IsAmmunition);
+	void DragFromGround(APlayerCharacter* PlayerCharacterRef, FPlayerInventoryStruct& PlayerInventoryStruct, const int32 DropArrayIndex, const bool IsAmmunition);
 
 	UFUNCTION(Server, Reliable)
 	void DragFromGroundServer(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct, const int32 DropArrayIndex, const bool IsAmmunition);

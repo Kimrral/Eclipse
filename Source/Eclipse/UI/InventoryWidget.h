@@ -16,19 +16,18 @@ class ECLIPSE_API UInventoryWidget : public UUserWidget
 
 public:
 	UPROPERTY(VisibleAnywhere)
-	class AEclipsePlayerController* InventoryController;
+	class AEclipsePlayerController* PlayerController;
 
 	UPROPERTY()
 	class APlayerCharacter* OwningPlayer;
 
-	int32 DraggedIndex = 0;
-	int32 DroppedIndex = 0;
-
-	
+	UPROPERTY(BlueprintReadWrite)
+	int32 DraggedIndex;
+	UPROPERTY(BlueprintReadWrite)
+	int32 DroppedIndex;
 
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation) override;
 	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
-	
 };

@@ -255,14 +255,6 @@ void UTabWidget::UpdateHealthPoint()
     }
 }
 
-void UTabWidget::AddToInventoryLocal(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct)
-{
-}
-
-void UTabWidget::SetInventoryData(TArray<FPlayerInventoryStruct> PlayerInventoryStructs, TArray<int32> PlayerInventoryStacks)
-{
-}
-
 TArray<FPlayerInventoryStruct> UTabWidget::GetInventoryData()
 {
     return {};

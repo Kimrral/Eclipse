@@ -57,7 +57,7 @@ public:
 	void AddToInventoryWidgetClass(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct) const;
 
 	UFUNCTION()
-	void ServerSyncInventory(APlayerCharacter* PlayerCharacterRef) const;
+	void ServerSyncInventory() const;
 	
 	UFUNCTION(BlueprintCallable)
 	void OnUseConsumableItem(APlayerCharacter* PlayerCharacterRef, const FString& ConsumableItemName, float HealAmount);
@@ -141,6 +141,9 @@ public:
 
 	UPROPERTY()
 	ADeadPlayerContainer* DeadPlayerContainerRef;
+
+	UPROPERTY()
+	AEclipsePlayerController* PlayerController;
 
 	UPROPERTY()
 	int32 InventoryDropStackCache;

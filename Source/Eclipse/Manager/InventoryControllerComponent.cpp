@@ -5,6 +5,7 @@
 
 #include "Eclipse/Game/EclipsePlayerState.h"
 #include "Eclipse/Player/EclipsePlayerController.h"
+#include "Eclipse/UI/InventoryWidget.h"
 
 // Sets default values for this component's properties
 UInventoryControllerComponent::UInventoryControllerComponent()
@@ -73,7 +74,7 @@ void UInventoryControllerComponent::HandleDragAndDrop(const int32 DraggedIndex, 
 		break;
 
 	case EDragOperationType::Ground:
-		InventoryManager->DragFromGround(OwningController->PlayerCharacter, PlayerInventoryStruct, DroppedIndex, IsAmmunition);
+		InventoryManager->DragFromGround(OwningController->PlayerCharacter, PlayerInventoryStructs, DroppedIndex, IsAmmunition);
 		break;
 
 	case EDragOperationType::DeadBody:
@@ -85,4 +86,21 @@ void UInventoryControllerComponent::HandleDragAndDrop(const int32 DraggedIndex, 
 		UE_LOG(LogTemp, Warning, TEXT("DraggedIndex (%d)는 유효하지 않은 범위입니다."), DraggedIndex);
 		break;
 	}
+}
+
+
+void UInventoryControllerComponent::AddToInventoryLocal(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct) const
+{
+	if(IsValid(OwningController))
+	{
+		OwningController->InventoryWidget->AddToInventoryLocal(PlayerCharacterRef, PlayerInventoryStruct);
+	}
+}
+
+void UInventoryControllerComponent::SyncInventoryDataFromServer(const TArray<FPlayerInventoryStruct>& ServerInventoryData) const
+{
+	if(IsValid(OwningController))
+	{
+		OwningController->InventoryWidget->SyncInventoryDataFromServer(ServerInventoryData);
+	}	
 }

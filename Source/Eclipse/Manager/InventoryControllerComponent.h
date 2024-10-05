@@ -32,8 +32,14 @@ public:
 
 	static EDragOperationType GetDragOperationType(int32 DraggedIndex);
 
+	UFUNCTION()
+	void AddToInventoryLocal(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct) const;
+
+	UFUNCTION()
+	void SyncInventoryDataFromServer(const TArray<FPlayerInventoryStruct>& ServerInventoryData) const;
+
 	UPROPERTY()
-	FPlayerInventoryStruct PlayerInventoryStruct;
+	FPlayerInventoryStruct PlayerInventoryStructs;
 
 	UPROPERTY()
 	class AEclipsePlayerController* OwningController;

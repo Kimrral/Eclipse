@@ -27,12 +27,6 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void UpdateHealthPoint();
-
-	UFUNCTION()
-	static void AddToInventoryLocal(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct);
-	
-	UFUNCTION()
-	static void SetInventoryData(TArray<FPlayerInventoryStruct> PlayerInventoryStructs, TArray<int32>PlayerInventoryStacks);
 	
 	UFUNCTION()
 	static TArray<FPlayerInventoryStruct> GetInventoryData();

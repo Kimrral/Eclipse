@@ -38,6 +38,9 @@ public:
 	TSubclassOf<APlayerStart> PlayerStartFactory;
 
 	UPROPERTY()
+	class UInventoryWidget* InventoryWidget;
+
+	UPROPERTY()
 	class APlayerCharacter* PlayerCharacter;
 
 protected:

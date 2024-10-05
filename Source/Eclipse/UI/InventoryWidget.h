@@ -26,6 +26,12 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	int32 DroppedIndex;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void AddToInventoryLocal(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void SyncInventoryDataFromServer(const TArray<FPlayerInventoryStruct>& ServerInventoryData);
+
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation) override;

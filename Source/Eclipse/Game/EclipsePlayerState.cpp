@@ -4,6 +4,8 @@
 #include "Eclipse/Game/EclipsePlayerState.h"
 
 #include "Eclipse/CharacterStat/PlayerCharacterStatComponent.h"
+#include "Eclipse/Manager/InventoryControllerComponent.h"
+#include "Eclipse/Player/EclipsePlayerController.h"
 #include "Eclipse/UI/TabWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
@@ -21,6 +23,11 @@ AEclipsePlayerState::AEclipsePlayerState()
 void AEclipsePlayerState::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (const APawn* ControlledPawn = GetPawn())
+	{
+		PlayerController = Cast<AEclipsePlayerController>(ControlledPawn->GetController());
+	}
 
 	PlayerInventoryStructs.Init(InventoryStructDefault, 30);
 	PlayerInventoryStacks.Init(0, 30);
@@ -42,10 +49,11 @@ void AEclipsePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 void AEclipsePlayerState::AddToInventory(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct)
 {
 	// 클라이언트에서 아이템 습득 시각적 효과를 우선 실행
-	if (IsValid(PlayerCharacterRef) && PlayerCharacterRef->IsLocallyControlled())
+	if (IsValid(PlayerCharacterRef) && IsValid(PlayerController) && PlayerCharacterRef->IsLocallyControlled())
 	{
 		// 로컬 인벤토리 로직 실행, 클라이언트 UI 업데이트
-		PlayerCharacterRef->tabWidgetUI->AddToInventoryLocal(PlayerCharacterRef, PlayerInventoryStruct);
+		// MVC 패턴에 따라 Inventory Controller Class 통해서 업데이트
+		PlayerController->InventoryController->AddToInventoryLocal(PlayerCharacterRef, PlayerInventoryStruct);
 		// 클라이언트 측 시각적 효과 출력
 		AddToInventoryWidgetClass(PlayerCharacterRef, PlayerInventoryStruct);
 		// 대상 아이템을 즉시 로컬에서 숨김 처리
@@ -123,7 +131,7 @@ void AEclipsePlayerState::AddToInventoryServer_Implementation(APlayerCharacter* 
 				PlayerInventoryStacks = CachedPlayerInventoryStacks;
 
 				// 서버의 인벤토리 데이터로 재출력 요청
-				ServerSyncInventory(PlayerCharacterRef);
+				ServerSyncInventory();
 				return;
 			}
 			// 데이터 검증 성공 시
@@ -185,7 +193,6 @@ void AEclipsePlayerState::AddToInventoryWidgetClass(APlayerCharacter* PlayerChar
 }
 
 
-
 void AEclipsePlayerState::HidePickedUpItem(APlayerCharacter* PlayerCharacterRef, const FPlayerInventoryStruct& PlayerInventoryStruct)
 {
 	// 로컬에서 아이템을 즉시 숨김 처리
@@ -201,16 +208,14 @@ void AEclipsePlayerState::HidePickedUpItem(APlayerCharacter* PlayerCharacterRef,
 }
 
 // 서버 검증 실패 시 실행되는 동기화 로직
-void AEclipsePlayerState::ServerSyncInventory(APlayerCharacter* PlayerCharacterRef) const
+void AEclipsePlayerState::ServerSyncInventory() const
 {
-	// // 클라이언트의 인벤토리 데이터를 서버의 데이터와 동기화
-	// if (IsValid(PlayerCharacterRef))
-	// {
-	// 	if (const UTabWidget* InventoryUI = PlayerCharacterRef->tabWidgetUI())
-	// 	{
-	// 		InventoryUI->SetInventoryData(PlayerInventoryStructs, PlayerInventoryStacks); // 서버 데이터를 클라이언트로 동기화
-	// 	}
-	// }
+	// 클라이언트의 인벤토리 데이터를 서버의 데이터와 동기화
+	// MVC 패턴에 따라 Inventory Controller Class 통해서 업데이트
+	if (IsValid(PlayerController))
+	{
+		PlayerController->InventoryController->SyncInventoryDataFromServer(PlayerInventoryStructs);
+	}
 }
 
 void AEclipsePlayerState::OnUseConsumableItem(APlayerCharacter* PlayerCharacterRef, const FString& ConsumableItemName, const float HealAmount)

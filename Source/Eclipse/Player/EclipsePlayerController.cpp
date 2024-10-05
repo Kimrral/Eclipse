@@ -6,6 +6,7 @@
 #include "Eclipse/CharacterStat/PlayerCharacterStatComponent.h"
 #include "Eclipse/CharacterStat/EnemyCharacterStatComponent.h"
 #include "Eclipse/Enemy/Boss.h"
+#include "Eclipse/Game/EclipsePlayerState.h"
 #include "Eclipse/UI/BossHPWidget.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -13,9 +14,10 @@ void AEclipsePlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	PlayerCharacter = Cast<APlayerCharacter>(GetPawn());
+	PlayerCharacter = Cast<APlayerCharacter>(GetPawn());	
 	if (::IsValid(PlayerCharacter))
 	{
+		InventoryManager = Cast<AEclipsePlayerState>(PlayerCharacter->GetPlayerState());
 		PlayerCharacter->Stat->OnHpChanged.AddUObject(this, &AEclipsePlayerController::UpdateTabWidget);
 		PlayerCharacter->Stat->OnHpZero.AddUObject(this, &AEclipsePlayerController::PlayerDeath);
 	}
@@ -55,6 +57,61 @@ void AEclipsePlayerController::PlayerDeath() const
 		PlayerCharacter->PlayerDeathRPCServer();
 	}
 }
+
+EDragOperationType AEclipsePlayerController::GetDragOperationType(const int32 DraggedIndex)
+{
+	if (DraggedIndex >= MinInventoryDragIndexRange && DraggedIndex <= MaxInventoryDragIndexRange)
+	{
+		return EDragOperationType::Inventory;
+	}
+	else if (DraggedIndex >= MinGearSlotDragIndexRange && DraggedIndex <= MaxGearSlotDragIndexRange)
+	{
+		return EDragOperationType::GearSlot;
+	}
+	else if (DraggedIndex >= MinGroundDragIndexRange && DraggedIndex <= MaxGroundDragIndexRange)
+	{
+		return EDragOperationType::Ground;
+	}
+	else if (DraggedIndex >= MinDeadBodyDragIndexRange && DraggedIndex <= MaxDeadBodyDragIndexRange)
+	{
+		return EDragOperationType::DeadBody;
+	}
+
+	return EDragOperationType::Invalid;
+}
+
+void AEclipsePlayerController::HandleDragAndDrop(const int32 DraggedIndex, const int32 DroppedIndex)
+{
+	// DraggedIndex 범위에 따른 DragOperationType을 지정
+	EDragOperationType OperationType = GetDragOperationType(DraggedIndex);
+	
+	// OperationType에 따른 switch-case 처리
+	switch (OperationType)
+	{
+	case EDragOperationType::Inventory:
+		InventoryManager->DragFromInventory(PlayerCharacter, DraggedIndex, DroppedIndex);
+		break;
+
+	case EDragOperationType::GearSlot:
+		InventoryManager->DragFromGearSlot(PlayerCharacter, DraggedIndex, DroppedIndex);
+		break;
+
+	case EDragOperationType::Ground:
+		InventoryManager->DragFromGround(PlayerCharacter, PlayerInventoryStruct, DroppedIndex, IsAmmunition);
+		break;
+
+	case EDragOperationType::DeadBody:
+		InventoryManager->DragFromDeadBody(PlayerCharacter, DraggedIndex, DroppedIndex);
+		break;
+
+	case EDragOperationType::Invalid:
+	default:
+		UE_LOG(LogTemp, Warning, TEXT("DraggedIndex (%d)는 유효하지 않은 범위입니다."), DraggedIndex);
+		break;
+	}
+}
+
+
 
 void AEclipsePlayerController::AddBossHpWidgetToViewport()
 {

@@ -17,7 +17,9 @@ class ECLIPSE_API AEclipsePlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
-public:	
+public:
+	AEclipsePlayerController();
+	
 	// Inventory Controller Actor Component
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Inventory, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInventoryControllerComponent> InventoryController;

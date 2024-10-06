@@ -16,6 +16,8 @@ void UInventoryWidget::NativeConstruct()
 	PlayerController = Cast<AEclipsePlayerController>(GetWorld()->GetFirstPlayerController());
 	if (IsValid(PlayerController)) BoundStatController = Cast<UInventoryStatController>(PlayerController->InventoryStatController);
 	OwningPlayer = Cast<APlayerCharacter>(GetOwningLocalPlayer());
+
+	if (IsValid(BoundStatController))BindStatController(BoundStatController);
 }
 
 void UInventoryWidget::BindStatController(UInventoryStatController* StatController)
@@ -62,5 +64,3 @@ void UInventoryWidget::NativeOnDragDetected(const FGeometry& InGeometry, const F
 
 	OutOperation = DragDropOp;
 }
-
-

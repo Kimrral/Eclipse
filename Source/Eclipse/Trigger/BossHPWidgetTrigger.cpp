@@ -5,7 +5,7 @@
 
 #include "Eclipse/Character/PlayerCharacter.h"
 #include "Components/BoxComponent.h"
-#include "Eclipse/Manager/EnemyStatControllerComponent.h"
+#include "..\Manager\EnemyStatController.h"
 #include "Eclipse/Player/EclipsePlayerController.h"
 
 // 기본값을 설정합니다

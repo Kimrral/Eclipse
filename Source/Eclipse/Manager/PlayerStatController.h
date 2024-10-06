@@ -4,17 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "PlayerStatControllerComponent.generated.h"
+#include "PlayerStatController.generated.h"
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class ECLIPSE_API UPlayerStatControllerComponent : public UActorComponent
+class ECLIPSE_API UPlayerStatController : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:	
 	// Sets default values for this component's properties
-	UPlayerStatControllerComponent();
+	UPlayerStatController();
 
 	UPROPERTY()
 	class AEclipsePlayerController* OwningController;

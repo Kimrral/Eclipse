@@ -4,7 +4,9 @@
 #include "Eclipse/UI/InventoryWidget.h"
 
 #include "Blueprint/DragDropOperation.h"
-#include "Eclipse/Manager/InventoryControllerComponent.h"
+#include "..\Manager\InventoryController.h"
+#include "Components/TextBlock.h"
+#include "Eclipse/Manager/InventoryStatController.h"
 #include "Eclipse/Player/EclipsePlayerController.h"
 
 void UInventoryWidget::NativeConstruct()
@@ -12,7 +14,24 @@ void UInventoryWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	PlayerController = Cast<AEclipsePlayerController>(GetWorld()->GetFirstPlayerController());
+	if (IsValid(PlayerController)) BoundStatController = Cast<UInventoryStatController>(PlayerController->InventoryStatController);
 	OwningPlayer = Cast<APlayerCharacter>(GetOwningLocalPlayer());
+}
+
+void UInventoryWidget::BindStatController(UInventoryStatController* StatController)
+{
+	BoundStatController = StatController;
+	UpdateStatDisplay(); // 첫 바인딩 시 UI 업데이트
+}
+
+void UInventoryWidget::UpdateStatDisplay()
+{
+	if (BoundStatController)
+	{
+		CurrentHpText->SetText(FText::AsNumber(BoundStatController->GetCurrentHp()));
+		MaxHpText->SetText(FText::AsNumber(BoundStatController->GetMaxHp()));
+		CurrentRoubleText->SetText(FText::AsNumber(BoundStatController->GetCurrentRouble()));
+	}
 }
 
 bool UInventoryWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
@@ -43,3 +62,5 @@ void UInventoryWidget::NativeOnDragDetected(const FGeometry& InGeometry, const F
 
 	OutOperation = DragDropOp;
 }
+
+

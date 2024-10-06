@@ -4,17 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "EnemyStatControllerComponent.generated.h"
+#include "EnemyStatController.generated.h"
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class ECLIPSE_API UEnemyStatControllerComponent : public UActorComponent
+class ECLIPSE_API UEnemyStatController : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:	
 	// Sets default values for this component's properties
-	UEnemyStatControllerComponent();
+	UEnemyStatController();
 
 	UFUNCTION()
 	void AddBossHpWidgetToViewport();

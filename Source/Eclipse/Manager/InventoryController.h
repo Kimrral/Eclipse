@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Eclipse/GameData/PlayerInventoryStruct.h"
-#include "InventoryControllerComponent.generated.h"
+#include "InventoryController.generated.h"
 
 
 enum class EDragOperationType

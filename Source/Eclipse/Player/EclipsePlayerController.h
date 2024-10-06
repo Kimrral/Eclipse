@@ -21,18 +21,16 @@ public:
 	AEclipsePlayerController();
 	
 	// Inventory Controller Actor Component
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Inventory, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = InventoryWidget, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInventoryControllerComponent> InventoryController;
 
 	// Inventory Controller Actor Component
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = EnemyHpWidget, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UEnemyHpWidgetControllerComponent> EnemyHpWidgetController;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = EnemyStatWidget, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UEnemyStatControllerComponent> EnemyStatController;
 
-	UFUNCTION()
-	void PlayerDeath() const;
-
-	UFUNCTION()
-	void UpdateTabWidget() const;
+	// Information Widget Controller Actor Component
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = PlayerStatWidget, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UPlayerStatControllerComponent> PlayerStatController;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<APlayerStart> PlayerStartFactory;
@@ -42,6 +40,7 @@ public:
 
 	UPROPERTY()
 	class APlayerCharacter* PlayerCharacter;
+
 
 protected:
 	virtual void BeginPlay() override;

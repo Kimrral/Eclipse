@@ -1,16 +1,16 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Eclipse/Manager/EnemyHpWidgetControllerComponent.h"
+#include "Eclipse/Manager/EnemyStatControllerComponent.h"
 
+#include "Kismet/GameplayStatics.h"
 #include "Blueprint/UserWidget.h"
 #include "Eclipse/CharacterStat/EnemyCharacterStatComponent.h"
 #include "Eclipse/Enemy/Boss.h"
 #include "Eclipse/UI/BossHPWidget.h"
-#include "Kismet/GameplayStatics.h"
 
 // Sets default values for this component's properties
-UEnemyHpWidgetControllerComponent::UEnemyHpWidgetControllerComponent()
+UEnemyStatControllerComponent::UEnemyStatControllerComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
@@ -19,24 +19,25 @@ UEnemyHpWidgetControllerComponent::UEnemyHpWidgetControllerComponent()
 	// ...
 }
 
-
-void UEnemyHpWidgetControllerComponent::UpdateBossHpWidget(const float InCurrentHp, const float InMaxHp)
+// Called when the game starts
+void UEnemyStatControllerComponent::BeginPlay()
 {
-	if (::IsValid(BossHPWidget))
-	{
-		BossHPWidget->UpdateHPWidget(InCurrentHp, InMaxHp);
-	}
+	Super::BeginPlay();
+
+	BossHPWidget = CreateWidget<UBossHPWidget>(GetWorld(), BossHPWidgetFactory);
 }
 
-void UEnemyHpWidgetControllerComponent::UpdateBossShieldWidget(const float InCurrentShield, const float InMaxShield)
+
+// Called every frame
+void UEnemyStatControllerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
-	if (::IsValid(BossHPWidget))
-	{
-		BossHPWidget->UpdateShieldWidget(InCurrentShield, InMaxShield);
-	}
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	// ...
 }
 
-void UEnemyHpWidgetControllerComponent::AddBossHpWidgetToViewport()
+
+void UEnemyStatControllerComponent::AddBossHpWidgetToViewport()
 {
 	TArray<class AActor*> OutActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABoss::StaticClass(), OutActors);
@@ -44,8 +45,8 @@ void UEnemyHpWidgetControllerComponent::AddBossHpWidgetToViewport()
 	{
 		if (const auto Boss = Cast<ABoss>(Bosses))
 		{
-			Boss->EnemyStat->OnHpChanged.AddUniqueDynamic(this, &UEnemyHpWidgetControllerComponent::UpdateBossHpWidget);
-			Boss->EnemyStat->OnShieldChanged.AddUniqueDynamic(this, &UEnemyHpWidgetControllerComponent::UpdateBossShieldWidget);
+			Boss->EnemyStat->OnHpChanged.AddUniqueDynamic(this, &UEnemyStatControllerComponent::UpdateBossHpWidget);
+			Boss->EnemyStat->OnShieldChanged.AddUniqueDynamic(this, &UEnemyStatControllerComponent::UpdateBossShieldWidget);
 			UpdateBossHpWidget(Boss->EnemyStat->GetCurrentHp(), Boss->EnemyStat->GetMaxHp());
 			UpdateBossShieldWidget(Boss->EnemyStat->GetCurrentShield(), Boss->EnemyStat->GetMaxShield());
 			break;
@@ -57,7 +58,7 @@ void UEnemyHpWidgetControllerComponent::AddBossHpWidgetToViewport()
 	}
 }
 
-void UEnemyHpWidgetControllerComponent::RemoveBossHpWidgetFromViewport() const
+void UEnemyStatControllerComponent::RemoveBossHpWidgetFromViewport() const
 {
 	TArray<class AActor*> OutActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABoss::StaticClass(), OutActors);
@@ -76,21 +77,19 @@ void UEnemyHpWidgetControllerComponent::RemoveBossHpWidgetFromViewport() const
 	}
 }
 
-// Called when the game starts
-void UEnemyHpWidgetControllerComponent::BeginPlay()
-{
-	Super::BeginPlay();
 
-	BossHPWidget = CreateWidget<UBossHPWidget>(GetWorld(), BossHPWidgetFactory);
-	
+void UEnemyStatControllerComponent::UpdateBossHpWidget(const float InCurrentHp, const float InMaxHp)
+{
+	if (::IsValid(BossHPWidget))
+	{
+		BossHPWidget->UpdateHPWidget(InCurrentHp, InMaxHp);
+	}
 }
 
-
-// Called every frame
-void UEnemyHpWidgetControllerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UEnemyStatControllerComponent::UpdateBossShieldWidget(const float InCurrentShield, const float InMaxShield)
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
+	if (::IsValid(BossHPWidget))
+	{
+		BossHPWidget->UpdateShieldWidget(InCurrentShield, InMaxShield);
+	}
 }
-

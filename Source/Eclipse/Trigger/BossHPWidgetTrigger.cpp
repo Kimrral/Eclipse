@@ -5,8 +5,7 @@
 
 #include "Eclipse/Character/PlayerCharacter.h"
 #include "Components/BoxComponent.h"
-#include "Eclipse/Manager/EnemyHpWidgetControllerComponent.h"
-#include "Eclipse/Manager/InventoryControllerComponent.h"
+#include "Eclipse/Manager/EnemyStatControllerComponent.h"
 #include "Eclipse/Player/EclipsePlayerController.h"
 
 // 기본값을 설정합니다
@@ -45,7 +44,7 @@ void ABossHPWidgetTrigger::OnOverlap(UPrimitiveComponent* OverlappedComponent, A
 			if (::IsValid(Player) && Player->IsLocallyControlled())
 			{				
 				// 플레이어의 PC(Player Controller)를 통해 보스 HP 위젯을 화면에 추가합니다.
-				Player->PC->EnemyHpWidgetController->AddBossHpWidgetToViewport();				
+				Player->PC->EnemyStatController->AddBossHpWidgetToViewport();				
 			}
 		}
 	}
@@ -63,7 +62,7 @@ void ABossHPWidgetTrigger::EndOverlap(UPrimitiveComponent* OverlappedComponent, 
 			if (::IsValid(Player) && Player->IsLocallyControlled())
 			{				
 				// 플레이어의 PC(Player Controller)를 통해 보스 HP 위젯을 화면에서 제거합니다.
-				Player->PC->EnemyHpWidgetController->RemoveBossHpWidgetFromViewport();
+				Player->PC->EnemyStatController->RemoveBossHpWidgetFromViewport();
 			}
 		}
 	}

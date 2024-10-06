@@ -14,9 +14,7 @@ class ECLIPSE_API UInventoryOverlayController : public UInventoryControllerCompo
 {
 	GENERATED_BODY()
 	
-public:
-	UInventoryOverlayController();
-    
+public:    
 	// Functions for handling non-interactive overlay elements
 	void DisplayOverlayInfo() const;
 	

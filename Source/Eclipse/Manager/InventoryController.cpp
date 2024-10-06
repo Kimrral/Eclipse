@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Eclipse/Manager/InventoryControllerComponent.h"
+#include "InventoryController.h"
 
 #include "Eclipse/Game/EclipsePlayerState.h"
 #include "Eclipse/Player/EclipsePlayerController.h"

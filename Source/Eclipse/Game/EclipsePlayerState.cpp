@@ -4,7 +4,7 @@
 #include "Eclipse/Game/EclipsePlayerState.h"
 
 #include "Eclipse/CharacterStat/PlayerCharacterStatComponent.h"
-#include "Eclipse/Manager/InventoryControllerComponent.h"
+#include "..\Manager\InventoryController.h"
 #include "Eclipse/Player/EclipsePlayerController.h"
 #include "Eclipse/UI/TabWidget.h"
 #include "Kismet/GameplayStatics.h"

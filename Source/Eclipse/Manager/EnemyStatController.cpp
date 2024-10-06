@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Eclipse/Manager/EnemyStatControllerComponent.h"
+#include "EnemyStatController.h"
 
 #include "Kismet/GameplayStatics.h"
 #include "Blueprint/UserWidget.h"
@@ -10,7 +10,7 @@
 #include "Eclipse/UI/BossHPWidget.h"
 
 // Sets default values for this component's properties
-UEnemyStatControllerComponent::UEnemyStatControllerComponent()
+UEnemyStatController::UEnemyStatController()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
@@ -20,7 +20,7 @@ UEnemyStatControllerComponent::UEnemyStatControllerComponent()
 }
 
 // Called when the game starts
-void UEnemyStatControllerComponent::BeginPlay()
+void UEnemyStatController::BeginPlay()
 {
 	Super::BeginPlay();
 
@@ -29,7 +29,7 @@ void UEnemyStatControllerComponent::BeginPlay()
 
 
 // Called every frame
-void UEnemyStatControllerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UEnemyStatController::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
@@ -37,7 +37,7 @@ void UEnemyStatControllerComponent::TickComponent(float DeltaTime, ELevelTick Ti
 }
 
 
-void UEnemyStatControllerComponent::AddBossHpWidgetToViewport()
+void UEnemyStatController::AddBossHpWidgetToViewport()
 {
 	TArray<class AActor*> OutActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABoss::StaticClass(), OutActors);
@@ -45,8 +45,8 @@ void UEnemyStatControllerComponent::AddBossHpWidgetToViewport()
 	{
 		if (const auto Boss = Cast<ABoss>(Bosses))
 		{
-			Boss->EnemyStat->OnHpChanged.AddUniqueDynamic(this, &UEnemyStatControllerComponent::UpdateBossHpWidget);
-			Boss->EnemyStat->OnShieldChanged.AddUniqueDynamic(this, &UEnemyStatControllerComponent::UpdateBossShieldWidget);
+			Boss->EnemyStat->OnHpChanged.AddUniqueDynamic(this, &UEnemyStatController::UpdateBossHpWidget);
+			Boss->EnemyStat->OnShieldChanged.AddUniqueDynamic(this, &UEnemyStatController::UpdateBossShieldWidget);
 			UpdateBossHpWidget(Boss->EnemyStat->GetCurrentHp(), Boss->EnemyStat->GetMaxHp());
 			UpdateBossShieldWidget(Boss->EnemyStat->GetCurrentShield(), Boss->EnemyStat->GetMaxShield());
 			break;
@@ -58,7 +58,7 @@ void UEnemyStatControllerComponent::AddBossHpWidgetToViewport()
 	}
 }
 
-void UEnemyStatControllerComponent::RemoveBossHpWidgetFromViewport() const
+void UEnemyStatController::RemoveBossHpWidgetFromViewport() const
 {
 	TArray<class AActor*> OutActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABoss::StaticClass(), OutActors);
@@ -78,7 +78,7 @@ void UEnemyStatControllerComponent::RemoveBossHpWidgetFromViewport() const
 }
 
 
-void UEnemyStatControllerComponent::UpdateBossHpWidget(const float InCurrentHp, const float InMaxHp)
+void UEnemyStatController::UpdateBossHpWidget(const float InCurrentHp, const float InMaxHp)
 {
 	if (::IsValid(BossHPWidget))
 	{
@@ -86,7 +86,7 @@ void UEnemyStatControllerComponent::UpdateBossHpWidget(const float InCurrentHp, 
 	}
 }
 
-void UEnemyStatControllerComponent::UpdateBossShieldWidget(const float InCurrentShield, const float InMaxShield)
+void UEnemyStatController::UpdateBossShieldWidget(const float InCurrentShield, const float InMaxShield)
 {
 	if (::IsValid(BossHPWidget))
 	{

@@ -24,13 +24,21 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = InventoryWidget, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInventoryControllerComponent> InventoryController;
 
-	// Inventory Controller Actor Component
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = EnemyStatWidget, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UEnemyStatControllerComponent> EnemyStatController;
+	// InventoryOverlayController Actor Component
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = InventoryWidget, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInventoryOverlayController> InventoryOverlayController;
 
-	// Information Widget Controller Actor Component
+	// InventoryStatController Actor Component
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = InventoryWidget, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInventoryStatController> InventoryStatController;
+
+	// EnemyStatController Actor Component
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = EnemyStatWidget, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UEnemyStatController> EnemyStatController;
+
+	// PlayerStatController Actor Component
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = PlayerStatWidget, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UPlayerStatControllerComponent> PlayerStatController;
+	TObjectPtr<class UPlayerStatController> PlayerStatController;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<APlayerStart> PlayerStartFactory;

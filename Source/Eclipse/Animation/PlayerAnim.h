@@ -6,6 +6,30 @@
 #include "Animation/AnimInstance.h"
 #include "PlayerAnim.generated.h"
 
+
+// 탄약 정보를 담는 구조체
+USTRUCT(BlueprintType)
+struct FAmmoInfo
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ammo")
+	int32 MaxAmmo; // 최대 탄약
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ammo")
+	int32 CurAmmo; // 현재 탄약
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ammo")
+	int32 Capacity; // 탄약 용량
+
+	// 생성자
+	FAmmoInfo()
+		: MaxAmmo(0), CurAmmo(0), Capacity(0) {} // 기본 생성자
+
+	FAmmoInfo(int32 InMaxAmmo, int32 InCurAmmo, int32 InCapacity)
+		: MaxAmmo(InMaxAmmo), CurAmmo(InCurAmmo), Capacity(InCapacity) {}
+};
 /**
  * 
  */
@@ -24,7 +48,10 @@ public:
 	void AnimNotify_ReloadStart() const;
 
 	UFUNCTION()
-	void AnimNotify_ReloadEnd() const;
+	void AnimNotify_ReloadEnd();
+
+	UFUNCTION()
+	void ReloadAmmo(FAmmoInfo& AmmoInfo);
 
 	UFUNCTION()
 	void UpdateWeaponEquipState();
